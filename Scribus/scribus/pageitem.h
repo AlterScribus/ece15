@@ -1235,6 +1235,7 @@ protected:
 	void restoreClearImage(UndoState *state, bool isUndo);
 	void restoreGetImage(UndoState *state, bool isUndo);
 	void restorePoly(SimpleState *state, bool isUndo, bool isContour);
+	void restoreUniteItem(SimpleState *state, bool isUndo);
 	void restoreContourLine(SimpleState *state, bool isUndo);
 	void restoreShapeType(SimpleState *state, bool isUndo);
 	void restoreLayer(SimpleState *state, bool isUndo);
