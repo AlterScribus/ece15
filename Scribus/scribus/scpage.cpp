@@ -254,6 +254,7 @@ void ScPage::restorePageItemDeletion(ScItemState< QList<PageItem*> > *state, boo
 		return;
 	QList<PageItem*> itemList = state->getItem();
 	int id = state->getInt("ITEMID");
+	int id2 = state->getInt("ID");
 	if (itemList.count() <= 0) 
 		return;
 	m_Doc->view()->Deselect(true);
@@ -265,27 +266,21 @@ void ScPage::restorePageItemDeletion(ScItemState< QList<PageItem*> > *state, boo
 	if (isUndo)
 	{
 		//CB #3373 reinsert at old position and renumber items
-		for (int i = 0; i < itemList.count(); ++i)
-		{
-			PageItem* ite = itemList.at(i);
-			m_Doc->Items->insert(id, ite);
-		}
+		PageItem* ite = itemList.at(id2);
+		m_Doc->Items->insert(id, ite);
  		update();
 	}
 	else
 	{
 		Selection tmpSelection(m_Doc, false);
-		for (int i = 0; i < itemList.count(); ++i)
+		PageItem* ite = itemList.at(id2);
+		if (m_Doc->m_Selection->findItem(ite)!=-1)
 		{
-			PageItem* ite = itemList.at(i);
-			if (m_Doc->m_Selection->findItem(ite)!=-1)
-			{
-				if (m_Doc->appMode == modeEdit)
-					m_Doc->view()->requestMode(modeNormal);
-				m_Doc->m_Selection->removeItem(ite);
-			}
-			tmpSelection.addItem(ite);
+			if (m_Doc->appMode == modeEdit)
+				m_Doc->view()->requestMode(modeNormal);
+			m_Doc->m_Selection->removeItem(ite);
 		}
+		tmpSelection.addItem(ite);
 		m_Doc->itemSelection_DeleteItem(&tmpSelection);
 	}
 	m_Doc->m_Selection->delaySignalsOff();
