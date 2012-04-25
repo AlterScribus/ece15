@@ -10483,6 +10483,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 			ScItemState< QList<PageItem*> > *is = new ScItemState< QList<PageItem*> >(Um::Delete + " " + currItem->getUName(), "", Um::IDelete);
 			is->setItem(delItems);
 			is->set("ITEMID", itemList->indexOf(currItem));
+			is->set("ID", selectedItemCount - (de + 1));
 			is->set("DELETE_ITEM", "delete_item");
 			undoManager->action(Pages->at(0), is, currItem->getUPixmap());
 		}
@@ -14181,15 +14182,25 @@ void ScribusDoc::itemSelection_UniteItems(Selection* /*customSelection*/)
 {
 	PageItem *currItem;
 	PageItem *bb;
+	QList<QTransform> transform;
 	QList<PageItem *> toDel;
 	toDel.clear();
 	uint docSelectionCount = m_Selection->count();
 	if (docSelectionCount > 1)
 	{
+		UndoTransaction* transaction = NULL;
+		if (UndoManager::undoEnabled()){
+			transaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::UniteItem, "", Um::IGroup));
+			transform.clear();
+		}
+		undoManager->setUndoEnabled(false);
 		currItem = m_Selection->itemAt(0);
 		if (currItem->isGroup())
 			return;
 		m_Selection->delaySignalsOn();
+		bool currFrame = currItem->Frame;
+		bool currClipEdited = currItem->ClipEdited;
+		int currFrameType = currItem->FrameType;
 		currItem->Frame = false;
 		currItem->ClipEdited = true;
 		currItem->FrameType = 3;
@@ -14200,25 +14211,45 @@ void ScribusDoc::itemSelection_UniteItems(Selection* /*customSelection*/)
 			QTransform ma;
 			ma.translate(bb->xPos(), bb->yPos());
 			ma.rotate(bb->rotation());
-			bb->PoLine.map(ma);
 			QTransform ma2;
 			ma2.translate(currItem->xPos(), currItem->yPos());
 			ma2.rotate(currItem->rotation());
 			ma2 = ma2.inverted();
-			bb->PoLine.map(ma2);
+			ma=ma*ma2;
+			bb->PoLine.map(ma);
+			undoManager->setUndoEnabled(true);
+			if (UndoManager::undoEnabled())
+				transform.append(ma);
+			undoManager->setUndoEnabled(false);
 			currItem->PoLine.setMarker();
 			currItem->PoLine.putPoints(currItem->PoLine.size(), bb->PoLine.size(), bb->PoLine);
 		}
 //		currItem->Clip = FlattenPath(currItem->PoLine, currItem->Segments);
 		AdjustItemSize(currItem);
 		currItem->ContourLine = currItem->PoLine.copy();
+		undoManager->setUndoEnabled(true);
 		//FIXME: stop using m_View
+		if (UndoManager::undoEnabled())
+		{
+			ScItemState< QPair<QList<PageItem*> , QList<QTransform> > > *is = new ScItemState< QPair<QList<PageItem*> , QList<QTransform> > >(Um::UniteItem, "", Um::IGroup);
+			is->setItem(QPair<QList<PageItem*>,QList<QTransform> >(toDel,transform));
+			is->set("UNITEITEM", "uniteitem");
+			is->set("FRAME",currFrame);
+			is->set("FRAMETYPE",currFrameType);
+			is->set("CLIPEDITED",currClipEdited);
+			undoManager->action(currItem, is);
+		}
 		m_View->Deselect(true);
 		for (int c = 0; c < toDel.count(); ++c)
 			m_View->SelectItem(toDel.at(c));
 		m_Selection->delaySignalsOff();
 		itemSelection_DeleteItem();
 		regionsChanged()->update(QRectF());
+		if(transaction){
+			transaction->commit();
+			delete transaction;
+			transaction = NULL;
+		}
 	}
 }
 
