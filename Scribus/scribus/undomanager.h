@@ -449,6 +449,7 @@ public:
 	static QString MoveVGuide;
 	static QString MoveHGuide;
 	static QString UniteItem;
+	static QString SplitItem;
 	static QString RemoveAllGuides;
 	static QString RemoveAllPageGuides;
 	static QString LockGuides;
