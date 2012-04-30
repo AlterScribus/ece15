@@ -14257,8 +14257,14 @@ void ScribusDoc::itemSelection_SplitItems(Selection* /*customSelection*/)
 {
 	PageItem *bb;
 	m_Selection->delaySignalsOn();
+	UndoTransaction* transaction = NULL;
+	if (UndoManager::undoEnabled())
+		transaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::SplitItem, "", Um::IGroup));
+	undoManager->setUndoEnabled(false);
 	for (int i = 0; i < m_Selection->count(); ++i)
 	{
+		QList< int> itemsList;
+		itemsList.clear();
 		PageItem *currItem = m_Selection->itemAt(i);
 		if (!currItem->isPolygon() || currItem->Segments.count() <= 0)
 			continue;
@@ -14272,6 +14278,7 @@ void ScribusDoc::itemSelection_SplitItems(Selection* /*customSelection*/)
 				StartInd = a + 1;
 				bb = new PageItem_Polygon(*currItem);
 				currItemNr++;
+				itemsList.append(currItemNr);
 				Items->insert(currItemNr, bb);
 				bb->convertTo(PageItem::Polygon);
 				bb->Frame = false;
@@ -14291,11 +14298,26 @@ void ScribusDoc::itemSelection_SplitItems(Selection* /*customSelection*/)
 		AdjustItemSize(currItem);
 		currItem->ContourLine = currItem->PoLine.copy();
 		currItem->ClipEdited = true;
+		undoManager->setUndoEnabled(true);
+		if (UndoManager::undoEnabled())
+		{
+			ScItemState< QList<int> > *is = new ScItemState< QList<int> >(Um::SplitItem, "", Um::IGroup);
+			is->setItem(QList<int>(itemsList));
+			is->set("SPLITITEM", "split_item");
+			undoManager->action(currItem, is);
+		}
+		undoManager->setUndoEnabled(false);
 	}
+	undoManager->setUndoEnabled(true);
 	m_Selection->delaySignalsOff();
 	//FIXME: stop using m_View
 	m_View->Deselect(true);
 	regionsChanged()->update(QRectF());
+	if(transaction){
+		transaction->commit();
+		delete transaction;
+		transaction = NULL;
+	}
 }
 
 void ScribusDoc::itemSelection_convertItemsTo(const PageItem::ItemType newType, Selection* restoredSelection, Selection* customSelection)
