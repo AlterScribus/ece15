@@ -4413,6 +4413,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreShapeType(ss, isUndo);
 		else if (ss->contains("UNITEITEM"))
 			restoreUniteItem(ss, isUndo);
+		else if (ss->contains("SPLITITEM"))
+			restoreSplitItem(ss, isUndo);
 		else if (ss->contains("MIRROR_PATH_H"))
 		{
 			bool editContour = m_Doc->nodeEdit.isContourLine;
@@ -4930,6 +4932,25 @@ void PageItem::restoreUniteItem(SimpleState *state, bool isUndo)
 				m_Doc->view()->SelectItem(is->getItem().first.at(i));
 			}
 			m_Doc->itemSelection_UniteItems();
+		}
+	}
+}
+
+void PageItem::restoreSplitItem(SimpleState *state, bool isUndo)
+{
+	ScItemState< QList<int> > *is = dynamic_cast<ScItemState< QList<int> >*>(state);
+	if (is)
+	{
+
+		QList<int> itemsList = is->getItem();
+		select();
+		for (int i = 0; i < itemsList.size(); ++i) {
+			m_Doc->view()->SelectItem(m_Doc->Items->at(itemsList.at(i)));
+		}
+		if (isUndo){
+			m_Doc->itemSelection_UniteItems();
+		} else {
+			m_Doc->itemSelection_SplitItems();
 		}
 	}
 }
