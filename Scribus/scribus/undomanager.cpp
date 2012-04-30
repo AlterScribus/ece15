@@ -827,6 +827,7 @@ void UndoManager::languageChange()
 	UndoManager::UnlockGuides       = tr("Unlock guides");
 	UndoManager::Move               = tr("Move");
 	UndoManager::UniteItem          = tr("Combine Polygons");
+	UndoManager::SplitItem          = tr("Split Polygons");
 	UndoManager::Resize             = tr("Resize");
 	UndoManager::Rotate             = tr("Rotate");
 	UndoManager::MoveFromTo         = tr("X1: %1, Y1: %2, %3\nX2: %4, Y2: %5, %6");
@@ -1038,6 +1039,7 @@ QString UndoManager::DelHAGuide         = "";
 QString UndoManager::MoveVGuide         = "";
 QString UndoManager::MoveHGuide         = "";
 QString UndoManager::UniteItem          = "";
+QString UndoManager::SplitItem          = "";
 QString UndoManager::LockGuides         = "";
 QString UndoManager::UnlockGuides       = "";
 QString UndoManager::Move               = "";
