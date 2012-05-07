@@ -7220,8 +7220,8 @@ void PageItem::updateClip()
 				OldH2 = height();
 				ContourLine = PoLine.copy();
 			}
-			if ((OldB2 == 0) || (OldH2 == 0) || (width() == 0) || (height() == 0))
-				return;
+			OldB2 = (OldB2==0)?1:OldB2;
+			OldH2 = (OldH2==0)?1:OldH2;
 			double scx = width() / OldB2;
 			double scy = height() / OldH2;
 			QTransform ma;
