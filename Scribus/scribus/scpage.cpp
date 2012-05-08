@@ -268,6 +268,11 @@ void ScPage::restorePageItemDeletion(ScItemState< QList<PageItem*> > *state, boo
 		//CB #3373 reinsert at old position and renumber items
 		PageItem* ite = itemList.at(id2);
 		m_Doc->Items->insert(id, ite);
+		for (int i = 0; i < itemList.count(); ++i)
+		{
+			PageItem* ite = itemList.at(i);
+			m_Doc->view()->SelectItem(ite);
+		}
  		update();
 	}
 	else
