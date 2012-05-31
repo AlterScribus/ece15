@@ -35,15 +35,19 @@ for which a new license (GPL+exception) is in place.
 #include <QMessageBox>
 #include <QPolygon>
 #include <cassert>
+#include <sstream>
 #include <QDebug>
 
 #include "canvas.h"
 #include "cmsettings.h"
 #include "colorblind.h"
 #include "commonstrings.h"
+#include "desaxe/saxXML.h"
+#include "marks.h"
 
 #include "pageitem_group.h"
 #include "pageitem_textframe.h"
+#include "pageitem_noteframe.h"
 #include "pageitem_latexframe.h"
 #include "prefsmanager.h"
 
@@ -825,6 +829,31 @@ PageItem::PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double 
 	isInlineImage = false;
 }
 
+PageItem::~PageItem()
+{
+	if (tempImageFile != NULL)
+		delete tempImageFile;
+	//remove marks
+
+	if (isTextFrame())
+	{
+		if (!asTextFrame()->isInChain() && itemText.length() >0)
+		{
+			for (int pos=0; pos < itemText.length(); ++pos)
+			{
+				if (itemText.item(pos)->hasMark())
+				{
+					Mark* mrk = itemText.item(pos)->mark;
+					m_Doc->eraseMark(mrk);
+				}
+			}
+		}
+	}
+//		if (isWeld())
+//			unWeldFromMaster(true);
+//		if (isWelded())
+//			unWeldChild();
+}
 void PageItem::setXPos(const double newXPos, bool drawingOnly)
 {
 	Xpos = newXPos;
@@ -2122,6 +2151,15 @@ QString PageItem::ExpandToken(uint base)
 		else
 			return "%";
 	}
+	//check for marks
+	else if (ch == SpecialChars::OBJECT)
+	{
+		ScText* hl = itemText.item(base);
+		if ((hl->mark != NULL) && !hl->mark->isType(MARKAnchorType) && !hl->mark->isType(MARKIndexType))
+		{
+			chstr = hl->mark->getString();
+		}
+	}
 	return chstr;
 }
 
@@ -2303,6 +2341,13 @@ void PageItem::drawGlyphs(ScPainter *p, const CharStyle& style, GlyphLayout& gly
 		{
 			points.resize(0);
 			points.addQuadPoint(0, -10, 0, -10, 0, -6, 0, -6);
+			stroke = true;
+		}
+		else if (glyph == SpecialChars::OBJECT.unicode())
+		{
+			//for showing marks entries as control chars
+			points.resize(0);
+			points.addQuadPoint(0, -8, 1, -8, 0, -6, 1, -6);
 			stroke = true;
 		}
 		else // ???
@@ -5087,7 +5132,8 @@ void PageItem::setObjectAttributes(ObjAttrVector* map)
 	pageItemAttributes=*map;
 }
 
-QString PageItem::generateUniqueCopyName(const QString originalName) const
+//if not `prependCopy` then string "Copy of" wil not be prepended
+QString PageItem::generateUniqueCopyName(const QString originalName, bool prependCopy) const
 {
 	if (!m_Doc->itemNameExists(originalName))
 		return originalName;
@@ -5095,7 +5141,7 @@ QString PageItem::generateUniqueCopyName(const QString originalName) const
 	// Start embellishing the name until we get an acceptable unique name
 	// first we prefix `Copy of' if it's not already there
 	QString newname(originalName);
-	if (!originalName.startsWith( tr("Copy of")))
+	if (prependCopy && !originalName.startsWith( tr("Copy of")))
 		newname.prepend( tr("Copy of")+" ");
 
 	// See if the name prefixed by "Copy of " is free
@@ -6711,6 +6757,24 @@ void PageItem::setFileIconRollover(QString val)
 	}
 }
 
+PageItem* PageItem::firstInChain()
+{
+	Q_ASSERT(this != NULL);
+	PageItem* first = this;
+	while (first->prevInChain() != NULL)
+		first = first->prevInChain();
+	return first;
+}
+
+PageItem* PageItem::lastInChain()
+{
+	Q_ASSERT(this != NULL);
+	PageItem* last = this;
+	while (last->nextInChain() != NULL)
+		last = last->nextInChain();
+	return last;
+}
+
 QRect PageItem::getRedrawBounding(const double viewScale)
 {
 	int x = qRound(floor(BoundingX - Oldm_lineWidth / 2.0 - 5) * viewScale);
@@ -7015,7 +7079,8 @@ void PageItem::convertClip()
 	}
 }
 
-void PageItem::updateClip()
+//udateWelded determine if welded items should be updated as well (default behaviour)
+void PageItem::updateClip(bool updateWelded)
 {
 	if (m_Doc->appMode == modeDrawBezierLine)
 		return;
@@ -7125,18 +7190,40 @@ void PageItem::updateClip()
 					else
 						Clip = FlattenPath(PoLine, Segments);
 				}
-				for (int i = 0 ; i < weldList.count(); i++)
+				if (updateWelded)
 				{
-					weldingInfo wInf = weldList.at(i);
-					FPointArray gr4;
-					FPoint wp = wInf.weldPoint;
-					gr4.addPoint(wp);
-					gr4.map(ma);
-					double dx = gr4.point(0).x() - wp.x();
-					double dy = gr4.point(0).y() - wp.y();
-					moveWelded(dx, dy, i);
-					wInf.weldPoint = gr4.point(0);
-					weldList[i] = wInf;
+					for (int i = 0 ; i < weldList.count(); i++)
+					{
+						weldingInfo wInf = weldList.at(i);
+						if (wInf.weldItem->isNoteFrame())
+						{
+							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
+							if (noteFrame->notesSet()->isAutoWeldNotesFrames())
+							{
+								if (noteFrame->notesSet()->isAutoNotesWidth())
+								{
+									if (noteFrame->width() != width())
+									{
+										noteFrame->setWidth(width());
+										noteFrame->updateClip();
+									}
+								}
+								noteFrame->setXYPos(xPos(),yPos() + height());
+								setWeldPoint(0, height(), noteFrame);
+								noteFrame->setWeldPoint(0,0, this);
+								continue;
+							}
+						}
+						FPointArray gr4;
+						FPoint wp = wInf.weldPoint;
+						gr4.addPoint(wp);
+						gr4.map(ma);
+						double dx = gr4.point(0).x() - wp.x();
+						double dy = gr4.point(0).y() - wp.y();
+						moveWelded(dx, dy, i);
+						wInf.weldPoint = gr4.point(0);
+						weldList[i] = wInf;
+					}
 				}
 			}
 			OldB2 = width();
@@ -7238,18 +7325,39 @@ void PageItem::updateClip()
 				Clip = FlattenPath(PoLine, Segments);
 			OldB2 = width();
 			OldH2 = height();
-			for (int i = 0 ; i < weldList.count(); i++)
+			if (updateWelded)
 			{
-				weldingInfo wInf = weldList.at(i);
-				FPointArray gr4;
-				FPoint wp = wInf.weldPoint;
-				gr4.addPoint(wp);
-				gr4.map(ma);
-				double dx = gr4.point(0).x() - wp.x();
-				double dy = gr4.point(0).y() - wp.y();
-				moveWelded(dx, dy, i);
-				wInf.weldPoint = gr4.point(0);
-				weldList[i] = wInf;
+				for (int i = 0 ; i < weldList.count(); i++)
+				{
+					weldingInfo wInf = weldList.at(i);
+					if (wInf.weldItem->isNoteFrame())
+					{
+						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
+						if (noteFrame->notesSet()->isAutoWeldNotesFrames())
+						{
+							if (noteFrame->notesSet()->isAutoNotesWidth())
+							{
+								if (noteFrame->width() != width())
+								{
+									noteFrame->setWidth(width());
+									noteFrame->updateClip();
+								}
+							}
+							setWeldPoint(0, height(), noteFrame);
+							noteFrame->setWeldPoint(0,0, this);
+							continue;
+						}
+					}
+					FPointArray gr4;
+					FPoint wp = wInf.weldPoint;
+					gr4.addPoint(wp);
+					gr4.map(ma);
+					double dx = gr4.point(0).x() - wp.x();
+					double dy = gr4.point(0).y() - wp.y();
+					moveWelded(dx, dy, i);
+					wInf.weldPoint = gr4.point(0);
+					weldList[i] = wInf;
+				}
 			}
 		}
 		break;
@@ -7359,6 +7467,8 @@ void PageItem::weldTo(PageItem* pIt)
 
 void PageItem::moveWelded(double DX, double DY, int weld)
 {
+	if ((DX == 0) && (DY == 0))
+		return;
 	weldingInfo wInf = weldList.at(weld);
 	PageItem *pIt = wInf.weldItem;
 	pIt->setXPos(pIt->xPos() + DX);
@@ -7369,6 +7479,8 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
 {
+	if ((DX == 0) && (DY == 0))
+		return;
 	for (int i = 0 ; i < weldList.count(); i++)
 	{
 		weldingInfo wInf = weldList.at(i);
@@ -7377,7 +7489,8 @@ void PageItem::moveWelded(double DX, double DY, PageItem* except)
 		{
 			pIt->setXPos(pIt->xPos() + DX);
 			pIt->setYPos(pIt->yPos() + DY);
-			pIt->update();
+			if (!pIt->isNoteFrame())
+				pIt->update();
 			pIt->moveWelded(DX, DY, this);
 		}
 	}
@@ -7434,6 +7547,19 @@ QList<PageItem*> PageItem::itemsWeldedTo(PageItem* except)
 	return ret;
 }
 
+void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
+{
+	for (int i = 0 ; i < weldList.count(); i++)
+	{
+		PageItem *pIt = weldList[i].weldItem;
+		if (pIt == pItem)
+		{
+			weldList[i].weldPoint = FPoint(DX, DY);
+			return;
+		}
+	}
+}
+
 void PageItem::unWeld()
 {
 	for (int a = 0 ; a < weldList.count(); a++)
@@ -7452,4 +7578,28 @@ void PageItem::unWeld()
 		}
 	}
 	weldList.clear();
+}
+
+QString PageItem::getItemTextSaxed(int selStart, int selLength)
+{
+	if (selStart < 0 || selLength < 0)
+		return QString();
+	
+	StoryText it(m_Doc);
+	it.setDefaultStyle(itemText.defaultStyle());
+
+	if (selLength == 0)
+		selLength = 1;
+	itemText.select(selStart, selLength);
+	it.insert(0, itemText, true);
+	itemText.deselectAll();
+
+	//saxing text
+	std::ostringstream xmlString;
+	SaxXML xmlStream(xmlString);
+	xmlStream.beginDoc();
+	it.saxx(xmlStream, "SCRIBUSTEXT");
+	xmlStream.endDoc();
+	std::string xml(xmlString.str());
+	return QString(xml.c_str());
 }

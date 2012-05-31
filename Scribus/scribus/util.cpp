@@ -383,15 +383,9 @@ void WordAndPara(PageItem* currItem, int *w, int *p, int *c, int *wN, int *pN, i
 	int wwN = 0;
 	int ccN = 0;
 	bool first = true;
-	PageItem *nextItem = currItem;
+	PageItem *nextItem = currItem->firstInChain();
 	PageItem *nbl = currItem;
-	while (nextItem != 0)
-	{
-		if (nextItem->prevInChain() != 0)
-			nextItem = nextItem->prevInChain();
-		else
-			break;
-	}
+
 	while (nextItem != 0)
 	{
 		for (int a = qMax(nextItem->firstInFrame(),0); a <= nextItem->lastInFrame() && a < nextItem->itemText.length(); ++a)
@@ -537,27 +531,31 @@ QString getFileNameByPage(ScribusDoc* currDoc, uint pageNo, QString extension)
 	return QString("%1-%2%3.%4").arg(defaultName).arg(QObject::tr("page", "page export")).arg(number, 3, 10, QChar('0')).arg(extension);
 }
 
-const QString getStringFromSequence(DocumentSectionType type, uint position)
+const QString getStringFromSequence(DocumentSectionType type, uint index, QString asterix)
 {
 	QString retVal("");
 	switch( type )
 	{
 		case Type_1_2_3:
-			retVal=QString::number(position);
+			retVal=QString::number(index);
 			break;
 		case Type_A_B_C:
-			retVal=numberToLetterSequence(position).toUpper();
+			retVal=numberToLetterSequence(index).toUpper();
 			break;
 		case Type_a_b_c:
-			retVal=numberToLetterSequence(position);
+			retVal=numberToLetterSequence(index);
 			break;
 		case Type_I_II_III:
-			retVal=arabicToRoman(position);
+			retVal=arabicToRoman(index);
 			break;
 		case Type_i_ii_iii:
 			//well, for lower case people will want that, even if its "wrong"
 			//ie, X=10, x=10000
-			retVal=arabicToRoman(position).toLower();
+			retVal=arabicToRoman(index).toLower();
+			break;
+		case Type_asterix:
+			for (uint a=1; a <= index; ++a)
+				retVal.append(asterix);
 			break;
 		case Type_None:
 			break;
@@ -1009,7 +1007,6 @@ void printBacktrace ( int nFrames )
 #endif
 }
 
-
 void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, QStack<QList<PageItem *> > *groupStackT, QList<PageItem *> *target)
 {
 	QList<double> colWidths;
@@ -1123,4 +1120,20 @@ void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, 
 		delete gpL.takeFirst();
 	}
 	delete gItem;
+}
+
+void getUniqueName(QString &name, QStringList list, QString separator, bool prepend)
+{
+	if (!list.contains(name))
+		return;
+	int token = -1;
+	QString newName;
+	do {
+		token++;
+		if (prepend)
+			newName = separator + QString::number(token) + " " + name;
+		else
+			newName = name + separator + QString::number(token);
+	} while (list.contains(newName));
+	name = newName;
 }

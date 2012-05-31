@@ -703,6 +703,9 @@ bool TransactionState::contains(int uid) const
 {
 	for (uint i = 0; i < states_.size(); ++i)
 	{
+		//FIX ME: hack - with notes frames it seems not working sometimes
+		if (states_[i]->undoObject() == NULL)
+			continue;
 		if (states_[i]->undoObject()->getUId() == static_cast<uint>(uid))
 			return true;
 	}
@@ -713,6 +716,9 @@ bool TransactionState::containsOnly(int uid) const
 {
 	for (uint i = 0; i < states_.size(); ++i)
 	{
+		//FIX ME: hack - with notes frames it seems not working sometimes
+		if (states_[i]->undoObject() == NULL)
+			continue;
 		if (states_[i]->undoObject()->getUId() != static_cast<uint>(uid))
 			return false;
 	}

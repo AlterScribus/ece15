@@ -99,11 +99,14 @@ for which a new license (GPL+exception) is in place.
 #include "gtgettext.h"
 #include "hyphenator.h"
 #include "langmgr.h"
+#include "marks.h"
+#include "notesset.h"
 #include "pageitem_group.h"
 #include "pageitem_imageframe.h"
 #include "pageitem_latexframe.h"
 #include "pageitem_table.h"
 #include "pageitem_textframe.h"
+#include "pageitem_noteframe.h"
 #include "pagesize.h"
 #include "pdflib.h"
 #include "pdfoptions.h"
@@ -163,6 +166,13 @@ for which a new license (GPL+exception) is in place.
 #include "ui/loremipsum.h"
 #include "ui/marginwidget.h"
 #include "ui/margindialog.h"
+#include "ui/mark2item.h"
+#include "ui/mark2mark.h"
+#include "ui/markanchor.h"
+#include "ui/marknote.h"
+#include "ui/markvariabletext.h"
+#include "ui/MarkInsertDlg.h"
+#include "ui/marksmanager.h"
 #include "ui/masterpagepalette.h"
 #include "ui/mergedoc.h"
 #include "ui/movepage.h"
@@ -174,6 +184,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui_nftdialog.h"
 #include "ui/nftwidget.h"
 #include "ui/nodeeditpalette.h"
+#include "ui/notessetmanager.h"
 #ifdef HAVE_OSG
 	#include "ui/osgeditor.h"
 #endif
@@ -380,7 +391,7 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 		ScCore->setSplashStatus( tr("Initializing Hyphenator") );
 	QString preLang(prefsManager->appPrefs.hyphPrefs.Language);
 	initHyphenator();
-	if (!LanguageManager::instance()->getHyphFilename( preLang, false ).isEmpty() )
+	if (!LanguageManager::instance()->getHyphFilename( preLang, true ).isEmpty() )
 		prefsManager->appPrefs.hyphPrefs.Language = preLang;
 	if (primaryMainWindow)
 		ScCore->setSplashStatus( tr("Reading Scrapbook") );
@@ -527,7 +538,6 @@ void ScribusMainWindow::initPalettes()
 	scrapbookPalette->installEventFilter(this);
 	pagePalette = new PagePalette(this);
 	connect( scrActions["toolsPages"], SIGNAL(toggled(bool)) , pagePalette, SLOT(setPaletteShown(bool)) );
-	connect( scrActions["toolsPages"], SIGNAL(toggled(bool)) , this, SLOT(setPagePalette(bool)) );
 	connect( pagePalette, SIGNAL(paletteShown(bool)), scrActions["toolsPages"], SLOT(setChecked(bool)));
 	pagePalette->installEventFilter(this);
 	bookmarkPalette = new BookPalette(this);
@@ -590,6 +600,17 @@ void ScribusMainWindow::initPalettes()
 	connect( scrActions["editStyles"], SIGNAL(toggled(bool)), styleManager, SLOT(setPaletteShown(bool)) );
 	connect( styleManager, SIGNAL(paletteShown(bool)), scrActions["editStyles"], SLOT(setChecked(bool)));
 	styleManager->installEventFilter(this);
+
+	// initializing mark`s manager
+	marksManager = new MarksManager(this, "marksManager");
+	connect( scrActions["editMarks"], SIGNAL(toggled(bool)), marksManager, SLOT(setPaletteShown(bool)) );
+	connect( marksManager, SIGNAL(paletteShown(bool)), scrActions["editMarks"], SLOT(setChecked(bool)));
+	marksManager->installEventFilter(this);
+	// initializing notes set`s manager
+	nsManager = new NotesSetsManager(this, "notessetsManager");
+	connect( scrActions["editNotesSets"], SIGNAL(toggled(bool)), nsManager, SLOT(setPaletteShown(bool)) );
+	connect( nsManager, SIGNAL(paletteShown(bool)), scrActions["editNotesSets"], SLOT(setChecked(bool)));
+	nsManager->installEventFilter(this);
 
 //	connect(docCheckerPalette, SIGNAL(selectElement(int, int)), this, SLOT(selectItemsFromOutlines(int, int)));
 	connect(docCheckerPalette, SIGNAL(selectElementByItem(PageItem *, bool)), this, SLOT(selectItemsFromOutlines(PageItem *, bool)));
@@ -728,6 +749,8 @@ void ScribusMainWindow::initMenuBar()
 //	scrMenuMgr->addMenuItem(scrActions["editGradients"], "Edit", false);
 //	scrMenuMgr->addMenuItem(scrActions["editPatterns"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editStyles"], "Edit", false);
+	scrMenuMgr->addMenuItem(scrActions["editMarks"], "Edit", false);
+	scrMenuMgr->addMenuItem(scrActions["editNotesSets"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editMasterPages"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editJavascripts"], "Edit", false);
 	scrMenuMgr->setMenuEnabled("EditPasteRecent", false);
@@ -844,6 +867,9 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["itemWeld"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemEditWeld"], "Item", false);
 
+	scrMenuMgr->addMenuItem(scrActions["editMark"], "Item", false);
+	scrMenuMgr->addMenuItem(scrActions["itemUpdateMarks"], "Item", false);
+
 	//Insert menu
 	scrMenuMgr->createMenu("Insert", ActionManager::defaultMenuNameEntryTranslated("Insert"));
 	scrMenuMgr->addMenuItem(scrActions["insertFrame"], "Insert", false);
@@ -933,6 +959,14 @@ void ScribusMainWindow::initMenuBar()
 
 	scrMenuMgr->addMenuSeparator("Insert");
 	scrMenuMgr->addMenuItem(scrActions["insertSampleText"], "Insert", false);
+	scrMenuMgr->addMenuSeparator("Insert");
+	scrMenuMgr->createMenu("InsertMark", tr("Marks"), "Insert");
+	scrMenuMgr->addMenuItem(scrActions["insertMarkAnchor"], "InsertMark", false);
+	scrMenuMgr->addMenuItem(scrActions["insertMarkVariableText"], "InsertMark", false);
+	scrMenuMgr->addMenuItem(scrActions["insertMarkItem"], "InsertMark", false);
+	scrMenuMgr->addMenuItem(scrActions["insertMark2Mark"], "InsertMark", false);
+	scrMenuMgr->addMenuItem(scrActions["insertMarkNote"], "InsertMark", false);
+//	scrMenuMgr->addMenuItem(scrActions["insertMarkIndex"], "InsertMark", false);
 
 	//Page menu
 	scrMenuMgr->createMenu("Page", ActionManager::defaultMenuNameEntryTranslated("Page"));
@@ -1136,6 +1170,8 @@ void ScribusMainWindow::setStatusBarInfoText(QString newText)
 //AV to be replaced with Selection::update and listener in PropertiesPalette
 void ScribusMainWindow::setTBvals(PageItem *currItem)
 {
+	scrActions["editMark"]->setEnabled(false);
+	scrActions["itemUpdateMarks"]->setEnabled(false);
 	if (currItem->itemText.length() != 0)
 	{
 //		int ChPos = qMin(currItem->CPos, static_cast<int>(currItem->itemText.length()-1));
@@ -1149,6 +1185,19 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 		emit TextStyle(doc->currentStyle);
 		// to go: (av)
 		propertiesPalette->textPal->updateStyle(doc->currentStyle);
+		if (doc->appMode == modeEdit && currItem->itemText.cursorPosition() < currItem->itemText.length())
+		{
+			ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+			if (hl->hasMark())
+			{
+				scrActions["editMark"]->setEnabled(true);
+				if ((hl->mark->isType(MARKNoteMasterType) || hl->mark->isType(MARKNoteFrameType)) && (hl->mark->getNotePtr() != NULL))
+					nsManager->setNSet(hl->mark->getNotePtr()->notesSet());
+			}
+			else
+				scrActions["editMark"]->setEnabled(false);
+		}
+		scrActions["itemUpdateMarks"]->setEnabled(currItem->asTextFrame()->hasAnyMark());
 	}
 }
 
@@ -1173,7 +1222,12 @@ void ScribusMainWindow::specialActionKeyEvent(const QString& actionName, int uni
 					if (unicodevalue!=-1)
 					{
 						if (currItem->HasSel)
+						{
+							//removing marks and notes from selected text
+							if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
+								return;
 							currItem->deleteSelectedTextFromFrame();
+						}
 						currItem->itemText.insertChars(QString(QChar(unicodevalue)), true);
 					}
 					else if (actionName=="unicodeSoftHyphen") //ignore the char as we use an attribute if the text item, for now.
@@ -1558,13 +1612,15 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 				}
 //FIXME:av		view->oldCp = currItem->CPos;
-				if (currItem->itemType() == PageItem::TextFrame)
+				if (currItem->isTextFrame())
 				{
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
 					keyrep=kr;
 				}
+				if (doc->flag_notesChanged)
+					doc->notesFramesUpdate();
 				slotDocCh(false);
 			}
 		}
@@ -1997,6 +2053,8 @@ ScribusDoc *ScribusMainWindow::doFileNew(double width, double height, double top
 		tempView->cmsToolbarButton->setChecked(tempDoc->HasCMS);
 		undoManager->switchStack(tempDoc->DocName);
 		styleManager->setDoc(tempDoc);
+		marksManager->setDoc(tempDoc);
+		nsManager->setDoc(tempDoc);
 		tocGenerator->setDoc(tempDoc);
 	}
 	undoManager->setUndoEnabled(true);
@@ -2182,24 +2240,7 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	alignDistributePalette->setDoc(doc);
 	if (!doc->isLoading())
 	{
-//		scanDocument();
-//		docCheckerPalette->buildErrorList(doc);
 		SwitchWin();
-		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-		ScribusWin* swin;
-		for ( int i = 0; i < static_cast<int>(windows.count()); ++i )
-		{
-			swin = dynamic_cast<ScribusWin *>(windows.at(i)->widget());
-			if (swin)
-			{
-				if (swin==ActWin && doc->masterPageMode())
-					swin->setMasterPagesPaletteShown(true);
-				else
-					swin->setMasterPagesPaletteShown(false);
-			}
-		}
-		//if (doc->masterPageMode())
-		//	ActWin->setMasterPagesPaletteShown(true);
 		view->requestMode(doc->appMode);
 	}
 	view->setFocus();
@@ -2240,6 +2281,8 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	docCheckerPalette->setDoc(doc);
 	tocGenerator->setDoc(doc);
 	styleManager->setDoc(doc);
+	marksManager->setDoc(doc);
+	nsManager->setDoc(doc);
 	symbolPalette->setDoc(doc);
 	inlinePalette->setDoc(doc);
 	modeToolBar->Angle->setValue(doc->itemToolPrefs().calligrapicPenAngle);
@@ -2272,6 +2315,8 @@ void ScribusMainWindow::SwitchWin()
 	updateActiveWindowCaption(doc->DocName);
 // 	scrActions["shade100"]->setChecked(true);
 	propertiesPalette->setDoc(doc);
+	marksManager->setDoc(doc);
+	nsManager->setDoc(doc);
 	//propertiesPalette->Cpal->displayGradient(0);
 	pagePalette->setView(view);
 	layerPalette->setDoc(doc);
@@ -2412,6 +2457,8 @@ void ScribusMainWindow::HaveNewDoc()
 //	scrActions["editPatterns"]->setEnabled(true);
 //	scrActions["editGradients"]->setEnabled(true);
  	scrActions["editStyles"]->setEnabled(true);
+	scrActions["editMarks"]->setEnabled(true);
+	scrActions["editNotesSets"]->setEnabled(true);
 	scrActions["editMasterPages"]->setEnabled(true);
 	scrActions["editJavascripts"]->setEnabled(true);
 
@@ -2477,6 +2524,7 @@ void ScribusMainWindow::HaveNewDoc()
 	updateActiveWindowCaption(doc->DocName);
 // 	scrActions["shade100"]->setChecked(true);
 	propertiesPalette->setDoc(doc);
+	nsManager->setDoc(doc);
 	symbolPalette->setDoc(doc);
 	inlinePalette->setDoc(doc);
 //	propertiesPalette->Cpal->displayGradient(0);
@@ -2668,7 +2716,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemPreviewNormal"]->setChecked(false);
 		scrActions["itemPreviewFull"]->setChecked(false);
 	}
-	if ((SelectedType==-1) || (SelectedType!=-1 && !currItem->asTextFrame()))
+	if ((SelectedType == -1) || (SelectedType != -1 && !currItem->asTextFrame()))
 		enableTextActions(&scrActions, false);
 	scrActions["insertSampleText"]->setEnabled(false);
 
@@ -2831,6 +2879,9 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["toolsCopyProperties"]->setEnabled(true);
 		scrActions["toolsEditWithStoryEditor"]->setEnabled(true);
 		scrActions["insertSampleText"]->setEnabled(true);
+		scrActions["itemUpdateMarks"]->setEnabled(currItem->asTextFrame()->hasAnyMark());
+		scrMenuMgr->setMenuEnabled("InsertMark",true);
+
 		if ((currItem->nextInChain() != 0) || (currItem->prevInChain() != 0))
 		{
 			scrActions["itemConvertToBezierCurve"]->setEnabled(false);
@@ -2859,14 +2910,20 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			setTBvals(currItem);
 			scrActions["editSelectAll"]->setEnabled(true);
 			scrActions["editSelectAllOnLayer"]->setEnabled(false);
+			scrActions["insertSampleText"]->setEnabled(true);
+			scrMenuMgr->setMenuEnabled("InsertMark",true);
 			charPalette->setEnabled(true, currItem);
 			if (currItem->asTextFrame())
+			{
 				enableTextActions(&scrActions, true, currItem->currentStyle().charStyle().font().scName());
+				currItem->asTextFrame()->togleEditModeActions();
+			}
 			view->horizRuler->setItem(currItem);
 			view->horizRuler->update();
 		}
 		else
 		{
+			scrMenuMgr->setMenuEnabled("InsertMark",false);
 			doc->currentStyle = currItem->itemText.defaultStyle();
 			propertiesPalette->textPal->displayParStyle(doc->currentStyle.parent());
 			propertiesPalette->textPal->displayCharStyle(doc->currentStyle.charStyle().parent());
@@ -3247,7 +3304,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		}
 		scrActions["fileClose"]->setEnabled(true);
 	}
-
+	
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
 	// Give plugins a chance to react on changes in the current document
@@ -3262,6 +3319,16 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
+	static int markersCount; //remember marks count from last call
+	if (markersCount != doc->m_docMarksList.count() || doc->flag_notesChanged || doc->flag_updateEndNotes)
+	{
+		markersCount = doc->m_docMarksList.count();
+		doc->updateMarks(doc->flag_notesChanged);
+		emit UpdateRequest(reqMarksUpdate);
+	}
+	else if (doc->flag_updateNotesLabels)
+		emit UpdateRequest(reqMarksUpdate);
+	doc->updateChangedEndNotesFrames();
 }
 
 void ScribusMainWindow::updateRecent(QString fn)
@@ -4049,11 +4116,12 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		}
 //		RestoreBookMarks();
 		doc->setMasterPageMode(false);
+		
 		int docItemsCount=doc->Items->count();
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
-			if(ite->nextInChain() == NULL)
+			if(ite->nextInChain() == NULL && !ite->isNoteFrame())  //do not layout notes frames
 				ite->layout();
 /*			if (doc->OldBM)
 			{
@@ -4085,6 +4153,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		{
 			Apply_MasterPage(doc->DocPages.at(p)->MPageNam, p, false);
 		}
+		doc->updateMarks(true);
 		view->reformPages(false);
 		doc->setLoading(false);
 /*		if (fileLoader->FileType > FORMATID_NATIVEIMPORTEND)
@@ -4133,6 +4202,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 	undoManager->setUndoEnabled(true);
 	doc->setModified(false);
+	
 #ifdef DEBUG_LOAD_TIMES
 	times(&tms2);
 	double ticks = sysconf(_SC_CLK_TCK);
@@ -4215,6 +4285,8 @@ void ScribusMainWindow::slotGetContent()
 			view->DrawNew();
 			slotDocCh();
 			styleManager->setDoc(doc);
+			marksManager->setDoc(doc);
+			nsManager->setDoc(doc);
 		}
 	}
 }
@@ -4621,6 +4693,8 @@ bool ScribusMainWindow::DoFileClose()
 //		scrActions["editPatterns"]->setEnabled(false);
 //		scrActions["editGradients"]->setEnabled(false);
 		scrActions["editStyles"]->setEnabled(false);
+		scrActions["editMarks"]->setEnabled(false);
+		scrActions["editNotesSets"]->setEnabled(false);
 		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["editMasterPages"]->setEnabled(false);
 		scrActions["editJavascripts"]->setEnabled(false);
@@ -4725,6 +4799,8 @@ bool ScribusMainWindow::DoFileClose()
 	charPalette->setDoc(0);
 	tocGenerator->setDoc(0);
 	styleManager->setDoc(0);
+	marksManager->setDoc(0);
+	nsManager->setDoc(0);
 	layerPalette->ClearInhalt();
 	docCheckerPalette->buildErrorList(0);
 	HaveDoc--;
@@ -4903,6 +4979,10 @@ void ScribusMainWindow::slotFileQuit()
 
 void ScribusMainWindow::slotEditCut()
 {
+	//TODO for footnotes
+	//check if cuted text contains footnotes marks
+	//if so then selected notes sjould be deleted but text of these notes should also be copied
+	//then new notes references should be created during pasting
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
@@ -4942,6 +5022,9 @@ void ScribusMainWindow::slotEditCut()
 			if (cItem->HasSel)
 			{
 				if ((cItem->itemText.length() == 0) || (!cItem->HasSel))
+					return;
+				//removing marks and notes from selected text
+				if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
 					return;
 				StoryText itemText(doc);
 				itemText.setDefaultStyle(cItem->itemText.defaultStyle());
@@ -5000,6 +5083,10 @@ void ScribusMainWindow::slotEditCut()
 
 void ScribusMainWindow::slotEditCopy()
 {
+	//TODO for footnotes
+	//check if copied text contains footnotes marks
+	//if so notes text should also be copied and new notes references
+	//should be created during pasting
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
@@ -5063,6 +5150,9 @@ void ScribusMainWindow::slotEditCopy()
 
 void ScribusMainWindow::slotEditPaste()
 {
+	//TODO for footnotes
+	//check if pasted text contains footnotes marks
+	//if so new notes should be created
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
 	if (HaveDoc)
@@ -5082,7 +5172,12 @@ void ScribusMainWindow::slotEditPaste()
 				currItem = selItem->asTextFrame();
 			assert(currItem != NULL);
 			if (currItem->HasSel)
+			{
+				//removing marks and notes from selected text
+				if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
+					return;
 				currItem->deleteSelectedTextFromFrame();
+			}
 
 			/*if (currItem->CPos < 0)
 				currItem->CPos = 0;
@@ -5091,7 +5186,9 @@ void ScribusMainWindow::slotEditPaste()
 
 			if (ScMimeData::clipboardHasScribusText())
 			{
-				Serializer dig(*doc); // TODO: do we really need a new serializer here?
+				// TODO: do we really need a new serializer here?
+				//cezaryece - now yes, we do for marks
+				Serializer dig(doc);
 				dig.store<ScribusDoc>("<scribusdoc>", doc);
 				StoryText::desaxeRules("/", dig, "SCRIBUSTEXT");
 				dig.addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());
@@ -5101,8 +5198,18 @@ void ScribusMainWindow::slotEditPaste()
 
 				StoryText* story = dig.result<StoryText>();
 
+				//avoid pasting notes marks into notes frames
+				if (currItem->isNoteFrame())
+				{
+					story->setDoc(doc);
+					for (int pos=story->length() -1; pos >= 0; --pos)
+					{
+						ScText* hl = story->item(pos);
+						if (hl->hasMark() && (hl->mark->isNoteType()))
+							story->removeChars(pos,1);
+					}
+				}
 				currItem->itemText.insert(*story);
-
 				delete story;
 			}
 			else if (ScMimeData::clipboardHasScribusElem() || ScMimeData::clipboardHasScribusFragment())
@@ -5125,6 +5232,8 @@ void ScribusMainWindow::slotEditPaste()
 				styleManager->setDoc(doc);
 				propertiesPalette->unsetDoc();
 				propertiesPalette->setDoc(doc);
+				marksManager->setDoc(doc);
+				nsManager->setDoc(doc);
 				symbolPalette->unsetDoc();
 				symbolPalette->setDoc(doc);
 
@@ -5208,6 +5317,8 @@ void ScribusMainWindow::slotEditPaste()
 				styleManager->setDoc(doc);
 				propertiesPalette->unsetDoc();
 				propertiesPalette->setDoc(doc);
+				marksManager->setDoc(doc);
+				nsManager->setDoc(doc);
 				symbolPalette->unsetDoc();
 				symbolPalette->setDoc(doc);
 				inlinePalette->unsetDoc();
@@ -5249,6 +5360,8 @@ void ScribusMainWindow::slotEditPaste()
 			delete activeTransaction;
 			activeTransaction = NULL;
 		}
+		if (doc->flag_notesChanged)
+			doc->notesFramesUpdate();
 		slotDocCh(false);
 	}
 }
@@ -5346,15 +5459,8 @@ void ScribusMainWindow::SelectAll(bool docWideSelect)
 	if (doc->appMode == modeEdit)
 	{
 		PageItem *currItem = doc->m_Selection->itemAt(0);
-		PageItem *nextItem = currItem;
+		PageItem *nextItem = currItem->firstInChain();
 		nextItem->itemText.selectAll();
-		while (nextItem != 0)
-		{
-			if (nextItem->prevInChain() != 0)
-				nextItem = nextItem->prevInChain();
-			else
-				break;
-		}
 		while (nextItem != 0)
 		{
 			nextItem->HasSel = true;
@@ -5561,6 +5667,8 @@ void ScribusMainWindow::slotNewPageP(int wo, QString templ)
 		doc->addPageToSection(wo, where, 1);
 	else
 		doc->addPageToSection(wo+1, where, 1);
+
+	doc->updateEndnotesFrames();
 	doc->changed();
 	updateGUIAfterPagesChanged();
 }
@@ -5687,6 +5795,7 @@ void ScribusMainWindow::addNewPages(int wo, int where, int numPages, double heig
 	doc->changed();
 	doc->addPageToSection(wo, where, numPages);
 	doc->reformPages();
+	doc->updateEndnotesFrames();
 	updateGUIAfterPagesChanged();
 
 	undoManager->setUndoEnabled(true);
@@ -5829,7 +5938,6 @@ void ScribusMainWindow::ToggleAllPalettes()
 			bookmarkPalette->show();
 		if (palettesStatus[9])
 			docCheckerPalette->show();
-		setPagePalette(palettesStatus[5]);
 		setUndoPalette(palettesStatus[8]);
 	}
 	else
@@ -5849,7 +5957,6 @@ void ScribusMainWindow::ToggleAllPalettes()
 		pagePalette->hide();
 		layerPalette->hide();
 		docCheckerPalette->hide();
-		setPagePalette(false);
 		setUndoPalette(false);
 		palettesStatus[0] = true;
 	}
@@ -5866,18 +5973,8 @@ void ScribusMainWindow::setUndoPalette(bool visible)
 	scrActions["toolsActionHistory"]->setChecked(visible);
 }
 
-void ScribusMainWindow::setPagePalette(bool visible)
-{
-	if (!visible)
-	{
-		prefsManager->appPrefs.uiPrefs.SepalT = pagePalette->getThumb();
-		prefsManager->appPrefs.uiPrefs.SepalN = pagePalette->getNamen();
-	}
-}
-
 void ScribusMainWindow::togglePagePalette()
 {
-	setPagePalette(!pagePalette->isVisible());
 	palettesStatus[0] = false;
 }
 
@@ -6492,13 +6589,17 @@ void ScribusMainWindow::setAppMode(int mode)
 //					view->requestMode(modeEditClip);
 //					return;
 //				}
-				setTBvals(currItem);
+				//setTBvals before placing cursor has no effect
 				currItem->itemText.setCursorPosition(0);
+				setTBvals(currItem);
 			}
 			scrActions["editPaste"]->setEnabled(false);
 			charPalette->setEnabled(true, currItem);
-			if (currItem!=NULL && currItem->asTextFrame())
+			if ((currItem != NULL) && currItem->asTextFrame())
+			{
 				enableTextActions(&scrActions, true, currItem->currentCharStyle().font().scName());
+				currItem->asTextFrame()->togleEditModeActions();
+			}
 			if (ScMimeData::clipboardHasScribusData())
 			{
 				bool textFrameEditMode = ((currItem != NULL) && (currItem->asTextFrame()));
@@ -6542,6 +6643,9 @@ void ScribusMainWindow::setAppMode(int mode)
 // 				currItem->update();
 			}
 		}
+		//disable text action which work only text frame in edit mode
+		if ((mode != modeEdit) || !currItem->isTextFrame())
+			enableTextActions(&scrActions, false);
 		int docSelectionCount=doc->m_Selection->count();
 		if (mode == modeDrawBezierLine)
 		{
@@ -6805,6 +6909,9 @@ void ScribusMainWindow::deletePage(int from, int to)
 		for (int d = 0; d < doc->Items->count(); ++d)
 		{
 			ite = doc->Items->at(d);
+			//do not delete notes frames
+			if (ite->isNoteFrame())
+				continue;
 			if (ite->OwnPage == a)
 			{
 				ite->setLocked(false);
@@ -6856,6 +6963,7 @@ void ScribusMainWindow::deletePage(int from, int to)
 	view->reformPagesView();
 	undoManager->setUndoEnabled(true); // ugly hack continues
 	view->GotoPage(qMin(doc->Pages->count()-1, oldPg));
+	doc->updateEndnotesFrames();
 	updateGUIAfterPagesChanged();
 	doc->rebuildMasterNames();
 	pagePalette->rebuildMasters();
@@ -6883,6 +6991,7 @@ void ScribusMainWindow::movePage()
 			doc->movePage(from-1, to, wo-1, wie);
 			updateGUIAfterPagesChanged();
 		}
+		doc->updateEndnotesFrames();
 	}
 	delete dia;
 }
@@ -6900,6 +7009,7 @@ void ScribusMainWindow::copyPage()
 		int wo = dia->getWherePage();
 		doc->copyPage(pageNumberToCopy, wo, whereToInsert, copyCount);
 		view->Deselect(true);
+		doc->updateEndnotesFrames();
 		updateGUIAfterPagesChanged();
 		slotDocCh();
 	}
@@ -6937,6 +7047,7 @@ void ScribusMainWindow::changePageMargins()
 			if (dia->masterPage() != Nam)
 				Apply_MasterPage(dia->masterPage(), doc->currentPage()->pageNr());
 		}
+		doc->updateEndnotesFrames();
 		//CB: Moved to changePageMargins for #2338
 		//doc->currentPage()->marginPreset = dia->getMarginPreset();
 		//view->reformPages(dia->getMoveObjects());
@@ -7786,6 +7897,8 @@ int ScribusMainWindow::ShowSubs()
 	inlinePalette->startup();
 	charPalette->startup();
 	styleManager->startup();
+	marksManager->startup();
+	nsManager->startup();
 	symbolPalette->startup();
 
 	// init the toolbars
@@ -8602,56 +8715,50 @@ void ScribusMainWindow::editInlineEnd()
 
 void ScribusMainWindow::manageMasterPages(QString temp)
 {
-	if (HaveDoc)
+	if (!HaveDoc)
+		return;
+
+	view->Deselect(true);
+
+	if (doc->masterPageMode())
 	{
-		view->Deselect(true);
-		if (doc->masterPageMode())
-		{
-			ActWin->masterPagesPalette()->updateMasterPageList(temp);
-			ActWin->masterPagesPalette()->selectMasterPage(temp);
-		}
-		else
-		{
-			storedPageNum = doc->currentPageNumber();
-			storedViewXCoor = view->contentsX();
-			storedViewYCoor = view->contentsY();
-			storedViewScale = view->scale();
-			MasterPagesPalette *dia = new MasterPagesPalette(this, doc, view, temp);
-			//connect(dia, SIGNAL(createNew(int)), this, SLOT(slotNewMasterPage(int)));
-			connect(dia, SIGNAL(removePage(int )), this, SLOT(deletePage2(int )));
-			//connect(dia, SIGNAL(loadPage(QString, int, bool)), this, SLOT(loadPage(QString, int, bool)));
-			connect(dia, SIGNAL(finished()), this, SLOT(manageMasterPagesEnd()));
-			scrActions["pageInsert"]->setEnabled(false);
-			scrActions["pageImport"]->setEnabled(false);
-			scrActions["pageDelete"]->setEnabled(false);
-			scrActions["pageCopy"]->setEnabled(false);
-			scrActions["pageMove"]->setEnabled(false);
-			scrActions["pageApplyMasterPage"]->setEnabled(false);
-			scrActions["pageCopyToMasterPage"]->setEnabled(false);
-			scrActions["editMasterPages"]->setEnabled(false);
-			scrActions["fileNew"]->setEnabled(false);
-			scrActions["fileNewFromTemplate"]->setEnabled(false);
-			scrActions["fileOpen"]->setEnabled(false);
-			scrActions["fileClose"]->setEnabled(false);
-			scrMenuMgr->setMenuEnabled("FileOpenRecent", false);
-			scrActions["fileRevert"]->setEnabled(false);
-			scrActions["fileDocSetup150"]->setEnabled(false);
-			scrActions["filePrint"]->setEnabled(false);
-			scrActions["PrintPreview"]->setEnabled(false);
-			scrActions["toolsPDFPushButton"]->setEnabled(false);
-			scrActions["toolsPDFTextField"]->setEnabled(false);
-			scrActions["toolsPDFCheckBox"]->setEnabled(false);
-			scrActions["toolsPDFComboBox"]->setEnabled(false);
-			scrActions["toolsPDFListBox"]->setEnabled(false);
-			scrActions["toolsPDFAnnotText"]->setEnabled(false);
-#ifdef HAVE_OSG
-			scrActions["toolsPDFAnnot3D"]->setEnabled(false);
-#endif
-			pagePalette->enablePalette(false);
-			dia->show();
-			ActWin->setMasterPagesPalette(dia);
-		}
+		pagePalette->startMasterPageMode(temp);
+		return;
 	}
+
+	storedPageNum = doc->currentPageNumber();
+	storedViewXCoor = view->contentsX();
+	storedViewYCoor = view->contentsY();
+	storedViewScale = view->scale();
+
+	pagePalette->startMasterPageMode(temp);
+
+	scrActions["pageInsert"]->setEnabled(false);
+	scrActions["pageImport"]->setEnabled(false);
+	scrActions["pageDelete"]->setEnabled(false);
+	scrActions["pageCopy"]->setEnabled(false);
+	scrActions["pageMove"]->setEnabled(false);
+	scrActions["pageApplyMasterPage"]->setEnabled(false);
+	scrActions["pageCopyToMasterPage"]->setEnabled(false);
+	scrActions["editMasterPages"]->setEnabled(false);
+	scrActions["fileNew"]->setEnabled(false);
+	scrActions["fileNewFromTemplate"]->setEnabled(false);
+	scrActions["fileOpen"]->setEnabled(false);
+	scrActions["fileClose"]->setEnabled(false);
+	scrMenuMgr->setMenuEnabled("FileOpenRecent", false);
+	scrActions["fileRevert"]->setEnabled(false);
+	scrActions["fileDocSetup150"]->setEnabled(false);
+	scrActions["filePrint"]->setEnabled(false);
+	scrActions["PrintPreview"]->setEnabled(false);
+	scrActions["toolsPDFPushButton"]->setEnabled(false);
+	scrActions["toolsPDFTextField"]->setEnabled(false);
+	scrActions["toolsPDFCheckBox"]->setEnabled(false);
+	scrActions["toolsPDFComboBox"]->setEnabled(false);
+	scrActions["toolsPDFListBox"]->setEnabled(false);
+	scrActions["toolsPDFAnnotText"]->setEnabled(false);
+#ifdef HAVE_OSG
+	scrActions["toolsPDFAnnot3D"]->setEnabled(false);
+#endif
 }
 
 void ScribusMainWindow::manageMasterPagesEnd()
@@ -8692,18 +8799,13 @@ void ScribusMainWindow::manageMasterPagesEnd()
 	uint pageCount=doc->DocPages.count();
 	for (uint c=0; c<pageCount; ++c)
 		Apply_MasterPage(doc->DocPages.at(c)->MPageNam, c, false);
-//	doc->setMasterPageMode(false);
-	pagePalette->enablePalette(true);
-	pagePalette->rebuildMasters();
-	ActWin->setMasterPagesPalette(NULL);
+
+	pagePalette->endMasterPageMode();
+
 	doc->setCurrentPage(doc->DocPages.at(storedPageNum));
 	view->reformPages(false);
 	view->setContentsPos(static_cast<int>(storedViewXCoor * storedViewScale), static_cast<int>(storedViewYCoor * storedViewScale));
 	view->DrawNew();
-	pagePalette->Rebuild();
-//	if (outlinePalette->isVisible())
-//		outlinePalette->BuildTree();
-//	slotDocCh();
 }
 
 void ScribusMainWindow::ApplyMasterPage()
@@ -8883,7 +8985,7 @@ void ScribusMainWindow::restoreDeletePage(SimpleState *state, bool isUndo)
 		pagePalette->rebuildMasters();
 	}
 	if (doc->masterPageMode() && !pageName.isEmpty())
-		ActWin->masterPagesPalette()->updateMasterPageList();
+		pagePalette->updateMasterPageList();
 	pagePalette->rebuildPages();
 }
 
@@ -9201,16 +9303,6 @@ void ScribusMainWindow::showLayer()
 	view->DrawNew();
 }
 
-void ScribusMainWindow::UnDoAction()
-{
-	undoManager->undo(1);
-}
-
-void ScribusMainWindow::RedoAction()
-{
-	undoManager->redo(1);
-}
-
 void ScribusMainWindow::initHyphenator()
 {
 	InstLang.clear();
@@ -9218,7 +9310,7 @@ void ScribusMainWindow::initHyphenator()
 	//Grab the language abbreviation from it, get the full language text
 	//Insert the name as key and a new string list into the map
 	QString hyphDirName = QDir::toNativeSeparators(ScPaths::instance().dictDir());
-	QDir hyphDir(hyphDirName, "*.dic", QDir::Name, QDir::Files | QDir::NoSymLinks);
+	QDir hyphDir(hyphDirName, "hyph*.dic", QDir::Name, QDir::Files | QDir::NoSymLinks);
 	if ((hyphDir.exists()) && (hyphDir.count() != 0))
 	{
 // 		LanguageManager langmgr;
@@ -9228,8 +9320,11 @@ void ScribusMainWindow::initHyphenator()
 		{
 			QFileInfo fi(hyphDir[dc]);
 			QString fileLangAbbrev=fi.baseName().section('_', 1);
-			languageOfHyphFile = LanguageManager::instance()->getLangFromAbbrev(fileLangAbbrev, false);
-			InstLang.insert(languageOfHyphFile, QStringList());
+			InstLang.insert(fileLangAbbrev, QStringList());
+//<<hunspell
+//			languageOfHyphFile = LanguageManager::instance()->getLangFromAbbrev(fileLangAbbrev, false);
+//			InstLang.insert(languageOfHyphFile, QStringList());
+//>>hunspell
 		}
 	}
 
@@ -9251,7 +9346,7 @@ void ScribusMainWindow::initHyphenator()
 				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
 				{
 					translatedLang="";
-					translatedLang = trans->translate("QObject", it.key().toLocal8Bit().data(), "");
+					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
 					if (!translatedLang.isEmpty())
 						it.value().append(translatedLang);
 				}
@@ -9262,7 +9357,7 @@ void ScribusMainWindow::initHyphenator()
 	//For each hyphenation file, grab the strings and the hyphenation data.
 	QString lang = QString(QLocale::system().name()).left(2);
 	LangTransl.clear();
-	prefsManager->appPrefs.hyphPrefs.Language = "English";
+	prefsManager->appPrefs.hyphPrefs.Language = "en_US";
 	if ((hyphDir.exists()) && (hyphDir.count() != 0))
 	{
 		LanguageManager *langmgr(LanguageManager::instance());
@@ -9279,10 +9374,10 @@ void ScribusMainWindow::initHyphenator()
 			langmgr->addHyphLang(fileLangAbbrev, hyphDir[dc]);
 // 			Sprachen.insert(datein, hyphDir[dc]);
 			if (fileLangAbbrev == lang)
-				prefsManager->appPrefs.hyphPrefs.Language = datein;
+				prefsManager->appPrefs.hyphPrefs.Language = fileLangAbbrev;
 		}
 		if (datein.isEmpty())
-			prefsManager->appPrefs.hyphPrefs.Language = "English";
+			prefsManager->appPrefs.hyphPrefs.Language = "en_US";
 	}
 }
 
@@ -9292,7 +9387,7 @@ QString ScribusMainWindow::GetLang(QString inLang)
  	for (QMap<QString, QStringList>::Iterator itl = InstLang.begin(); itl != itlend; ++itl)
 	{
 		if (itl.value().contains(inLang))
-			return itl.key();
+			return LanguageManager::instance()->getLangFromAbbrev(itl.key());
 	}
 	return inLang;
 }
@@ -9560,14 +9655,6 @@ bool ScribusMainWindow::isObjectSpecificUndo()
 	return objectSpecificUndo;
 }
 
-void ScribusMainWindow::slotTest()
-{
-}
-
-void ScribusMainWindow::slotTest2()
-{
-}
-
 void ScribusMainWindow::getImageInfo()
 {
 	if ((HaveDoc) && (doc->m_Selection->count() == 1))
@@ -9670,7 +9757,7 @@ void ScribusMainWindow::closeActiveWindowMasterPageEditor()
 		return;
 	if(doc->masterPageMode())
 	{
-		ActWin->masterPagesPalette()->close();
+		manageMasterPagesEnd();
 		qApp->processEvents();
 	}
 }
@@ -10169,6 +10256,17 @@ void ScribusMainWindow::enableTextActions(QMap<QString, QPointer<ScrAction> > *a
 	scrMenuMgr->setMenuEnabled("InsertQuote", enabled);
 	scrMenuMgr->setMenuEnabled("InsertSpace", enabled);
 	scrMenuMgr->setMenuEnabled("InsertLigature", enabled);
+	scrMenuMgr->setMenuEnabled("InsertMark", enabled);
+	if (!enabled)
+	{
+		scrActions["insertMarkVariableText"]->setEnabled(false);
+		scrActions["insertMarkAnchor"]->setEnabled(false);
+		scrActions["insertMarkItem"]->setEnabled(false);
+		scrActions["insertMark2Mark"]->setEnabled(false);
+		scrActions["insertMarkNote"]->setEnabled(false);
+		scrActions["editMark"]->setEnabled(false);
+	}
+	scrActions["itemUpdateMarks"]->setEnabled(enabled);
 }
 
 void ScribusMainWindow::updateGUIAfterPagesChanged()
@@ -10218,5 +10316,422 @@ void ScribusMainWindow::updateTableMenuActions()
 	}
 	scrActions["tableAdjustFrameToTable"]->setEnabled(table);
 	scrActions["tableAdjustTableToFrame"]->setEnabled(table);
+}
+
+void ScribusMainWindow::insertMark(MarkType mType)
+{
+	if (!HaveDoc)
+		return;
+	if (doc->m_Selection->count() != 1)
+		return;
+	if  (doc->appMode != modeEdit)
+		return;
+	PageItem* currItem = doc->m_Selection->itemAt(0);
+	if (currItem->isTextFrame())
+	{
+		if (currItem->HasSel)
+		{
+			//inserting mark replace some selected text
+			//remove from selected text all marks
+			//ask user if any notes will be removed
+			if (!currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
+				return;
+		}
+		if (insertMarkDlg(currItem->asTextFrame(), mType))
+		{
+			Mark* mrk = NULL;
+			view->updatesOn(false);
+			currItem->invalidateLayout();
+			if (mType == MARKNoteMasterType)
+			{
+				mrk = currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark;
+				if (doc->updateNotesNums(mrk->getNotePtr()->notesSet()))
+				{
+					if (mrk->getNotePtr()->isEndNote())
+						doc->flag_updateEndNotes = true;
+					currItem->asTextFrame()->notesFramesLayout(true);
+					doc->flag_updateEndNotes = false;
+				}
+			}
+			else
+			{
+				currItem->layout();
+				doc->changed();
+			}
+			view->updatesOn(true);
+			doc->regionsChanged()->update(currItem->getBoundingRect());
+			view->DrawNew();
+			if ((mrk != NULL) && (mrk->getNotePtr() != NULL))
+				doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
+		}
+	}
+}
+
+void ScribusMainWindow::slotEditMark()
+{
+	if (!HaveDoc)
+		return;
+	if (doc->m_Selection->count() != 1)
+		return;
+	if  (doc->appMode != modeEdit)
+		return;
+	PageItem * currItem = doc->m_Selection->itemAt(0);
+	if (currItem->itemText.cursorPosition() < currItem->itemText.length())
+	{
+		ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+		if (hl->hasMark())
+		{
+			if (editMarkDlg(hl->mark, currItem->asTextFrame()))
+			{
+				currItem->layout();
+				doc->updateMarks();
+				doc->changed();
+				doc->regionsChanged()->update(QRectF());
+			}
+		}
+	}
+}
+
+void ScribusMainWindow::slotUpdateMarks()
+{
+	if (!HaveDoc)
+		return;
+	if (doc->m_docMarksList.isEmpty())
+		return;
+	if (doc->updateMarks(true))
+	{
+		doc->changed();
+		doc->regionsChanged()->update(QRectF());
+	}
+}
+
+bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrkType)
+{
+	if (doc->masterPageMode() && (mrkType != MARKVariableTextType))
+		//avoid inserting in master pages other marks than Variable Text
+		return false;
+	
+	MarkInsertDlg* insertMDialog = NULL;
+	switch (mrkType)
+	{
+	case MARKAnchorType:
+		insertMDialog = (MarkInsertDlg*) new MarkAnchorDlg(this);
+		break;
+	case MARKVariableTextType:
+		insertMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->m_docMarksList, this);
+		break;
+	case MARK2ItemType:
+		insertMDialog = (MarkInsertDlg*) new Mark2ItemDlg(this);
+		break;
+	case MARK2MarkType:
+		insertMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->m_docMarksList, NULL, this);
+		break;
+	case MARKNoteMasterType:
+		insertMDialog = (MarkInsertDlg*) new MarkNoteDlg(doc->m_docNotesSetsList, this);
+		break;
+	case MARKIndexType:
+		break;
+	default:
+		break;
+	}
+	if (insertMDialog == NULL)
+	{
+		qDebug() << "Dialog not implemented for such marks type " << mrkType;
+		return false;
+	}
+	insertMDialog->setWindowTitle(tr("Insert new ") + insertMDialog->windowTitle());
+	if (insertMDialog->exec())
+	{
+		Mark* Mrk = NULL;
+		MarkData d;
+		if (currItem != NULL)
+			d.itemName = currItem->itemName();
+		QString label = "", text = "";
+		NotesSet* NSet = NULL;
+		switch (mrkType)
+		{
+		case MARKAnchorType:
+			//only gets label for new mark
+			insertMDialog->values(label);
+			if (label.isEmpty())
+				label = tr("Anchor mark");
+			d.itemPtr = currItem;
+			break;
+		case MARKVariableTextType:
+			Mrk = insertMDialog->values(label, text);
+			if ((Mrk == NULL) && (text.isEmpty()))
+				return false; //FIX ME here user should be warned that inserting of mark fails and why
+			if (label.isEmpty())
+				label = tr("Mark with <%1> variable text").arg(text);
+			d.strtxt = text;
+			break;
+		case MARK2ItemType:
+			insertMDialog->values(label, d.itemPtr);
+			if (d.itemPtr == NULL)
+				return false; //FIX ME here user should be warned that inserting of mark fails and why
+			if (label.isEmpty())
+				label = tr("Mark to %1 item").arg(d.itemPtr->itemName());
+			d.strtxt = QString::number(d.itemPtr->OwnPage +1);
+			break;
+		case MARK2MarkType:
+			//gets pointer to referenced mark
+			Mark* mrkPtr;
+			insertMDialog->values(label, mrkPtr);
+			if (mrkPtr == NULL)
+				return false; //FIX ME here user should be warned that inserting of mark fails and why
+			if (label.isEmpty())
+				label = tr("Mark to %1 mark").arg(mrkPtr->label);
+			d.strtxt = QString::number(mrkPtr->OwnPage +1);
+			d.destmarkName = mrkPtr->label;
+			d.destmarkType = mrkPtr->getType();
+			break;
+		case MARKNoteMasterType:
+			//gets pointer to choosed notes set
+			NSet = insertMDialog->values();
+			if (NSet == NULL)
+				return false;
+			
+			d.notePtr = new TextNote(NSet);
+			doc->m_docNotesList.append(d.notePtr);
+			label = "NoteMark_" + NSet->name();
+			if (NSet->range() == NSRsection)
+				label += " in section " + doc->getSectionNameForPageIndex(currItem->OwnPage) + " page " + QString::number(currItem->OwnPage +1);
+			else if (NSet->range() == NSRpage)
+				label += " on page " + QString::number(currItem->OwnPage +1);
+			else if (NSet->range() == NSRstory)
+				label += " in " + currItem->firstInChain()->itemName();
+			else if (NSet->range() == NSRframe)
+				label += " in frame" + currItem->itemName();
+			break;
+		case MARKIndexType:
+				return false;
+			break;
+		default:
+				return false;
+			break;
+		}
+		if (Mrk == NULL)
+		{
+			//check if label for new mark can be used as is
+			if (mrkType == MARKNoteMasterType)
+			{
+				if (doc->getMarkDefinied(label + "_1", mrkType) != NULL)
+					getUniqueName(label,doc->marksLabelsList(mrkType), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+				else
+					label = label + "_1";
+			}
+			else
+				getUniqueName(label,doc->marksLabelsList(mrkType), "_");
+			Mrk = new Mark;
+			Mrk->setValues(label, currItem->OwnPage, mrkType, d);
+			doc->m_docMarksList.append(Mrk);
+		}
+		else
+		{ // that must be variable text mark
+			Mrk->setString(d.strtxt);
+			doc->invalidateMarkMastertext(Mrk, true);
+		}
+
+		currItem->itemText.insertMark(Mrk);
+		Mrk->OwnPage = currItem->OwnPage;
+
+
+		if (mrkType == MARKNoteMasterType)
+		{
+			Mrk->getNotePtr()->setMasterMark(Mrk);
+			Mrk->setString("");
+		}
+		delete insertMDialog;
+		return true;
+	}
+	delete insertMDialog;
+	return false;
+}
+
+bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
+{
+	MarkInsertDlg* editMDialog = NULL;
+	switch (mrk->getType())
+	{
+		case MARKAnchorType:
+			editMDialog = (MarkInsertDlg*) new MarkAnchorDlg(this);
+			editMDialog->setValues(mrk->label);
+			break;
+		case MARKVariableTextType:
+			if (currItem == NULL)
+				//invoked from Marks Manager
+				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(mrk, this);
+			else
+				//invoked from mark`s entry in text
+				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->m_docMarksList, this);
+			editMDialog->setValues(mrk->label, mrk->getString());
+			break;
+		case MARK2ItemType:
+			editMDialog = (MarkInsertDlg*) new Mark2ItemDlg(this);
+			editMDialog->setValues(mrk->label, mrk->getItemPtr());
+			break;
+		case MARK2MarkType:
+			{
+				editMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->m_docMarksList, mrk, this);
+				QString l;
+				MarkType t;
+				mrk->getMark(l,t);
+				Mark* m = doc->getMarkDefinied(l,t);
+				editMDialog->setValues(mrk->label, m);
+			}
+			break;
+		case MARKNoteMasterType:
+			{
+				//invoking editing note mark from master text
+				//so we go to edit note
+				TextNote* note = mrk->getNotePtr();
+				if (note == NULL)
+				{
+					qFatal("ScribusMainWindow::editMarkDlg - found note master mark with null pointer to note");
+					return false;
+				}
+				Mark* noteMark = note->noteMark();
+				doc->setCursor2MarkPos(noteMark);
+			}
+			break;
+		case MARKNoteFrameType:
+			{
+				//invoking editing mark from note frame
+				//so we go to master text
+				TextNote* note = mrk->getNotePtr();
+				if (note == NULL)
+				{
+					qFatal("ScribusMainWindow::editMarkDlg - found note frame mark with null pointer to note");
+					return false;
+				}
+				Mark* masterMark = note->masterMark();
+				doc->setCursor2MarkPos(masterMark);
+			}
+		case MARKIndexType:
+			return false;
+			break;
+		default:
+			break;
+	}
+	if (editMDialog == NULL) return false;
+
+	bool docWasChanged = false;
+
+	editMDialog->setWindowTitle(tr("Edit ") + editMDialog->windowTitle());
+	if (editMDialog->exec())
+	{
+		Mark* Mrk = NULL;
+		MarkData d;
+		if (currItem != NULL)
+			d.itemName = currItem->itemName();
+		QString label = "", text = "";
+		QString oldStr = mrk->getString();
+		switch (mrk->getType())
+		{
+			case MARKAnchorType:
+				//only gets label for new mark
+				editMDialog->values(label);
+				if (label.isEmpty())
+					label = tr("Anchor mark");
+				if (mrk->label != label)
+				{
+					getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+					mrk->label = label;
+					emit UpdateRequest(reqMarksUpdate);
+				}
+				break;
+			case MARKVariableTextType:
+				Mrk = editMDialog->values(label, text);
+				if (text.isEmpty())
+					return false; //FIX ME here user should be warned that editing of mark fails and why
+				if (label.isEmpty())
+					label = tr("Mark with <%1> variable text").arg(text);
+				if (Mrk != NULL)
+				{
+					if (Mrk != mrk)
+					{
+						ScText* hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+						hl->mark = Mrk;
+						mrk = Mrk;
+					}
+					if (mrk->label != label)
+					{
+						getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+						mrk->label = label;
+						emit UpdateRequest(reqMarksUpdate);
+					}
+					if (text != oldStr)
+					{
+						mrk->setString(text);
+						if (mrk->getString() != oldStr)
+							docWasChanged = doc->invalidateMarkMastertext(mrk, true);
+					}
+				}
+				else
+				{
+					d.strtxt = text;
+					Mrk = new Mark;
+					getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+					Mrk->setValues(label, currItem->OwnPage, MARKVariableTextType, d);
+					doc->m_docMarksList.append(Mrk);
+					ScText* hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+					hl->mark = Mrk;
+					docWasChanged = true;
+				}
+				break;
+			case MARK2ItemType:
+				editMDialog->values(label, d.itemPtr);
+				if (d.itemPtr == NULL)
+					return false; //FIX ME here user should be warned that inserting of mark fails and why
+				if (label.isEmpty())
+					label = tr("Mark to %1 item").arg(d.itemPtr->itemName());
+				if (d.itemPtr != mrk->getItemPtr())
+				{
+					mrk->setItemPtr(d.itemPtr);
+					mrk->setString(QString("%1").arg(d.itemPtr->OwnPage +1));
+					docWasChanged = true;
+				}
+				if (mrk->label != label)
+				{
+					getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+					mrk->label = label;
+					emit UpdateRequest(reqMarksUpdate);
+				}
+				break;
+			case MARK2MarkType:
+				{
+					//gets pointer to referenced mark
+					Mark* mrkPtr = NULL;
+					editMDialog->values(label, mrkPtr);
+					if (mrkPtr == NULL)
+						return false; //FIX ME here user should be warned that inserting of mark fails and why
+					if (label.isEmpty())
+						label = tr("Mark to %1 mark").arg(mrkPtr->label);
+					QString destLabel = mrkPtr->label;
+					MarkType destType = mrkPtr->getType();
+					if (d.destmarkName != destLabel || d.destmarkType != destType)
+					{
+						mrk->setMark(mrkPtr);
+						mrk->setString(QString("%1").arg(mrkPtr->OwnPage +1));
+						docWasChanged = true;
+					}
+					if (mrk->label != label)
+					{
+						getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+						mrk->label = label;
+						emit UpdateRequest(reqMarksUpdate);
+					}
+				}
+				break;
+			case MARKNoteMasterType:
+				break;
+			case MARKIndexType:
+				break;
+			default:
+				break;
+		}
+	}
+	delete editMDialog;
+	return docWasChanged;
 }
 

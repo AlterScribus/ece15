@@ -313,7 +313,9 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 
 	if ((doc->docItemErrors.count() == 0)
 		 && (doc->masterItemErrors.count() == 0)
-		 && (doc->docLayerErrors.count() == 0))
+		 && (doc->docLayerErrors.count() == 0)
+	    //this flag is used by documentchecker as indicator for marks change after updating
+		 && !doc->flag_notesChanged)
 	{
 		QTreeWidgetItem * documentItem = new QTreeWidgetItem( reportDisplay );
 		documentItem->setText(COLUMN_ITEM, tr( "Document" ) );
@@ -329,7 +331,17 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		bool layoutGraveError = false;
 		itemError = false;
 // 		QTreeWidgetItem * pagep = 0;
-		// LAYERS **********************************************8
+
+		// MARKS ***********************************************
+		if (doc->flag_notesChanged)
+		{
+			QTreeWidgetItem * marksItem = new QTreeWidgetItem(reportDisplay);
+			marksItem->setText(0, tr("After Marks update document was changed"));
+			marksItem->setIcon(COLUMN_ITEM, onlyWarning );
+			doc->flag_notesChanged = false;
+		}
+
+		// LAYERS **********************************************
 		QTreeWidgetItem * layerItem = new QTreeWidgetItem(reportDisplay);
 		layerItem->setText(COLUMN_ITEM, tr("Layers"));
 
@@ -463,8 +475,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		masterPageRootItem->setExpanded(true);
 		masterPageRootItem->setText(COLUMN_PROBLEM, tr("Issue(s): %1").arg(mpErrorCount));
 		// END of MASTER PAGES
-
-		// PAGES ********************************8
+		// PAGES ********************************
 		for (int aPage = 0; aPage < doc->DocPages.count(); ++aPage)
 		{
 			QString tmp;
@@ -537,8 +548,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				page->setText(COLUMN_ITEM, tr("Page ")+tmp.setNum(aPage+1));
 		}
 		// END of PAGES
-
-		// FREE ITEMS **********************************************8888
+		// FREE ITEMS **********************************************
 		QMap<PageItem*, errorCodes>::Iterator freeItemsErrorsIt;
 		bool hasfreeItems = false;
 		for (freeItemsErrorsIt = doc->docItemErrors.begin(); freeItemsErrorsIt != doc->docItemErrors.end(); ++freeItemsErrorsIt)

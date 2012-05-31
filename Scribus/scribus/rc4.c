@@ -139,5 +139,5 @@ rc4_encrypt(rc4_context_t       *text,		/* I - Context */
 
 
 /*
- * End of "$Id$".
+ * End of "$Id: rc4.c 485 2004-10-20 21:05:49Z fschmid $".
  */

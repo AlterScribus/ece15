@@ -30,6 +30,8 @@ pageitem.cpp  -  description
 #include <QList>
 #include <cassert>
 
+#include "desaxe/saxio.h"
+#include "marks.h"
 //#include "text/paragraphlayout.h"
 #include "text/frect.h"
 #include "text/specialchars.h"
@@ -37,7 +39,6 @@ pageitem.cpp  -  description
 #include "style.h"
 #include "styles/charstyle.h"
 #include "styles/paragraphstyle.h"
-#include "desaxe/saxio.h"
 
 #ifdef NLS_CONFORMANCE
 #define NLS_PRIVATE private
@@ -110,6 +111,8 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
 
  	void clear();
 	StoryText copy() const;
+	
+	// Add, change, replace
 	// Insert chars from another StoryText object at current cursor position
 	void insert(const StoryText& other, bool onlySelection = false);
 	// Insert chars from another StoryText object at specific position
@@ -117,16 +120,20 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
 	// Append chars from another StoryText object
 	void append(const StoryText& other) { insert(length(), other, false); }
 	// Remove len chars at specific position
- 	void removeChars(int pos, uint len);
+	void removeChars(int pos, uint len);
 	// Insert chars at current cursor position
 	void insertChars(QString txt, bool applyNeighbourStyle = false);
 	// Insert chars ar specific position
- 	void insertChars(int pos, QString txt, bool applyNeighbourStyle = false);
+	void insertChars(int pos, QString txt, bool applyNeighbourStyle = false);
 	// Insert inline object at current cursor position
 	void insertObject(int obj);
 	// Insert object at specific position
 	void insertObject(int pos, int obj);
- 	void replaceChar(int pos, QChar ch);
+	// Insert mark at cursor or specific position
+	void insertMark(Mark* Mark, int pos = -1);
+	void replaceChar(int pos, QChar ch);
+ 	// Replaced a word, and return the difference in length between old and new
+	int replaceWord(int pos, QString newWord);
 	void replaceObject(int pos, int obj);
 
 	void hyphenateWord(int pos, uint len, char* hyphens);
@@ -138,11 +145,15 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
  	QChar   text(int pos) const;
 	// Get text with len chars at specific position
  	QString text(int pos, uint len) const;
+ 	//Get sentence at any position within it
+	QString sentence(int pos, int &posn);
 	// Get word at specific position
 	QString wordAt(int pos) const;
 
 	bool hasObject(int pos) const;
  	PageItem* object(int pos) const;
+	bool hasMark(int pos) const;
+	Mark *mark(int pos) const;
 	
 	int nextCharPos(int c);
 	int prevCharPos(int c);
@@ -199,6 +210,7 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
 	int prevChar(int pos);
 	int nextWord(int pos);
 	int prevWord(int pos);
+	int endOfWord(int pos) const;
 	int nextSentence(int pos);
 	int prevSentence(int pos);
 	int nextParagraph(int pos);
@@ -314,7 +326,7 @@ public:
 	
 	int firstInFrame() { return firstFrameItem; }
 	int lastInFrame() { return lastFrameItem; }
-
+	
 private:
 	ScribusDoc * doc; 
 	int selFirst, selLast;
@@ -344,7 +356,7 @@ private:
 // 	uint layouterVersion;
  	/// is true after layout() has been exercised
 // 	bool layouterValid;
- };
+};
 
 
 #endif /*STORYTEXT_H_*/

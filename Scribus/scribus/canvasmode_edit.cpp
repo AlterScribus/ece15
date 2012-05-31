@@ -315,10 +315,15 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 				currItem->itemText.extendSelection(start, stop);
 				currItem->itemText.setCursorPosition(stop);
 			}
+			else if ((currItem->itemText.cursorPosition() < currItem->itemText.length()) && (currItem->itemText.item(currItem->itemText.cursorPosition())->mark != NULL))
+			{	//invoke edit marker dialog
+				m_ScMW->slotEditMark();
+				return;
+			}
 			else
 			{	//Double click in a frame to select a word
 				oldCp = currItem->itemText.cursorPosition();
-				if (currItem->itemText.hasObject(oldCp))
+				if ((oldCp < currItem->itemText.length()) && currItem->itemText.hasObject(oldCp))
 				{
 					currItem->itemText.select(oldCp, 1, true);
 					PageItem *iItem = currItem->itemText.object(oldCp);

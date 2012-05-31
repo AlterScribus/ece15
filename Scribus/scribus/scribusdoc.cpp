@@ -51,6 +51,7 @@ for which a new license (GPL+exception) is in place.
 #include "hyphenator.h"
 #include "ui/inserttablecolumnsdialog.h"
 #include "ui/inserttablerowsdialog.h"
+#include "notesset.h"
 #include "pageitem.h"
 #include "pageitem_imageframe.h"
 #include "pageitem_latexframe.h"
@@ -60,6 +61,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_polyline.h"
 #include "pageitem_table.h"
 #include "pageitem_textframe.h"
+#include "pageitem_noteframe.h"
 #ifdef HAVE_OSG
 	#include "pageitem_osgframe.h"
 #endif
@@ -101,6 +103,12 @@ for which a new license (GPL+exception) is in place.
 #include "colormgmt/sccolormgmtenginefactory.h"
 #include "ui/hruler.h"
 #include "ui/layers.h"
+#include "ui/MarkInsertDlg.h"
+#include "ui/mark2item.h"
+#include "ui/mark2mark.h"
+#include "ui/markanchor.h"
+#include "ui/markvariabletext.h"
+#include "ui/marksmanager.h"
 #include "ui/scmessagebox.h"
 #include "ui/storyeditor.h"
 
@@ -257,7 +265,12 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	m_alignTransaction(NULL),
 	m_currentPage(NULL),
 	m_updateManager(),
-	m_docUpdater(NULL)
+	m_docUpdater(NULL),
+	flag_notesChanged(false),
+	flag_restartMarksRenumbering(false),
+	flag_updateNotesLabels(false),
+	flag_updateEndNotes(false),
+	flag_layoutNotesFrames(true)
 {
 	docUnitRatio=unitGetRatioFromIndex(docPrefsData.docSetupPrefs.docUnitIndex);
 	docPrefsData.docSetupPrefs.pageHeight=0;
@@ -350,7 +363,12 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	m_alignTransaction(NULL),
 	m_currentPage(NULL),
 	m_updateManager(),
-	m_docUpdater(NULL)
+	m_docUpdater(NULL),
+	flag_notesChanged(false),
+	flag_restartMarksRenumbering(false),
+	flag_updateNotesLabels(false),
+	flag_updateEndNotes(false),
+	flag_layoutNotesFrames(true)
 {
 	docPrefsData.docSetupPrefs.docUnitIndex=unitindex;
 	docPrefsData.docSetupPrefs.pageHeight=pagesize.height();
@@ -543,6 +561,9 @@ void ScribusDoc::init()
 	m_masterPageMode=true; // quick hack to force the change of pointers in setMasterPageMode();
 	setMasterPageMode(false);
 	addSymbols();
+	//for loading old documents where default notes set is not saved
+	if (m_docNotesSetsList.isEmpty())
+		m_docNotesSetsList.append(new NotesSet());
 }
 
 
@@ -644,6 +665,13 @@ ScribusDoc::~ScribusDoc()
 			delete pa.items.takeFirst();
 		}
 	}
+	//deleting resources alocated for marks and notes
+	while (! m_docNotesList.isEmpty())
+		delete m_docNotesList.takeFirst();
+	while (!m_docMarksList.isEmpty())
+		delete m_docMarksList.takeFirst();
+	while (! m_docNotesSetsList.isEmpty())
+		delete m_docNotesSetsList.takeFirst();
 	docPatterns.clear();
 	docGradients.clear();
 	while (!DocItems.isEmpty())
@@ -1247,6 +1275,16 @@ void ScribusDoc::replaceNamedResources(ResourceCollection& newNames)
 			itemlist = NULL;
 	}
 #endif
+	foreach (NotesSet* nSet, m_docNotesSetsList)
+	{ //update styles names in notessets
+		if (nSet == NULL)
+			continue;
+		if (newNames.styles().contains(nSet->notesParStyle()))
+			nSet->setNotesParStyle(newNames.styles().value(nSet->notesParStyle()));
+		if (newNames.charStyles().contains(nSet->marksChStyle()))
+			nSet->setMarksCharStyle(newNames.charStyles().value(nSet->marksChStyle()));
+	}
+
 	for (QHash<int, PageItem*>::iterator itf = FrameItems.begin(); itf != FrameItems.end(); ++itf)
 	{
 		PageItem *currItem = itf.value();
@@ -2290,6 +2328,7 @@ void ScribusDoc::movePage(const int fromPage, const int toPage, const int dest, 
 		m_View->reformPagesView();
 		m_ScMW->updateGUIAfterPagesChanged();
 	}
+	updateEndnotesFrames();
 	changed();
 }
 
@@ -2349,6 +2388,7 @@ int ScribusDoc::addAutomaticTextFrame(const int pageNumber)
 			FirstAuto = Items->at(z);
 		LastAuto = Items->at(z);
 		Items->at(z)->setRedrawBounding();
+		updateEndnotesFrames();
 		return z;
 	}
 	return -1;
@@ -2894,6 +2934,17 @@ int ScribusDoc::layerIDFromLevel(const int layerLevel)
 	return -1;
 }
 
+int ScribusDoc::layerIDFromName(QString name)
+{
+	ScLayers::iterator itend=Layers.end();
+	ScLayers::iterator it;
+	for (it = Layers.begin(); it != itend; ++it)
+	{
+		if (it->Name == name)
+			return it->ID;
+	}
+	return -1;
+}
 
 bool ScribusDoc::lowerLayer(const int layerID)
 {
@@ -4752,7 +4803,7 @@ bool ScribusDoc::copyPageToMasterPage(const int pageNumber, const int leftPage, 
 	return true;
 }
 
-int ScribusDoc::itemAdd(const PageItem::ItemType itemType, const PageItem::ItemFrameType frameType, const double x, const double y, const double b, const double h, const double w, const QString& fill, const QString& outline, const bool itemFinalised)
+int ScribusDoc::itemAdd(const PageItem::ItemType itemType, const PageItem::ItemFrameType frameType, const double x, const double y, const double b, const double h, const double w, const QString& fill, const QString& outline, const bool itemFinalised, const bool noteFrame)
 {
 	assert(itemFinalised); // av: caller must wrap transaction around this if wanted
 	UndoTransaction* activeTransaction = NULL;
@@ -4770,7 +4821,10 @@ int ScribusDoc::itemAdd(const PageItem::ItemType itemType, const PageItem::ItemF
 			Q_ASSERT(frameType==PageItem::Rectangle || frameType==PageItem::Unspecified);
 			break;
 		case PageItem::TextFrame:
-			newItem = new PageItem_TextFrame(this, x, y, b, h, w, CommonStrings::None, outline);
+			if (noteFrame)
+				newItem = new PageItem_NoteFrame(this, x, y, b, h, w, CommonStrings::None, outline);
+			else
+				newItem = new PageItem_TextFrame(this, x, y, b, h, w, CommonStrings::None, outline);
 			Q_ASSERT(frameType==PageItem::Rectangle || frameType==PageItem::Unspecified);
 			break;
 		case PageItem::Line:
@@ -6340,6 +6394,17 @@ int ScribusDoc::getSectionKeyForPageIndex(const uint pageIndex) const
 	}
 
 	return retVal;
+}
+
+QString ScribusDoc::getSectionNameForPageIndex(const uint pageIndex) const
+{
+	DocumentSectionMap::ConstIterator it = docPrefsData.docSectionMap.begin();
+	for (; it != docPrefsData.docSectionMap.end(); ++it)
+	{
+		if (pageIndex >= it.value().fromindex && pageIndex <= it.value().toindex)
+			return it.value().name;
+	}
+	return QString();
 }
 
 
@@ -8368,12 +8433,25 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 		else
 		{
 			ParagraphStyle newStyle;
-			newStyle.setParent(currItem->itemText.defaultStyle().parent());
+			if (currItem->isNoteFrame())
+			{
+				if (currItem->asNoteFrame()->masterFrame() != NULL)
+				{
+					newStyle.setParent(currItem->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
+					newStyle.applyStyle(currItem->asNoteFrame()->masterFrame()->currentStyle());
+				}
+				else
+					newStyle.setParent(currItem->itemText.defaultStyle().parent());
+			}
 			currItem->itemText.setDefaultStyle(newStyle);
 		}
 		currItem->invalid = true;
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
+		if (currItem->isNoteFrame())
+			currItem->asNoteFrame()->updateNotesText();
+		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
+			flag_notesChanged = true;
 	}
 	if (activeTransaction)
 	{
@@ -8404,6 +8482,8 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			ParagraphStyle dstyle(currItem->itemText.defaultStyle());
 			dstyle.applyStyle(newStyle);
 			currItem->itemText.setDefaultStyle(dstyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+			updateItemNotesFramesStyles(currItem);
 		}
 		if (currItemTextCount > 0)
 		{
@@ -8428,6 +8508,10 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
+		if (currItem->isNoteFrame())
+			currItem->asNoteFrame()->updateNotesText();
+		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
+			flag_notesChanged = true;
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -8485,9 +8569,13 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 //			if (currItem->asPathText())
 			currItem->itemText.applyCharStyle(0, currItem->itemText.length(), newStyle);
 			currItem->invalid = true;
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
+		if (currItem->isNoteFrame())
+			currItem->asNoteFrame()->updateNotesText();
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -8547,6 +8635,8 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
+		if (currItem->isNoteFrame())
+			currItem->asNoteFrame()->updateNotesText();
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -8628,6 +8718,8 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
+		if (currItem->isNoteFrame())
+			currItem->asNoteFrame()->updateNotesText();
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -9483,7 +9575,6 @@ void ScribusDoc::removePict(QString name)
 	}
 }
 
-
 void ScribusDoc::updatePic()
 {
 //TODO? Getting the pointer with m_Selection->itemAt(i) over and over again in the loop 
@@ -10318,17 +10409,22 @@ void ScribusDoc::itemSelection_ClearItem(Selection* customSelection)
 				if ((ScCore->fileWatcher->files().contains(currItem->Pfile) != 0) && (currItem->PictureIsAvailable))
 					ScCore->fileWatcher->removeFile(currItem->Pfile);
 			}
-			else
-			if (currItem->asTextFrame() && ScCore->usingGUI())
+			else if (currItem->asTextFrame())
 			{
-				if (currItem->itemText.length() != 0 && (currItem->nextInChain() == 0 || currItem->prevInChain() == 0))
+				if (ScCore->usingGUI())
 				{
-					int t = ScMessageBox::warning(m_ScMW, CommonStrings::trWarning,
-										tr("Do you really want to clear all your text?"),
-										QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
-					if (t == QMessageBox::No)
-						continue;
+					if (currItem->itemText.length() != 0 && (currItem->nextInChain() == 0 || currItem->prevInChain() == 0))
+					{
+						int t = ScMessageBox::warning(m_ScMW, CommonStrings::trWarning,
+													  tr("Do you really want to clear all your text?"),
+													  QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
+						if (t == QMessageBox::No)
+							continue;
+					}
 				}
+				//remove marks - with GUI ask user if he knows that marks are in text and were deleted
+				if (!currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
+					continue;
 			}
 			currItem->clearContents();
 		}
@@ -10443,11 +10539,29 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		currItem = delItems.at(selectedItemCount - (de + 1));
 		if ((currItem->asImageFrame()) && ((ScCore->fileWatcher->files().contains(currItem->Pfile) != 0) && (currItem->PictureIsAvailable)))
 			ScCore->fileWatcher->removeFile(currItem->Pfile);
-		if (currItem->asTextFrame())
+		//delete marks pointed to that item
+		for (int a=0; a < m_docMarksList.count(); a++)
 		{
-			currItem->dropLinks();
-			
-			/* this code will instead remove the contained text
+			Mark* m = m_docMarksList.at(a);
+			if (m == NULL)
+				continue;
+			if (m->isType(MARK2ItemType) && (m->getItemPtr() == currItem))
+				eraseMark(m, true);
+		}
+		if (currItem->isNoteFrame())
+			delNoteFrame(currItem->asNoteFrame());
+		else
+		{
+			if (currItem->asTextFrame())
+			{
+				//delete all note`s frame created for that text frame
+				//force deleting all notes frames
+				if (!currItem->asTextFrame()->isInChain() && !currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
+					//frame isn`t in text chain - user decides to not deleting notes
+					continue;
+				currItem->asTextFrame()->delAllNoteFrames(false);
+				currItem->dropLinks();
+				/* this code will instead remove the contained text
 			// unlink after
 			currItem->unlink();
 			if (before != 0)
@@ -10461,24 +10575,26 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 				}
 			}
 			*/
+			}
+			if (currItem->isWelded())
+				currItem->unWeld();
+			if (currItem->isBookmark)
+				//CB From view   emit DelBM(currItem);
+				m_ScMW->DelBookMark(currItem);
+			if (UndoManager::undoEnabled() && (selectedItemCount > 0) && !forceDeletion)
+			{
+				ScItemState< QList<PageItem*> > *is = new ScItemState< QList<PageItem*> >(Um::Delete + " " + currItem->getUName(), "", Um::IDelete);
+				is->setItem(delItems);
+				is->set("ITEMID", itemList->indexOf(currItem));
+				is->set("DELETE_ITEM", "delete_item");
+				undoManager->action(Pages->at(0), is, currItem->getUPixmap());
+			}
+			//FIX ME - itemList->removeOne will not be suitable and faster?
+			itemList->removeAll(currItem);
+			//		if (forceDeletion || !UndoManager::undoEnabled())
+			if (forceDeletion)
+				delete currItem;
 		}
-		if (currItem->isWelded())
-			currItem->unWeld();
-		if (currItem->isBookmark)
-			//CB From view   emit DelBM(currItem);
-			m_ScMW->DelBookMark(currItem);
-		if (UndoManager::undoEnabled() && (selectedItemCount > 0) && !forceDeletion)
-		{
-			ScItemState< QList<PageItem*> > *is = new ScItemState< QList<PageItem*> >(Um::Delete + " " + currItem->getUName(), "", Um::IDelete);
-			is->setItem(delItems);
-			is->set("ITEMID", itemList->indexOf(currItem));
-			is->set("DELETE_ITEM", "delete_item");
-			undoManager->action(Pages->at(0), is, currItem->getUPixmap());
-		}
-		itemList->removeAll(currItem);
-//		if (forceDeletion || !UndoManager::undoEnabled())
-		if (forceDeletion)
-			delete currItem;
 	}
 	itemSelection->delaySignalsOff();
 	if (activeTransaction)
@@ -15018,7 +15134,7 @@ QMap<PageItem*, QString> ScribusDoc::getDocItemNames(PageItem::ItemType itemType
 Serializer *ScribusDoc::serializer()
 {
 	if (!m_serializer) 
-		m_serializer = new Serializer (*this);
+		m_serializer = new Serializer (this);
 	Q_ASSERT(m_serializer);
 	return m_serializer;
 }
@@ -15265,4 +15381,1166 @@ int ScribusDoc::addToInlineFrames(PageItem *item)
 	item->setXYPos(lw, lw, true);
 	FrameItems.insert(fIndex, item);
 	return fIndex;
+}
+
+QStringList ScribusDoc::marksLabelsList(MarkType type)
+{
+	QStringList nameList;
+	for (int a=0; a < m_docMarksList.count(); ++a)
+	{
+		Mark* m = m_docMarksList.at(a);
+		if (m == NULL)
+			continue;
+		if ((m != NULL) && m->isType(type))
+			nameList.append(m->label);
+	}
+	return nameList;
+}
+
+Mark* ScribusDoc::getMarkDefinied(QString l, MarkType t)
+{
+	foreach (Mark* mrk, m_docMarksList)
+	{
+		if ((mrk != NULL) && (mrk->label == l) && mrk->isType(t))
+			return mrk;
+	}
+	return NULL;
+}
+
+PageItem* ScribusDoc::findMark(Mark* mrk, int &lastItem)
+{
+	//except marks to items, in itemPtr should be item which holds this mark
+	PageItem* item = NULL;
+	if (!mrk->isType(MARK2ItemType) && (lastItem == -1))
+	{
+		item = getItemFromName(mrk->getItemName());
+		if (item != NULL)
+		{
+			int Cpos = -1;
+			if (findMarkCPos(mrk, item, Cpos))
+			{
+				lastItem = DocItems.indexOf(item);
+				return item;
+			}
+		}
+	}
+	for (int a = lastItem +1; a < DocItems.count(); ++a)
+	{
+		item = DocItems.at(a);
+		if ((item != NULL) && item->isTextFrame() && (item->itemText.length() > 0))
+		{
+			for (int i = item->firstInFrame(); i <= item->lastInFrame(); ++i)
+			{
+				ScText* hl = item->itemText.item(i);
+				if (hl->hasMark(mrk))
+				{
+					lastItem = a;
+					return item;
+				}
+			}
+		}
+	}
+	lastItem = 0;
+	return NULL;
+}
+
+bool ScribusDoc::findMarkCPos(Mark* mrk, PageItem* &currItem, int &pos)
+{
+	if (currItem == NULL)
+		currItem = findMark(mrk);
+	if ((currItem != NULL) && currItem->isTextFrame() && (currItem->itemText.length() > 0))
+	{
+		for (pos = qMax(pos, currItem->firstInFrame()); pos <= currItem->lastInFrame(); ++pos)
+		{
+			ScText* hl = currItem->itemText.item(pos);
+			if (hl->hasMark(mrk))
+				return true;
+		}
+	}
+	pos = -1;
+	return false;
+}
+
+bool ScribusDoc::isMarkUsed(Mark* mrk, bool visible)
+{
+	foreach (PageItem* currItem, DocItems)
+	{
+		if (currItem->isTextFrame() && (currItem->itemText.length() > 0))
+		{
+			if (!visible && currItem->prevInChain() != NULL)
+				//check in whole itemText only for first frames in chain
+				continue;
+			int i = 0;
+			int end = currItem->itemText.length();
+			if (visible)
+			{
+				//search only in visible text
+				i = currItem->firstInFrame();
+				end = currItem->lastInFrame() +1;
+			}
+			for (; i < end; ++i)
+			{
+				ScText* hl = currItem->itemText.item(i);
+				if (hl->hasMark(mrk))
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
+void ScribusDoc::setCursor2MarkPos(Mark *mark)
+{
+	if (mark == NULL)
+		return;
+	PageItem* item = NULL;
+	if (mark->isType(MARKNoteFrameType) || mark->isType(MARKNoteMasterType))
+		item = mark->getItemPtr();
+	if (item == NULL)
+		item = getItemFromName(mark->getItemName());
+	if (item == NULL)
+		item = findMark(mark);
+	if (item == NULL)
+		return;
+
+	int CPos = item->firstInFrame();
+	if (findMarkCPos(mark, item, CPos))
+	{
+		scMW()->deselectAll();
+		scMW()->selectItemFromOutlines(item, true, CPos +1);
+	}
+}
+
+bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
+{
+	bool found = false;
+	if (fromText)
+	{
+		if (item != NULL)
+		{
+			int MPos = -1;
+			while (findMarkCPos(mrk, item, MPos))
+			{
+				item->itemText.removeChars(MPos,1);
+				found = true;
+			}
+		}
+		else
+		{
+			//find and delete all mark`s apperences in text
+			int MPos = -1;
+			int itemIndex = -1;
+			PageItem* item = findMark(mrk, itemIndex);
+			while (item != NULL)
+			{
+				while (findMarkCPos(mrk, item, MPos))
+					item->itemText.removeChars(MPos,1);
+				found = true;
+				item->asTextFrame()->invalidateLayout();
+				item = findMark(mrk, itemIndex);
+			}
+		}
+	}
+	else
+		found = true;
+	//remove mark references
+	for (int a=0; a < m_docMarksList.count(); ++a)
+	{
+		Mark* m = m_docMarksList.at(a);
+		if (m == NULL)
+			continue;
+		if (m->isType(MARK2MarkType))
+		{
+			QString l;
+			MarkType t;
+			m->getMark(l, t);
+			if (mrk == getMarkDefinied(l, t))
+			{
+				m->setMark(NULL);
+				m->setString("");
+			}
+		}
+	}
+	//erase mark from marksMap
+	m_docMarksList.removeOne(mrk);
+	delete mrk;
+	return found;
+}
+
+bool ScribusDoc::invalidateMarkMastertext(Mark* mrk, bool forceUpdate)
+{
+	int itemNo = 0;
+	PageItem* mItem = findMark(mrk, itemNo);
+	bool found = false;
+	while (mItem != NULL)
+	{
+		found = true;
+		mItem->asTextFrame()->invalidateLayout();
+		if (forceUpdate)
+			mItem->layout();
+		mItem = findMark(mrk, itemNo);
+	}
+	return found;
+}
+
+//update strings (page number) for marks pointed to anchors and items
+//and update marks list in Marka Manager
+bool ScribusDoc::updateMarks(bool updateNotesMarks)
+{
+	if (m_docMarksList.isEmpty())
+		return false;
+	m_docMarksList.removeAll(NULL);
+
+	bool docWasChanged = false;
+
+	//run for variable text (invalidate frames with variable text)
+	foreach (Mark* mrk, m_docMarksList)
+	{
+		if (mrk->isType(MARKVariableTextType))
+		{
+			if (invalidateMarkMastertext(mrk, false))
+				docWasChanged = true;
+			else if (mrk->isUnique())
+			{
+				PageItem* mItem = findMark(mrk);
+				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
+				mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
+			}
+		}
+	}
+
+	//update marks for foot/endnotes
+	if (updateNotesMarks)
+	{
+		//update notes numbers
+		for (int i=0; i < m_docNotesSetsList.count(); ++i)
+		{
+			NotesSet* NS = m_docNotesSetsList.at(i);
+			//update nums
+			if (updateNotesNums(NS))
+			{
+				//refresh endnotes content
+				if (flag_updateEndNotes || isLoading())
+					updateEndnotesFrames(NS);
+				docWasChanged = true;
+			}
+			if (flag_updateEndNotes)
+				updateEndnotesFrames(NS);
+			updateNotesFramesStyles(NS);
+		}
+		notesFramesUpdate();
+	}
+
+	//for all marks
+	foreach (Mark* mrk, m_docMarksList)
+	{
+		//set mark page number
+		PageItem* mItem = findMark(mrk);
+		if (mItem != NULL)
+			mrk->OwnPage = mItem->OwnPage;
+		else
+			mrk->OwnPage = -1;
+		if (mrk->isType(MARK2ItemType))
+		{
+			if (mrk->getItemPtr() != NULL)
+			{
+				int page = mrk->getItemPtr()->OwnPage +1;
+				if (mrk->getString().toInt() != page)
+				{
+					mrk->setString(QString("%1").arg(page));
+					if (mItem != NULL)
+					{
+						mItem->asTextFrame()->invalidateLayout();
+						docWasChanged = true;
+					}
+				}
+			}
+			else
+				mrk->setString("");
+		}
+		else if (mrk->isType(MARK2MarkType))
+		{
+			QString l;
+			MarkType t;
+			mrk->getMark(l,t);
+			Mark* destMark = getMarkDefinied(l,t);
+			if (destMark != NULL)
+			{
+				PageItem* dItem = findMark(destMark);
+				if (dItem == NULL)
+				{
+					destMark->OwnPage = -1;
+					mrk->setString("");
+					docWasChanged = true;
+				}
+				else
+				{
+					destMark->OwnPage = dItem->OwnPage;
+					int page = destMark->OwnPage +1;
+					if (mrk->getString().toInt() != page)
+					{
+						mrk->setString(QString("%1").arg(page));
+						if (mItem != NULL)
+						{
+							mItem->asTextFrame()->invalidateLayout();
+							docWasChanged = true;
+						}
+					}
+				}
+			}
+			else
+			{
+				mrk->setString("");
+				docWasChanged = true;
+			}
+		}
+	}
+	return docWasChanged;
+}
+
+NotesSet* ScribusDoc::newNotesSet(NotesSet NS)
+{
+	QString nsName = NS.name();
+
+	//if doc is loading overwrite current set
+	NotesSet* newNS = getNS(nsName);
+	if (isLoading() && (newNS != NULL))
+		*newNS = NS;
+	else
+	{
+		//add new notes set
+		if (!validateNSet(NS))
+			return NULL;
+		newNS = new NotesSet();
+		*newNS = NS;
+		QStringList nsNames;
+		for (int a = 0; a< m_docNotesSetsList.count(); ++a)
+			nsNames.append(m_docNotesSetsList.at(a)->name());
+		getUniqueName(nsName, nsNames, "_");
+		newNS->setName(nsName);
+		m_docNotesSetsList.append(newNS);
+	}
+	return newNS;
+}
+
+void ScribusDoc::renameNotesSet(NotesSet* NS, QString newName)
+{
+	foreach (Mark* mrk, m_docMarksList)
+		mrk->label.replace("_" + NS->name()+ "_", "_" + newName + "_");
+	NS->setName(newName);
+}
+
+void ScribusDoc::deleteNoteSet(QString nsName)
+{
+	NotesSet* NS = getNS(nsName);
+	assert(NS != NULL);
+	//do not delete default notes set
+	if (NS == m_docNotesSetsList.at(0))
+		return;
+	
+	QList<TextNote*> toDel;
+	//search for notes to deleting
+	foreach (TextNote* note, m_docNotesList)
+	{
+		if (note->notesSet() == NS)
+			toDel.append(note);
+	}
+	//deleting notes
+	if (!toDel.isEmpty())
+	{
+		while (!toDel.isEmpty())
+			deleteNote(toDel.takeFirst(), true);
+	}
+	notesFramesUpdate();
+	m_docNotesSetsList.removeOne(NS);
+	delete NS;
+	flag_updateNotesLabels = true;
+	flag_updateEndNotes = true;
+}
+
+NotesSet* ScribusDoc::getNS(QString nsName)
+{
+	for (int a=0; a < m_docNotesSetsList.count(); ++a)
+	{
+		if (m_docNotesSetsList.at(a)->name() == nsName)
+			return m_docNotesSetsList.at(a);
+	}
+	return NULL;
+}
+
+void ScribusDoc::deleteNote(TextNote* note, bool fromText)
+{
+	if (note == NULL)
+		return;
+	PageItem_NoteFrame* nF = NULL;
+	if (note->noteMark() != NULL)
+		if (note->noteMark()->getItemPtr() != NULL)
+			nF = note->noteMark()->getItemPtr()->asNoteFrame();
+	if (nF == NULL)
+		nF = findMark(note->noteMark())->asNoteFrame();
+	Q_ASSERT(nF != NULL);
+	nF->removeNote(note);
+	if (note->masterMark() != NULL)
+		eraseMark(note->masterMark(), fromText);
+	if (note->noteMark() != NULL)
+		eraseMark(note->noteMark(), fromText);
+	m_docNotesList.removeOne(note);
+	delete note;
+}
+
+void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesSet* nSet, int &num)
+{
+	//update marks strings in master text and in notes frame (only numbers!)
+	//check if notes schould be added or removed from notes frame
+	int noteNum = num;
+	ScText* hl;
+	int index = 0;
+	bool doUpdate = false;
+
+	for (int pos = frame->firstInFrame(); pos <= frame->lastInFrame(); ++pos)
+	{
+		hl = frame->itemText.item(pos);
+		if (hl->hasMark() && hl->mark->isType(MARKNoteMasterType))
+		{
+			if (hl->mark->getNotePtr() == NULL)
+				continue;
+			if (hl->mark->getNotePtr()->notesSet() == nSet)
+			{
+				QString numStr = nSet->prefix() + nSet->numString(noteNum) + nSet->suffix();
+				QString mStr = hl->mark->getString();
+				QString label = hl->mark->label;
+				if ((mStr != numStr) || flag_updateNotesLabels || flag_updateEndNotes)
+				{
+					doUpdate = true;
+					hl->mark->setString(numStr);
+					label = "NoteMark_" + nSet->name();
+					if (nSet->range() != NSRdocument)
+					{
+						if (nSet->range() == NSRsection)
+							label += " in section " + getSectionNameForPageIndex(frame->OwnPage) + " page " + QString::number(frame->OwnPage +1);
+						else if (nSet->range() == NSRpage)
+							label += " on page " + QString::number(frame->OwnPage +1);
+						else if (nSet->range() == NSRstory)
+							label += " in " + frame->firstInChain()->itemName();
+						else if (nSet->range() == NSRframe)
+							label += " in frame " + frame->itemName();
+					}
+					label += "_" + QString::number(noteNum);
+					hl->mark->label = label;
+				}
+				TextNote* note = hl->mark->getNotePtr();
+				note->setNum(noteNum);
+				note->masterMark()->setItemPtr(frame);
+				if (note->noteMark() != NULL)
+				{
+					note->noteMark()->setString(numStr);
+					label = label.replace("NoteMark","NoteFrameMark");
+					note->noteMark()->label = label;
+				}
+				++index;
+				++noteNum;
+			}
+		}
+	}
+	PageItem_NoteFrame * nF;
+	if (nSet->isEndNotes())
+		nF = endNoteFrame(nSet);
+	else
+		nF = frame->itemNoteFrame(nSet);
+
+	if (doUpdate)
+	{
+		frame->invalidateLayout();
+		if (nF != NULL)
+		{
+			if (nSet->isEndNotes())
+				m_docEndNoteFrameChanged.append(nF);
+			else if (!nF->deleteIt)
+				nF->invalidateLayout(true);
+		}
+	}
+	num = noteNum;
+	if (!nSet->isEndNotes() && (index == 0) && (nF != NULL))
+		nF->deleteIt = true;
+}
+
+bool ScribusDoc::updateNotesNums(NotesSet *nSet)
+{
+	bool docWasChanged = false;
+	flag_restartMarksRenumbering = false;
+	flag_updateEndNotes = false;
+	PageItem_NoteFrame* endNF = NULL;
+	if (nSet->isEndNotes() && nSet->range() == NSRdocument)
+	{
+		endNF = endNoteFrame(nSet);
+		if (endNF != NULL)
+			clearNotesInFrameList(endNF);
+	}
+	flag_layoutNotesFrames = false;  //do not layout notes frames while counting notes
+	int num, i;
+	int itemsCount = Items->count();
+	if ((nSet->range() == NSRdocument) || ((nSet->range() == NSRsection) && docPrefsData.docSectionMap.isEmpty()))
+	{
+		//FIX ME: how to change frames order on page? and what about reverse page order?
+		num = nSet->start();
+		for (int page = 0; page < Pages->count(); ++page)
+		{
+			for (i = 0; i < itemsCount; ++i)
+			{
+				PageItem* currItem = Items->at(i);
+				if ((currItem->OwnPage == page) && currItem->isTextFrame() && !currItem->isNoteFrame() && (currItem->itemText.length() > 0))
+				{
+					if (!currItem->asTextFrame()->isValidChainFromBegin())
+					{
+						currItem->layout();
+						if (flag_restartMarksRenumbering)
+						{
+							//restart whole update as items was changed
+							if (endNF != NULL)
+								clearNotesInFrameList(endNF);
+							page = -1;
+							i = -1;
+							itemsCount = Items->count();
+							num = nSet->start();
+							docWasChanged = true;
+							flag_restartMarksRenumbering = false;
+							break;
+						}
+					}
+					if (nSet->isEndNotes() || currItem->asTextFrame()->hasNoteFrame(nSet, false))
+						updateItemNotesNums(currItem->asTextFrame(), nSet, num);
+					if (currItem->asTextFrame()->hasNoteFrame(nSet, false) && currItem->asTextFrame()->itemNoteFrame(nSet)->invalid)
+						docWasChanged = true;
+					if (currItem->invalid)
+					{
+						currItem->layout();
+						docWasChanged = true;
+					}
+				}
+			}
+		}
+		if ((num == nSet->start()) && nSet->isEndNotes())
+		{
+			PageItem_NoteFrame* nF = endNoteFrame(nSet);
+			if (nF != NULL)
+				nF->deleteIt = true;
+		}
+	}
+	else if (nSet->range() == NSRsection)
+	{
+		Q_ASSERT(!docPrefsData.docSectionMap.isEmpty());
+		foreach (DocumentSection section, docPrefsData.docSectionMap.values())
+		{
+			num = nSet->start();
+			for (int page = section.fromindex; page <= (int) section.toindex ; ++page)
+			{
+				if (nSet->isEndNotes())
+				{
+					endNF = endNoteFrame(nSet, getSectionKeyForPageIndex(page));
+					if (endNF != NULL)
+						clearNotesInFrameList(endNF);
+				}
+				for (i = 0; i < itemsCount; ++i)
+				{
+					PageItem* currItem = Items->at(i);
+					if (currItem == NULL)
+						continue;
+					if ((currItem->OwnPage == page) && currItem->isTextFrame() && !currItem->isNoteFrame() && (currItem->itemText.length() > 0))
+					{
+						if (!currItem->asTextFrame()->isValidChainFromBegin())
+						{
+							currItem->layout();
+							if (flag_restartMarksRenumbering)
+							{
+								//restart whole update as items was changed
+								if (endNF != NULL)
+									clearNotesInFrameList(endNF);
+								page = section.fromindex -1;
+								i = -1;
+								itemsCount = Items->count();
+								num = nSet->start();
+								docWasChanged = true;
+								flag_restartMarksRenumbering = false;
+								break;
+							}
+						}
+						if (nSet->isEndNotes() || currItem->asTextFrame()->hasNoteFrame(nSet, false))
+							updateItemNotesNums(currItem->asTextFrame(), nSet, num);
+						if (currItem->asTextFrame()->hasNoteFrame(nSet, false) && currItem->asTextFrame()->itemNoteFrame(nSet)->invalid)
+							docWasChanged = true;
+						if (currItem->invalid)
+						{
+							currItem->layout();
+							docWasChanged = true;
+						}
+					}
+				}
+				if ((i != -1) && (num == nSet->start()) && nSet->isEndNotes())
+				{
+					PageItem_NoteFrame* nF = endNoteFrame(nSet);
+					if (nF != NULL)
+						nF->deleteIt = true;
+				}
+			}
+		}
+	}
+	else if (nSet->range() == NSRstory || nSet->range() == NSRframe)
+	{
+		for (i = 0; i < itemsCount; ++i)
+		{
+			PageItem* currItem = Items->at(i);
+			if (currItem == NULL)
+				continue;
+			if (currItem->isTextFrame() && !currItem->isNoteFrame() && (currItem->itemText.length() > 0))
+			{
+				if (nSet->isEndNotes() && nSet->range() == NSRstory)
+				{
+					endNF = endNoteFrame(nSet, (void*) currItem);
+					if (endNF != NULL)
+						clearNotesInFrameList(endNF);
+				}
+				if (!currItem->asTextFrame()->isValidChainFromBegin())
+				{
+					currItem->layout();
+					if (flag_restartMarksRenumbering)
+					{
+						//restart whole update as items was changed
+						if (endNF != NULL)
+							clearNotesInFrameList(endNF);
+						i = -1;
+						itemsCount = Items->count();
+						docWasChanged = true;
+						flag_restartMarksRenumbering = false;
+						continue;
+					}
+				}
+				if (nSet->range() == NSRstory)
+				{
+					//restart numeration for all first frames of story chain
+					if (currItem->prevInChain() == NULL)
+					{
+						num = nSet->start();
+						PageItem* nextItem = currItem;
+						while (nextItem != NULL)
+						{
+							if (nSet->isEndNotes() || nextItem->asTextFrame()->hasNoteFrame(nSet, false))
+								updateItemNotesNums(nextItem->asTextFrame(), nSet, num);
+							nextItem = nextItem->nextInChain();
+						}
+					}
+				}
+				else	//restart numeration for each frame
+				{
+					num = nSet->start();
+					if (nSet->isEndNotes() || currItem->asTextFrame()->hasNoteFrame(nSet, false))
+						updateItemNotesNums(currItem->asTextFrame(), nSet, num);
+				}
+				if (currItem->asTextFrame()->hasNoteFrame(nSet, false) && currItem->asTextFrame()->itemNoteFrame(nSet)->invalid)
+					docWasChanged = true;
+				if (currItem->invalid)
+				{
+					currItem->layout();
+					docWasChanged = true;
+				}
+			}
+		}
+	}
+	else if (nSet->range() == NSRpage)
+	{
+		for (int page = 0; page < Pages->count(); ++page)
+		{
+			if (nSet->isEndNotes() && nSet->range() == NSRpage)
+			{
+				endNF = endNoteFrame(nSet, (void*) DocPages.at(page));
+				if (endNF != NULL)
+					clearNotesInFrameList(endNF);
+			}
+			//restart numeration for each page
+			num = nSet->start();
+
+			for (i = 0; i < itemsCount; ++i)
+			{
+				PageItem* currItem = Items->at(i);
+				if (currItem == NULL)
+					continue;
+				if ((currItem->OwnPage == page) && currItem->isTextFrame() && !currItem->isNoteFrame() && (currItem->itemText.length() > 0))
+				{
+					if (!currItem->asTextFrame()->isValidChainFromBegin())
+					{
+						currItem->layout();
+						if (flag_restartMarksRenumbering)
+						{
+							//restart whole update as items was changed
+							if (endNF != NULL)
+								clearNotesInFrameList(endNF);
+							page = -1;
+							i = -1;
+							itemsCount = Items->count();
+							num = nSet->start();
+							docWasChanged = true;
+							flag_restartMarksRenumbering = false;
+							break;
+						}
+					}
+					if (nSet->isEndNotes() || currItem->asTextFrame()->hasNoteFrame(nSet, false))
+						updateItemNotesNums(currItem->asTextFrame(), nSet, num);
+					if (currItem->asTextFrame()->hasNoteFrame(nSet, false) && currItem->asTextFrame()->itemNoteFrame(nSet)->invalid)
+						docWasChanged = true;
+					if (currItem->invalid)
+					{
+						currItem->layout();
+						docWasChanged = true;
+					}
+				}
+			}
+			if ((i != -1) && (num == nSet->start()) && nSet->isEndNotes())
+			{
+				PageItem_NoteFrame* nF = endNoteFrame(nSet);
+				if (nF != NULL)
+					nF->deleteIt = true;
+			}
+		}
+	}
+	flag_layoutNotesFrames = true;
+	return docWasChanged;
+}
+
+bool ScribusDoc::updateEndNotesNums()
+{
+	bool docWasChange = false;
+	foreach (NotesSet* ns, m_docNotesSetsList)
+	{
+		if (ns->isEndNotes())
+		{
+			if (updateNotesNums(ns))
+				docWasChange = true;
+		}
+	}
+	return docWasChange;
+}
+
+void ScribusDoc::updateNotesFramesStyles(NotesSet *nSet)
+{
+	for (int i=0; i<Items->count(); ++i)
+	{
+		PageItem* item = Items->at(i);
+		if (item->isNoteFrame() && (item->asNoteFrame()->notesSet() == nSet) && !item->asNoteFrame()->deleteIt)
+		{
+			ParagraphStyle newStyle;
+			if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+			{
+				if (nSet->isEndNotes())
+					//set default doc style
+					newStyle.setParent(paragraphStyles()[0].name());
+				else
+				{
+					if (item->asNoteFrame()->masterFrame() != NULL)
+					{
+						//set back style from master frame
+						newStyle.setParent(item->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
+						newStyle.applyStyle(item->asNoteFrame()->masterFrame()->currentStyle());
+					}
+					else
+						newStyle.setParent(item->itemText.defaultStyle().parent());
+				}
+			}
+			else
+				newStyle.setParent(nSet->notesParStyle());
+			item->itemText.setDefaultStyle(newStyle);
+			item->asTextFrame()->invalidateLayout(true);
+		}
+	}
+}
+
+void ScribusDoc::updateItemNotesFramesStyles(PageItem* item)
+{
+	if (item->isTextFrame() && !item->isNoteFrame())
+	{
+		item = item->firstInChain();
+
+		while (item != NULL)
+		{
+			foreach (PageItem_NoteFrame* nF, item->asTextFrame()->notesFramesList())
+			{
+				NotesSet* nSet = nF->notesSet();
+				ParagraphStyle newStyle;
+				if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+				{
+					if (nSet->isEndNotes())
+						//set default doc style
+						newStyle.setParent(paragraphStyles()[0].name());
+					else
+					{
+						//set back style from master frame
+						newStyle.setParent(item->itemText.defaultStyle().parent());
+						newStyle.applyStyle(item->currentStyle());
+					}
+				}
+				else
+					newStyle.setParent(nSet->notesParStyle());
+				nF->itemText.setDefaultStyle(newStyle);
+			}
+			item = item->nextInChain();
+		}
+	}
+}
+
+QList<PageItem_NoteFrame *> ScribusDoc::listNotesFrames(NotesSet *NS)
+{
+	QList<PageItem_NoteFrame *> list;
+	foreach(PageItem* item, DocItems)
+	{
+		if (item->isNoteFrame() && item->asNoteFrame()->notesSet() == NS)
+			list.append(item->asNoteFrame());
+	}
+	return list;
+}
+
+const ScPage *ScribusDoc::page4EndNotes(NotesSet *NS, PageItem* item)
+{
+	ScPage* scP = NULL;
+	if ((NS->range() == NSRdocument) || ((NS->range() == NSRsection) && docPrefsData.docSectionMap.isEmpty()))
+		scP = DocPages.last();
+	else if (item != NULL)
+	{
+		if (NS->range() == NSRpage)
+			scP = DocPages.at(item->OwnPage);
+		else if (NS->range() == NSRsection)
+		{
+			int section = getSectionKeyForPageIndex(item->OwnPage);
+			DocumentSection sec = sections().find(section).value();
+			scP = DocPages.at(sec.toindex);
+		}
+		else if (NS->range() == NSRstory)
+			scP = DocPages.at(item->lastInChain()->OwnPage);
+	}
+
+	return scP;
+}
+
+void ScribusDoc::notesFramesUpdate()
+{
+	bool removeEmptyNF = false;
+	int end;
+	do {
+		flag_notesChanged = false;
+		end = Items->count();
+		for (int i = 0; i < end; ++i)
+		{
+			PageItem* item = Items->at(i);
+			if (!item->isTextFrame())
+				continue;
+			if (item->isNoteFrame())
+			{
+				 if (item->asNoteFrame()->isEndNotesFrame())
+					//update content and move endnotes if pages were removed
+					updateEndNotesFrameContent(item->asNoteFrame());
+				 if (!item->asNoteFrame()->deleteIt)
+				{
+					 if (item->asNoteFrame()->masterFrame() != NULL)
+					 {
+						 //updayte styles for endnotes
+						 item->asNoteFrame()->masterFrame()->layout();
+					 }
+					 item->invalid = true;
+					 item->layout();
+				 }
+				 else
+					removeEmptyNF = true;
+			}
+			else if (item->asTextFrame()->hasNoteFrame(NULL, true))
+				item->layout();
+			if (end != Items->count())
+				flag_notesChanged = true;
+			if (flag_notesChanged)
+				break;
+		}
+	} while (flag_notesChanged);
+
+	if (removeEmptyNF)
+	{
+		end = Items->count();
+		QList<PageItem*> tmplist;
+		for (int i = 0; i < end; ++i)
+		{
+			PageItem* item = Items->at(i);
+			if (item->isNoteFrame() && item->asNoteFrame()->deleteIt)
+				tmplist.append(item);
+		}
+		foreach (PageItem* item, tmplist)
+			delNoteFrame(item->asNoteFrame());
+	}
+}
+
+void ScribusDoc::updateNotesFramesSettings(NotesSet *NS)
+{
+	foreach (PageItem_NoteFrame* nF, listNotesFrames(NS))
+	{	
+		if (nF->isWelded() && !NS->isAutoWeldNotesFrames())
+			nF->unWeld();
+		if (!nF->isWelded() && NS->isAutoWeldNotesFrames())
+		{
+			nF->setYPos(nF->masterFrame()->yPos() + nF->masterFrame()->height());
+			nF->setXPos(nF->masterFrame()->xPos());
+			nF->addWelded(nF->masterFrame());
+			nF->masterFrame()->addWelded(nF);
+			nF->masterFrame()->setWeldPoint(0, nF->masterFrame()->height(), nF);
+			nF->setWeldPoint(0,0, nF->masterFrame());
+			nF->invalidateLayout();
+		}
+		if (NS->isAutoNotesHeight() || NS->isAutoNotesWidth())
+			nF->invalidateLayout();
+	}
+}
+
+void ScribusDoc::updateEndnotesFrames(NotesSet* nSet)
+{
+	if (m_docEndNotesFramesMap.isEmpty())
+		return;
+	if (nSet == NULL)
+	{
+		int NScount = m_docNotesSetsList.count();
+		for (int i=0; i < NScount; ++i)
+			updateEndnotesFrames(m_docNotesSetsList.at(i));
+	}
+	else if (nSet->isEndNotes())
+	{
+		if (!nSet->isEndNotes())
+			return;
+		foreach (PageItem_NoteFrame* nF, listNotesFrames(nSet))
+			updateEndNotesFrameContent(nF);
+	}
+	flag_updateEndNotes = false;
+}
+
+//for sorting purpose
+bool ascendingSort(TextNote* nt1, TextNote* nt2) { return nt1->num() < nt2->num(); }
+
+void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF)
+{
+	QList<TextNote*> nList;
+	foreach (PageItem* item, DocItems)
+	{
+		if (item->isTextFrame() && !item->isNoteFrame())
+		{
+			QList<TextNote*> nL = item->asTextFrame()->notesList(nF);
+			if (!nL.isEmpty())
+				nList.append(nL);
+		}
+	}
+
+	if (nList.isEmpty())
+	{
+		nF->deleteIt = true;
+		if (nF->itemText.length() > 0)
+			nF->itemText.clear();
+		m_docNotesInFrameMap.insert(nF, nList);
+		nF->updateNotes(nList);
+	}
+	else
+		nF->deleteIt = false;
+	PageItem* master = NULL;
+	if (!nList.isEmpty())
+		master = nList.at(0)->masterMark()->getItemPtr();
+	const ScPage* scP = page4EndNotes(nF->notesSet(), master);
+	if (scP != NULL) //move endnotes frame to its proper page
+	{
+		double x,y;
+		x = scP->Margins.Left + rulerXoffset + scP->xOffset();
+		y = scP->Margins.Top + rulerYoffset + scP->yOffset();
+		if ((scP->pageNr() != nF->OwnPage) || (nF->xPos() > (x + scP->width())) || nF->yPos() > (y + scP->height()))
+			nF->setXYPos(x,y);
+	}
+
+	NotesSet* currNS = nF->notesSet();
+	if (!nF->deleteIt && (currNS->isAutoNotesHeight() || currNS->isAutoNotesWidth()))
+		nF->invalidateLayout();
+
+	if (nList == m_docNotesInFrameMap.value(nF))
+		return;
+
+	QList<TextNote*> oldList = nF->notesList();
+	nF->updateNotes(m_docNotesInFrameMap.value(nF));
+	qSort(nList.begin(), nList.end(), ascendingSort);
+	if (nList != oldList)
+	{
+		nF->updateNotes(nList);
+//		nF->itemText.clear();
+//		while (!nList.isEmpty())
+//			nF->insertNote(tempList.takeLast());
+		nF->invalid = true;
+		nF->layout();
+		//layout all endnotes frames with same range
+		foreach (NotesSet* NS, m_docNotesSetsList)
+		{
+			if ((NS != currNS) && (NS->isEndNotes() && NS->range() == currNS->range()))
+				foreach (PageItem_NoteFrame* NF, listNotesFrames(NS))
+					NF->updateLayout();
+		}
+		m_docNotesInFrameMap.insert(nF, nList);
+	}
+}
+
+void ScribusDoc::updateChangedEndNotesFrames()
+{
+	while (!m_docEndNoteFrameChanged.isEmpty())
+	{
+		PageItem_NoteFrame* nF = m_docEndNoteFrameChanged.first();
+		m_docEndNoteFrameChanged.removeAll(nF);
+		updateEndNotesFrameContent(nF);
+		if (nF->deleteIt)
+			delNoteFrame(nF);
+	}
+}
+
+void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool force)
+{
+	Q_ASSERT(nF != NULL);
+	if (nF->itemText.length() > 0)
+	{
+		nF->removeMarksFromText(true);
+		nF->itemText.clear();
+		if (appMode == modeEdit && nF->isSelected())
+		{
+			view()->Deselect(true);
+			view()->requestMode(modeNormal);
+		}
+		NotesSet* nSet = nF->notesSet();
+		if (nSet->isEndNotes())
+		{
+			m_docEndNotesFramesMap.remove(nF);
+			foreach (PageItem* item, DocItems)
+			{
+				bool hasNF = false;
+				if (item->isTextFrame() && !item->isNoteFrame())
+				{
+					hasNF = item->asTextFrame()->hasNoteFrame(nF);
+					item->asTextFrame()->delNoteFrame(nF);
+				}
+				if (hasNF)
+					item->asTextFrame()->invalidateLayout();
+			}
+		}
+		else
+		{
+			PageItem_TextFrame* master = nF->masterFrame();
+			if (master != NULL)
+			{
+				master->delNoteFrame(nF);
+				master->invalidateLayout();
+			}
+		}
+	}
+	m_docNotesInFrameMap.remove(nF);
+
+	nF->dropLinks();
+	if (nF->isWelded())
+		nF->unWeld();
+	//delete marks pointed to that item
+	//FIX ME - as notes frames are dynamic so creating marks pointed to it should be avoided
+	for (int a=0; a < m_docMarksList.count(); ++a)
+	{
+		Mark* m = m_docMarksList.at(a);
+		Q_ASSERT(m != NULL);
+		if (m->isType(MARK2ItemType) && (m->getItemPtr() == nF))
+			m->setItemPtr(NULL);
+	}
+	if (Items->removeOne(nF))
+	{
+		flag_notesChanged = true;
+		delete nF;
+	}
+}
+
+bool ScribusDoc::validateNSet(NotesSet NS, QString newName)
+{
+	//check if choosen numbering type is avaiable with choosen range, prefix and suffix
+	QString errStr = QString();
+	foreach (NotesSet* NS2, m_docNotesSetsList)
+	{
+		if (newName.isEmpty())
+			//hack for validate nset while its name will change
+			newName = NS.name();
+		if (newName == NS2->name())
+			continue;
+		if (NS.range() == NS2->range())
+		{
+				if ((NS.getType() == NS2->getType()) && (NS.prefix() == NS2->prefix()) && (NS.suffix() == NS2->suffix()))
+					errStr.append(NS.name() + tr("Notes set has document as range and provide same numbering style as set ") + NS2->name() + "\n");
+		}
+	}
+
+	if (!errStr.isEmpty() && ScCore->usingGUI())
+	{
+		ScMessageBox::warning(this->scMW(), QObject::tr("Unaceptable settings for Notes Set"), "<qt>"+ errStr +"</qt>", QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
+		return false;
+	}
+	return true;
+}
+
+void ScribusDoc::invalidateNoteFrames(NotesSet *nSet)
+{
+	foreach (PageItem_NoteFrame* nF, listNotesFrames(nSet))
+		nF->invalid = true;
+}
+
+PageItem_NoteFrame *ScribusDoc::endNoteFrame(NotesSet *nSet, PageItem_TextFrame *master)
+{
+	if (nSet->range() == NSRdocument)
+		return endNoteFrame(nSet);
+	else if (nSet->range() == NSRsection)
+		return endNoteFrame(nSet, getSectionKeyForPageIndex(master->OwnPage));
+	else if (nSet->range() == NSRpage)
+		return endNoteFrame(nSet, (void*) DocPages.at(master->OwnPage));
+	else if (nSet->range() == NSRstory)
+		return endNoteFrame(nSet, master->firstInChain());
+	return NULL;
+}
+
+PageItem_NoteFrame* ScribusDoc::endNoteFrame(NotesSet *nSet, int sectIndex)
+{
+	if (nSet->range() != NSRsection)
+		return NULL;
+	if (m_docEndNotesFramesMap.isEmpty())
+		return NULL;
+
+	QMap<PageItem_NoteFrame*, rangeItem>::Iterator it = m_docEndNotesFramesMap.begin();
+	QMap<PageItem_NoteFrame*, rangeItem>::Iterator end = m_docEndNotesFramesMap.end();
+	while (it != end)
+	{
+		PageItem_NoteFrame* nF = it.key();
+		if (nF->notesSet() == nSet)
+		{
+			rangeItem rItem = it.value();
+			if (rItem.sectionIndex == sectIndex)
+				return nF;
+		}
+		++it;
+	}
+	return NULL;
+}
+
+PageItem_NoteFrame* ScribusDoc::endNoteFrame(NotesSet *nSet, void* item)
+{
+	if (m_docEndNotesFramesMap.isEmpty())
+		return NULL;
+	if ((nSet->range() != NSRdocument) && (item == NULL))
+		return NULL;
+
+	QMap<PageItem_NoteFrame*, rangeItem>::Iterator it = m_docEndNotesFramesMap.begin();
+	QMap<PageItem_NoteFrame*, rangeItem>::Iterator end = m_docEndNotesFramesMap.end();
+
+	while (it != end)
+	{
+		PageItem_NoteFrame* nF = it.key();
+		rangeItem rItem = it.value();
+
+		if (nF->notesSet() == nSet)
+		{
+			if ((nSet->range() == NSRdocument) || (item == rItem.P))
+				return nF;
+		}
+		++it;
+	}
+	return NULL;
 }
