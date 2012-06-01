@@ -18,6 +18,8 @@ for which a new license (GPL+exception) is in place.
 
 #include "runscriptdialog.h"
 #include "ui/helpbrowser.h"
+#include "ui/marksmanager.h"
+#include "ui/notessetmanager.h"
 #include "ui/propertiespalette.h" //TODO Move the calls to this to a signal
 #include "ui/pagepalette.h" //TODO Move the calls to this to a signal
 #include "ui/layers.h" //TODO Move the calls to this to a signal
@@ -151,6 +153,8 @@ void ScripterCore::FinishScriptRun()
 	if (ScMW->HaveDoc)
 	{
 		ScMW->propertiesPalette->setDoc(ScMW->doc);
+		ScMW->marksManager->setDoc(ScMW->doc);
+		ScMW->nsManager->setDoc(ScMW->doc);
 		ScMW->layerPalette->setDoc(ScMW->doc);
 		ScMW->outlinePalette->setDoc(ScMW->doc);
 		ScMW->outlinePalette->BuildTree();

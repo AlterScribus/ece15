@@ -41,10 +41,13 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 #include "colormgmt/sccolormgmtengine.h"
 #include "documentinformation.h"
+#include "marks.h"
+#include "notesset.h"
 #include "observable.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
 #include "pageitem_latexframe.h"
+#include "pageitem_textframe.h"
 #include "pagestructs.h"
 #include "prefsstructs.h"
 #include "scguardedptr.h"
@@ -75,8 +78,10 @@ class PageSize;
 class ScPattern;
 class UndoTransaction;
 class Serializer;
-
 class QProgressBar;
+class MarksManager;
+class NotesSet;
+class TextNote;
 
 struct SCRIBUS_API NodeEditContext : public MassObservable<QPointF>
 {
@@ -459,6 +464,7 @@ public:
 	 * @brief Return the layer count
 	 * @return Number of layers in doc
 	 */
+	int layerIDFromName(QString name);
 	int layerCount() const;
 	/**
 	 * @brief Lower a layer
@@ -777,8 +783,9 @@ public:
 	\param w ?
 	\param fill fill color name
 	\param outline outline color name
+	\param noteFrame optional (default false) indicates that noteframes should be created, not text frame
 	*/
-	int itemAdd(const PageItem::ItemType itemType, const PageItem::ItemFrameType frameType, const double x, const double y, const double b, const double h, const double w, const QString& fill, const QString& outline, const bool itemFinalised);
+	int itemAdd(const PageItem::ItemType itemType, const PageItem::ItemFrameType frameType, const double x, const double y, const double b, const double h, const double w, const QString& fill, const QString& outline, const bool itemFinalised, const bool noteFrame = false);
 
 	/** Add an item to the page based on the x/y position. Item will be fitted to the closest guides/margins */
 	int itemAddArea(const PageItem::ItemType itemType, const PageItem::ItemFrameType frameType, const double x, const double y, const double w, const QString& fill, const QString& outline, const bool itemFinalised);
@@ -971,6 +978,11 @@ public:
 	 * 
 	 */
 	void setFirstSectionFromFirstPageNumber();
+	/**
+	 * @param pageIndex page nr
+	 * @brief Returns name of section where page is located
+	 */
+	QString getSectionNameForPageIndex(const uint pageIndex) const;
 
 	//! @brief Some internal align tools
 	typedef enum {alignFirst, alignLast, alignPage, alignMargins, alignGuide, alignSelection } AlignTo;
@@ -1337,7 +1349,7 @@ private:
 	MassObservable<ScPage*> m_pagesChanged;
 	MassObservable<QRectF> m_regionsChanged;
 	DocUpdater* m_docUpdater;
-	
+
 signals:
 	//Lets make our doc talk to our GUI rather than confusing all our normal stuff
 	/**
@@ -1598,7 +1610,120 @@ public slots:
 	void updatePict(QString name);
 	void updatePictDir(QString name);
 	void removePict(QString name);
-//welding two items
+
+// Marks and notes
+public:
+	/**
+	 * Explanation
+	 * master frame - text frame with marks for notes
+	 * notesframe - frame with notes
+	 * master & note mark - master is mark in "master" text, note mark is at begining of note in noteframe
+	 */
+	
+	//return page where endnotesframe should be located depending of notes set range and location of master mark
+	const ScPage* page4EndNotes(NotesSet* NS, PageItem* item);
+
+	//data handling structures
+	QList<Mark*> m_docMarksList;
+	QList<NotesSet*> m_docNotesSetsList;
+	QList<TextNote*> m_docNotesList;
+	QMap<PageItem_NoteFrame*, rangeItem> m_docEndNotesFramesMap;
+
+	//returns list of notesframes for given Notes Set
+	QList<PageItem_NoteFrame*> listNotesFrames(NotesSet* NS);
+
+	//flags used for indicating needs of updates
+	bool flag_notesChanged;
+	bool flag_restartMarksRenumbering;
+	bool flag_updateNotesLabels;
+	bool flag_updateEndNotes;
+	bool flag_layoutNotesFrames;
+
+	//returns list of marks labels for given mark type
+	QStringList marksLabelsList(MarkType type);
+
+	//return mark definied with gioven label and given type
+	Mark* getMarkDefinied(QString label, MarkType type); //returns mark with label and type (labels are unique only for same type marks)
+
+	
+	bool isMarkUsed(Mark* mrk, bool visible = false);
+	//set cursor in text where given mark will be found
+	void setCursor2MarkPos(Mark* mark);
+	//return false if mark was not found
+	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL);
+	//invalidate all text frames where given mark will found
+	//usefull spacially for varaible text marks after changing its text definition
+	//if forceUpdate then found master frames are relayouted
+	bool invalidateMarkMastertext(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
+
+	//for foot/endnotes
+	NotesSet* newNotesSet(NotesSet NS);
+	void renameNotesSet(NotesSet* NS, QString newName);
+	//delete whole notes set with its notesframes and notes
+	void deleteNoteSet(QString nsName);
+	NotesSet* getNS(QString nsName);
+	//delete note, if fromText than marks for given note will be removed
+	void deleteNote(TextNote* note, bool fromText = false);
+	//delete noteframe
+	void delNoteFrame(PageItem_NoteFrame *nF, bool force=false);
+	//renumber notes for given notes set
+	//return true if doc needs update after changing numbers of notes
+	bool updateNotesNums(NotesSet* nSet);
+	//set new text styles for notes marks
+	void updateNotesFramesStyles(NotesSet* nSet);
+	//check conflicts beetween notesset
+	bool validateNSet(NotesSet NS, QString newName = "");
+	//update layout remove empty notesframes
+	void notesFramesUpdate();
+	//update notesframes after changing automatic features of notesset
+	void updateNotesFramesSettings(NotesSet* NS);
+
+	//search for endnotesframe for given notes set and item holding master mark
+	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, PageItem_TextFrame* master);
+	//
+	void setEndNoteFrame(PageItem_NoteFrame* nF, void* ptr)   { rangeItem rI={ptr}; m_docEndNotesFramesMap.insert(nF,rI); }
+	void setEndNoteFrame(PageItem_NoteFrame* nF, int section)   { rangeItem rI; rI.sectionIndex = section; m_docEndNotesFramesMap.insert(nF, rI); }
+	//update all endnotesframes content for given notes set
+	void updateEndnotesFrames(NotesSet* nSet = NULL);
+	//update endnotesframe content
+	void updateEndNotesFrameContent(PageItem_NoteFrame* nF);
+	//insert noteframe into list of changed
+	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNoteFrameChanged.append(nF); }
+	//update content for changed endnotesframes
+	void updateChangedEndNotesFrames();
+
+private:
+	QList<PageItem_NoteFrame*> m_docEndNoteFrameChanged;
+	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
+	NotesInFrameMap m_docNotesInFrameMap;
+
+	//finds item which holds given mark, start searching from next to lastItem index in DocItems
+	PageItem* findMark(Mark* mrk, int &lastItem);
+	PageItem* findMark(Mark* mrk) { int tmp = -1; return findMark(mrk, tmp); }
+	//finds mark position in text
+	//return true if mark was found, CPos is set for mark`s position
+	//if item==NULL then search in all items and if mark is found than item is set
+	bool findMarkCPos(Mark* mrk, PageItem* &item, int &CPos);
+
+	//search for endnotesframe for given notes set and item holding master mark or section number
+	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, void* item = NULL);
+	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, int sectIndex);
+	//clear list of notes for given notesframe
+	void clearNotesInFrameList(PageItem_NoteFrame* nF) { m_docNotesInFrameMap.insert(nF, QList<TextNote*>()); }
+	//renumber notes with given notes set for given frame starting from number num
+	void updateItemNotesNums(PageItem_TextFrame *frame, NotesSet *nSet, int &num);
+	//update notesframes text styles
+	void updateItemNotesFramesStyles(PageItem *item);
+	
+	//not used?
+	bool updateEndNotesNums(); //return true if doc needs update
+	void invalidateNoteFrames(NotesSet* nSet);
+
+public slots:
+	//update strings (page numbers) for marks
+	bool updateMarks(bool updateNotesMarks = false);
+
+	//welding two items
 public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();

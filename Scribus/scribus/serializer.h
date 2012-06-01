@@ -53,7 +53,7 @@ public:
 		elements. Since it has Digester as a superclass, a Serializer object can
 	    also be used where a SaxHandler is required as argument, eg. the saxx() method.
 	 */
-	Serializer(ScribusDoc& doc);
+	Serializer(ScribusDoc* doc); //saxing notes needs doc
 	/**
 	  Writes all objects in selection to handler as a fragment. Needed styles and colors
 	  are included.
@@ -80,7 +80,7 @@ public:
 								  const QString& txt);
 
 private:
-	ScribusDoc& m_Doc;
+	ScribusDoc* m_Doc;
 	ColorList backUpColors;
 //	Selection importCollection();
 //	void updateGradientColors(const ColorList& colors);

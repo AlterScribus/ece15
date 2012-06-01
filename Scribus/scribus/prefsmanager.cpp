@@ -310,7 +310,7 @@ void PrefsManager::initDefaults()
 	appPrefs.docSetupPrefs.bleeds.Bottom = 0;
 	appPrefs.hyphPrefs.MinWordLen = 3;
 	appPrefs.hyphPrefs.HyCount = 2;
-	appPrefs.hyphPrefs.Language = "";
+	appPrefs.hyphPrefs.Language = "en_US";
 	appPrefs.hyphPrefs.specialWords.clear();
 	appPrefs.hyphPrefs.ignoredWords.clear();
 	appPrefs.hyphPrefs.Automatic = true;
@@ -1288,8 +1288,6 @@ bool PrefsManager::WritePref(QString ho)
 
 
 	QDomElement dcUI=docu.createElement("UI");
-	dcUI.setAttribute("PagePaletteShowThumbs", static_cast<int>(appPrefs.uiPrefs.SepalT));
-	dcUI.setAttribute("PagePaletteShowNames", static_cast<int>(appPrefs.uiPrefs.SepalN));
 	dcUI.setAttribute("ShowStartupDialog", static_cast<int>(appPrefs.uiPrefs.showStartupDialog));
 	dcUI.setAttribute("ShowSplashOnStartup", static_cast<int>(appPrefs.uiPrefs.showSplashOnStartup));
 	dcUI.setAttribute("UseSmallWidgets", static_cast<int>(appPrefs.uiPrefs.useSmallWidgets));
@@ -1904,8 +1902,6 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.uiPrefs.useSmallWidgets = dc.attribute("UseSmallWidgets").toInt();
 			appPrefs.uiPrefs.useTabs = static_cast<bool>(dc.attribute("UseDocumentTabs", "0").toInt());
 			appPrefs.uiPrefs.stickyTools = static_cast<bool>(dc.attribute("StickyTools", "0").toInt());
-			appPrefs.uiPrefs.SepalT = static_cast<bool>(dc.attribute("PagePaletteShowThumbs").toInt());
-			appPrefs.uiPrefs.SepalN = static_cast<bool>(dc.attribute("PagePaletteShowNames").toInt());
 			appPrefs.uiPrefs.grayscaleIcons = static_cast<bool>(dc.attribute("UseGrayscaleIcons",0).toInt());
 		}
 
@@ -2387,7 +2383,7 @@ bool PrefsManager::ReadPref(QString ho)
 		}
 		if (dc.tagName()=="Hyphenator")
 		{
-			appPrefs.hyphPrefs.Language = dc.attribute("Language","");
+			appPrefs.hyphPrefs.Language = dc.attribute("Language","en_US");
 			appPrefs.hyphPrefs.MinWordLen = dc.attribute("WordLength", "3").toInt();
 			appPrefs.hyphPrefs.HyCount = dc.attribute("HyphenCount", "2").toInt();
 			appPrefs.hyphPrefs.Automatic = static_cast<bool>(dc.attribute("Automatic", "1").toInt());

@@ -26,9 +26,11 @@ pageitem.cpp  -  description
 #include <QList>
 #include <cassert>  //added to make Fedora-5 happy
 #include "fpoint.h"
+#include "notesset.h"
 #include "scfonts.h"
 #include "scribusdoc.h"
 #include "sctext_shared.h"
+#include "selection.h"
 #include "storytext.h"
 #include "scribus.h"
 #include "util.h"
@@ -248,6 +250,7 @@ void StoryText::insert(int pos, const StoryText& other, bool onlySelection)
 		else if (other.text(i) == SpecialChars::OBJECT) {
 			insertChars(pos, SpecialChars::OBJECT);
 			item(pos)->embedded = other.item(i)->embedded;
+			item(pos)->mark = other.item(i)->mark;
 			applyCharStyle(pos, 1, other.charStyle(i));
 			cstyleStart = i+1;
 			pos += 1;
@@ -294,6 +297,7 @@ void StoryText::insertParSep(int pos)
 	}
 	d->replaceCharStyleContextInParagraph(pos, it->parstyle->charStyleContext());
 }
+
 /**
      need to remove the ParagraphStyle structure and replace all pointers
      to it...
@@ -480,6 +484,42 @@ void StoryText::replaceChar(int pos, QChar ch)
 	invalidate(pos, pos + 1);
 }
 
+int StoryText::replaceWord(int pos, QString newWord)
+{
+	int eoWord=pos;
+	while(eoWord < length())
+	{
+		if (text(eoWord).isLetterOrNumber())
+			++eoWord;
+		else
+			break;
+	}
+	QString word=text(pos,eoWord-pos);
+	int lengthDiff=newWord.length()-word.length();
+	if (lengthDiff==0)
+	{
+		for (int j = 0; j < word.length(); ++j)
+			replaceChar(pos+j, newWord[j]);
+	}
+	else
+	{
+		if (lengthDiff>0)
+		{
+			for (int j = 0; j < word.length(); ++j)
+				replaceChar(pos+j, newWord[j]);
+			for (int j = word.length(); j < newWord.length(); ++j)
+				insertChars(pos+j, newWord.mid(j,1), true);
+		}
+		else
+		{
+			for (int j = 0; j < newWord.length(); ++j)
+				replaceChar(pos+j, newWord[j]);
+			removeChars(pos+newWord.length(), -lengthDiff);
+		}
+	}
+	return lengthDiff;
+}
+
 void StoryText::hyphenateWord(int pos, uint len, char* hyphens)
 {
 	assert(pos >= 0);
@@ -517,6 +557,17 @@ void StoryText::insertObject(int pos, int ob)
 	doc->FrameItems[ob]->OwnPage = -1; // #10379: OwnPage is not meaningful for inline object
 }
 
+void StoryText::insertMark(Mark* Mark, int pos)
+{
+	if (Mark == NULL)
+		return;
+	if (pos < 0)
+		pos = d->cursorPosition;
+
+	insertChars(pos, SpecialChars::OBJECT, true);
+	const_cast<StoryText *>(this)->d->at(pos)->mark = Mark;
+}
+
 void StoryText::replaceObject(int pos, int ob)
 {
 	if (pos < 0)
@@ -527,7 +578,6 @@ void StoryText::replaceObject(int pos, int ob)
 	doc->FrameItems[ob]->isEmbedded = true;   // this might not be enough...
 	doc->FrameItems[ob]->OwnPage = -1; // #10379: OwnPage is not meaningful for inline object
 }
-
 
 int StoryText::length() const
 {
@@ -565,6 +615,15 @@ QString StoryText::text(int pos, uint len) const
 	}
 
 	return result;
+}
+
+QString StoryText::sentence(int pos, int &posn)
+{
+	int sentencePos=qMax(0, prevSentence(pos));
+	sentencePos=qMax(sentencePos, nextWord(sentencePos));
+	posn=sentencePos;
+	int nextSentencePos=qMin(length(), nextSentence(pos+1));
+	return text(sentencePos, nextSentencePos-sentencePos);
 }
 
 QString StoryText::textWithSoftHyphens(int pos, uint len) const
@@ -613,6 +672,32 @@ PageItem* StoryText::object(int pos) const
 
 	StoryText* that = const_cast<StoryText *>(this);
 	return that->d->at(pos)->getItem(doc);
+}
+
+bool StoryText::hasMark(int pos) const
+{
+	if (pos < 0)
+		pos += length();
+
+	assert(pos >= 0);
+	assert(pos < length());
+
+	StoryText* that = const_cast<StoryText *>(this);
+	if (that->d->at(pos)->ch == SpecialChars::OBJECT)
+		return that->d->at(pos)->hasMark();
+	return false;
+}
+
+Mark* StoryText::mark(int pos) const
+{
+	if (pos < 0)
+		pos += length();
+
+	assert(pos >= 0);
+	assert(pos < length());
+
+	StoryText* that = const_cast<StoryText *>(this);
+	return that->d->at(pos)->mark;
 }
 
 const CharStyle & StoryText::charStyle() const
@@ -884,11 +969,8 @@ void StoryText::setCharStyle(int pos, uint len, const CharStyle& style)
 			itText->parstyle->charStyle() = style;*/
 		itText->setStyle(style);
 	}
-	
 	invalidate(pos, pos + len);
 }
-
-
 
 void StoryText::getNamedResources(ResourceCollection& lists) const
 {
@@ -905,7 +987,6 @@ void StoryText::getNamedResources(ResourceCollection& lists) const
 			charStyle(i).getNamedResources(lists);
 	}
 }
-
 
 void StoryText::replaceStyles(QMap<QString,QString> newNameForOld)
 {
@@ -935,7 +1016,6 @@ void StoryText::replaceNamedResources(ResourceCollection& newNames)
 	
 	invalidate(0, len);	
 }
-
 
 void StoryText::replaceCharStyles(QMap<QString,QString> newNameForOld)
 {
@@ -1097,9 +1177,21 @@ int StoryText::prevChar(int pos)
 int StoryText::nextWord(int pos)
 {
 	int len = length();
-	pos = qMin(len, pos+1);
-	while (pos < len  && wordBoundaries.indexOf(text(pos)) < 0)
-		++pos;
+	if (text(pos).isLetter())
+		pos = qMin(len, pos+1);
+	else
+		pos = qMin(len, pos);
+
+	//	while (pos < len  && wordBoundaries.indexOf(text(pos)) < 0)
+	//		++pos;
+
+	while (pos < len)
+	{
+		if(text(pos).isLetter())
+			++pos;
+		else
+			break;
+	}
 	return pos < len ? pos + 1 : pos;
 }
 int StoryText::prevWord(int pos)
@@ -1109,6 +1201,20 @@ int StoryText::prevWord(int pos)
 		--pos;
 	return wordBoundaries.indexOf(text(pos)) < 0 ? pos + 1 : pos;
 }
+
+int StoryText::endOfWord(int pos) const
+{
+	int len = length();
+	while (pos < len)
+	{
+		if(text(pos).isLetter())
+			++pos;
+		else
+			break;
+	}
+	return pos;
+}
+
 int StoryText::nextSentence(int pos)
 {
 	int len = length();
@@ -1292,7 +1398,13 @@ int StoryText::endOfSelection() const
 
 int StoryText::lengthOfSelection() const
 {
-	return selFirst <= selLast? selLast - selFirst + 1 : 0;
+	//FIX ME - sometimes I saw values equal or greater than length of text
+	int last = selLast;
+	if (selFirst >= length())
+		return 0;
+	if (selLast >= length())
+		last = length() -1;
+	return selFirst <= last? last - selFirst + 1 : 0;
 }
 
 
@@ -1327,7 +1439,6 @@ int StoryText::selectWord(int pos)
 	select(a, b - a);
 	return a;
 }
-
 
 void StoryText::select(int pos, uint len, bool on)
 {
@@ -1439,8 +1550,6 @@ void StoryText::removeSelection()
 	deselectAll();
 }
 
-
-
 void StoryText::invalidateObject(const PageItem * embedded)
 {
 }
@@ -1451,20 +1560,32 @@ void StoryText::invalidateLayout()
 
 void StoryText::invalidateAll()
 {
+		//FIX ME: realy invalidation is needed before finishing loading document or even if doc is not set?
+	//do not invalidate if doc is not set, doc is loading or signals are blocked
+	//that speeds up layout`s things
+	if (doc == NULL || doc->isLoading() || signalsBlocked())
+		return;
+	
 	d->pstyleContext.invalidate();
 	invalidate(0, nrOfItems());
 }
 
 void StoryText::invalidate(int firstItem, int endItem)
 {
+	//FIX ME: realy invalidation is needed before finishing loading document or even if doc is not set?
+	//do not invalidate if doc is not set, doc is loading or signals are blocked
+	//that speeds up layout`s things
+	if ((doc == NULL) || doc->isLoading() || signalsBlocked())
+		return;
+
 	for (int i=firstItem; i < endItem; ++i) {
 		ParagraphStyle* par = item(i)->parstyle;
 		if (par)
 			par->charStyleContext()->invalidate();
 	}
-	emit changed();
+	if (!signalsBlocked())
+		emit changed();
 }
-
 
 // physical view
 
@@ -1696,6 +1817,35 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 		{
 			object(i)->saxx(handler);
 		}
+		else if (hasMark(i))
+		{
+			Mark* mrk = mark(i);
+			if ((doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteMasterType))
+				|| (!doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType)))
+				continue; //do not insert notes marks into text frames nad vice versa
+			Xml_attr mark_attr;
+			mark_attr.insert("label", mrk->label);
+			mark_attr.insert("typ", QString::number((int )mrk->getType()));
+			if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
+				mark_attr.insert("item", mrk->getItemPtr()->itemName());
+			else if (mrk->isType(MARK2MarkType))
+			{
+				QString l;
+				MarkType t;
+				mrk->getMark(l, t);
+				if (doc->getMarkDefinied(l,t) != NULL)
+				{
+					mark_attr.insert("mark_l", l);
+					mark_attr.insert("mark_t", QString::number((int) t));
+				}
+			}
+			else if (mrk->isType(MARKNoteMasterType))
+			{
+				mark_attr.insert("nset", mrk->getNotePtr()->notesSet()->name());
+				mark_attr.insert("note",mrk->getNotePtr()->saxedText());
+			}
+			handler.beginEnd("mark", mark_attr);
+		}
 		else if (curr == SpecialChars::TAB)
 		{
 			handler.beginEnd("tab", empty);
@@ -1750,9 +1900,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 //		paragraphStyle(length()-1).saxx(handler);
 	
 	handler.end(elemtag);
-
 }
-
 
 class AppendText_body : public Action_body
 {
@@ -1854,6 +2002,85 @@ public:
 };
 
 struct AppendInlineFrame : public MakeAction<AppendInlineFrame_body>
+{};
+
+//marks support
+class AppendMark_body : public Action_body
+{
+public:
+	void begin(const Xml_string& tag, Xml_attr attr)
+	{
+		StoryText* story = this->dig->top<StoryText>();
+		QString l = "";
+		MarkType t = MARKNoType;
+		
+		Mark* mrk = NULL;
+		
+		if (tag == "mark")
+		{
+			Xml_attr::iterator lIt = attr.find("label");
+			Xml_attr::iterator tIt = attr.find("typ");
+			Xml_attr::iterator iIt = attr.find("item");
+			Xml_attr::iterator m_lIt = attr.find("mark_l");
+			Xml_attr::iterator m_tIt = attr.find("mark_t");
+			if (lIt != attr.end())
+				l = Xml_data(lIt);
+			if (tIt != attr.end())
+				t = (MarkType) parseInt(Xml_data(tIt));
+			ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
+			if (t == MARKVariableTextType)
+				mrk = doc->getMarkDefinied(l,t);
+			else
+			{
+				mrk = new Mark();
+				getUniqueName(l,doc->marksLabelsList(t), "_");
+				mrk->label = l;
+				mrk->OwnPage = doc->currentPage()->pageNr();
+				mrk->setType(t);
+				if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
+				{
+					PageItem* item = doc->getItemFromName(Xml_data(iIt));
+					mrk->setItemPtr(item);
+					if (item == NULL)
+						mrk->setString("0");
+					else
+						mrk->setString(QString::number(item->OwnPage));
+					mrk->setItemName(Xml_data(iIt));
+				}
+				if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
+				{
+					Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
+					mrk->setMark(targetMark);
+					if (targetMark == NULL)
+						mrk->setString("0");
+					else
+						mrk->setString(QString::number(targetMark->OwnPage));
+					mrk->setItemName(Xml_data(m_lIt));
+				}
+				if (mrk->isType(MARKNoteMasterType))
+				{
+					Xml_attr::iterator nIt = attr.find("note");
+					Xml_attr::iterator nsIt = attr.find("nset");
+					NotesSet* NS;
+					if (nsIt == attr.end())
+						NS = doc->m_docNotesSetsList.at(0);
+					else
+						NS = doc->getNS(Xml_data(nsIt));
+					TextNote* note = new TextNote(NS);
+					note->setMasterMark(mrk);
+					if (nIt != attr.end())
+						note->setSaxedText(Xml_data(nIt));
+					mrk->setNotePtr(note);
+					doc->flag_notesChanged = true;
+				}
+				doc->m_docMarksList.append(mrk);
+			}
+			story->insertMark(mrk);
+		}
+	}
+};
+
+struct AppendMark : public MakeAction<AppendMark_body>
 {};
 
 /*
@@ -2075,5 +2302,5 @@ void StoryText::desaxeRules(const Xml_string& prefixPattern, Digester& ruleset, 
 	
 	//PageItem::desaxeRules(storyPrefix, ruleset); argh, that would be recursive!
 	ruleset.addRule(Digester::concat(spanPrefix, "item"), AppendInlineFrame() );
-	
+	ruleset.addRule(Digester::concat(spanPrefix, "mark"), AppendMark() );
 }

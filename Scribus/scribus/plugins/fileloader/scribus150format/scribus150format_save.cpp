@@ -20,6 +20,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusdoc.h"
 #include "scribusview.h"
 #include "hyphenator.h"
+#include "notesset.h"
 #include "pageitem_latexframe.h"
 #ifdef HAVE_OSG
 	#include "pageitem_osgframe.h"
@@ -28,7 +29,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_arc.h"
 #include "pageitem_spiral.h"
 #include "pageitem_table.h"
-
+#include "pageitem_noteframe.h"
 #include "units.h"
 #include "util.h"
 #include "util_math.h"
@@ -71,6 +72,9 @@ QString Scribus150Format::saveElements(double xp, double yp, double wp, double h
 		emG.append(currItem);
 		if ((currItem->asTextFrame()) || (currItem->asPathText()))
 		{
+			//for notes frames text should not be saved
+			if (currItem->isNoteFrame())
+				continue;
 			for (int e = currItem->firstInFrame(); e <= currItem->lastInFrame(); ++e)
 			{
 				uint chr = currItem->itemText.text(e).unicode();
@@ -389,6 +393,10 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	writePdfOptions(docu);
 	writeDocItemAttributes(docu);
 	writeTOC(docu);
+	writeMarks(docu);
+	writeNotesSets(docu);
+	writeNotesFrames(docu);
+	writeNotes(docu);
 	writePageSets(docu);
 	writeSections(docu);
 	writePatterns(docu, fileDir);
@@ -1191,6 +1199,9 @@ void Scribus150Format::writeSections(ScXmlStreamWriter & docu)
 			case Type_A_B_C:
 				docu.writeAttribute("Type", "Type_A_B_C");
 				break;
+			case Type_asterix:
+				docu.writeAttribute("Type", "Type_asterix");
+				break;
 			case Type_None:
 				docu.writeAttribute("Type", "Type_None");
 				break;
@@ -1204,6 +1215,154 @@ void Scribus150Format::writeSections(ScXmlStreamWriter & docu)
 	docu.writeEndElement();
 }
 
+void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
+{
+	//write list of definied marks to SLA
+	if (m_Doc->m_docMarksList.isEmpty())
+		return;
+	docu.writeStartElement("Marks");
+	foreach(Mark* mrk,  m_Doc->m_docMarksList)
+	{
+		if (mrk->getType() == MARKNoteFrameType)
+			continue;
+		docu.writeEmptyElement("Mark");
+		docu.writeAttribute("label", mrk->label);
+		docu.writeAttribute("type", mrk->getType());
+		if ((mrk->getType() == MARK2ItemType) && mrk->hasItemPtr())
+		{
+			const PageItem* item = mrk->getItemPtr();
+			assert(item != NULL);
+			docu.writeAttribute("ItemID", qHash(item));
+			//docu.writeAttribute("itemName", item->itemName());
+		}
+		else if ((mrk->getType() == MARKVariableTextType) && mrk->hasString())
+			docu.writeAttribute("str", mrk->getString());
+		else if ((mrk->getType() == MARK2MarkType) && mrk->hasMark())
+		{
+			QString label;
+			MarkType type;
+			mrk->getMark(label, type);
+			docu.writeAttribute("MARKlabel", label);
+			docu.writeAttribute("MARKtype", type);
+		}
+	}
+	docu.writeEndElement();
+}
+
+void Scribus150Format::writeNotesSets(ScXmlStreamWriter & docu)
+{
+	//write notes sets
+	docu.writeStartElement("NotesSets");
+	QList<NotesSet*>::Iterator itNS;
+	QList<NotesSet*>::Iterator end = m_Doc->m_docNotesSetsList.end();
+	for (itNS = m_Doc->m_docNotesSetsList.begin(); itNS != end; ++itNS)
+	{
+		NotesSet* NS = (*itNS);
+		docu.writeEmptyElement("notesSet");
+		docu.writeAttribute("Name", NS->name());
+		docu.writeAttribute("Start", NS->start());
+		docu.writeAttribute("Endnotes", NS->isEndNotes());
+		switch (NS->getType())
+		{
+			case Type_1_2_3:
+				docu.writeAttribute("Type", "Type_1_2_3");
+				break;
+			case Type_i_ii_iii:
+				docu.writeAttribute("Type", "Type_i_ii_iii");
+				break;
+			case Type_I_II_III:
+				docu.writeAttribute("Type", "Type_I_II_III");
+				break;
+			case Type_a_b_c:
+				docu.writeAttribute("Type", "Type_a_b_c");
+				break;
+			case Type_A_B_C:
+				docu.writeAttribute("Type", "Type_A_B_C");
+				break;
+			case Type_asterix:
+				docu.writeAttribute("Type", "Type_asterix");
+				break;
+			case Type_None:
+				docu.writeAttribute("Type", "Type_None");
+				break;
+		}
+		docu.writeAttribute("Range", (int) NS->range());
+		docu.writeAttribute("Prefix", NS->prefix());
+		docu.writeAttribute("Suffix", NS->suffix());
+		docu.writeAttribute("AutoHeight", NS->isAutoNotesHeight());
+		docu.writeAttribute("AutoWidth", NS->isAutoNotesWidth());
+		docu.writeAttribute("AutoRemove", NS->isAutoRemoveEmptyNotesFrames());
+		docu.writeAttribute("AutoWeld", NS->isAutoWeldNotesFrames());
+		docu.writeAttribute("SuperNote", NS->isSuperscriptInNote());
+		docu.writeAttribute("SuperMaster", NS->isSuperscriptInMaster());
+		docu.writeAttribute("MarksStyle", NS->marksChStyle());
+		docu.writeAttribute("NotesStyle", NS->notesParStyle());
+	}
+	docu.writeEndElement();
+}
+
+void Scribus150Format::writeNotesFrames(ScXmlStreamWriter &docu)
+{
+	docu.writeStartElement("NotesFrames");
+
+	QList<PageItem_NoteFrame*> NFList;
+	foreach (NotesSet* NS, m_Doc->m_docNotesSetsList)
+		NFList.append(m_Doc->listNotesFrames(NS));
+
+	for (int it = 0; it < NFList.count(); ++it)
+	{
+		PageItem_NoteFrame* nF = NFList.at(it);
+		NotesSet* NS = nF->notesSet();
+		if (NS->isEndNotes())
+		{
+			docu.writeEmptyElement("ENDNOTEFRAME");
+			docu.writeAttribute("NSname", NS->name());
+			docu.writeAttribute("range", (int) NS->range());
+			docu.writeAttribute("myID", qHash(nF));
+			//docu.writeAttribute("name", nF->itemName());
+			
+			rangeItem rI = m_Doc->m_docEndNotesFramesMap.value(nF);
+			if (NS->range() == NSRsection)
+				docu.writeAttribute("index", rI.sectionIndex);
+			else if (NS->range() == NSRpage)
+				docu.writeAttribute("index", rI.page->pageNr());
+			else if (NS->range() == NSRstory)
+				docu.writeAttribute("ItemID", qHash(rI.firstStoryFrame));
+				//docu.writeAttribute("item", rI.firstStoryFrame->itemName());
+		}
+		else //footnotes frame
+		{
+			docu.writeEmptyElement("FOOTNOTEFRAME");
+			docu.writeAttribute("NSname", NS->name());
+			docu.writeAttribute("myID", qHash(nF));
+			//docu.writeAttribute("name", nF->itemName());
+			docu.writeAttribute("MasterID", qHash(nF->masterFrame()));
+			//docu.writeAttribute("master",nF->masterFrame()->itemName());
+		}
+	}
+	docu.writeEndElement();
+}
+
+void Scribus150Format::writeNotes(ScXmlStreamWriter & docu)
+{
+	//write notes
+	if (m_Doc->m_docNotesList.isEmpty())
+		return;
+	docu.writeStartElement("Notes");
+	QList<TextNote*>::iterator itTN;
+	QList<TextNote*>::iterator end = m_Doc->m_docNotesList.end();
+	for (itTN = m_Doc->m_docNotesList.begin(); itTN != end; ++itTN)
+	{
+		TextNote* TN = (*itTN);
+		if (TN->masterMark() == NULL)
+			continue;
+		docu.writeEmptyElement("Note");
+		docu.writeAttribute("Master", TN->masterMark()->label);
+		docu.writeAttribute("NSet", TN->notesSet()->name());
+		docu.writeAttribute("Text", TN->saxedText());
+	}
+	docu.writeEndElement();
+}
 
 void Scribus150Format::writePageSets(ScXmlStreamWriter & docu) 
 {	
@@ -1353,7 +1512,10 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 	CharStyle lastStyle;
 	int lastPos = 0;
 	QString tmpnum;
-	for(int k = 0; k < item->itemText.length(); ++k)
+	int iTLen = item->itemText.length();
+	if (item->isNoteFrame())
+		iTLen = 0;  //used for saving empty endnotes frames - will be filled automatically
+	for(int k = 0; k < iTLen; ++k)
 	{
 		const CharStyle& style1(item->itemText.charStyle(k));
 		const QChar ch = item->itemText.text(k);
@@ -1400,6 +1562,13 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 			tmpnum.setNum(ch.unicode());
 			docu.writeAttribute("Unicode", tmpnum);
 			docu.writeAttribute("COBJ", item->itemText.object(k)->inlineCharID);
+		}
+		else if (ch == SpecialChars::OBJECT && item->itemText.item(k)->mark != NULL)
+		{
+			Mark* mark = item->itemText.item(k)->mark;
+			docu.writeEmptyElement("MARK");
+			docu.writeAttribute("label", mark->label);
+			docu.writeAttribute("type", mark->getType());
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
 			putPStyle(docu, item->itemText.paragraphStyle(k), "para");
@@ -1451,19 +1620,19 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		lastPos = k + 1;
 	}
 	// write pending chars
-	if ( item->itemText.length() - lastPos > 0)
+	if ( iTLen - lastPos > 0)
 	{
 		docu.writeEmptyElement("ITEXT");
 		/*if (item->asPathText())
 			putCStylePT(docu, lastStyle);
 		else*/
 			putCStyle(docu, lastStyle);
-		docu.writeAttribute("CH", textWithSoftHyphens(item->itemText, lastPos, item->itemText.length()));
+		docu.writeAttribute("CH", textWithSoftHyphens(item->itemText, lastPos, iTLen));
 	}
 	// paragraphstyle for trailing chars
-	if (item->itemText.length() == 0 || item->itemText.text(item->itemText.length()-1) != SpecialChars::PARSEP)
+	if (iTLen == 0 || item->itemText.text(iTLen-1) != SpecialChars::PARSEP)
 	{
-		putPStyle(docu, item->itemText.paragraphStyle(item->itemText.length()), "trail");
+		putPStyle(docu, item->itemText.paragraphStyle(iTLen), "trail");
 	}
 }
 
@@ -1506,6 +1675,8 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 		if (dia2 != 0)
 			dia2->setValue(ObCount);
 		item = items->at(j);
+//		if (item->isNoteFrame() && item->asNoteFrame()->notesSet()->isAutoRemoveEmptyNotesFrames())
+//			continue;  //dont save dynamicaly created and removed notes frames
 		switch (master)
 		{
 			case ItemSelectionMaster:
@@ -1714,7 +1885,10 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 			else
 			{
 				docu.writeAttribute("BACKITEM", -1);
-				writeITEXTs(doc, docu, item);
+				if (item->isNoteFrame())
+					docu.writeAttribute("isNoteFrame", 1);
+				else
+					writeITEXTs(doc, docu, item);
 			}
 		}
 
@@ -2143,15 +2317,28 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 		//write weld parameter
 		if (item->isWelded())
 		{
-			docu.writeAttribute("isWeldItem", 1);
-			docu.writeAttribute("WeldSource", qHash(item));
-			for (int i = 0 ; i <  item->weldList.count(); i++)
+			//if the only welded item is TextNote dont write info about that
+			bool skip = false;
+			if (item->weldList.count() == 1)
 			{
-				PageItem::weldingInfo wInf = item->weldList.at(i);
-				docu.writeEmptyElement("WeldEntry");
-				docu.writeAttribute("Target", qHash(wInf.weldItem));
-				docu.writeAttribute("WX", wInf.weldPoint.x());
-				docu.writeAttribute("WY", wInf.weldPoint.y());
+				PageItem::weldingInfo wInf = item->weldList.at(0);
+//				if (wInf.weldItem->isNoteFrame() && wInf.weldItem->asNoteFrame()->notesSet()->isAutoWeldNotesFrames())
+//					skip = true;
+			}
+			if (!skip)
+			{
+				docu.writeAttribute("isWeldItem", 1);
+				docu.writeAttribute("WeldSource", qHash(item));
+				for (int i = 0 ; i <  item->weldList.count(); i++)
+				{
+					PageItem::weldingInfo wInf = item->weldList.at(i);
+//					if (wInf.weldItem->isNoteFrame() && wInf.weldItem->asNoteFrame()->notesSet()->isAutoWeldNotesFrames())
+//						continue;
+					docu.writeEmptyElement("WeldEntry");
+					docu.writeAttribute("Target", qHash(wInf.weldItem));
+					docu.writeAttribute("WX", wInf.weldPoint.x());
+					docu.writeAttribute("WY", wInf.weldPoint.y());
+				}
 			}
 		}
 		docu.writeEndElement();

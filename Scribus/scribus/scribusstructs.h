@@ -81,8 +81,12 @@ class MarginStruct
 		MarginStruct(const MarginStruct& rhs) {Top=rhs.Top;Bottom=rhs.Bottom;Left=rhs.Left;Right=rhs.Right;}
 		void set(double top, double left, double bottom, double right) {Top=top;Bottom=bottom;Left=left;Right=right;}
 		void resetToZero() {Top=0.0;Bottom=0.0;Left=0.0;Right=0.0;}
-		bool hasNonZeroValue() { return Top!=0.0 || Bottom!=0.0 || Left!=0.0 || Right!=0.0;}
-		void print() {qDebug() << Top << Left << Bottom << Right;}
+		bool hasNonZeroValue() const { return Top!=0.0 || Bottom!=0.0 || Left!=0.0 || Right!=0.0;}
+		void print() const {qDebug() << Top << Left << Bottom << Right;}
+		double leftMargin() const { return Left; }
+		double topMargin() const { return Top; }
+		double bottomMargin() const { return Bottom; }
+		double rightMargin() const { return Right; }
 		double Top;
 		double Left;
 		double Bottom;
@@ -274,7 +278,8 @@ typedef enum {
 	FontNotEmbedded=15,
 	EmbeddedFontIsOpenType=16,
 	OffConflictLayers=17,
-	PartFilledImageFrame= 18
+	PartFilledImageFrame= 18,
+	MarksChanged = 19
 } PreflightError;
 
 typedef QMap<PreflightError, int> errorCodes;
@@ -361,6 +366,7 @@ enum UpdateRequests
 	reqCmsOptionsUpdate  = 512,
 	reqCustomShapeUpdate = 1024,
 	reqInlinePalUpdate   = 2048,
+	reqMarksUpdate       = 4096,
 	reqUpdateAll = 65535
 };
 

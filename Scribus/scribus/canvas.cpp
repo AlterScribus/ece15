@@ -1032,7 +1032,10 @@ void Canvas::drawContents(QPainter *psx, int clipx, int clipy, int clipw, int cl
 					{
 						DrawMasterItems(painter, m_doc->Pages->at(a), layer, QRect(clipx, clipy, clipw, cliph));
 					}
-					DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph));
+					//first pass draws all except notes frames
+					DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
+					//seconf only for notes frames
+					DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
 				}
 			}
 		}
@@ -1073,7 +1076,10 @@ void Canvas::drawContents(QPainter *psx, int clipx, int clipy, int clipw, int cl
 				for (int layerLevel = 0; layerLevel < layerCount; ++layerLevel)
 				{
 					m_doc->Layers.levelToLayer(layer, layerLevel);
-					DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph));
+					//first pass draws all except notes frames
+					DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
+					//second pass draw only notes frames
+					DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
 				}
 			}
 		}
@@ -1442,8 +1448,10 @@ void Canvas::DrawMasterItems(ScPainter *painter, ScPage *page, ScLayer& layer, Q
 /**
   draws page items contained in a specific Layer
  */
-void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip)
+void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool notesFramesPass)
 {
+	if (notesFramesPass && m_doc->m_docNotesList.isEmpty())
+		return;
 	if ((m_viewMode.previewMode) && (!layer.isPrintable))
 		return;
 	if ((m_viewMode.viewAsPreview) && (!layer.isPrintable))
@@ -1452,6 +1460,8 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip)
 		return;
 	if (m_doc->Items->count() <= 0)
 		return;
+//	else
+//		m_doc->notesFramesUpdate();
 
 // 	qDebug()<<"Canvas::DrawPageItems"<<m_viewMode.forceRedraw<<m_viewMode.operItemSelecting;
 	FPoint orig = localToCanvas(clip.topLeft());
@@ -1463,9 +1473,34 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip)
 	int docCurrPageNo=static_cast<int>(m_doc->currentPageNumber());
 	if ((layerCount > 1) && ((layer.blendMode != 0) || (layer.transparency != 1.0)) && (!layer.outlineMode))
 		painter->beginLayer(layer.transparency, layer.blendMode);
+
+	//if notes are used
+	//then we must be shure that text frames are valid and all notes frames are created before we start drawing
+	if (!notesFramesPass && !m_doc->m_docNotesList.isEmpty())
+	{
+		for (int it = 0; it < m_doc->Items->count(); ++it)
+		{
+			currItem = m_doc->Items->at(it);
+			if ( !currItem->isTextFrame()
+				|| currItem->isNoteFrame()
+				|| !currItem->invalid
+				|| (currItem->LayerID != layer.ID)
+				|| (m_viewMode.previewMode && !currItem->printEnabled())
+				|| (m_viewMode.viewAsPreview && (!currItem->printEnabled()))
+				|| (m_doc->masterPageMode() && ((currItem->OwnPage != -1) && (currItem->OwnPage != docCurrPageNo)))
+				|| ((!m_doc->masterPageMode() && !currItem->OnMasterPage.isEmpty()) && (currItem->OnMasterPage != m_doc->currentPage()->pageName())))
+				continue;
+			if (cullingArea.intersects(currItem->getBoundingRect().adjusted(0.0, 0.0, 1.0, 1.0)))
+				currItem->layout();
+		}
+	}
 	for (int it = 0; it < m_doc->Items->count(); ++it)
 	{
 		currItem = m_doc->Items->at(it);
+		if (notesFramesPass && !currItem->isNoteFrame())
+			continue;
+		if (!notesFramesPass && currItem->isNoteFrame())
+			continue;
 		if (currItem->LayerID != layer.ID)
 			continue;
 		if ((m_viewMode.previewMode) && (!currItem->printEnabled()))
@@ -1506,14 +1541,7 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip)
 //						currItem->Redrawn = true;
 			if ((currItem->asTextFrame()) && ((currItem->nextInChain() != 0) || (currItem->prevInChain() != 0)))
 			{
-				PageItem *nextItem = currItem;
-				while (nextItem != 0)
-				{
-					if (nextItem->prevInChain() != 0)
-						nextItem = nextItem->prevInChain();
-					else
-						break;
-				}
+				PageItem *nextItem = currItem->firstInChain();
 				if (!m_viewMode.linkedFramesToShow.contains(nextItem))
 					m_viewMode.linkedFramesToShow.append(nextItem);
 			}
@@ -2100,12 +2128,11 @@ void Canvas::drawFrameLinks(ScPainter* painter)
 	if ((((m_doc->appMode == modeLinkFrames) || (m_doc->appMode == modeUnlinkFrames))
 		 && (currItem->itemType() == PageItem::TextFrame)) || (m_doc->guidesPrefs().linkShown || m_viewMode.drawFramelinksWithContents))
 	{
-		PageItem *nextItem = currItem;
 		if (m_doc->guidesPrefs().linkShown || m_viewMode.drawFramelinksWithContents)
 		{
 			for (int lks = 0; lks < m_viewMode.linkedFramesToShow.count(); ++lks)
 			{
-				nextItem = m_viewMode.linkedFramesToShow.at(lks);
+				PageItem* nextItem = m_viewMode.linkedFramesToShow.at(lks);
 				while (nextItem != 0)
 				{
 					if (nextItem->nextInChain() != NULL)
@@ -2120,13 +2147,7 @@ void Canvas::drawFrameLinks(ScPainter* painter)
 		}
 		else
 		{
-			while (nextItem != 0)
-			{
-				if (nextItem->prevInChain() != 0)
-					nextItem = nextItem->prevInChain();
-				else
-					break;
-			}
+			PageItem* nextItem = currItem->firstInChain();
 			while (nextItem != 0)
 			{
 				if (nextItem->nextInChain() != NULL)

@@ -222,6 +222,72 @@ QString ScPaths::dictDir() const
 	return(m_shareDir + "dicts/");
 }
 
+QStringList ScPaths::spellDirs() const
+{
+	//dictionaryPaths
+	QString macPortsPath("/opt/local/share/hunspell/");
+	QString finkPath("/sw/share/hunspell/");
+	QString osxLibreOfficePath("/Applications/LibreOffice.app/Contents/share/extensions");
+	QString osxUserLibreOfficePath(QDir::homePath()+"/Applications/LibreOffice.app/Contents/share/extensions");
+	QString linuxLocalPath("/usr/local/share/hunspell/");
+	QString linuxHunspellPath("/usr/share/hunspell/");
+	QString linuxMyspellPath("/usr/share/myspell/");
+	QString windowsLOPath("LibreOffice 3.5/share/extensions");
+	QDir d;
+	QStringList spellDirs;
+	spellDirs.append(getUserDictDir(false));
+	spellDirs.append(m_shareDir + "dicts/spelling/");
+#ifdef Q_OS_MAC
+	d.setPath(macPortsPath);
+	if (d.exists())
+		spellDirs.append(macPortsPath);
+	d.setPath(finkPath);
+	if (d.exists())
+		spellDirs.append(finkPath);
+	d.setPath(osxLibreOfficePath);
+	if (d.exists())
+	{
+		QStringList dictDirFilters("dict-*");
+		QStringList dictDirList(d.entryList(dictDirFilters, QDir::Dirs, QDir::Name));
+		QString dir;
+		foreach (dir, dictDirList)
+			spellDirs.append(osxLibreOfficePath + "/" + dir + "/");
+	}
+	d.setPath(osxUserLibreOfficePath);
+	if (d.exists())
+	{
+		QStringList dictDirFilters("dict-*");
+		QStringList dictDirList(d.entryList(dictDirFilters, QDir::Dirs, QDir::Name));
+		QString dir;
+		foreach (dir, dictDirList)
+			spellDirs.append(osxUserLibreOfficePath + "/" + dir + "/");
+	}
+
+#elif defined(_WIN32)
+	QString progFiles = getSpecialDir(CSIDL_PROGRAM_FILES);
+	d.setPath(progFiles+windowsLOPath);
+	if (d.exists())
+	{
+		QStringList dictDirFilters("dict-*");
+		QStringList dictDirList(d.entryList(dictDirFilters, QDir::Dirs, QDir::Name));
+		QString dir;
+		foreach (dir, dictDirList)
+			spellDirs.append(progFiles+windowsLOPath + "/" + dir + "/");
+	}
+#elif defined(Q_WS_X11)
+	d.setPath(linuxHunspellPath);
+	if (d.exists())
+		spellDirs.append(linuxHunspellPath);
+	d.setPath(linuxMyspellPath);
+	if (d.exists())
+		spellDirs.append(linuxMyspellPath);
+	d.setPath(linuxLocalPath);
+	if (d.exists())
+		spellDirs.append(linuxLocalPath);
+#endif
+	return spellDirs;
+}
+
 QStringList ScPaths::getSystemFontDirs(void)
 {
 	QStringList fontDirs;
@@ -358,6 +424,17 @@ QString ScPaths::getPluginDataDir(void)
 	return getApplicationDataDir() + "plugins/";
 }
 
+QString ScPaths::getUserDictDir(bool createIfNotExists)
+{
+	QDir userDictDirectory(getApplicationDataDir() + "dicts/");
+	if(createIfNotExists)
+	{
+		if (!userDictDirectory.exists())
+			userDictDirectory.mkpath(userDictDirectory.absolutePath());
+	}
+	return userDictDirectory.absolutePath()+"/";
+}
+
 QString ScPaths::getUserDocumentDir(void)
 {
 #if defined(_WIN32)
@@ -386,6 +463,14 @@ QString ScPaths::getTempFileDir(void)
 	}
 #endif
 	return getApplicationDataDir();
+}
+
+QString ScPaths::downloadDir()
+{
+	QDir downloadDirectory(getApplicationDataDir() + "downloads/");
+	if (!downloadDirectory.exists())
+		downloadDirectory.mkpath(downloadDirectory.absolutePath());
+	return downloadDirectory.absolutePath()+"/";
 }
 
 QString ScPaths::getSpecialDir(int folder)

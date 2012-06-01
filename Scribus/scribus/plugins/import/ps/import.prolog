@@ -928,7 +928,7 @@ currentpagedevice /HWResolution get aload pop
 % contact Artifex Software, Inc., 101 Lucas Valley Road #110,
 % San Rafael, CA  94903, U.S.A., +1(415)492-9861.
 
-% $Id$
+% $Id: import.prolog 13454 2009-05-08 19:04:32Z jghali $
 % traceimg.ps
 % Trace the data supplied to the 'image' operator.
 

@@ -75,10 +75,12 @@ class GuideManager;
 class HelpBrowser;
 class InlinePalette;
 class LayerPalette;
+class MarksManager;
 class Measurements;
 class ScMWMenuManager;
 class ModeToolBar;
 class NodePalette;
+class NotesSetsManager;
 class OutlinePalette;
 class PDFToolBar;
 class PSLib;
@@ -102,7 +104,6 @@ class TOCGenerator;
 class UndoManager;
 class UndoPalette;
 class UndoState;
-
 
 extern SCRIBUS_API ScribusQApp* ScQApp;
 
@@ -209,6 +210,8 @@ public:
 	GuideManager *guidePalette;
 	CharSelect *charPalette;
 	PropertiesPalette *propertiesPalette;
+	MarksManager *marksManager;
+	NotesSetsManager *nsManager;
 	NodePalette *nodePalette;
 	OutlinePalette *outlinePalette;
 	Biblio *scrapbookPalette;
@@ -272,10 +275,6 @@ public slots:
 	void closeActiveWindowMasterPageEditor();
 	void updateActiveWindowCaption(const QString &newCaption);
 	void windowsMenuActivated(int id);
-	void UnDoAction();
-	void RedoAction();
-	void slotTest();
-	void slotTest2();
 	void PutScrap(int scID);
 	void PutToPatterns();
 	void changeLayer(int);
@@ -405,7 +404,6 @@ public slots:
 	void ToggleRulers();
 	void ToggleRulerMode();
 	void togglePagePalette();
-	void setPagePalette(bool visible);
 	void toggleUndoPalette();
 	void setUndoPalette(bool visible);
 	void toggleCheckPal();
@@ -613,6 +611,22 @@ private:
 	FormatsManager *formatsManager;
 
 	QPointer<HelpBrowser> helpBrowser;
+
+public slots:
+	//inserting marks
+	void slotInsertMark2Mark() { insertMark(MARK2MarkType); }
+	void slotInsertMarkAnchor() { insertMark(MARKAnchorType); }
+	void slotInsertMarkVariableText() { insertMark(MARKVariableTextType); }
+	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
+	void slotInsertMarkNote() { insertMark(MARKNoteMasterType); }
+	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
+	void slotEditMark();
+	//connected to signal emited by actions when "Update Marks" menu item is triggered
+	void slotUpdateMarks();
+	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
+private:
+	void insertMark(MarkType);
+	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT);
 };
 
 #endif

@@ -240,8 +240,14 @@ void ActionManager::initEditMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="editJavascripts";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="editMarks";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="editNotesSets";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 
 	(*scrActions)["editStyles"]->setToggleAction(true);
+	(*scrActions)["editMarks"]->setToggleAction(true);
+	(*scrActions)["editNotesSets"]->setToggleAction(true);
 
 	connect( (*scrActions)["editUndoAction"], SIGNAL(triggeredData(int)) , undoManager, SLOT(undo(int)) );
 	connect( (*scrActions)["editRedoAction"], SIGNAL(triggeredData(int)) , undoManager, SLOT(redo(int)) );
@@ -540,10 +546,45 @@ void ActionManager::initInsertMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	(*scrActions)["stickyTools"]->setToggleAction(true);
 
+	//Marks
+	name="insertMarkAnchor";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(true);
+	name="insertMarkVariableText";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(true);
+	name="insertMarkItem";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(true);
+	name="insertMark2Mark";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(true);
+	name="insertMarkNote";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(true);
+//	name="insertMarkIndex";
+//	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+//	(*scrActions)[name]->setEnabled(true);
+	name="editMark";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(false);
+	name="itemUpdateMarks";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(false);
+
 	connect( (*scrActions)["insertFrame"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertFrame()) );
 	connect( (*scrActions)["insertGlyph"], SIGNAL(triggered()), mainWindow, SLOT(slotCharSelect()) );
 	connect( (*scrActions)["insertSampleText"], SIGNAL(triggered()), mainWindow, SLOT(insertSampleText()) );
 	connect( (*scrActions)["stickyTools"], SIGNAL(triggered()), mainWindow, SLOT(ToggleStickyTools()) );
+
+	connect( (*scrActions)["insertMarkAnchor"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkAnchor()) );
+	connect( (*scrActions)["insertMarkVariableText"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkVariableText()) );
+	connect( (*scrActions)["insertMarkItem"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkItem()) );
+	connect( (*scrActions)["insertMark2Mark"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMark2Mark()) );
+	connect( (*scrActions)["insertMarkNote"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkNote()) );
+//	connect( (*scrActions)["insertMarkIndex"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkIndex()) );
+	connect( (*scrActions)["editMark"], SIGNAL(triggered()), mainWindow, SLOT(slotEditMark()) );
+	connect( (*scrActions)["itemUpdateMarks"], SIGNAL(triggered()), mainWindow, SLOT(slotUpdateMarks()) );
 }
 
 void ActionManager::initPageMenuActions()
@@ -1393,6 +1434,8 @@ void ActionManager::languageChange()
 //	(*scrActions)["editPatterns"]->setTexts( tr("Patterns..."));
 //	(*scrActions)["editGradients"]->setTexts( tr("Gradients..."));
 	(*scrActions)["editStyles"]->setTexts( tr("S&tyles..."));
+	(*scrActions)["editMarks"]->setTexts( tr("Marks..."));
+	(*scrActions)["editNotesSets"]->setTexts( tr("Notes Sets..."));
 	(*scrActions)["editMasterPages"]->setTexts( tr("&Master Pages..."));
 	(*scrActions)["editJavascripts"]->setTexts( tr("&JavaScripts..."));
 
@@ -1487,6 +1530,14 @@ void ActionManager::languageChange()
 	(*scrActions)["insertGlyph"]->setTexts( tr("&Glyph..."));
 	(*scrActions)["insertSampleText"]->setTexts( tr("Sample Text"));
 	(*scrActions)["stickyTools"]->setTexts( tr("Sticky Tools"));
+	(*scrActions)["insertMarkAnchor"]->setTexts( tr("Anchor Mark"));
+	(*scrActions)["insertMarkVariableText"]->setTexts( tr("Variable Text"));
+	(*scrActions)["insertMarkItem"]->setTexts( tr("Reference to Item"));
+	(*scrActions)["insertMark2Mark"]->setTexts( tr("Reference to Mark"));
+	(*scrActions)["insertMarkNote"]->setTexts( tr("Foot/Endnote"));
+//	(*scrActions)["insertMarkIndex"]->setTexts( tr("Index entry"));
+	(*scrActions)["editMark"]->setTexts( tr("Edit Mark"));
+	(*scrActions)["itemUpdateMarks"]->setTexts( tr("Update Marks"));
 
 	//Page menu
 	(*scrActions)["pageInsert"]->setTexts( tr("&Insert..."));
@@ -1875,6 +1926,8 @@ void ActionManager::createDefaultMenus()
 		<< "editReplaceColors"
 //		<< "editPatterns"
 		<< "editStyles"
+		<< "editMarks"
+		<< "editNotesSets"
 		<< "editMasterPages"
 		<< "editJavascripts";
 	//Style
@@ -1979,7 +2032,15 @@ void ActionManager::createDefaultMenus()
 		<< "toolsInsertRenderFrame"
 		<< "stickyTools"
 		<< "insertGlyph"
-		<< "insertSampleText";
+		<< "insertSampleText"
+		<< "insertMarkAnchor"
+		<< "insertMarkVariableText"
+		<< "insertMarkItem"
+		<< "insertMark2Mark"
+		<< "insertMarkNote"
+		<< "insertMarkIndex"
+		<< "editMark"
+		<< "itemUpdateMarks";
 
 	itmenu->second
 		<< "unicodeSoftHyphen"

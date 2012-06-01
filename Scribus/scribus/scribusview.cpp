@@ -79,6 +79,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "filewatcher.h"
 #include "hyphenator.h"
+#include "pageitem.h"
 #include "pageitem_group.h"
 #include "pageitem_imageframe.h"
 #include "pageitem_line.h"
@@ -162,7 +163,8 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	m_groupTransactions(0),
 	m_groupTransaction(NULL),
 	_isGlobalMode(true),
-	m_vhRulerHW(17)
+	m_vhRulerHW(17),
+	linkAfterDraw(false)
 {
 	setObjectName("s");
 	QPalette p=palette();
@@ -2726,7 +2728,10 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 		for (int layerLevel = 0; layerLevel < layerCount; ++layerLevel)
 		{
 			Doc->Layers.levelToLayer(layer, layerLevel);
-			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph));
+			//two pass - first draw all except notes frames
+			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
+			//second pass for notes frames only
+			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
 		}
 		painter->endLayer();
 		painter->end();
@@ -2857,7 +2862,10 @@ QImage ScribusView::PageToPixmap(int Nr, int maxGr, bool drawFrame)
 			{
 				Doc->Layers.levelToLayer(layer, layerLevel);
 				m_canvas->DrawMasterItems(painter, Doc->DocPages.at(Nr), layer, QRect(clipx, clipy, clipw, cliph));
-				m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph));
+				//first pass draws all except notes frames
+				m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
+				//second draws only notes frames
+				m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
 			}
 			painter->endLayer();
 			painter->end();
@@ -3288,20 +3296,14 @@ void ScribusView::TextToPath()
 	if ((currItem->prevInChain() != 0) || (currItem->nextInChain() != 0))
 	{
 		// select whole chain
-		PageItem *backItem = currItem;
-		while (backItem->prevInChain() != 0)
-			backItem = backItem->prevInChain();
-		currItem = backItem;
+		currItem = currItem->firstInChain();
 		Deselect(true);
 		tmpSelection.addItem(currItem);
-		backItem = currItem->nextInChain();
-		while (backItem != 0)
+		PageItem* nextItem = currItem->nextInChain();
+		while (nextItem != 0)
 		{
-			tmpSelection.addItem(backItem);
-			if (backItem->nextInChain() != 0)
-				backItem = backItem->nextInChain();
-			else
-				break;
+			tmpSelection.addItem(nextItem);
+			nextItem = nextItem->nextInChain();
 		}
 	}
 	QList<PageItem*> delItems,newGroupedItems;
@@ -4209,12 +4211,36 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 		QMouseEvent* m = static_cast<QMouseEvent*> (event);
 		m_canvasMode->mouseReleaseEvent(m);
 		m_canvas->m_viewMode.m_MouseButtonPressed = false;
+		if (linkAfterDraw)
+		{
+			//user creates new frame using linking tool
+			PageItem * secondFrame = Doc->m_Selection->itemAt(0);
+			if (secondFrame && firstFrame)
+			{
+				firstFrame->link(secondFrame);
+				firstFrame = NULL;
+			}
+			linkAfterDraw = false;
+		}
 		return true;
 	}
 	else if (obj == widget() && event->type() == QEvent::MouseButtonPress)
 	{
 		QMouseEvent* m = static_cast<QMouseEvent*> (event);
+		bool linkmode = (Doc->appMode == modeLinkFrames);
+		firstFrame = Doc->m_Selection->itemAt(0);
 		m_canvasMode->mousePressEvent(m);
+		//if user dont click any frame he want to draw new frame and link it
+		bool requestDrawMode = (Doc->ElemToLink == NULL);
+		if (linkmode && requestDrawMode)
+		{
+			//switch to drawing new text frame
+			linkAfterDraw = true;
+			requestMode(modeDrawText);
+			m_canvasMode->mousePressEvent(m);
+		}
+		else
+			firstFrame = NULL;
 		m_canvas->m_viewMode.m_MouseButtonPressed = true;
 		return true;
 	}
