@@ -10530,7 +10530,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 		else
 		{ // that must be variable text mark
 			Mrk->setString(d.strtxt);
-			doc->invalidateMarkMastertext(Mrk, true);
+			doc->invalidateMarkMasterText(Mrk, true);
 		}
 
 		currItem->itemText.insertMark(Mrk);
@@ -10665,7 +10665,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					{
 						mrk->setString(text);
 						if (mrk->getString() != oldStr)
-							docWasChanged = doc->invalidateMarkMastertext(mrk, true);
+							docWasChanged = doc->invalidateMarkMasterText(mrk, true);
 					}
 				}
 				else

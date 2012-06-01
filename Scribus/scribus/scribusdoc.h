@@ -1654,7 +1654,7 @@ public:
 	//invalidate all text frames where given mark will found
 	//usefull spacially for varaible text marks after changing its text definition
 	//if forceUpdate then found master frames are relayouted
-	bool invalidateMarkMastertext(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
+	bool invalidateMarkMasterText(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
 
 	//for foot/endnotes
 	NotesSet* newNotesSet(NotesSet NS);

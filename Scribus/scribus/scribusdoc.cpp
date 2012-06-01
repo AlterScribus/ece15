@@ -15573,11 +15573,11 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 	return found;
 }
 
-bool ScribusDoc::invalidateMarkMastertext(Mark* mrk, bool forceUpdate)
+bool ScribusDoc::invalidateMarkMasterText(Mark* mrk, bool forceUpdate)
 {
-	int itemNo = 0;
-	PageItem* mItem = findMark(mrk, itemNo);
+	int itemNo = -1;
 	bool found = false;
+	PageItem* mItem = findMark(mrk, itemNo);
 	while (mItem != NULL)
 	{
 		found = true;
@@ -15604,7 +15604,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 	{
 		if (mrk->isType(MARKVariableTextType))
 		{
-			if (invalidateMarkMastertext(mrk, false))
+			if (invalidateMarkMasterText(mrk, false))
 				docWasChanged = true;
 			else if (mrk->isUnique())
 			{
