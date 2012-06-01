@@ -8375,6 +8375,10 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 		}
 		else
 		{
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 			currItem->itemText.setDefaultStyle(newStyle);
 		}
 		if (currItem->asPathText())
@@ -8444,14 +8448,14 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 					newStyle.setParent(currItem->itemText.defaultStyle().parent());
 			}
 			currItem->itemText.setDefaultStyle(newStyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		currItem->invalid = true;
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
-		if (currItem->isNoteFrame())
-			currItem->asNoteFrame()->updateNotesText();
-		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
-			flag_notesChanged = true;
 	}
 	if (activeTransaction)
 	{
@@ -8483,7 +8487,9 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			dstyle.applyStyle(newStyle);
 			currItem->itemText.setDefaultStyle(dstyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-			updateItemNotesFramesStyles(currItem);
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		if (currItemTextCount > 0)
 		{
@@ -8508,10 +8514,6 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
-		if (currItem->isNoteFrame())
-			currItem->asNoteFrame()->updateNotesText();
-		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
-			flag_notesChanged = true;
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -8571,11 +8573,11 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 			currItem->invalid = true;
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
 				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
-		if (currItem->isNoteFrame())
-			currItem->asNoteFrame()->updateNotesText();
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -8632,11 +8634,13 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 			currItem->itemText.setDefaultStyle(dstyle);
 //			if (currItem->asPathText())
 			currItem->itemText.setCharStyle(0, currItem->itemText.length(), newStyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
-		if (currItem->isNoteFrame())
-			currItem->asNoteFrame()->updateNotesText();
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -8715,11 +8719,13 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 			newStyle.setParent(defStyle.charStyle().parent());
 			defStyle.charStyle() = newStyle;
 			currItem->itemText.setDefaultStyle(defStyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
-		if (currItem->isNoteFrame())
-			currItem->asNoteFrame()->updateNotesText();
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -16179,6 +16185,7 @@ void ScribusDoc::updateItemNotesFramesStyles(PageItem* item)
 				else
 					newStyle.setParent(nSet->notesParStyle());
 				nF->itemText.setDefaultStyle(newStyle);
+				flag_notesChanged = true;
 			}
 			item = item->nextInChain();
 		}
