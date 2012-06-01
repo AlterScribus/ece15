@@ -4202,7 +4202,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 	undoManager->setUndoEnabled(true);
 	doc->setModified(false);
-	
+	foreach (NotesSet* NS, doc->m_docNotesSetsList)
+		doc->updateNotesFramesStyles(NS);
 #ifdef DEBUG_LOAD_TIMES
 	times(&tms2);
 	double ticks = sysconf(_SC_CLK_TCK);
