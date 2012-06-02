@@ -8,8 +8,9 @@ SVN='svn://scribus.net/branches/Version14x/Scribus/'
 # Get current development revision number
 NEW=`svn info $SVN | grep -r Revision | cut -f 2 -d " "`
 
-echo $OLD
-echo $NEW
+echo "$OLD"
+echo "$NEW"
+
 # Compare for OLD and NEW revision
 if [ $NEW -gt $OLD ] ; then
     # update local copies
