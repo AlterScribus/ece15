@@ -4,6 +4,7 @@
 # Get local snapshot copies revision number
 OLD=`svn info local | grep -r Revision | cut -f 2 -d " "`
 
+SVN='svn://scribus.net/branches/'
 # Get current development revision number
 NEW=`svn info $SVN | grep -r Revision | cut -f 2 -d " "`
 
