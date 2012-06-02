@@ -1,0 +1,19 @@
+#!/bin/sh -e
+#
+
+# Get local snapshot copies revision number
+OLD=`svn info local | grep -r Revision | cut -f 2 -d " "`
+
+# Get current development revision number
+NEW=`svn info $SVN | grep -r Revision | cut -f 2 -d " "`
+
+# Compare for OLD and NEW revision
+if [ $NEW -gt $OLD ] ; then
+
+    # update local copies
+	svn update local	
+	git add *
+	git commit -m "Rev. $NEW update"
+fi
+
+exit 0
