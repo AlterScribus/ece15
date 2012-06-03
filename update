@@ -1,12 +1,13 @@
 #!/bin/sh -e
 #
+cd /home/git/scribus.svn/scribus.net/branches/Version14x/
 
 # Get local snapshot copies revision number
-OLD=`svn info Scribus | grep -r Revision | cut -f 2 -d " "`
+OLD=`svn info Scribus | grep -r Wersja | cut -f 2 -d " "`
 
 SVN='svn://scribus.net/branches/Version14x/Scribus/'
 # Get current development revision number
-NEW=`svn info $SVN | grep -r Revision | cut -f 2 -d " "`
+NEW=`svn info $SVN | grep -r Wersja | cut -f 2 -d " "`
 
 echo "$OLD"
 echo "$NEW"
