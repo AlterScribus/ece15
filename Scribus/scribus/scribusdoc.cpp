@@ -8375,6 +8375,10 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 		}
 		else
 		{
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 			currItem->itemText.setDefaultStyle(newStyle);
 		}
 		if (currItem->asPathText())
@@ -8444,6 +8448,10 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 					newStyle.setParent(currItem->itemText.defaultStyle().parent());
 			}
 			currItem->itemText.setDefaultStyle(newStyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		currItem->invalid = true;
 		if (currItem->asPathText())
@@ -8483,7 +8491,13 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			dstyle.applyStyle(newStyle);
 			currItem->itemText.setDefaultStyle(dstyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+<<<<<<< HEAD
 			updateItemNotesFramesStyles(currItem);
+=======
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
+>>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 		}
 		if (currItemTextCount > 0)
 		{
@@ -8571,6 +8585,11 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 			currItem->invalid = true;
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
 				updateItemNotesFramesStyles(currItem);
+<<<<<<< HEAD
+=======
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
+>>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
@@ -8632,6 +8651,10 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 			currItem->itemText.setDefaultStyle(dstyle);
 //			if (currItem->asPathText())
 			currItem->itemText.setCharStyle(0, currItem->itemText.length(), newStyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
@@ -8715,6 +8738,10 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 			newStyle.setParent(defStyle.charStyle().parent());
 			defStyle.charStyle() = newStyle;
 			currItem->itemText.setDefaultStyle(defStyle);
+			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+				updateItemNotesFramesStyles(currItem);
+			else if (currItem->isNoteFrame())
+				flag_notesChanged = true;
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
@@ -15567,11 +15594,19 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 	return found;
 }
 
+<<<<<<< HEAD
 bool ScribusDoc::invalidateMarkMastertext(Mark* mrk, bool forceUpdate)
 {
 	int itemNo = 0;
 	PageItem* mItem = findMark(mrk, itemNo);
 	bool found = false;
+=======
+bool ScribusDoc::invalidateMarkMasterText(Mark* mrk, bool forceUpdate)
+{
+	int itemNo = -1;
+	bool found = false;
+	PageItem* mItem = findMark(mrk, itemNo);
+>>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 	while (mItem != NULL)
 	{
 		found = true;
@@ -15598,7 +15633,11 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 	{
 		if (mrk->isType(MARKVariableTextType))
 		{
+<<<<<<< HEAD
 			if (invalidateMarkMastertext(mrk, false))
+=======
+			if (invalidateMarkMasterText(mrk, false))
+>>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 				docWasChanged = true;
 			else if (mrk->isUnique())
 			{
@@ -16179,6 +16218,10 @@ void ScribusDoc::updateItemNotesFramesStyles(PageItem* item)
 				else
 					newStyle.setParent(nSet->notesParStyle());
 				nF->itemText.setDefaultStyle(newStyle);
+<<<<<<< HEAD
+=======
+				flag_notesChanged = true;
+>>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 			}
 			item = item->nextInChain();
 		}

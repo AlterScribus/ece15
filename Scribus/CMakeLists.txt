@@ -34,6 +34,10 @@ INCLUDE(CheckCXXCompilerFlag)
 INCLUDE(CheckTypeSize)
 INCLUDE(TestBigEndian)
 
+SET(WARN "${WARN} -Wno-unused-but-set-variable")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARN}")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARN}")
+
 #ENABLE_TESTING()
 
 #Set the custom CMake module directory where our include/lib finders are
@@ -712,6 +716,18 @@ IF (WITH_ASPELL)
 ENDIF (WITH_ASPELL)
 #>>ASPELL for Speelling support
 
+#<<HUNSPELL for Speelling support
+OPTION(WANT_HUNSPELL "Enable support for spell checking with hunspell" OFF)
+IF (WANT_HUNSPELL)
+  FIND_PACKAGE(HUNSPELL)
+  IF (HUNSPELL_FOUND)
+    MESSAGE("Hunspell Found OK")
+    SET(HAVE_HUNSPELL 1)
+  ELSE (HUNSPELL_FOUND)
+    MESSAGE("HunSpell or its developer libraries NOT found - Disabling support for spell checking")
+  ENDIF (HUNSPELL_FOUND)
+ENDIF (WANT_HUNSPELL)
+#>>HUNSPELL for Speelling support
 
 #<<PoDoFo for AI PDF import
 OPTION(WITH_PODOFO "Enable support for PDF embedded in AI" ON)
@@ -862,7 +878,6 @@ ADD_SUBDIRECTORY(resources/loremipsum)
 ADD_SUBDIRECTORY(resources/profiles)
 ADD_SUBDIRECTORY(resources/swatches)
 ADD_SUBDIRECTORY(resources/templates)
-#ADD_SUBDIRECTORY(resources/translations/qm)
 ADD_SUBDIRECTORY(resources/translations/po)
 
 #Install our READMEs etc.
@@ -876,11 +891,17 @@ INSTALL(FILES
   NEWS
   PACKAGING
   README
-  README.MacOSX
   TODO
   TRANSLATION
   DESTINATION ${DOCDIR}
 )
+
+IF (APPLE)
+  INSTALL(FILES
+    README.MacOSX
+    DESTINATION ${DOCDIR}
+  )
+ENDIF (APPLE)
 
 #Install our MIME data
 INSTALL(FILES
@@ -950,3 +971,9 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
+FIND_PACKAGE(OpenMP)
+if(OPENMP_FOUND)
+ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif(OPENMP_FOUND)
