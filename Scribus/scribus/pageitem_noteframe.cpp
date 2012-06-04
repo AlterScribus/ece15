@@ -18,6 +18,7 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 	AnName = generateUniqueCopyName(nSet->isEndNotes() ? tr("Endnote frame ") + m_nset->name() : tr("Footnote frame ") + m_nset->name(), false);
 	AutoName = false; //endnotes frame will saved with name, so it can be stpred and connected with noteset while reading SLA
 	
+<<<<<<< HEAD
 	//set default style for note frame
 	ParagraphStyle newStyle;
 	if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
@@ -35,6 +36,19 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 		newStyle.setParent(nSet->notesParStyle());
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
+=======
+	//set default syle for note frame
+	ParagraphStyle style(itemText.defaultStyle());
+	if (!m_nset->notesParStyle().isEmpty() && m_nset->notesParStyle() != tr("No Style"))
+	{
+		//set named style from nset
+		ParagraphStyle nstyle(itemText.defaultStyle());
+		nstyle.setParent(m_nset->notesParStyle());
+		style.setStyle(nstyle);
+	}
+	itemText.blockSignals(true);
+	itemText.setDefaultStyle(style);
+>>>>>>> 781f7a8050ec34a44b7a0d0cad699b0edfebea63
 	itemText.blockSignals(false);
 
 	textFlowModeVal = TextFlowUsesFrameShape;
@@ -74,6 +88,7 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	AnName = generateUniqueCopyName(nSet->isEndNotes() ? tr("Endnote frame ") + m_nset->name() : tr("Footnote frame ") + m_nset->name(), false);
 	AutoName = false;
 
+<<<<<<< HEAD
 	//set default style for note frame
 	ParagraphStyle newStyle;
 	if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
@@ -94,6 +109,25 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	itemText.blockSignals(false);
 	
 	double frameHeight = calculateLineSpacing(newStyle, this);
+=======
+	//set default syle for note frame
+	ParagraphStyle style(m_masterFrame->itemText.defaultStyle());
+	if (!m_nset->notesParStyle().isEmpty() && m_nset->notesParStyle() != tr("No Style"))
+	{
+		//set named style from nset
+		ParagraphStyle nstyle(itemText.defaultStyle());
+		nstyle.setParent(m_nset->notesParStyle());
+		style.setStyle(nstyle);
+	}
+	else
+		style.applyStyle(m_masterFrame->currentStyle());
+	
+	itemText.blockSignals(true);
+	itemText.setDefaultStyle(style);
+	itemText.blockSignals(false);
+
+	double frameHeight = calculateLineSpacing(style, this);
+>>>>>>> 781f7a8050ec34a44b7a0d0cad699b0edfebea63
 	Height = frameHeight;
 	Ypos = m_masterFrame->yPos() + m_masterFrame->height();
 	textFlowModeVal = TextFlowUsesFrameShape;
@@ -122,15 +156,23 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	l_notes.empty();
 }
 
+<<<<<<< HEAD
 void PageItem_NoteFrame::setNS(NotesSet *nSet, PageItem_TextFrame* master)
 {
 	m_nset = nSet;
 	if (master != NULL)
 		m_masterFrame = master;
+=======
+void PageItem_NoteFrame::setNS(NotesSet *NS, PageItem_TextFrame* master)
+{
+	m_nset = NS;
+	m_masterFrame = master;
+>>>>>>> 781f7a8050ec34a44b7a0d0cad699b0edfebea63
 	itemText.clear();
 
 	AnName = generateUniqueCopyName(m_nset->isEndNotes() ? "Endnote frame " + m_nset->name() : "Footnote frame " + m_nset->name(), false);
 	
+<<<<<<< HEAD
 	//set default style for note frame
 	ParagraphStyle newStyle;
 	if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
@@ -150,6 +192,19 @@ void PageItem_NoteFrame::setNS(NotesSet *nSet, PageItem_TextFrame* master)
 		newStyle.setParent(nSet->notesParStyle());
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
+=======
+	//set default syle for note frame
+	ParagraphStyle style(itemText.defaultStyle());
+	if (!m_nset->notesParStyle().isEmpty() && m_nset->notesParStyle() != tr("No Style"))
+	{
+		//set named style from nset
+		ParagraphStyle nstyle(itemText.defaultStyle());
+		nstyle.setParent(m_nset->notesParStyle());
+		style.applyStyle(nstyle);
+	}
+	itemText.blockSignals(true);
+	itemText.setDefaultStyle(style);
+>>>>>>> 781f7a8050ec34a44b7a0d0cad699b0edfebea63
 	itemText.blockSignals(false);
 
 	if (m_nset->isAutoNotesHeight())
