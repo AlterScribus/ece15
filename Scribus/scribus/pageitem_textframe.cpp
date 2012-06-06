@@ -3592,7 +3592,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				m_Doc->deleteNote(note);
 				ns2Update.append(note->notesSet());
 			}
-			m_Doc->eraseMark(mrk);
+			if (mrk->isUnique())
+				m_Doc->eraseMark(mrk);
 			marksDeleted = true;
 		}
 	}

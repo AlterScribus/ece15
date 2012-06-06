@@ -4202,12 +4202,9 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 	undoManager->setUndoEnabled(true);
 	doc->setModified(false);
-<<<<<<< HEAD
-	
-=======
 	foreach (NotesSet* NS, doc->m_docNotesSetsList)
 		doc->updateNotesFramesStyles(NS);
->>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
+
 #ifdef DEBUG_LOAD_TIMES
 	times(&tms2);
 	double ticks = sysconf(_SC_CLK_TCK);
@@ -10534,11 +10531,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 		else
 		{ // that must be variable text mark
 			Mrk->setString(d.strtxt);
-<<<<<<< HEAD
-			doc->invalidateMarkMastertext(Mrk, true);
-=======
 			doc->invalidateMarkMasterText(Mrk, true);
->>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 		}
 
 		currItem->itemText.insertMark(Mrk);
@@ -10673,11 +10666,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					{
 						mrk->setString(text);
 						if (mrk->getString() != oldStr)
-<<<<<<< HEAD
-							docWasChanged = doc->invalidateMarkMastertext(mrk, true);
-=======
 							docWasChanged = doc->invalidateMarkMasterText(mrk, true);
->>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 					}
 				}
 				else
