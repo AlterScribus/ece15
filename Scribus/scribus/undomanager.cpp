@@ -969,11 +969,13 @@ void UndoManager::languageChange()
 	UndoManager::Copy               = tr("Copy");
 	UndoManager::CopyPage           = tr("Copy page");
 	UndoManager::MovePage           = tr("Move page");
+	UndoManager::ImportPage         = tr("Import page");
 	UndoManager::ToOutlines         = tr("Convert to outlines");
 	UndoManager::LinkTextFrame		= tr("Link text frame");
 	UndoManager::UnlinkTextFrame	= tr("Unlink text frame");
 	UndoManager::ClearImage         = tr("Clear image frame content");
 	UndoManager::PathOperation		= tr("Path Operation");
+	UndoManager::ChangePageAttrs    = tr("Change Page Attributes");
 }
 
 void UndoManager::initIcons()
@@ -1183,12 +1185,14 @@ QString UndoManager::RemoveAllGuides    = "";
 QString UndoManager::RemoveAllPageGuides = "";
 QString UndoManager::Copy               = "";
 QString UndoManager::CopyPage           = "";
+QString UndoManager::ImportPage         = "";
 QString UndoManager::MovePage           = "";
 QString UndoManager::ToOutlines         = "";
 QString UndoManager::LinkTextFrame      = "";
 QString UndoManager::UnlinkTextFrame    = "";
 QString UndoManager::ClearImage         = "";
 QString UndoManager::PathOperation      = "";
+QString UndoManager::ChangePageAttrs    = "";
 
 /*** Icons for UndoObjects *******************************************/
 QPixmap *UndoManager::IImageFrame      = 0;
