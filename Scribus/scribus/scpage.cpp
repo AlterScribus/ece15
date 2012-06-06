@@ -205,6 +205,103 @@ void ScPage::restore(UndoState* state, bool isUndo)
 			restorePageItemDeletion(dynamic_cast<ScItemState< QList<PageItem*> >*>(ss), isUndo);
 		else if (ss->contains("CONVERT_ITEM"))
 			restorePageItemConversion(dynamic_cast<ScItemState<std::pair<PageItem*, PageItem*> >*>(ss), isUndo);
+		else if (ss->contains("PAGE_ATTRS"))
+			restorePageAttributes(ss, isUndo);
+	}
+}
+
+void ScPage::restorePageAttributes(SimpleState *state, bool isUndo)
+{
+	int left_old = state->getInt("LEFT_OLD");
+	QString name_old = state->get("NAME_OLD");
+	int orientation_old = state->getInt("ORIENTATION_OLD");
+	QString size_old =state->get("SIZE_OLD");
+	double width_old = state->getDouble("WIDTH_OLD");
+	double height_old = state->getDouble("HEIGHT_OLD");
+	double init_height_old = state->getDouble("INIT_HEIGHT_OLD");
+	double init_width_old = state->getDouble("INIT_WIDTH_OLD");
+	double init_margin_top_old = state->getDouble("INIT_MARGINTOP_OLD");
+	double init_margin_bottom_old = state->getDouble("INIT_MARGINBOTTOM_OLD");
+	double init_margin_right_old = state->getDouble("INIT_MARGINRIGHT_OLD");
+	double init_margin_left_old = state->getDouble("INIT_MARGINLEFT_OLD");
+	double margin_top_old = state->getDouble("MARGINTOP_OLD");
+	double margin_bottom_old = state->getDouble("MARGINBOTTOM_OLD");
+	int margin_preset_old = state->getInt("MARGINPRESET_OLD");
+	int left = state->getInt("LEFT");
+	QString name = state->get("NAME");
+	int orientation = state->getInt("ORIENTATION");
+	QString size =state->get("SIZE");
+	double width = state->getDouble("WIDTH");
+	double height = state->getDouble("HEIGHT");
+	double init_height = state->getDouble("INIT_HEIGHT");
+	double init_width = state->getDouble("INIT_WIDTH");
+	double init_margin_top = state->getDouble("INIT_MARGINTOP");
+	double init_margin_bottom = state->getDouble("INIT_MARGINBOTTOM");
+	double init_margin_right = state->getDouble("INIT_MARGINRIGHT");
+	double init_margin_left = state->getDouble("INIT_MARGINLEFT");
+	double margin_top = state->getDouble("MARGINTOP");
+	double margin_bottom = state->getDouble("MARGINBOTTOM");
+	int margin_preset = state->getInt("MARGINPRESET");
+	double horizontal_autogap_old = state->getDouble("HORIZONTAL_AUTOGAP");
+	double vertical_autogap_old = state->getDouble("VERTICAL_AUTOGAP");
+	double horizontal_autocount_old = state->getDouble("HORIZONTAL_AUTOCOUNT");
+	double vertical_autocount_old = state->getDouble("VERTICAL_AUTOCOUNT");
+	double horizontal_autorefer_old = state->getDouble("HORIZONTAL_AUTOREFER");
+	double vertical_autorefer_old = state->getDouble("VERTICAL_AUTOREFER");
+	double horizontal_autogap = state->getDouble("HORIZONTAL_AUTOGAP");
+	double vertical_autogap = state->getDouble("VERTICAL_AUTOGAP");
+	double horizontal_autocount = state->getDouble("HORIZONTAL_AUTOCOUNT");
+	double vertical_autocount = state->getDouble("VERTICAL_AUTOCOUNT");
+	double horizontal_autorefer = state->getDouble("HORIZONTAL_AUTOREFER");
+	double vertical_autorefer = state->getDouble("VERTICAL_AUTOREFER");
+
+	if (isUndo)
+	{
+		this->LeftPg = left_old;
+		this->setPageName(name_old);
+		this->m_pageSize = size_old;
+		this->setOrientation(orientation_old);
+		this->setWidth(width_old);
+		this->setHeight(height_old);
+		this->setInitialHeight(init_height_old);
+		this->setInitialWidth(init_width_old);
+		this->initialMargins.Top    = init_margin_top_old;
+		this->initialMargins.Bottom = init_margin_bottom_old;
+		this->initialMargins.Left   = init_margin_left_old;
+		this->initialMargins.Right  = init_margin_right_old;
+		this->marginPreset = margin_preset_old;
+		this->Margins.Top = margin_top_old;
+		this->Margins.Bottom = margin_bottom_old;
+		this->guides.setHorizontalAutoGap(horizontal_autogap_old);
+		this->guides.setVerticalAutoGap(vertical_autogap_old);
+		this->guides.setHorizontalAutoCount(horizontal_autocount_old);
+		this->guides.setVerticalAutoCount(vertical_autocount_old);
+		this->guides.setHorizontalAutoRefer(horizontal_autorefer_old);
+		this->guides.setVerticalAutoRefer(vertical_autorefer_old);
+	}
+	else
+	{
+		this->LeftPg = left;
+		this->setPageName(name);
+		this->m_pageSize = size;
+		this->setOrientation(orientation);
+		this->setWidth(width);
+		this->setHeight(height);
+		this->setInitialHeight(init_height);
+		this->setInitialWidth(init_width);
+		this->initialMargins.Top    = init_margin_top;
+		this->initialMargins.Bottom = init_margin_bottom;
+		this->initialMargins.Left   = init_margin_left;
+		this->initialMargins.Right  = init_margin_right;
+		this->marginPreset = margin_preset;
+		this->Margins.Top = margin_top;
+		this->Margins.Bottom = margin_bottom;
+		this->guides.setHorizontalAutoGap(horizontal_autogap);
+		this->guides.setVerticalAutoGap(vertical_autogap);
+		this->guides.setHorizontalAutoCount(horizontal_autocount);
+		this->guides.setVerticalAutoCount(vertical_autocount);
+		this->guides.setHorizontalAutoRefer(horizontal_autorefer);
+		this->guides.setVerticalAutoRefer(vertical_autorefer);
 	}
 }
 
@@ -214,6 +311,8 @@ void ScPage::restorePageItemCreation(ScItemState<PageItem*> *state, bool isUndo)
 		return;
 	int stateCode = state->transactionCode;
 	PageItem *ite = state->getItem();
+	bool old_lock =ite->locked();
+	ite->setLocked(false);
 	bool oldMPMode=m_Doc->masterPageMode();
 	if ((stateCode == 0) || (stateCode == 1))
 	{
@@ -246,6 +345,7 @@ void ScPage::restorePageItemCreation(ScItemState<PageItem*> *state, bool isUndo)
 	}
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->m_Selection->delaySignalsOff();
+	ite->setLocked(old_lock);
 }
 
 void ScPage::restorePageItemDeletion(ScItemState< QList<PageItem*> > *state, bool isUndo)
