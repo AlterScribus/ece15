@@ -25,11 +25,7 @@ public:
 	bool deleteIt;
 
 	//used while reading SLA file
-<<<<<<< HEAD
-	void setNS(NotesSet* NS, PageItem_TextFrame* master = NULL);
-=======
 	void setNS(NotesSet* nSet, PageItem_TextFrame* master = NULL);
->>>>>>> a806a772c8b7f687eaa407ecd4f402cb91c16fbb
 	//return Notes Set
 	NotesSet* notesSet() { return m_nset; }
 
