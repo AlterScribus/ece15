@@ -49,7 +49,7 @@ class ScStyleRun;
 #endif
 
 //cezaryece: I remove static statement and made it public as this function is used also by PageItem_NoteFrame
-long long calculateLineSpacing (const ParagraphStyle &style, PageItem *item);
+double calculateLineSpacing (const ParagraphStyle &style, PageItem *item);
 
 class SCRIBUS_API PageItem_TextFrame : public PageItem
 {
