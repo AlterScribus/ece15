@@ -44,13 +44,11 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "desaxe/saxXML.h"
 #include "marks.h"
-
 #include "pageitem_group.h"
 #include "pageitem_textframe.h"
 #include "pageitem_noteframe.h"
 #include "pageitem_latexframe.h"
 #include "prefsmanager.h"
-
 #include "resourcecollection.h"
 #include "scclocale.h"
 #include "sccolorengine.h"
@@ -854,6 +852,7 @@ PageItem::~PageItem()
 //		if (isWelded())
 //			unWeldChild();
 }
+
 void PageItem::setXPos(const double newXPos, bool drawingOnly)
 {
 	Xpos = newXPos;
@@ -2345,7 +2344,7 @@ void PageItem::drawGlyphs(ScPainter *p, const CharStyle& style, GlyphLayout& gly
 		}
 		else if (glyph == SpecialChars::OBJECT.unicode())
 		{
-			//for showing marks entries as control chars
+			//for marks as control chars
 			points.resize(0);
 			points.addQuadPoint(0, -8, 1, -8, 0, -6, 1, -6);
 			stroke = true;

@@ -383,9 +383,15 @@ void WordAndPara(PageItem* currItem, int *w, int *p, int *c, int *wN, int *pN, i
 	int wwN = 0;
 	int ccN = 0;
 	bool first = true;
-	PageItem *nextItem = currItem->firstInChain();
+	PageItem *nextItem = currItem;
 	PageItem *nbl = currItem;
-
+	while (nextItem != 0)
+	{
+		if (nextItem->prevInChain() != 0)
+			nextItem = nextItem->prevInChain();
+		else
+			break;
+	}
 	while (nextItem != 0)
 	{
 		for (int a = qMax(nextItem->firstInFrame(),0); a <= nextItem->lastInFrame() && a < nextItem->itemText.length(); ++a)

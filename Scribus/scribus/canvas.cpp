@@ -13,7 +13,7 @@
 *                                                                         *
 ***************************************************************************/
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 #define _USE_MATH_DEFINES
 #endif
 #include <cmath>
@@ -1460,8 +1460,6 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool 
 		return;
 	if (m_doc->Items->count() <= 0)
 		return;
-//	else
-//		m_doc->notesFramesUpdate();
 
 // 	qDebug()<<"Canvas::DrawPageItems"<<m_viewMode.forceRedraw<<m_viewMode.operItemSelecting;
 	FPoint orig = localToCanvas(clip.topLeft());
@@ -1541,7 +1539,14 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool 
 //						currItem->Redrawn = true;
 			if ((currItem->asTextFrame()) && ((currItem->nextInChain() != 0) || (currItem->prevInChain() != 0)))
 			{
-				PageItem *nextItem = currItem->firstInChain();
+				PageItem *nextItem = currItem;
+				while (nextItem != 0)
+				{
+					if (nextItem->prevInChain() != 0)
+						nextItem = nextItem->prevInChain();
+					else
+						break;
+				}
 				if (!m_viewMode.linkedFramesToShow.contains(nextItem))
 					m_viewMode.linkedFramesToShow.append(nextItem);
 			}
@@ -2128,11 +2133,12 @@ void Canvas::drawFrameLinks(ScPainter* painter)
 	if ((((m_doc->appMode == modeLinkFrames) || (m_doc->appMode == modeUnlinkFrames))
 		 && (currItem->itemType() == PageItem::TextFrame)) || (m_doc->guidesPrefs().linkShown || m_viewMode.drawFramelinksWithContents))
 	{
+		PageItem *nextItem = currItem;
 		if (m_doc->guidesPrefs().linkShown || m_viewMode.drawFramelinksWithContents)
 		{
 			for (int lks = 0; lks < m_viewMode.linkedFramesToShow.count(); ++lks)
 			{
-				PageItem* nextItem = m_viewMode.linkedFramesToShow.at(lks);
+				nextItem = m_viewMode.linkedFramesToShow.at(lks);
 				while (nextItem != 0)
 				{
 					if (nextItem->nextInChain() != NULL)
@@ -2147,7 +2153,13 @@ void Canvas::drawFrameLinks(ScPainter* painter)
 		}
 		else
 		{
-			PageItem* nextItem = currItem->firstInChain();
+			while (nextItem != 0)
+			{
+				if (nextItem->prevInChain() != 0)
+					nextItem = nextItem->prevInChain();
+				else
+					break;
+			}
 			while (nextItem != 0)
 			{
 				if (nextItem->nextInChain() != NULL)

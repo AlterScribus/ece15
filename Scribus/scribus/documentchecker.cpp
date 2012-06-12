@@ -74,7 +74,6 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 	currDoc->masterItemErrors.clear();
 	currDoc->docLayerErrors.clear();
 	errorCodes itemError;
-
 	{
 		errorCodes layerError;
 		int Lnr;

@@ -1231,7 +1231,6 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	notesMasterMarks.clear();
 	notesNSets.clear();
 	
-
 	QString f(readSLA(fileName));
 	if (f.isEmpty())
 	{
@@ -1874,9 +1873,8 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 				gItem->groupItemList = gpL;
 		}
 	}
-
 	updateNames2Ptr();
-
+	
 	// reestablish first/lastAuto
 	m_Doc->FirstAuto = m_Doc->LastAuto;
 	if (m_Doc->LastAuto)
@@ -6370,4 +6368,3 @@ void Scribus150Format::updateNames2Ptr() //after document load items pointers sh
 		notesNSets.clear();
 	}
 }
-

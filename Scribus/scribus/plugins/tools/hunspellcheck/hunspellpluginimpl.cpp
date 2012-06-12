@@ -32,7 +32,11 @@ for which a new license (GPL+exception) is in place.
 HunspellPluginImpl::HunspellPluginImpl() : QObject(0)
 {
 	//hspellers=NULL;
+<<<<<<< HEAD
 	numDicts=0;
+=======
+//	numDicts=0;
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 	m_runningForSE=false;
 	m_SE=NULL;
 }
@@ -45,7 +49,11 @@ HunspellPluginImpl::~HunspellPluginImpl()
 		h = NULL;
 	}
 	hspellerMap.clear();
+<<<<<<< HEAD
 	numDicts = 0;
+=======
+//	numDicts = 0;
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 }
 
 bool HunspellPluginImpl::run(const QString & target, ScribusDoc* doc)
@@ -62,6 +70,7 @@ bool HunspellPluginImpl::run(const QString & target, ScribusDoc* doc)
 	return spellCheckOk;
 }
 
+<<<<<<< HEAD
 bool HunspellPluginImpl::findDictionaries()
 {
 	dictionaryPaths=ScPaths::instance().spellDirs();
@@ -73,11 +82,17 @@ bool HunspellPluginImpl::findDictionaries()
 bool HunspellPluginImpl::initHunspell()
 {
 	bool dictPathFound=findDictionaries();
+=======
+bool HunspellPluginImpl::initHunspell()
+{
+	bool dictPathFound=LanguageManager::instance()->findDictionaries(dictionaryPaths);
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 	if (!dictPathFound)
 	{
 		qDebug()<<"No preinstalled dictonary paths found";
 		return false;
 	}
+<<<<<<< HEAD
 	for (int i=0; i<dictionaryPaths.count(); ++i)
 	{
 		// Find the dic and aff files in the location
@@ -101,6 +116,11 @@ bool HunspellPluginImpl::initHunspell()
 		qDebug()<<"Number of dictionaries/AFFs found in"<<dictionaryPaths.at(i)<<":"<<dictList.count();
 	}
 	numDicts=dictionaryMap.count();
+=======
+	dictionaryMap.clear();
+	LanguageManager::instance()->findDictionarySets(dictionaryPaths, dictionaryMap);
+//	numDicts=dictionaryMap.count();
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 	if (dictionaryMap.count()==0)
 		return false;
 
@@ -150,7 +170,10 @@ bool HunspellPluginImpl::parseTextFrame(StoryText *iText)
 		currPos=wordStart;
 		QString word=iText->text(wordStart,wordEnd-wordStart);
 		QString wordLang=iText->charStyle(wordStart).language();
+<<<<<<< HEAD
 		//qDebug()<<word<<wordLang;
+=======
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 		wordLang=LanguageManager::instance()->getAbbrevFromLang(wordLang, true, false);
 		//A little hack as for some reason our en dictionary from the aspell plugin was not called en_GB or en_US but en, content was en_GB though. Meh.
 		if (wordLang=="en")

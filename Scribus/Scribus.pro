@@ -2159,3 +2159,6 @@ TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.uk.ts \
                 resources/translations/po/scribus.zh_CN.ts \
                 resources/translations/po/scribus.zh_TW.ts
+
+OTHER_FILES += \
+    scribus/CMakeLists.txt

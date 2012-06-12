@@ -15,7 +15,11 @@
 	</Platforms>
 	<ToolFiles>
 		<ToolFile
+<<<<<<< HEAD
 			RelativePath="..\Scribus-build.rules"
+=======
+			RelativePath="..\Scribus-build-rules.rules"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 		/>
 	</ToolFiles>
 	<Configurations>
@@ -24,19 +28,28 @@
 			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus\plugins"
 			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
 			ConfigurationType="2"
+<<<<<<< HEAD
 			InheritedPropertySheets="..\Scribus-build.vsprops"
+=======
+			InheritedPropertySheets="..\Scribus-build-props.vsprops"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+<<<<<<< HEAD
 				Name="uic.exe"
+=======
+				Name="uic"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+<<<<<<< HEAD
 				Name="moc.exe"
 			/>
 			<Tool
@@ -44,6 +57,15 @@
 			/>
 			<Tool
 				Name="lrelease.exe"
+=======
+				Name="moc"
+			/>
+			<Tool
+				Name="rcc"
+			/>
+			<Tool
+				Name="lrelease"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -58,7 +80,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\..\..\scribus;&quot;$(QT4_DIR)\include\QtCore&quot;;&quot;$(QT4_DIR)\include\QtGui&quot;;&quot;$(QT4_DIR)\include\QtXml&quot;;&quot;$(QT4_DIR)\include&quot;;&quot;$(QT4_DIR)\src\3rdparty\zlib&quot;;&quot;$(BOOST_DIR)&quot;;&quot;$(CAIRO_DIR)\include&quot;;&quot;$(FREETYPE_DIR)\include&quot;;&quot;$(LCMS_DIR)\include&quot;;&quot;$(LIBJPEG_DIR)\include&quot;;&quot;$(LIBTIFF_DIR)\include&quot;"
+<<<<<<< HEAD
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;;HAVE_CAIRO;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
+=======
+				PreprocessorDefinitions="WIN32;_DEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;;HAVE_CAIRO;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -119,19 +145,28 @@
 			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus\plugins"
 			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
 			ConfigurationType="2"
+<<<<<<< HEAD
 			InheritedPropertySheets="..\Scribus-build.vsprops"
+=======
+			InheritedPropertySheets="..\Scribus-build-props.vsprops"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+<<<<<<< HEAD
 				Name="uic.exe"
+=======
+				Name="uic"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+<<<<<<< HEAD
 				Name="moc.exe"
 			/>
 			<Tool
@@ -139,6 +174,15 @@
 			/>
 			<Tool
 				Name="lrelease.exe"
+=======
+				Name="moc"
+			/>
+			<Tool
+				Name="rcc"
+			/>
+			<Tool
+				Name="lrelease"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -155,7 +199,11 @@
 				InlineFunctionExpansion="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..;..\..\..\scribus;&quot;$(QT4_DIR)\include\QtCore&quot;;&quot;$(QT4_DIR)\include\QtGui&quot;;&quot;$(QT4_DIR)\include\QtXml&quot;;&quot;$(QT4_DIR)\include&quot;;&quot;$(QT4_DIR)\src\3rdparty\zlib&quot;;&quot;$(BOOST_DIR)&quot;;&quot;$(CAIRO_DIR)\include&quot;;&quot;$(FREETYPE_DIR)\include&quot;;&quot;$(LCMS_DIR)\include&quot;;&quot;$(LIBJPEG_DIR)\include&quot;;&quot;$(LIBTIFF_DIR)\include&quot;"
+<<<<<<< HEAD
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;;HAVE_CAIRO;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
+=======
+				PreprocessorDefinitions="WIN32;NDEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;;HAVE_CAIRO;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -245,14 +293,22 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
+<<<<<<< HEAD
 						Name="moc.exe"
+=======
+						Name="moc"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
+<<<<<<< HEAD
 						Name="moc.exe"
+=======
+						Name="moc"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -263,14 +319,22 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
+<<<<<<< HEAD
 						Name="moc.exe"
+=======
+						Name="moc"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
+<<<<<<< HEAD
 						Name="moc.exe"
+=======
+						Name="moc"
+>>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>

@@ -1349,7 +1349,7 @@ private:
 	MassObservable<ScPage*> m_pagesChanged;
 	MassObservable<QRectF> m_regionsChanged;
 	DocUpdater* m_docUpdater;
-
+	
 signals:
 	//Lets make our doc talk to our GUI rather than confusing all our normal stuff
 	/**
@@ -1723,7 +1723,7 @@ public slots:
 	//update strings (page numbers) for marks
 	bool updateMarks(bool updateNotesMarks = false);
 
-	//welding two items
+//welding two items
 public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();

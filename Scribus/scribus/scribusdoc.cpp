@@ -6407,7 +6407,6 @@ QString ScribusDoc::getSectionNameForPageIndex(const uint pageIndex) const
 	return QString();
 }
 
-
 const QString ScribusDoc::getSectionPageNumberForPageIndex(const uint pageIndex) const
 {
 	QString retVal(QString::null);
@@ -9594,6 +9593,7 @@ void ScribusDoc::removePict(QString name)
 		changed();
 	}
 }
+
 
 void ScribusDoc::updatePic()
 {

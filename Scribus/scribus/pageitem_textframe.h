@@ -92,7 +92,7 @@ public:
 #endif
 	//enable/disable marks inserting actions depending on editMode
 	void togleEditModeActions();
-
+	
 protected:
 	virtual void DrawObj_Item(ScPainter *p, QRectF e);
 	virtual void DrawObj_Post(ScPainter *p);

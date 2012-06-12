@@ -125,6 +125,7 @@ ui/notessetmanager.ui
   ui/prefs_preflightverifierbase.ui
   ui/prefs_printerbase.ui
   ui/prefs_scrapbookbase.ui
+  ui/prefs_spellingbase.ui
   ui/prefs_typographybase.ui
   ui/prefs_userinterfacebase.ui
   ui/prefs_itemtoolsbase.ui
@@ -202,6 +203,8 @@ SET(SCRIBUS_MOC_CLASSES
   commonstrings.h
   deferredtask.h
   docinfo.h
+  downloadmanager/scdlmgr.h
+  downloadmanager/scdlthread.h
   fileloader.h
   filesearch.h
   filewatcher.h
@@ -214,8 +217,8 @@ SET(SCRIBUS_MOC_CLASSES
   loadsaveplugin.h
   menumanager.h
 marks.h
-  navigator.h
 notesset.h
+  navigator.h
   observable.h
   pageitem.h
   pageitem_arc.h
@@ -384,6 +387,7 @@ ui/notessetmanager.h
   ui/prefs_preflightverifier.h
   ui/prefs_printer.h
   ui/prefs_scrapbook.h
+  ui/prefs_spelling.h
   ui/prefs_typography.h
   ui/prefs_userinterface.h
   ui/prefs_itemtools.h
@@ -538,6 +542,8 @@ SET(SCRIBUS_SOURCES
   docinfo.cpp
   documentchecker.cpp
   documentinformation.cpp
+  downloadmanager/scdlmgr.cpp
+  downloadmanager/scdlthread.cpp
   exif.cpp
   fileloader.cpp
   filesearch.cpp
@@ -820,6 +826,7 @@ ui/notessetmanager.cpp
   ui/prefs_preflightverifier.cpp
   ui/prefs_printer.cpp
   ui/prefs_scrapbook.cpp
+  ui/prefs_spelling.cpp
   ui/prefs_typography.cpp
   ui/prefs_userinterface.cpp
   ui/prefs_itemtools.cpp

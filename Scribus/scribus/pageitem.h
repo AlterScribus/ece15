@@ -104,7 +104,6 @@ class SCRIBUS_API PageItem : public QObject, public UndoObject, public SaxIO, pu
 	//used for notes frames
 	Q_PROPERTY(bool m_SizeHLocked READ sizeHLocked WRITE setSizeHLocked DESIGNABLE false)
 	Q_PROPERTY(bool m_SizeVLocked READ sizeVLocked WRITE setSizeVLocked DESIGNABLE false)
-
 	Q_PROPERTY(bool m_ImageIsFlippedV READ imageFlippedV WRITE setImageFlippedV DESIGNABLE false)
 	Q_PROPERTY(bool m_ImageIsFlippedH READ imageFlippedH WRITE setImageFlippedH DESIGNABLE false)
 	Q_PROPERTY(double lineWidth READ lineWidth WRITE setLineWidth DESIGNABLE false)
@@ -246,7 +245,6 @@ protected:
 public:
 	PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	~PageItem();
-
 
 	// Get item level relative to its parent doc or group
 	int level();
@@ -529,7 +527,6 @@ public:
 	double CurY;
   /** Text des Elements */
 	StoryText itemText;
-	
   /** Flag fuer PDF-Bookmark */
 	bool isBookmark;
   /** Flag for redraw in EditMode */
@@ -545,6 +542,7 @@ public:
 	PageItem* nextInChain() { return NextBox; }
 	const PageItem* prevInChain() const { return BackBox; }
 	const PageItem* nextInChain() const { return NextBox; }
+	//you can change all code for search first or last item in chain
 	PageItem* firstInChain();
 	PageItem* lastInChain();
 	PageItem *Parent;

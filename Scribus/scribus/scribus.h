@@ -105,6 +105,7 @@ class UndoManager;
 class UndoPalette;
 class UndoState;
 
+
 extern SCRIBUS_API ScribusQApp* ScQApp;
 
 /**

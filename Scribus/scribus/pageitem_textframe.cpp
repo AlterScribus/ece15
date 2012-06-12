@@ -73,7 +73,7 @@ PageItem_TextFrame::PageItem_TextFrame(ScribusDoc *pa, double x, double y, doubl
 	unicodeTextEditMode = false;
 	unicodeInputCount = 0;
 	unicodeInputString = "";
-
+	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
 
@@ -85,7 +85,7 @@ PageItem_TextFrame::PageItem_TextFrame(const PageItem & p) : PageItem(p)
 	unicodeInputCount = 0;
 	unicodeInputString = "";
 	m_notesFramesMap.clear();
-
+	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
 
@@ -1264,7 +1264,7 @@ void PageItem_TextFrame::adjustParagraphEndings ()
 	}
 }
 
-void PageItem_TextFrame::layout()
+void PageItem_TextFrame::layout() 
 {
 // 	qDebug()<<"==Layout==" << itemName() ;
 // 	printBacktrace(24);
@@ -1378,7 +1378,6 @@ void PageItem_TextFrame::layout()
 		}
 		return;
 	}
-
 	if ((itemText.length() != 0)) // || (NextBox != 0))
 	{
 		// determine layout area
@@ -1972,7 +1971,7 @@ void PageItem_TextFrame::layout()
 				double Xpos, Xend;
 				bool done = false;
 				bool newColumn = false;
-
+				
 				//FIX ME - that should be paragraph style`s properties
 				//if set then indent is add to possible line start point (after overflow)
 				//if not then indent is calculated from column left edge
@@ -2871,7 +2870,7 @@ void PageItem_TextFrame::layout()
 			itemText.appendLine(current.line);
 			current.startOfCol = false;
 
-			if (moveLinesFromPreviousFrame()) {
+			if (moveLinesFromPreviousFrame ()) {
 				layout ();  // line moving ensures that this won't be an endless loop
 				return;
 			}
@@ -3469,7 +3468,6 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 
 void PageItem_TextFrame::clearContents()
 {
-	
 	PageItem *nextItem = this->firstInChain();
 
 	//delete all marks in itemText
@@ -3597,7 +3595,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			marksDeleted = true;
 		}
 	}
-
 	int as = k->text()[0].unicode();
 	QString uc = k->text();
 	QString cr, Tcha, Twort;
@@ -4146,8 +4143,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			m_Doc->regionsChanged()->update(QRectF());
 		}
 	}
-
-	// 	update();
+// 	update();
 //	view->slotDoCurs(true);
 	if ((kk == Qt::Key_Left) || (kk == Qt::Key_Right) || (kk == Qt::Key_Up) || (kk == Qt::Key_Down))
 	{
@@ -4314,7 +4310,9 @@ void PageItem_TextFrame::deselectAll()
 	if ( itemText.lengthOfSelection() > 0 )
 	{
 		itemText.deselectAll();
-		PageItem *item = this->firstInChain();
+		PageItem *item = this;
+		while( item->prevInChain() )
+			item=item->prevInChain();
 
 		while ( item )
 		{

@@ -163,8 +163,8 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	m_groupTransactions(0),
 	m_groupTransaction(NULL),
 	_isGlobalMode(true),
-	m_vhRulerHW(17),
-	linkAfterDraw(false)
+	linkAfterDraw(false),
+	m_vhRulerHW(17)
 {
 	setObjectName("s");
 	QPalette p=palette();
@@ -2728,7 +2728,7 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 		for (int layerLevel = 0; layerLevel < layerCount; ++layerLevel)
 		{
 			Doc->Layers.levelToLayer(layer, layerLevel);
-			//two pass - first draw all except notes frames
+			//two passes - first draw all except notes frames
 			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
 			//second pass for notes frames only
 			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
@@ -3296,14 +3296,20 @@ void ScribusView::TextToPath()
 	if ((currItem->prevInChain() != 0) || (currItem->nextInChain() != 0))
 	{
 		// select whole chain
-		currItem = currItem->firstInChain();
+		PageItem *backItem = currItem;
+		while (backItem->prevInChain() != 0)
+			backItem = backItem->prevInChain();
+		currItem = backItem;
 		Deselect(true);
 		tmpSelection.addItem(currItem);
-		PageItem* nextItem = currItem->nextInChain();
-		while (nextItem != 0)
+		backItem = currItem->nextInChain();
+		while (backItem != 0)
 		{
-			tmpSelection.addItem(nextItem);
-			nextItem = nextItem->nextInChain();
+			tmpSelection.addItem(backItem);
+			if (backItem->nextInChain() != 0)
+				backItem = backItem->nextInChain();
+			else
+				break;
 		}
 	}
 	QList<PageItem*> delItems,newGroupedItems;

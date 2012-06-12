@@ -1612,7 +1612,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 				}
 //FIXME:av		view->oldCp = currItem->CPos;
-				if (currItem->isTextFrame())
+				if (currItem->itemType() == PageItem::TextFrame)
 				{
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
@@ -2716,7 +2716,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemPreviewNormal"]->setChecked(false);
 		scrActions["itemPreviewFull"]->setChecked(false);
 	}
-	if ((SelectedType == -1) || (SelectedType != -1 && !currItem->asTextFrame()))
+	if ((SelectedType==-1) || (SelectedType!=-1 && !currItem->asTextFrame()))
 		enableTextActions(&scrActions, false);
 	scrActions["insertSampleText"]->setEnabled(false);
 
@@ -3304,7 +3304,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		}
 		scrActions["fileClose"]->setEnabled(true);
 	}
-	
+
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
 	// Give plugins a chance to react on changes in the current document
@@ -4116,7 +4116,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		}
 //		RestoreBookMarks();
 		doc->setMasterPageMode(false);
-		
 		int docItemsCount=doc->Items->count();
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
@@ -4204,7 +4203,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	doc->setModified(false);
 	foreach (NotesSet* NS, doc->m_docNotesSetsList)
 		doc->updateNotesFramesStyles(NS);
-
 #ifdef DEBUG_LOAD_TIMES
 	times(&tms2);
 	double ticks = sysconf(_SC_CLK_TCK);
@@ -4981,10 +4979,6 @@ void ScribusMainWindow::slotFileQuit()
 
 void ScribusMainWindow::slotEditCut()
 {
-	//TODO for footnotes
-	//check if cuted text contains footnotes marks
-	//if so then selected notes sjould be deleted but text of these notes should also be copied
-	//then new notes references should be created during pasting
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
@@ -5085,10 +5079,6 @@ void ScribusMainWindow::slotEditCut()
 
 void ScribusMainWindow::slotEditCopy()
 {
-	//TODO for footnotes
-	//check if copied text contains footnotes marks
-	//if so notes text should also be copied and new notes references
-	//should be created during pasting
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
@@ -5152,9 +5142,6 @@ void ScribusMainWindow::slotEditCopy()
 
 void ScribusMainWindow::slotEditPaste()
 {
-	//TODO for footnotes
-	//check if pasted text contains footnotes marks
-	//if so new notes should be created
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
 	if (HaveDoc)
@@ -5461,8 +5448,15 @@ void ScribusMainWindow::SelectAll(bool docWideSelect)
 	if (doc->appMode == modeEdit)
 	{
 		PageItem *currItem = doc->m_Selection->itemAt(0);
-		PageItem *nextItem = currItem->firstInChain();
+		PageItem *nextItem = currItem;
 		nextItem->itemText.selectAll();
+		while (nextItem != 0)
+		{
+			if (nextItem->prevInChain() != 0)
+				nextItem = nextItem->prevInChain();
+			else
+				break;
+		}
 		while (nextItem != 0)
 		{
 			nextItem->HasSel = true;
@@ -5669,7 +5663,6 @@ void ScribusMainWindow::slotNewPageP(int wo, QString templ)
 		doc->addPageToSection(wo, where, 1);
 	else
 		doc->addPageToSection(wo+1, where, 1);
-
 	doc->updateEndnotesFrames();
 	doc->changed();
 	updateGUIAfterPagesChanged();
@@ -10736,4 +10729,3 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 	delete editMDialog;
 	return docWasChanged;
 }
-

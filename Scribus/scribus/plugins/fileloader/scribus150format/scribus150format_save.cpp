@@ -30,6 +30,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_spiral.h"
 #include "pageitem_table.h"
 #include "pageitem_noteframe.h"
+
 #include "units.h"
 #include "util.h"
 #include "util_math.h"
@@ -1514,7 +1515,7 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 	QString tmpnum;
 	int iTLen = item->itemText.length();
 	if (item->isNoteFrame())
-		iTLen = 0;  //used for saving empty endnotes frames - will be filled automatically
+		iTLen = 0;  //used for saving empty endnotes frames, as they will be filled automatically
 	for(int k = 0; k < iTLen; ++k)
 	{
 		const CharStyle& style1(item->itemText.charStyle(k));
@@ -1675,8 +1676,6 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 		if (dia2 != 0)
 			dia2->setValue(ObCount);
 		item = items->at(j);
-//		if (item->isNoteFrame() && item->asNoteFrame()->notesSet()->isAutoRemoveEmptyNotesFrames())
-//			continue;  //dont save dynamicaly created and removed notes frames
 		switch (master)
 		{
 			case ItemSelectionMaster:

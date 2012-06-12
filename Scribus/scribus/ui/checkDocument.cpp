@@ -475,7 +475,8 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		masterPageRootItem->setExpanded(true);
 		masterPageRootItem->setText(COLUMN_PROBLEM, tr("Issue(s): %1").arg(mpErrorCount));
 		// END of MASTER PAGES
-		// PAGES ********************************
+
+		// PAGES ********************************8
 		for (int aPage = 0; aPage < doc->DocPages.count(); ++aPage)
 		{
 			QString tmp;
@@ -548,7 +549,8 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				page->setText(COLUMN_ITEM, tr("Page ")+tmp.setNum(aPage+1));
 		}
 		// END of PAGES
-		// FREE ITEMS **********************************************
+
+		// FREE ITEMS **********************************************8888
 		QMap<PageItem*, errorCodes>::Iterator freeItemsErrorsIt;
 		bool hasfreeItems = false;
 		for (freeItemsErrorsIt = doc->docItemErrors.begin(); freeItemsErrorsIt != doc->docItemErrors.end(); ++freeItemsErrorsIt)
