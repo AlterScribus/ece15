@@ -17,10 +17,23 @@ class ScribusDoc;
 
 class SCRIBUS_API HySettings : public QWidget, Ui::hysettingsBase
 { 
+	//TODO: Dict license showing, URL background unzipping, checksumming, pkg mgr platforms warning
+	struct DictData
+	{
+			QString lang;
+			QString version;
+			QString files;
+			QString url;
+			QString desc;
+			QString license;
+			QString filetype;
+			bool download;
+	};
+
 	Q_OBJECT
 
 public:
-	HySettings( QWidget* parent/*, QMap<QString,QString>* langs*/);
+	HySettings( QWidget* parent);
 	~HySettings() {};
 	void restoreDefaults(struct ApplicationPrefs *prefsData);
 	void restoreDefaults(ScribusDoc *prefsData);
@@ -31,6 +44,7 @@ public:
 	QString getLanguage();
 	QSet<QString> getIgnoreList();
 	QHash<QString, QString> getExceptionList();
+	void setSpellingInvisible();
 
 private slots:
 	void addToIgnoreList();
@@ -41,8 +55,19 @@ private slots:
 	void editExceptListEntry();
 	void removeExceptListEntry();
 	void enableExceptButtons();
+	void downloadSpellDicts();
+	void updateDictList();
+	void updateAvailDictList();
+	void downloadDictListFinished();
+	void downloadSpellDictsFinished();
+	void setAvailDictsXMLFile(QString availDictsXMLDataFile);
 
-// protected:
+	protected:
+	QMap<QString, QString> dictionaryMap;
+	QStringList dictionaryPaths;
+	QString downloadLocation;
+	QList <DictData> dictList;
+	QList <DictData> downloadList;
 // 	QMap<QString,QString> langsMap;
 };
 

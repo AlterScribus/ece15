@@ -15,7 +15,7 @@ echo "$NEW"
 # Compare for OLD and NEW revision
 if [ $NEW -gt $OLD ] ; then
     # update local copies
-	svn update local	
+	svn up
 	git add *
 	git commit -m "Rev. $NEW update"
 fi
