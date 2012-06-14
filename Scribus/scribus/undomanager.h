@@ -450,6 +450,7 @@ public:
 	static QString MoveHGuide;
 	static QString UniteItem;
 	static QString Overprint;
+	static QString BlendMode;
 	static QString SplitItem;
 	static QString RemoveAllGuides;
 	static QString RemoveAllPageGuides;
