@@ -10701,6 +10701,9 @@ void ScribusDoc::itemSelection_SetItemFillBlend(int t)
 	uint selectedItemCount=m_Selection->count();
 	if (selectedItemCount != 0)
 	{
+		UndoTransaction* activeTransaction = NULL;
+		if (UndoManager::undoEnabled())
+			activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 		for (uint i = 0; i < selectedItemCount; ++i)
 		{
 			PageItem *currItem = m_Selection->itemAt(i);
@@ -10710,6 +10713,15 @@ void ScribusDoc::itemSelection_SetItemFillBlend(int t)
 		}
 		regionsChanged()->update(QRectF());
 		changed();
+		if (activeTransaction){
+			activeTransaction->commit(Um::Selection,
+									  Um::IGroup,
+									  Um::BlendMode,
+									  "",
+									  Um::IGroup);
+			delete activeTransaction;
+			activeTransaction = NULL;
+		}
 	}
 }
 
@@ -10719,6 +10731,9 @@ void ScribusDoc::itemSelection_SetItemLineBlend(int t)
 	uint selectedItemCount=m_Selection->count();
 	if (selectedItemCount != 0)
 	{
+		UndoTransaction* activeTransaction = NULL;
+		if (UndoManager::undoEnabled())
+			activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 		for (uint i = 0; i < selectedItemCount; ++i)
 		{
 			PageItem *currItem = m_Selection->itemAt(i);
@@ -10726,6 +10741,15 @@ void ScribusDoc::itemSelection_SetItemLineBlend(int t)
 		}
 		regionsChanged()->update(QRectF());
 		changed();
+		if (activeTransaction){
+			activeTransaction->commit(Um::Selection,
+									  Um::IGroup,
+									  Um::BlendMode,
+									  "",
+									  Um::IGroup);
+			delete activeTransaction;
+			activeTransaction = NULL;
+		}
 	}
 }
 
@@ -10802,7 +10826,7 @@ void ScribusDoc::itemSelection_SetOverprint(bool overprint, Selection* customSel
 		return;
 	m_updateManager.setUpdatesDisabled();
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled() && selectedItemCount > 1)
+	if (UndoManager::undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 	for (uint i = 0; i < selectedItemCount; ++i)
 	{
