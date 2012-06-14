@@ -1224,21 +1224,21 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 	docu.writeStartElement("Marks");
 	foreach(Mark* mrk,  m_Doc->m_docMarksList)
 	{
-		if (mrk->getType() == MARKNoteFrameType)
+		if (mrk->isType(MARKNoteFrameType))
 			continue;
 		docu.writeEmptyElement("Mark");
 		docu.writeAttribute("label", mrk->label);
 		docu.writeAttribute("type", mrk->getType());
-		if ((mrk->getType() == MARK2ItemType) && mrk->hasItemPtr())
+		if (mrk->isType(MARK2ItemType) && mrk->hasItemPtr())
 		{
 			const PageItem* item = mrk->getItemPtr();
 			assert(item != NULL);
 			docu.writeAttribute("ItemID", qHash(item));
 			//docu.writeAttribute("itemName", item->itemName());
 		}
-		else if ((mrk->getType() == MARKVariableTextType) && mrk->hasString())
+		else if (mrk->isType(MARKVariableTextType) && mrk->hasString())
 			docu.writeAttribute("str", mrk->getString());
-		else if ((mrk->getType() == MARK2MarkType) && mrk->hasMark())
+		else if (mrk->isType(MARK2MarkType) && mrk->hasMark())
 		{
 			QString label;
 			MarkType type;

@@ -3282,7 +3282,7 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 			{
 				Mark* mark = new Mark;
 				mark->label=attrs.valueAsString("label");
-				mark->setType((MarkType) attrs.valueAsInt("type"));
+				mark->setType(type);
 				doc->m_docMarksList.append(mark);
 
 				if (type == MARKVariableTextType && attrs.hasAttribute("str"))

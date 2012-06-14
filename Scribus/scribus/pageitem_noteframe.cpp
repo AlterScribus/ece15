@@ -337,7 +337,7 @@ void PageItem_NoteFrame::updateNotesText()
 	while (pos < itemText.length())
 	{
 		ScText* hl = itemText.item(pos);
-		if (hl->hasMark() && (hl->mark->getType() == MARKNoteFrameType))
+		if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
 		{
 			if (prevMrk != NULL)
 			{
@@ -376,7 +376,7 @@ int PageItem_NoteFrame::findNoteCpos(TextNote* note)
 	for (int pos=0; pos < itemText.length(); ++pos)
 	{
 		ScText* hl = itemText.item(pos);
-		if (hl->hasMark() && (hl->mark->getType() == MARKNoteFrameType))
+		if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
 		{
 			if (hl->mark->getNotePtr() == note)
 				return (pos);

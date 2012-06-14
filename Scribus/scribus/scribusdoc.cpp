@@ -15620,12 +15620,12 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 		{
 			if (invalidateMarkMasterText(mrk, false))
 				docWasChanged = true;
-			else if (mrk->isUnique())
-			{
-				PageItem* mItem = findMark(mrk);
-				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
-				mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
-			}
+		}
+		else if (mrk->isUnique())
+		{
+			PageItem* mItem = findMark(mrk);
+			mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
+			mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
 		}
 	}
 
