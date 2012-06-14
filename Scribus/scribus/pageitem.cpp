@@ -3513,6 +3513,7 @@ void PageItem::setFillBlendmode(int newBlendmode)
 	{
 		SimpleState *ss = new SimpleState(Um::BlendMode, 0, Um::IGroup);
 		ss->set("FILLBLENDMODE", newBlendmode);
+		ss->set("FILLBLENDMODE_OLD", fillBlendmodeVal);
 		undoManager->action(this, ss);
 	}
 	fillBlendmodeVal = newBlendmode;
@@ -3745,6 +3746,7 @@ void PageItem::setLineBlendmode(int newBlendmode)
 	{
 		SimpleState *ss = new SimpleState(Um::BlendMode, 0, Um::IGroup);
 		ss->set("LINEBLENDMODE", newBlendmode);
+		ss->set("LINEBLENDMODE_OLD", lineBlendmodeVal);
 		undoManager->action(this, ss);
 	}
 	lineBlendmodeVal = newBlendmode;
@@ -4403,7 +4405,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 		else if (ss->contains("FILLBLENDMODE"))
 		{
 			if(isUndo)
-				fillBlendmodeVal=!ss->getInt("FILLBLENDMODE");
+				fillBlendmodeVal=ss->getInt("FILLBLENDMODE_OLD");
 			else
 				fillBlendmodeVal=ss->getInt("FILLBLENDMODE");
 		}
@@ -4424,7 +4426,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 		else if (ss->contains("LINEBLENDMODE"))
 		{
 			if(isUndo)
-				lineBlendmodeVal=!ss->getInt("LINEBLENDMODE");
+				lineBlendmodeVal=ss->getInt("LINEBLENDMODE_OLD");
 			else
 				lineBlendmodeVal=ss->getInt("LINEBLENDMODE");
 		}
