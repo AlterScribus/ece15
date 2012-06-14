@@ -27,6 +27,7 @@ DelPages::DelPages( QWidget* parent, int currentPage, int maxPage ) : QDialog( p
 	fromToLayout->addWidget( fromLabel );
 	fromPageData = new ScrSpinBox(this );
 	fromPageData->setDecimals(0);
+	fromPageData->setSuffix("");
 	fromPageData->setMinimum(1);
 	fromPageData->setMaximum(maxPage);
 	fromPageData->setValue( currentPage );
@@ -39,6 +40,7 @@ DelPages::DelPages( QWidget* parent, int currentPage, int maxPage ) : QDialog( p
 	toPageData->setMinimum(1);
 	toPageData->setMaximum(maxPage);
 	toPageData->setValue( currentPage );
+	toPageData->setSuffix("");
 	fromToLayout->addWidget( toPageData );
 	dialogLayout->addLayout( fromToLayout );
 
