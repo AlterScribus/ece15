@@ -3509,6 +3509,12 @@ void PageItem::setFillBlendmode(int newBlendmode)
 {
 	if (fillBlendmodeVal == newBlendmode)
 		return; // nothing to do -> return
+	if (UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::BlendMode, 0, Um::IGroup);
+		ss->set("FILLBLENDMODE", newBlendmode);
+		undoManager->action(this, ss);
+	}
 	fillBlendmodeVal = newBlendmode;
 }
 
@@ -3735,6 +3741,12 @@ void PageItem::setLineBlendmode(int newBlendmode)
 {
 	if (lineBlendmodeVal == newBlendmode)
 		return; // nothing to do -> return
+	if (UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::BlendMode, 0, Um::IGroup);
+		ss->set("LINEBLENDMODE", newBlendmode);
+		undoManager->action(this, ss);
+	}
 	lineBlendmodeVal = newBlendmode;
 }
 
@@ -4387,6 +4399,20 @@ void PageItem::restore(UndoState *state, bool isUndo)
 				doOverprint=!ss->getBool("OVERPRINT");
 			else
 				doOverprint=ss->getBool("OVERPRINT");
+		}
+		else if (ss->contains("FILLBLENDMODE"))
+		{
+			if(isUndo)
+				fillBlendmodeVal=!ss->getInt("FILLBLENDMODE");
+			else
+				fillBlendmodeVal=ss->getInt("FILLBLENDMODE");
+		}
+		else if (ss->contains("LINEBLENDMODE"))
+		{
+			if(isUndo)
+				lineBlendmodeVal=!ss->getInt("LINEBLENDMODE");
+			else
+				lineBlendmodeVal=ss->getInt("LINEBLENDMODE");
 		}
 		else if (ss->contains("IMAGEFLIPV"))
 		{
