@@ -825,6 +825,7 @@ void UndoManager::languageChange()
 	UndoManager::MoveHGuide         = tr("Move horizontal guide");
 	UndoManager::LockGuides         = tr("Lock guides");
 	UndoManager::UnlockGuides       = tr("Unlock guides");
+	UndoManager::Overprint          = tr("Change overprint");
 	UndoManager::Move               = tr("Move");
 	UndoManager::UniteItem          = tr("Combine Polygons");
 	UndoManager::SplitItem          = tr("Split Polygons");
@@ -1044,6 +1045,7 @@ QString UndoManager::UniteItem          = "";
 QString UndoManager::SplitItem          = "";
 QString UndoManager::LockGuides         = "";
 QString UndoManager::UnlockGuides       = "";
+QString UndoManager::Overprint          = "";
 QString UndoManager::Move               = "";
 QString UndoManager::Resize             = "";
 QString UndoManager::Rotate             = "";
