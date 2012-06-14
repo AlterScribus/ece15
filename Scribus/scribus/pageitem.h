@@ -702,7 +702,7 @@ public:
 	void setFillEvenOdd(bool val) { fillRule = val; }
 	//
 	bool overprint() const { return doOverprint; }
-	void setOverprint(bool val) { doOverprint = val; }
+	void setOverprint(bool val);
 	// rect / oval / round / other
 	int frameType() const { return FrameType; }
 	void setFrameType(int val) { FrameType = val; }
