@@ -10801,11 +10801,23 @@ void ScribusDoc::itemSelection_SetOverprint(bool overprint, Selection* customSel
 	if (selectedItemCount == 0)
 		return;
 	m_updateManager.setUpdatesDisabled();
+	UndoTransaction* activeTransaction = NULL;
+	if (UndoManager::undoEnabled() && selectedItemCount > 1)
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 	for (uint i = 0; i < selectedItemCount; ++i)
 	{
 		PageItem* currItem = itemSelection->itemAt(i);
 		currItem->setOverprint(overprint);
 		currItem->update();
+	}
+	if (activeTransaction){
+		activeTransaction->commit(Um::Selection,
+								  Um::IGroup,
+								  Um::Overprint,
+								  "",
+								  Um::IGroup);
+		delete activeTransaction;
+		activeTransaction = NULL;
 	}
 	m_updateManager.setUpdatesEnabled();
 	changed();
