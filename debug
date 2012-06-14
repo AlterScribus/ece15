@@ -1,0 +1,12 @@
+#!/bin/sh -e
+#export CXXFLAGS="-fopenmp"
+#export CFLAGS="-fopenmp"
+#export CPPFLAGS="-fopenmp"
+
+#export OMP_NUM_THREADS=4
+#alias g++='g++ -fopenmp'
+#alias gcc='gcc -fopenmp'
+cd BUILD
+cmake ../Scribus -DCMAKE_INSTALL_PREFIX:PATH=../INSTALL -DWANT_DEBUG=1 -DWANT_GRAPHICSMAGICK=1 -DWANT_VERSIONING=0 -DWANT_NO_EXAMPLES=1 -DWANT_NO_TEMPLATES=1 -DWANT_NOHEADERINSTALL=1 -DWANT_GUI_LANG=pl_PL
+make -j4
+make install -j4
