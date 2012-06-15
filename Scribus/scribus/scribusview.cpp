@@ -1833,16 +1833,13 @@ void ScribusView::ToggleBookmark()
 	{
 		for (uint a = 0; a < docSelectionCount; ++a)
 		{
-			UndoTransaction* activeTransaction = NULL;
-			if (UndoManager::undoEnabled())
-				activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 			PageItem* currItem = Doc->m_Selection->itemAt(a);
 			if (currItem->asTextFrame())
 			{
 				if (currItem->OwnPage != -1)
 				{
 					bool old = currItem->isBookmark;
-					currItem->setIsBookMark(!currItem->isBookmark);
+					currItem->isBookmark = !currItem->isBookmark;
 					if (currItem->isBookmark)
 					{
 						currItem->setIsAnnotation(false);
@@ -1854,15 +1851,6 @@ void ScribusView::ToggleBookmark()
 							emit DelBM(currItem);
 					}
 				}
-			}
-			if (activeTransaction){
-				activeTransaction->commit(Um::Selection,
-										  Um::IGroup,
-										  Um::ActionPDF,
-										  "",
-										  Um::IGroup);
-				delete activeTransaction;
-				activeTransaction = NULL;
 			}
 		}
 		m_ScMW->actionManager->setPDFActions(this);
@@ -1877,9 +1865,6 @@ void ScribusView::ToggleAnnotation()
 	{
 		for (int a = 0; a < Doc->m_Selection->count(); ++a)
 		{
-			UndoTransaction* activeTransaction = NULL;
-			if (UndoManager::undoEnabled())
-				activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 			PageItem* currItem = Doc->m_Selection->itemAt(a);
 			if (currItem->asTextFrame())
 			{
@@ -1898,15 +1883,6 @@ void ScribusView::ToggleAnnotation()
 						emit DelBM(currItem);
 					currItem->isBookmark = false;
 				}
-			}
-			if (activeTransaction){
-				activeTransaction->commit(Um::Selection,
-										  Um::IGroup,
-										  Um::ActionPDF,
-										  "",
-										  Um::IGroup);
-				delete activeTransaction;
-				activeTransaction = NULL;
 			}
 		}
 		m_ScMW->actionManager->setPDFActions(this);
