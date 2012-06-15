@@ -8490,7 +8490,20 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			dstyle.applyStyle(newStyle);
 			currItem->itemText.setDefaultStyle(dstyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem);
+			{
+				foreach (PageItem_NoteFrame* nF, currItem->asTextFrame()->notesFramesList())
+				{
+					if (nF->isEndNotesFrame())
+						continue;
+					NotesSet* nSet = nF->notesSet();
+					if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+					{
+						nF->itemText.setDefaultStyle(dstyle);
+						nF->invalid = true;
+						flag_notesChanged = true;
+					}
+				}
+			}
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}
@@ -8579,7 +8592,20 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 			currItem->itemText.applyCharStyle(0, currItem->itemText.length(), newStyle);
 			currItem->invalid = true;
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem);
+			{
+				foreach (PageItem_NoteFrame* nF, currItem->asTextFrame()->notesFramesList())
+				{
+					if (nF->isEndNotesFrame())
+						continue;
+					NotesSet* nSet = nF->notesSet();
+					if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+					{
+						nF->itemText.setDefaultStyle(dstyle);
+						nF->invalid = true;
+						flag_notesChanged = true;
+					}
+				}
+			}
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}

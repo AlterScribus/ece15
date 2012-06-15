@@ -117,6 +117,7 @@ protected:
 	// Move incomplete lines from the previous frame if needed.
 	bool moveLinesFromPreviousFrame ();
 	void adjustParagraphEndings ();
+	ScText * lastVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
 
 private:
 	bool cursorBiasBackward;

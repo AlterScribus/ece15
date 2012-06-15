@@ -8,6 +8,7 @@ for which a new license (GPL+exception) is in place.
 #include <QObject>
 #include <QList>
 #include <QPointer>
+#include <QChar>
 #include "sctextstruct.h"
 #include "scfonts.h"
 #include "pageitem.h"
@@ -72,4 +73,19 @@ PageItem* ScText::getItem(ScribusDoc *doc)
 	if ((embedded > 0) && (doc->FrameItems.contains(embedded)))
 		return doc->FrameItems[embedded];
 	return NULL;
+}
+
+// used for check of last visible glyph in text frame
+bool ScText::isVisible()
+{
+	if (ch.isPrint() && !ch.isSpace())
+		return true;
+	if (hasMark() && !mark->isType(MARKAnchorType))
+		return true;
+	if ((ch == SpecialChars::OBJECT) && (embedded != NULL))
+		return true;
+	if ((ch == SpecialChars::PAGENUMBER) || (ch == SpecialChars::PAGECOUNT))
+		return true;
+
+	return false;
 }

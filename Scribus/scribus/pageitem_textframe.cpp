@@ -73,6 +73,7 @@ PageItem_TextFrame::PageItem_TextFrame(ScribusDoc *pa, double x, double y, doubl
 	unicodeTextEditMode = false;
 	unicodeInputCount = 0;
 	unicodeInputString = "";
+	 lastVisibleGlyph = NULL;
 	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
@@ -85,6 +86,7 @@ PageItem_TextFrame::PageItem_TextFrame(const PageItem & p) : PageItem(p)
 	unicodeInputCount = 0;
 	unicodeInputString = "";
 	m_notesFramesMap.clear();
+	 lastVisibleGlyph = NULL;
 	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
@@ -2909,11 +2911,19 @@ NoRoom:
 	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (next != NULL)
 	{
-		if (oldMaxChars != MaxChars)
+		//check if last visible glyph in frame change
+		//if not then do not force invalidation of next frame
+		uint pos = MaxChars-1;
+		ScText * lastGlyph = itemText.item(pos);
+		while (!lastGlyph->isVisible())
+			lastGlyph = itemText.item(--pos);
+		
+		if (lastGlyph != lastVisibleGlyph)
 		{
-			//invalidate next frame
+			//force invalidating next frame
 			next->invalid = true;
 			next->firstChar = MaxChars;
+			lastVisibleGlyph = lastGlyph;
 		}
 		if (itemText.cursorPosition() > signed(MaxChars))
 		{
@@ -3489,6 +3499,7 @@ void PageItem_TextFrame::clearContents()
 	while (nextItem != 0)
 	{
 		nextItem->invalid = true;
+		nextItem->asTextFrame()->lastVisibleGlyph = NULL;
 		nextItem = nextItem->nextInChain();
 	}
 }

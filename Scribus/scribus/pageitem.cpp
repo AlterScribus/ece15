@@ -1325,7 +1325,7 @@ void PageItem::dropLinks()
 			while (after)
 			{ 
 				after->invalid = true;
-				after->firstChar = 0;
+				after->firstChar = firstChar;
 				after = after->NextBox;
 			}
 		}
