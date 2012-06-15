@@ -451,7 +451,6 @@ public:
 	static QString UniteItem;
 	static QString Overprint;
 	static QString BlendMode;
-	static QString ActionPDF;
 	static QString SplitItem;
 	static QString RemoveAllGuides;
 	static QString RemoveAllPageGuides;

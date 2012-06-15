@@ -839,7 +839,6 @@ void UndoManager::languageChange()
 	UndoManager::UnlockGuides       = tr("Unlock guides");
 	UndoManager::Overprint          = tr("Change overprint");
 	UndoManager::BlendMode          = tr("Change blend mode");
-	UndoManager::ActionPDF          = tr("Change action PDF");
 	UndoManager::Move               = tr("Move");
 	UndoManager::NewMasterPage      = tr("Add master page");
 	UndoManager::DelMasterPage      = tr("Del master page");
@@ -1069,7 +1068,6 @@ QString UndoManager::LockGuides         = "";
 QString UndoManager::UnlockGuides       = "";
 QString UndoManager::Overprint          = "";
 QString UndoManager::BlendMode          = "";
-QString UndoManager::ActionPDF          = "";
 QString UndoManager::Move               = "";
 QString UndoManager::NewMasterPage      = "";
 QString UndoManager::ImportMasterPage   = "";
