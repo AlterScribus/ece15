@@ -15560,35 +15560,36 @@ void ScribusDoc::setCursor2MarkPos(Mark *mark)
 bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 {
 	bool found = false;
-	if (fromText)
+	if (item != NULL)
 	{
-		if (item != NULL)
+		int MPos = -1;
+		while (findMarkCPos(mrk, item, MPos))
 		{
-			int MPos = -1;
-			while (findMarkCPos(mrk, item, MPos))
-			{
+			item->itemText.item(MPos)->mark = NULL;
+			if (fromText)
 				item->itemText.removeChars(MPos,1);
 				found = true;
-			}
-		}
-		else
-		{
-			//find and delete all mark`s apperences in text
-			int MPos = -1;
-			int itemIndex = -1;
-			PageItem* item = findMark(mrk, itemIndex);
-			while (item != NULL)
-			{
-				while (findMarkCPos(mrk, item, MPos))
-					item->itemText.removeChars(MPos,1);
-				found = true;
-				item->asTextFrame()->invalidateLayout();
-				item = findMark(mrk, itemIndex);
-			}
 		}
 	}
 	else
-		found = true;
+	{
+		//find and delete all mark`s apperences in text
+		int MPos = -1;
+		int itemIndex = -1;
+		PageItem* item = findMark(mrk, itemIndex);
+		while (item != NULL)
+		{
+			while (findMarkCPos(mrk, item, MPos))
+			{
+				item->itemText.item(MPos)->mark = NULL;
+				if (fromText)
+					item->itemText.removeChars(MPos,1);
+			}
+			found = true;
+			item->asTextFrame()->invalidateLayout();
+			item = findMark(mrk, itemIndex);
+		}
+	}
 	//remove mark references
 	for (int a=0; a < m_docMarksList.count(); ++a)
 	{
@@ -15832,6 +15833,7 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 		eraseMark(note->noteMark(), fromText);
 	m_docNotesList.removeOne(note);
 	delete note;
+	flag_notesChanged = true;
 }
 
 void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesSet* nSet, int &num)

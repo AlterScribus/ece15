@@ -3551,7 +3551,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		assert(itemText.startOfSelection() + itemText.lengthOfSelection() < itemText.length());  //cezaryece: I saw that situation
 		if (!k->text().isEmpty())
 		{
-			TextNote* note = selectedNoteMark();
+			ScText* hl = NULL;
+			TextNote* note = selectedNoteMark(hl);
 			if (note != NULL)
 			{
 				if (m_Doc->hasGUI() &&
@@ -3563,8 +3564,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					if (note->isEndNote())
 						m_Doc->flag_updateEndNotes = true;
 					ns2Update.append(note->notesSet());
+					hl->mark = NULL;
 					m_Doc->deleteNote(note);
-					note = selectedNoteMark();
+					note = selectedNoteMark(hl);
 				}
 			}
 			Mark* mrk = selectedMark();
@@ -3594,15 +3596,14 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					return;
 				//deleting whole note
 				TextNote* note = mrk->getNotePtr();
-				if (isNoteFrame())
-					m_Doc->eraseMark(note->masterMark(), true, note->masterMark()->getItemPtr());
 				if (note->isEndNote())
 					m_Doc->flag_updateEndNotes = true;
 				m_Doc->deleteNote(note);
 				ns2Update.append(note->notesSet());
 			}
-			if (mrk->isUnique())
+			else if (mrk->isUnique())
 				m_Doc->eraseMark(mrk);
+			hl->mark = NULL;
 			marksDeleted = true;
 		}
 	}
@@ -4650,7 +4651,7 @@ Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
 	return NULL;
 }
 
-TextNote* PageItem_TextFrame::selectedNoteMark(bool onlySelection)
+TextNote* PageItem_TextFrame::selectedNoteMark(ScText* &hl, bool onlySelection)
 {
 	//return pointer to note from first mark found in text
 	int start = 0;
@@ -4665,11 +4666,17 @@ TextNote* PageItem_TextFrame::selectedNoteMark(bool onlySelection)
 	MarkType typ = isNoteFrame()? MARKNoteFrameType : MARKNoteMasterType;
 	for (int pos = start; pos < stop; ++pos)
 	{
-		ScText* hl = itemText.item(pos);
+		hl = itemText.item(pos);
 		if (hl->hasMark() && hl->mark->isType(typ))
 			return hl->mark->getNotePtr();
 	}
 	return NULL;
+}
+
+TextNote* PageItem_TextFrame::selectedNoteMark(bool onlySelection)
+{
+	ScText* hl = NULL;
+	return selectedNoteMark(hl, onlySelection);
 }
 
 NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarksPosMap)
@@ -4813,7 +4820,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 			continue;
 
 		QList<TextNote*> nList = notesMap.value(nF);
-		if (nList != nF->notesList())
+		if (nList != nF->notesList() || m_Doc->flag_notesChanged)
 		{
 			nF->updateNotes(nList);
 			docWasChanged = true;

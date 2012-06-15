@@ -162,6 +162,7 @@ private:
 	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> noteMarksPosMap); //update notes frames content
 	void updateNotesMarks(NotesInFrameMap notesMap);
 	Mark* selectedMark(bool onlySelection = true);
+	TextNote* selectedNoteMark(ScText* &hl, bool onlySelection = true);
 	TextNote* selectedNoteMark(bool onlySelection = true);
 };
 #endif

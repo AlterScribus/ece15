@@ -288,8 +288,8 @@ void PageItem_NoteFrame::insertNote(TextNote *note, int index)
 
 void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 {
-	if (nList == l_notes)
-		return;
+	if ((nList == l_notes) && !m_Doc->flag_notesChanged)
+		return; //seems nothig changes
 	m_Doc->flag_notesChanged = true;
 	itemText.blockSignals(true);
 
