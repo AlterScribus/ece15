@@ -3917,19 +3917,6 @@ void PageItem::setImageScalingMode(bool freeScale, bool keepRatio)
 	update();
 }
 
-void PageItem::setOverprint(bool val) {
-	if(doOverprint==val)
-			return;
-
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::Overprint, 0, Um::IGroup);
-		ss->set("OVERPRINT", val);
-		undoManager->action(this, ss);
-	}
-	doOverprint = val;
-}
-
 void PageItem::toggleLock()
 {
 	if (UndoManager::undoEnabled())
@@ -4363,13 +4350,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 		{
 			select();
 			m_Doc->itemSelection_FlipH();
-		}
-		else if (ss->contains("OVERPRINT"))
-		{
-			if(isUndo)
-				doOverprint=!ss->getBool("OVERPRINT");
-			else
-				doOverprint=ss->getBool("OVERPRINT");
 		}
 		else if (ss->contains("IMAGEFLIPV"))
 		{
