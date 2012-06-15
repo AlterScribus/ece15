@@ -4407,20 +4407,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			else
 				fillBlendmodeVal=ss->getInt("FILLBLENDMODE");
 		}
-		else if (ss->contains("ACTIONPDFANNOTATION"))
-		{
-			if(isUndo)
-				m_isAnnotation=!ss->getBool("ACTIONPDFANNOTATION");
-			else
-				m_isAnnotation=ss->getBool("ACTIONPDFANNOTATION");
-		}
-		else if (ss->contains("ACTIONPDFBOOKMARK"))
-		{
-			if(isUndo)
-				isBookmark=!ss->getBool("ACTIONPDFBOOKMARK");
-			else
-				isBookmark=ss->getBool("ACTIONPDFBOOKMARK");
-		}
 		else if (ss->contains("LINEBLENDMODE"))
 		{
 			if(isUndo)
@@ -7065,28 +7051,7 @@ void PageItem::emitAllToGUI()
 
 void PageItem::setIsAnnotation(bool isAnnot)
 {
-	if (m_isAnnotation==isAnnot)
-		return; // nothing to do -> return
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::ActionPDF, 0, Um::IGroup);
-		ss->set("ACTIONPDFANNOTATION", isAnnot);
-		undoManager->action(this, ss);
-	}
 	m_isAnnotation=isAnnot;
-}
-
-void PageItem::setIsBookMark(bool isBM)
-{
-	if (isBookmark==isBM)
-		return; // nothing to do -> return
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::ActionPDF, 0, Um::IGroup);
-		ss->set("ACTIONPDFBOOKMARK", isBM);
-		undoManager->action(this, ss);
-	}
-	isBookmark=isBM;
 }
 
 void PageItem::setAnnotation(const Annotation& ad)
