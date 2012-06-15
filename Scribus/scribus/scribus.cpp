@@ -3599,8 +3599,8 @@ bool ScribusMainWindow::slotPageImport()
 	bool ret = false;
 	MergeDoc *dia = new MergeDoc(this, false, doc->DocPages.count(), doc->currentPage()->pageNr() + 1);
 	UndoTransaction* activeTransaction = NULL;
-	if(UndoManager::undoEnabled())
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::ImportPage, Um::IGroup, Um::ImportPage, 0, Um::ILock));
+	//if(UndoManager::undoEnabled())
+		//activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::ImportPage, Um::IGroup, Um::ImportPage, 0, Um::ILock));
 
 	if (dia->exec())
 	{
