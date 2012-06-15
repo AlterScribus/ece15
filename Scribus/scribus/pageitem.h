@@ -1179,7 +1179,6 @@ public:
 	
 	bool isAnnotation() const { return m_isAnnotation; }
 	void setIsAnnotation(bool);
-	void setIsBookMark(bool);
 	void setAnnotation(const Annotation& ad);
 	Annotation& annotation() { return m_annotation; }
 	const Annotation& annotation() const { return m_annotation; }
