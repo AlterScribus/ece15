@@ -1346,9 +1346,6 @@ void PageItem_TextFrame::layout()
 	current.initColumns(columnWidth(), ColGap);
 	current.hyphenCount = 0;
 
-	//stored for check if next frame should by invalidated after layouting this one
-	int oldMaxChars = MaxChars;
-
 	//hold Y position of last computed line of text (with glyphs descent)
 	//for moving next line if glyphs are higher than that
 	double lastLineY = 0;
@@ -1882,7 +1879,9 @@ void PageItem_TextFrame::layout()
 					if (current.startOfCol)
 					{
 						lastLineY = qMax(lastLineY, extra.Top + lineCorr);
-						if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+						if (chstr[0] == SpecialChars::PARSEP)
+							current.yPos += style.lineSpacing();
+						else if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
 						{
 							if (firstLineOffset() == FLOPRealGlyphHeight)
 							{
@@ -2665,7 +2664,7 @@ void PageItem_TextFrame::layout()
 						if (current.itemsInLine == 0 || current.column+1 == Cols)
 						{
 							goNoRoom = true;
-							MaxChars = a + 1;
+							MaxChars = a; // + 1;
 							break;
 						}
 						goNextColumn = true;
@@ -2755,7 +2754,7 @@ void PageItem_TextFrame::layout()
 				if (goNoRoom)
 				{
 					goNoRoom = false;
-					MaxChars = a+1;
+					MaxChars = a; //+1;
 					goto NoRoom;
 				}
 				if (goNextColumn)
@@ -2874,6 +2873,7 @@ void PageItem_TextFrame::layout()
 
 			if (moveLinesFromPreviousFrame ()) {
 				layout ();  // line moving ensures that this won't be an endless loop
+				itemText.blockSignals(false);
 				return;
 			}
 		}
@@ -2896,7 +2896,6 @@ void PageItem_TextFrame::layout()
 
 NoRoom:
 	invalid = false;
-
 	adjustParagraphEndings ();
 
 	if (!isNoteFrame() && !m_Doc->m_docNotesList.isEmpty())
@@ -2924,6 +2923,7 @@ NoRoom:
 			next->invalid = true;
 			next->firstChar = MaxChars;
 			lastVisibleGlyph = lastGlyph;
+			next->lastVisibleGlyph = NULL;
 		}
 		if (itemText.cursorPosition() > signed(MaxChars))
 		{
@@ -2945,7 +2945,6 @@ NoRoom:
 	}
 	//	qDebug("textframe: len=%d, done relayout (no room %d)", itemText.length(), MaxChars);
 
-	//ugly hack for invalidating whole text chain by changes in aplied text styles
 	invalid = false;
 	itemText.blockSignals(false);
 }
@@ -2997,13 +2996,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 {
 	if (invalid)
 	{
-		if (!isNoteFrame() || !asNoteFrame()->deleteIt)
-		{
-			//do not layout notes frames which should be deleted
-			layout();
-			if (invalid)
-				return;
-		}
+		if (isNoteFrame() && asNoteFrame()->deleteIt)
+			return //do not layout notes frames which should be deleted
+		layout();
 	}
 	QTransform pf2;
 	QPoint pt1, pt2;
@@ -4146,14 +4141,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 		}
 		break;
-	}
-	if (marksDeleted)
-	{
-		if (m_Doc->updateMarks(true))
-		{
-			m_Doc->changed();
-			m_Doc->regionsChanged()->update(QRectF());
-		}
 	}
 // 	update();
 //	view->slotDoCurs(true);
