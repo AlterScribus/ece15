@@ -338,6 +338,7 @@ void ScPage::restorePageItemCreation(ScItemState<PageItem*> *state, bool isUndo)
 		if ((stateCode == 0) || (stateCode == 1))
 			m_Doc->view()->Deselect(true);
 		m_Doc->Items->append(ite);
+		ite->OwnPage = m_Doc->OnPage(ite);
 		if ((stateCode == 0) || (stateCode == 2))
 			update();
 	}
