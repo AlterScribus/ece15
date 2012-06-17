@@ -40,6 +40,7 @@ for which a new license (GPL+exception) is in place.
 #include <qtconcurrentmap.h>
 
 #include "canvas.h"
+#include "ui/masterpagepalette.h"
 #include "colorblind.h"
 #include "commonstrings.h"
 #include "desaxe/digester.h"
@@ -1758,6 +1759,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 		}
 		else if (ss->contains("OLD_MASTERPAGE"))
 			restoreMasterPageApplying(ss, isUndo);
+		else if (ss->contains("MASTERPAGE_ADD"))
+			restoreAddMasterPage(ss, isUndo);
 		else if (ss->contains("PAGE_COPY"))
 			restoreCopyPage(ss, isUndo);
 		else if (ss->contains("PAGE_MOVE"))
@@ -1789,6 +1792,30 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				m_ScMW->layerPalette->rebuildList();
 			}
 		}
+	}
+}
+
+void ScribusDoc::restoreAddMasterPage(SimpleState *ss, bool isUndo){
+	QString pageName = ss->get("MASTERPAGE_NAME");
+	int pageNr = ss->getInt("MASTERPAGE_NR");
+	if(isUndo){
+		DummyUndoObject *duo = new DummyUndoObject();
+		uint did = static_cast<uint>(duo->getUId());
+		undoManager->replaceObject(Pages->at(MasterNames[pageName])->getUId(), duo);
+		ss->set("DUMMY_ID", did);
+
+		scMW()->deletePage2(MasterNames[pageName]);
+		rebuildMasterNames();
+		scMW()->ActWin->masterPagesPalette()->updateMasterPageList(CommonStrings::masterPageNormal);
+	} else {
+		ScPage* Mpage = addMasterPage(pageNr, pageName);
+		setCurrentPage(Mpage);
+		UndoObject *tmp = undoManager->replaceObject(
+					ss->getUInt("DUMMY_ID"), Pages->at(MasterNames[pageName]));
+		delete tmp;
+		scMW()->ActWin->masterPagesPalette()->updateMasterPageList(pageName);
+		scMW()->ActWin->masterPagesPalette()->selectMasterPage(pageName);
+		m_View->reformPages();
 	}
 }
 
@@ -2108,6 +2135,13 @@ ScPage* ScribusDoc::addMasterPage(const int pageNumber, const QString& pageName)
 	assert(MasterPages.at(pageNumber)!=NULL);
 	if  (!isLoading())
 		changed();
+	if(UndoManager::undoEnabled()){
+		SimpleState *ss = new SimpleState(Um::MovePage, "", Um::IDocument);
+		ss->set("MASTERPAGE_ADD", "masterpage_add");
+		ss->set("MASTERPAGE_NAME", pageName);
+		ss->set("MASTERPAGE_NBR", pageNumber);
+		undoManager->action(this, ss);
+	}
 	return addedPage;
 }
 
