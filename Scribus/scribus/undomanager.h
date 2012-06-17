@@ -455,6 +455,10 @@ public:
 	static QString LockGuides;
 	static QString UnlockGuides;
 	static QString Move;
+	static QString NewMasterPage;
+	static QString DelMasterPage;
+	static QString ImportMasterPage;
+	static QString DuplicateMasterPage;
 	static QString Resize;
 	static QString Rotate;
 	static QString MoveFromTo;
