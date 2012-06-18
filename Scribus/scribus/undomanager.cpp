@@ -526,6 +526,13 @@ void UndoManager::action(UndoObject* target, UndoState* state,
 	target->setUName(oldName);
 }
 
+UndoState* UndoManager::getLastUndo(){
+	if(stacks_[currentDoc_].undoActions_.size()>0)
+		return stacks_[currentDoc_].undoActions_[0];
+	else
+		return 0;
+}
+
 void UndoManager::undo(int steps)
 {
 	if (!undoEnabled_)
@@ -951,6 +958,7 @@ void UndoManager::languageChange()
 	UndoManager::ResetContourLine   = tr("Reset contour line");
 	UndoManager::AddPage            = tr("Add page");
 	UndoManager::AddPages           = tr("Add pages");
+	UndoManager::DeleteText         = tr("Delete text");
 	UndoManager::DeletePage         = tr("Delete page");
 	UndoManager::DeletePages        = tr("Delete pages");
 	UndoManager::ChangePageProps    = tr("Change page properties");
@@ -1176,6 +1184,7 @@ QString UndoManager::ChangeShapeType    = "";
 QString UndoManager::ResetContourLine   = "";
 QString UndoManager::AddPage            = "";
 QString UndoManager::AddPages           = "";
+QString UndoManager::DeleteText         = "";
 QString UndoManager::DeletePage         = "";
 QString UndoManager::DeletePages        = "";
 QString UndoManager::ChangePageProps    = "";

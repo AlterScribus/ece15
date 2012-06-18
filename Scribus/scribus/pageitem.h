@@ -1209,6 +1209,7 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
 	void restoreResize(SimpleState *state, bool isUndo);
 	void restoreRotate(SimpleState *state, bool isUndo);

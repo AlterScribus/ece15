@@ -4363,6 +4363,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreLineColor(ss, isUndo);
 		else if (ss->contains("LINE_SHADE"))
 			restoreLineShade(ss, isUndo);
+		else if (ss->contains("DELETE_FRAMETEXT"))
+			restoreDeleteFrameText(ss, isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4472,6 +4474,17 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo){
+	QString text = ss->get("TEXT_STR");
+	int start = ss->getInt("START");
+	if(isUndo){
+		itemText.insertChars(start,text);
+	} else {
+		itemText.select(start,text.length());
+		asTextFrame()->deleteSelectedTextFromFrame();
+	}
 }
 
 void PageItem::restoreMove(SimpleState *state, bool isUndo)

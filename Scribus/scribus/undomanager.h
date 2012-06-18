@@ -353,6 +353,8 @@ public:
 	 */
 	bool isGlobalMode();
 
+	UndoState* getLastUndo();
+
 private:
 	/**
 	 * @brief The only instance of UndoManager available.
@@ -563,6 +565,7 @@ public:
 	static QString ResetContourLine;
 	static QString AddPage;
 	static QString AddPages;
+	static QString DeleteText;
 	static QString DeletePage;
 	static QString DeletePages;
 	static QString ChangePageProps;

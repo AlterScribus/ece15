@@ -3873,6 +3873,24 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 void PageItem_TextFrame::deleteSelectedTextFromFrame()
 {
 	if (itemText.lengthOfSelection() > 0) {
+		if (UndoManager::undoEnabled())
+		{
+			SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+			if(ss && ss->get("ETEA") == "delete_frametext"){
+				if(itemText.startOfSelection()<ss->getInt("START")){
+					ss->set("START",itemText.startOfSelection());
+					ss->set("TEXT_STR",itemText.text(itemText.startOfSelection(),itemText.lengthOfSelection()) + ss->get("TEXT_STR"));
+				} else
+					ss->set("TEXT_STR",ss->get("TEXT_STR") + itemText.text(itemText.startOfSelection(),itemText.lengthOfSelection()));
+			}else {
+				ss = new SimpleState(Um::DeleteText,"",Um::IDelete);
+				ss->set("DELETE_FRAMETEXT", "delete_frametext");
+				ss->set("ETEA", QString("delete_frametext"));
+				ss->set("TEXT_STR",itemText.text(itemText.startOfSelection(),itemText.lengthOfSelection()));
+				ss->set("START", itemText.startOfSelection());
+				undoManager->action(this, ss);
+			}
+		}
 		itemText.setCursorPosition( itemText.startOfSelection() );
 		itemText.removeSelection();
 		HasSel = false;
