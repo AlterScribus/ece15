@@ -1013,6 +1013,7 @@ void printBacktrace ( int nFrames )
 #endif
 }
 
+
 void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, QStack<QList<PageItem *> > *groupStackT, QList<PageItem *> *target)
 {
 	QList<double> colWidths;

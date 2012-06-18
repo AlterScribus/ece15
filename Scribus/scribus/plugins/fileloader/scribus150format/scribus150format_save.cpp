@@ -2316,28 +2316,15 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 		//write weld parameter
 		if (item->isWelded())
 		{
-			//if the only welded item is TextNote dont write info about that
-			bool skip = false;
-			if (item->weldList.count() == 1)
+			docu.writeAttribute("isWeldItem", 1);
+			docu.writeAttribute("WeldSource", qHash(item));
+			for (int i = 0 ; i <  item->weldList.count(); i++)
 			{
-				PageItem::weldingInfo wInf = item->weldList.at(0);
-//				if (wInf.weldItem->isNoteFrame() && wInf.weldItem->asNoteFrame()->notesSet()->isAutoWeldNotesFrames())
-//					skip = true;
-			}
-			if (!skip)
-			{
-				docu.writeAttribute("isWeldItem", 1);
-				docu.writeAttribute("WeldSource", qHash(item));
-				for (int i = 0 ; i <  item->weldList.count(); i++)
-				{
-					PageItem::weldingInfo wInf = item->weldList.at(i);
-//					if (wInf.weldItem->isNoteFrame() && wInf.weldItem->asNoteFrame()->notesSet()->isAutoWeldNotesFrames())
-//						continue;
-					docu.writeEmptyElement("WeldEntry");
-					docu.writeAttribute("Target", qHash(wInf.weldItem));
-					docu.writeAttribute("WX", wInf.weldPoint.x());
-					docu.writeAttribute("WY", wInf.weldPoint.y());
-				}
+				PageItem::weldingInfo wInf = item->weldList.at(i);
+				docu.writeEmptyElement("WeldEntry");
+				docu.writeAttribute("Target", qHash(wInf.weldItem));
+				docu.writeAttribute("WX", wInf.weldPoint.x());
+				docu.writeAttribute("WY", wInf.weldPoint.y());
 			}
 		}
 		docu.writeEndElement();

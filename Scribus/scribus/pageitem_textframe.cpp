@@ -73,7 +73,7 @@ PageItem_TextFrame::PageItem_TextFrame(ScribusDoc *pa, double x, double y, doubl
 	unicodeTextEditMode = false;
 	unicodeInputCount = 0;
 	unicodeInputString = "";
-	 lastVisibleGlyph = NULL;
+	lastVisibleGlyph = NULL;
 	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
@@ -86,7 +86,7 @@ PageItem_TextFrame::PageItem_TextFrame(const PageItem & p) : PageItem(p)
 	unicodeInputCount = 0;
 	unicodeInputString = "";
 	m_notesFramesMap.clear();
-	 lastVisibleGlyph = NULL;
+	lastVisibleGlyph = NULL;
 	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
@@ -182,7 +182,7 @@ static QRegion itemShape(PageItem* docItem, double xOffset, double yOffset)
 	return  res;
 }
 
-QRegion PageItem_TextFrame::availableRegion()
+QRegion PageItem_TextFrame::calcAvailableRegion()
 {
 	QRegion result(this->Clip);
 	if ((!isEmbedded) || (Parent != NULL))
@@ -1167,7 +1167,7 @@ static double nextAutoTab (const LineControl &current, PageItem *item)
 	return res;
 }
 
-//cezaryece: I remove static statement as this function is used also by PageItem_NoteFrame
+//cezaryece: this function is used by PageItem_NoteFrame
 double calculateLineSpacing (const ParagraphStyle &style, PageItem *item)
 {
 	if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
@@ -1292,11 +1292,10 @@ void PageItem_TextFrame::layout()
 //		qDebug() << QString("textframe: len=%1, invalid=%2 OnMasterPage=%3: no relayout").arg(itemText.length()).arg(invalid).arg(OnMasterPage);
 		return;
 	}
-
 	if (invalid && BackBox == NULL)
 		firstChar = 0;
-
-	//	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
+	
+//	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
 	QPoint pt1, pt2;
 	QRect pt;
 	double chs, chsd = 0;
@@ -1349,7 +1348,6 @@ void PageItem_TextFrame::layout()
 	//hold Y position of last computed line of text (with glyphs descent)
 	//for moving next line if glyphs are higher than that
 	double lastLineY = 0;
-
 	QMap<int, Mark*> noteMarksPosMap;  //maping notes marks and its position in text
 
 	// dump styles
@@ -1380,8 +1378,8 @@ void PageItem_TextFrame::layout()
 	if ((itemText.length() != 0)) // || (NextBox != 0))
 	{
 		// determine layout area
-		QRegion cl = availableRegion();
-		if (cl.isEmpty())
+		m_availableRegion = calcAvailableRegion();
+		if (m_availableRegion.isEmpty())
 		{
 			MaxChars = firstInFrame();
 			goto NoRoom;
@@ -1400,7 +1398,7 @@ void PageItem_TextFrame::layout()
 				matrix.translate(0, Height);
 				matrix.scale(1, -1);
 			}
-			cl = matrix.map(cl);
+			m_availableRegion = matrix.map(m_availableRegion);
 		}
 		
 		current.nextColumn();
@@ -1866,7 +1864,10 @@ void PageItem_TextFrame::layout()
 					if (HasMark)
 						realAsce = asce * scaleV + offset;
 					else
-						realAsce = charStyle.font().realCharAscent(chstr[0], hlcsize10) * scaleV + offset;
+					{
+						for (int i = 0; i < chstrLen; ++i)
+							realAsce = qMax(realAsce, charStyle.font().realCharAscent(chstr[i], hlcsize10) * scaleV + offset);
+					}
 				}
 			}
 
@@ -1879,6 +1880,7 @@ void PageItem_TextFrame::layout()
 					if (current.startOfCol)
 					{
 						lastLineY = qMax(lastLineY, extra.Top + lineCorr);
+						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
 						else if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
@@ -1993,9 +1995,9 @@ void PageItem_TextFrame::layout()
 					while (Xpos <= Xend && Xpos < current.colRight)
 					{
 						pt.moveTopLeft(QPoint(static_cast<int>(floor(Xpos)),maxYAsc));
-						if (!regionContainsRect(cl, pt))
+						if (!regionContainsRect(m_availableRegion, pt))
 						{
-							Xpos = current.xPos = realEnd = findRealOverflowEnd(cl, pt, current.colRight);
+							Xpos = current.xPos = realEnd = findRealOverflowEnd(m_availableRegion, pt, current.colRight);
 							Xend = current.xPos + (addIndent2overflow ? current.leftIndent : 0);
 							//for first paragraph`s line - if first line offset should be added
 							if ( addFirstIndent2overflow && (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP))))
@@ -2360,9 +2362,9 @@ void PageItem_TextFrame::layout()
 					pt2 = QPoint(charEnd, maxYDesc);
 				}
 				pt = QRect(pt1, pt2);
-				if (!regionContainsRect(cl, pt))
+				if (!regionContainsRect(m_availableRegion, pt))
 				{
-					realEnd = findRealOverflowEnd(cl, pt, current.colRight);
+					realEnd = findRealOverflowEnd(m_availableRegion, pt, current.colRight);
 					outs = true;
 				}
 				else if (style.rightMargin() > 0.0)
@@ -2371,9 +2373,9 @@ void PageItem_TextFrame::layout()
 						//condition after || is for find overflows in right margin area
 					{
 						pt.translate(static_cast<int>(ceil(style.rightMargin())), 0);
-						if (!regionContainsRect(cl, pt))
+						if (!regionContainsRect(m_availableRegion, pt))
 						{
-							realEnd = findRealOverflowEnd(cl, pt, current.colRight);
+							realEnd = findRealOverflowEnd(m_availableRegion, pt, current.colRight);
 							outs = true;
 						}
 					}
@@ -2519,7 +2521,7 @@ void PageItem_TextFrame::layout()
 				{
 					// find end of line
 					current.breakLine(itemText, style, firstLineOffset(), a);
-					EndX = current.endOfLine(cl, style.rightMargin(), maxYAsc, maxYDesc);
+					EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc, maxYDesc);
 					current.finishLine(EndX);
 					//addLine = true;
 					assert(current.addLine);
@@ -2596,7 +2598,7 @@ void PageItem_TextFrame::layout()
 						current.updateHeightMetrics(itemText);
 						//current.updateLineOffset(itemText, style, firstLineOffset());
 						//current.xPos = current.breakXPos;
-						EndX = current.endOfLine(cl, current.rightMargin, maxYAsc, maxYDesc);
+						EndX = current.endOfLine(m_availableRegion, current.rightMargin, maxYAsc, maxYDesc);
 						current.finishLine(EndX);
 						
 						hyphWidth = 0.0;
@@ -2664,7 +2666,7 @@ void PageItem_TextFrame::layout()
 						if (current.itemsInLine == 0 || current.column+1 == Cols)
 						{
 							goNoRoom = true;
-							MaxChars = a; // + 1;
+							MaxChars = a; // + 1;  - FIX ME - why +1 as in other places is =a;
 							break;
 						}
 						goNextColumn = true;
@@ -2754,7 +2756,7 @@ void PageItem_TextFrame::layout()
 				if (goNoRoom)
 				{
 					goNoRoom = false;
-					MaxChars = a; //+1;
+					MaxChars = a; //+1; - FIX ME - why +1 as in other places is =a;
 					goto NoRoom;
 				}
 				if (goNextColumn)
@@ -2830,7 +2832,7 @@ void PageItem_TextFrame::layout()
 			maxYAsc = qMax(maxYAsc, 0);
 			maxYDesc = static_cast<int>(ceil(current.yPos + qMax(realDesc, desc)));
 
-			EndX = current.endOfLine(cl, style.rightMargin(), maxYAsc, maxYDesc);
+			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc, maxYDesc);
 			current.finishLine(EndX);
 
 			if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
@@ -2879,20 +2881,6 @@ void PageItem_TextFrame::layout()
 		}
 	}
 	MaxChars = itemText.length();
-	invalid = false;
-	if (NextBox == NULL) 
-	{
-		if (!isNoteFrame() && !m_Doc->m_docNotesList.isEmpty())
-		{ //if notes are used
-			NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
-			if ((notesMap != m_notesFramesMap))
-				updateNotesMarks(notesMap);
-			if (!m_notesFramesMap.isEmpty() && m_Doc->flag_layoutNotesFrames)
-				notesFramesLayout(false);
-		}
-		itemText.blockSignals(false);
-		return;
-	}
 
 NoRoom:
 	invalid = false;
@@ -3992,6 +3980,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			ns2Update.removeAll(ns);
 		}
 		update();
+//		Tinput = false;
+		if ((cr == QChar(13)) && (itemText.length() != 0))
+		{
+//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(itemText.cursorPosition()-1,0))));
+//			Tinput = false;
+		}
 		m_Doc->scMW()->setTBvals(this);
 //		view->RefreshItem(this);
 		break;
@@ -4048,9 +4042,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				m_Doc->scMW()->selectItemsFromOutlines(BackBox);
 				//currItem = currItem->BackBox;
 			}
-			m_Doc->scMW()->setTBvals(this);
-			update();
 		}
+		m_Doc->scMW()->setTBvals(this);
+		update();
 //		view->RefreshItem(this);
 		break;
 	default:

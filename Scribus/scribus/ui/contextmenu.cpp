@@ -169,6 +169,7 @@ void ContextMenu::createMenuItems_Selection()
 		}
 		if (m_doc->appMode == modeEdit)
 		{
+			//add actions for marks in edit mode
 			addSeparator();
 			QAction *act2 = addMenu(menuMark);
 			act2->setText( ScribusView::tr("Insert Mark"));

@@ -551,6 +551,7 @@ public:
 	void unlink();
 	void link(PageItem* nextFrame);
 	void dropLinks();
+	void unlinkWithText(bool);
 
 protected:
 	PageItem *BackBox;

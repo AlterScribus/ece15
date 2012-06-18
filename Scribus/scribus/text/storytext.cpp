@@ -386,7 +386,6 @@ void StoryText::insertParSep(int pos)
 	}
 	d->replaceCharStyleContextInParagraph(pos, it->parstyle->charStyleContext());
 }
-
 /**
      need to remove the ParagraphStyle structure and replace all pointers
      to it...
@@ -1059,8 +1058,11 @@ void StoryText::setCharStyle(int pos, uint len, const CharStyle& style)
 			itText->parstyle->charStyle() = style;*/
 		itText->setStyle(style);
 	}
+	
 	invalidate(pos, pos + len);
 }
+
+
 
 void StoryText::getNamedResources(ResourceCollection& lists) const
 {
@@ -1995,7 +1997,9 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 //		paragraphStyle(length()-1).saxx(handler);
 	
 	handler.end(elemtag);
+
 }
+
 
 class AppendText_body : public Action_body
 {

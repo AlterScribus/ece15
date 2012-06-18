@@ -16,7 +16,11 @@ FIND_PATH(POPPLER_INCLUDE_DIR
 
 FIND_LIBRARY(POPPLER_LIBRARY
   NAMES libpoppler poppler
+<<<<<<< HEAD
   PATHS ${PKG_POPPLER_LIBRARIES} ${POPPLER_LIBRARY_DIRS} /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu
+=======
+  PATHS ${PKG_POPPLER_LIBRARIES} ${POPPLER_LIBRARY_DIRS} /usr/local/lib /usr/lib
+>>>>>>> bea5ac5c4844d7b78798edca794c0a7bf0155c96
   NO_DEFAULT_PATH
 )
 IF (POPPLER_LIBRARY)

@@ -1873,6 +1873,7 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 				gItem->groupItemList = gpL;
 		}
 	}
+	//update names to pointers
 	updateNames2Ptr();
 	
 	// reestablish first/lastAuto
@@ -6225,7 +6226,7 @@ bool Scribus150Format::readPageCount(const QString& fileName, int *num1, int *nu
 	return success;
 }
 
-void Scribus150Format::updateNames2Ptr() //after document load items pointers should be updated in markeredItemList
+void Scribus150Format::updateNames2Ptr() //after document load - items pointers should be updated
 {
 	if (!markeredItemsMap.isEmpty())
 	{

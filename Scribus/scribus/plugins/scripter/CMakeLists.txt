@@ -85,3 +85,8 @@ FILE(GLOB sceditor "python/sceditor/*.zip" "python/sceditor/*.png" "python/scedi
 INSTALL(FILES ${sceditor}
   DESTINATION ${PLUGINDIR}/scripter/sceditor
 )
+<<<<<<< HEAD
+=======
+
+ADD_DEPENDENCIES(${SCRIBUS_SCRIPTER_PLUGIN} ${EXE_NAME})
+>>>>>>> bea5ac5c4844d7b78798edca794c0a7bf0155c96

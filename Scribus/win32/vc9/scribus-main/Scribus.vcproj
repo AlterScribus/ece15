@@ -15,11 +15,7 @@
 	</Platforms>
 	<ToolFiles>
 		<ToolFile
-<<<<<<< HEAD
-			RelativePath="..\Scribus-build.rules"
-=======
 			RelativePath="..\Scribus-build-rules.rules"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 		/>
 	</ToolFiles>
 	<Configurations>
@@ -28,36 +24,19 @@
 			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus"
 			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
 			ConfigurationType="1"
-<<<<<<< HEAD
-			InheritedPropertySheets="..\Scribus-build.vsprops"
-=======
 			InheritedPropertySheets="..\Scribus-build-props.vsprops"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-<<<<<<< HEAD
-				Name="uic.exe"
-=======
 				Name="uic"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-<<<<<<< HEAD
-				Name="moc.exe"
-			/>
-			<Tool
-				Name="rcc.exe"
-			/>
-			<Tool
-				Name="lrelease.exe"
-=======
 				Name="moc"
 			/>
 			<Tool
@@ -65,7 +44,6 @@
 			/>
 			<Tool
 				Name="lrelease"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -83,11 +61,7 @@
 				InlineFunctionExpansion="0"
 				EnableIntrinsicFunctions="false"
 				AdditionalIncludeDirectories="..\..\vc9;..\..\..\scribus;..\..\..\scribus\colormgmt;..\..\..\scribus\fonts;..\..\..\scribus\text;..\..\..\scribus\styles;..\..\..\scribus\simpletreemodel;..\..\..\scribus\ui;&quot;$(QT4_DIR)\include\QtCore&quot;;&quot;$(QT4_DIR)\include\QtGui&quot;;&quot;$(QT4_DIR)\include\QtNetwork&quot;;&quot;$(QT4_DIR)\include\QtWebKit&quot;;&quot;$(QT4_DIR)\include\QtXml&quot;;&quot;$(QT4_DIR)\include&quot;;&quot;$(QT4_DIR)\src\3rdparty\zlib&quot;;&quot;$(CAIRO_DIR)\include&quot;;&quot;$(LCMS_DIR)\include&quot;;&quot;$(FREETYPE_DIR)\include&quot;;&quot;$(LIBJPEG_DIR)\include&quot;;&quot;$(LIBTIFF_DIR)\include&quot;;&quot;$(PODOFO_DIR)\include&quot;"
-<<<<<<< HEAD
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR=\&quot;doc/\&quot;;ICONDIR=\&quot;icons/\&quot;;SAMPLESDIR=\&quot;samples/\&quot;;SCRIPTSDIR=\&quot;scripts/\&quot;;SHAREDIR=\&quot;share/\&quot;;TEMPLATEDIR=\&quot;templates/\&quot;;LIBDIR=\&quot;libs/\&quot;;PLUGINDIR=\&quot;plugins\&quot;"
-=======
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_USE_MATH_DEFINES;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR=\&quot;doc/\&quot;;ICONDIR=\&quot;icons/\&quot;;SAMPLESDIR=\&quot;samples/\&quot;;SCRIPTSDIR=\&quot;scripts/\&quot;;SHAREDIR=\&quot;share/\&quot;;TEMPLATEDIR=\&quot;templates/\&quot;;LIBDIR=\&quot;libs/\&quot;;PLUGINDIR=\&quot;plugins\&quot;"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
@@ -155,11 +129,7 @@
 			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus"
 			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
 			ConfigurationType="1"
-<<<<<<< HEAD
-			InheritedPropertySheets="..\Scribus-build.vsprops"
-=======
 			InheritedPropertySheets="..\Scribus-build-props.vsprops"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -167,25 +137,12 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-<<<<<<< HEAD
-				Name="uic.exe"
-=======
 				Name="uic"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-<<<<<<< HEAD
-				Name="moc.exe"
-			/>
-			<Tool
-				Name="rcc.exe"
-			/>
-			<Tool
-				Name="lrelease.exe"
-=======
 				Name="moc"
 			/>
 			<Tool
@@ -193,7 +150,6 @@
 			/>
 			<Tool
 				Name="lrelease"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -211,11 +167,7 @@
 				InlineFunctionExpansion="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..\..\vc9;..\..\..\scribus;..\..\..\scribus\colormgmt;..\..\..\scribus\fonts;..\..\..\scribus\text;..\..\..\scribus\styles;..\..\..\scribus\simpletreemodel;..\..\..\scribus\ui;&quot;$(QT4_DIR)\include\QtCore&quot;;&quot;$(QT4_DIR)\include\QtGui&quot;;&quot;$(QT4_DIR)\include\QtNetwork&quot;;&quot;$(QT4_DIR)\include\QtWebKit&quot;;&quot;$(QT4_DIR)\include\QtXml&quot;;&quot;$(QT4_DIR)\include&quot;;&quot;$(QT4_DIR)\src\3rdparty\zlib&quot;;&quot;$(CAIRO_DIR)\include&quot;;&quot;$(LCMS_DIR)\include&quot;;&quot;$(FREETYPE_DIR)\include&quot;;&quot;$(LIBJPEG_DIR)\include&quot;;&quot;$(LIBTIFF_DIR)\include&quot;;&quot;$(PODOFO_DIR)\include&quot;"
-<<<<<<< HEAD
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR=\&quot;doc/\&quot;;ICONDIR=\&quot;icons/\&quot;;SAMPLESDIR=\&quot;samples/\&quot;;SCRIPTSDIR=\&quot;scripts/\&quot;;SHAREDIR=\&quot;share/\&quot;;TEMPLATEDIR=\&quot;templates/\&quot;;LIBDIR=\&quot;libs/\&quot;;PLUGINDIR=\&quot;plugins\&quot;"
-=======
 				PreprocessorDefinitions="WIN32;NDEBUG;_USE_MATH_DEFINES;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR=\&quot;doc/\&quot;;ICONDIR=\&quot;icons/\&quot;;SAMPLESDIR=\&quot;samples/\&quot;;SCRIPTSDIR=\&quot;scripts/\&quot;;SHAREDIR=\&quot;share/\&quot;;TEMPLATEDIR=\&quot;templates/\&quot;;LIBDIR=\&quot;libs/\&quot;;PLUGINDIR=\&quot;plugins\&quot;"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				StringPooling="true"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
@@ -1411,13 +1363,10 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\ui\prefs_spelling.cpp"
 				>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\prefs_tableofcontents.cpp"
 				>
 			</File>
@@ -1606,8 +1555,6 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\downloadmanager\scdlmgr.cpp"
 				>
 			</File>
@@ -1616,7 +1563,6 @@
 				>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\scdockpalette.cpp"
 				>
 			</File>
@@ -2332,22 +2278,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2358,22 +2296,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2384,22 +2314,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2410,22 +2332,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2436,22 +2350,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2462,22 +2368,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2488,22 +2386,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2514,22 +2404,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2544,22 +2426,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2570,22 +2444,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2596,22 +2462,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2622,22 +2480,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2648,22 +2498,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2674,22 +2516,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2700,22 +2534,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2726,22 +2552,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2752,22 +2570,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2778,22 +2588,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2804,22 +2606,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2834,22 +2628,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2860,22 +2646,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2902,22 +2680,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2928,22 +2698,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2954,22 +2716,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -2980,22 +2734,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3006,22 +2752,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3052,22 +2790,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3078,22 +2808,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3116,22 +2838,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3142,22 +2856,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3168,22 +2874,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3194,22 +2892,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3232,22 +2922,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3262,22 +2944,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3308,22 +2982,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3334,22 +3000,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3364,22 +3022,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3390,22 +3040,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3416,22 +3058,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3442,22 +3076,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3476,22 +3102,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3502,22 +3120,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3532,22 +3142,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3558,22 +3160,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3604,22 +3198,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3630,22 +3216,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3656,22 +3234,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3682,22 +3252,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3712,22 +3274,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3738,22 +3292,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3764,22 +3310,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3790,22 +3328,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3816,22 +3346,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3862,22 +3384,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3888,22 +3402,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3914,22 +3420,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3940,22 +3438,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3966,22 +3456,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -3992,22 +3474,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4018,22 +3492,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4044,22 +3510,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4092,22 +3550,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4118,22 +3568,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4144,22 +3586,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4174,22 +3608,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4200,22 +3626,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4226,22 +3644,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4252,22 +3662,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4282,22 +3684,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4308,22 +3702,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4334,22 +3720,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4360,22 +3738,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4386,22 +3756,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4444,22 +3806,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4470,22 +3824,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4496,22 +3842,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4522,22 +3860,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4552,22 +3882,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4578,22 +3900,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4632,22 +3946,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4662,22 +3968,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4688,22 +3986,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4714,22 +4004,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4740,22 +4022,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4774,22 +4048,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4800,22 +4066,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4830,22 +4088,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4860,22 +4110,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4886,22 +4128,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4912,22 +4146,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4938,22 +4164,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4964,22 +4182,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -4990,22 +4200,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5016,22 +4218,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5046,22 +4240,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5076,22 +4262,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5102,22 +4280,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5128,22 +4298,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5161,11 +4323,7 @@
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5184,22 +4342,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5210,22 +4360,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5236,22 +4378,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5262,22 +4396,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5288,22 +4414,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5314,22 +4432,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5340,22 +4450,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5366,22 +4468,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5392,22 +4486,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5422,22 +4508,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5448,22 +4526,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5474,22 +4544,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5500,22 +4562,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5526,22 +4580,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5552,22 +4598,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5578,22 +4616,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5604,22 +4634,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5630,22 +4652,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5656,22 +4670,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5694,22 +4700,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5720,22 +4718,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5746,22 +4736,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5772,22 +4754,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5798,22 +4772,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5824,22 +4790,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5850,22 +4808,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5876,22 +4826,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5902,22 +4844,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5928,22 +4862,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5954,22 +4880,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -5980,22 +4898,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6006,22 +4916,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6032,22 +4934,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6058,22 +4952,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6084,22 +4970,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6110,22 +4988,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6136,22 +5006,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6162,22 +5024,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6188,22 +5042,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6214,22 +5060,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6240,22 +5078,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6266,22 +5096,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6292,22 +5114,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6318,22 +5132,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6344,22 +5150,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6370,22 +5168,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6404,22 +5194,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6434,22 +5216,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6460,22 +5234,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6486,22 +5252,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6512,22 +5270,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6546,22 +5296,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6572,22 +5314,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6598,22 +5332,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6624,22 +5350,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6650,22 +5368,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6676,22 +5386,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6702,22 +5404,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6728,22 +5422,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6754,22 +5440,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6780,22 +5458,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6806,22 +5476,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6832,22 +5494,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6858,22 +5512,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6884,22 +5530,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6910,22 +5548,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6936,22 +5566,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6962,22 +5584,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -6988,22 +5602,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7014,22 +5620,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7040,22 +5638,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7066,22 +5656,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7092,22 +5674,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7118,22 +5692,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7144,22 +5710,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7170,22 +5728,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7196,22 +5746,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7222,22 +5764,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7248,22 +5782,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7274,22 +5800,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7300,22 +5818,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7326,22 +5836,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7352,22 +5854,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7378,20 +5872,13 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
 					/>
 				</FileConfiguration>
@@ -7411,7 +5898,6 @@
 					>
 					<Tool
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7422,22 +5908,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7448,22 +5926,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7474,22 +5944,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7508,22 +5970,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7534,22 +5988,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7572,22 +6018,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7598,22 +6036,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7624,22 +6054,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7650,22 +6072,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7676,22 +6090,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7702,22 +6108,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7728,22 +6126,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7754,22 +6144,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7780,22 +6162,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7806,22 +6180,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7832,22 +6198,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7858,22 +6216,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7884,22 +6234,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7910,22 +6252,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7936,22 +6270,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7962,22 +6288,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -7988,22 +6306,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8014,22 +6324,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8040,22 +6342,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8070,22 +6364,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8096,22 +6382,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8130,22 +6408,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8156,22 +6426,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8190,22 +6452,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8216,22 +6470,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8260,8 +6506,6 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\downloadmanager\scdlmgr.h"
 				>
 				<FileConfiguration
@@ -8298,29 +6542,20 @@
 				</FileConfiguration>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\scdockpalette.h"
 				>
 				<FileConfiguration
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8335,22 +6570,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8377,22 +6604,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8411,22 +6630,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8445,22 +6656,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8475,22 +6678,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8501,22 +6696,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8527,22 +6714,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8609,22 +6788,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8635,22 +6806,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8669,22 +6832,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8699,22 +6854,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8725,22 +6872,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8755,22 +6894,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8821,22 +6952,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8851,22 +6974,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8885,22 +7000,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8911,22 +7018,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8941,22 +7040,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8971,22 +7062,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -8997,22 +7080,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9023,22 +7098,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9057,22 +7124,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9083,22 +7142,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9113,22 +7164,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9139,22 +7182,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9189,22 +7224,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9219,22 +7246,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9253,22 +7272,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9279,22 +7290,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9313,22 +7316,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9339,22 +7334,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9365,22 +7352,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9391,22 +7370,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9421,22 +7392,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9447,22 +7410,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9473,22 +7428,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9499,22 +7446,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9525,22 +7464,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9551,22 +7482,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9577,22 +7500,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9603,22 +7518,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9629,22 +7536,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9655,22 +7554,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9681,22 +7572,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9707,22 +7590,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9751,22 +7626,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9777,22 +7644,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9803,22 +7662,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9829,22 +7680,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9855,22 +7698,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9881,22 +7716,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9907,22 +7734,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9933,22 +7752,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9959,22 +7770,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -9985,22 +7788,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10011,22 +7806,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10037,22 +7824,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10067,22 +7846,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10093,22 +7864,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10123,22 +7886,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10149,22 +7904,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10187,22 +7934,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10213,22 +7952,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10239,22 +7970,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10269,22 +7992,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10295,22 +8010,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10321,22 +8028,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10355,22 +8054,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10389,22 +8080,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10415,22 +8098,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10449,22 +8124,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10475,22 +8142,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10501,22 +8160,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10531,22 +8182,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10561,22 +8204,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10587,22 +8222,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10617,22 +8244,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10643,22 +8262,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10669,22 +8280,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10707,22 +8310,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10745,22 +8340,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10771,22 +8358,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10797,22 +8376,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10875,22 +8446,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -10901,22 +8464,14 @@
 					Name="Debug-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release-cairo|Win32"
 					>
 					<Tool
-<<<<<<< HEAD
-						Name="moc.exe"
-=======
 						Name="moc"
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 					/>
 				</FileConfiguration>
 			</File>
@@ -11182,13 +8737,10 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\ui\ui_prefs_spellingbase.h"
 				>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\ui_prefs_tableofcontentsbase.h"
 				>
 			</File>
@@ -12078,13 +9630,10 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\ui\moc_prefs_spelling.cpp"
 				>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\moc_prefs_tableofcontents.cpp"
 				>
 			</File>
@@ -12205,8 +9754,6 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\downloadmanager\moc_scdlmgr.cpp"
 				>
 			</File>
@@ -12215,7 +9762,6 @@
 				>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\moc_scdockpalette.cpp"
 				>
 			</File>
@@ -12801,13 +10347,10 @@
 				>
 			</File>
 			<File
-<<<<<<< HEAD
-=======
 				RelativePath="..\..\..\scribus\ui\prefs_spellingbase.ui"
 				>
 			</File>
 			<File
->>>>>>> a78f1676d3bfe54774d2c739bf39fefd86135f16
 				RelativePath="..\..\..\scribus\ui\prefs_tableofcontentsbase.ui"
 				>
 			</File>

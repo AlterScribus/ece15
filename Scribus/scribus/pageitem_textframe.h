@@ -48,7 +48,7 @@ class ScText;
 class ScStyleRun;
 #endif
 
-//cezaryece: I remove static statement and made it public as this function is used also by PageItem_NoteFrame
+//cezaryece: used by PageItem_NoteFrame
 double calculateLineSpacing (const ParagraphStyle &style, PageItem *item);
 
 class SCRIBUS_API PageItem_TextFrame : public PageItem
@@ -92,15 +92,17 @@ public:
 #endif
 	//enable/disable marks inserting actions depending on editMode
 	void togleEditModeActions();
-	
+	QRegion availableRegion() { return m_availableRegion; }
+
 protected:
+	QRegion calcAvailableRegion();
+	QRegion m_availableRegion;
 	virtual void DrawObj_Item(ScPainter *p, QRectF e);
 	virtual void DrawObj_Post(ScPainter *p);
 	virtual void DrawObj_Decoration(ScPainter *p);
 	//void drawOverflowMarker(ScPainter *p);
 	void drawUnderflowMarker(ScPainter *p);
 	void drawColumnBorders(ScPainter *p);
-	QRegion availableRegion();
 
 #ifdef NLS_PROTO
 	void DrawLineItem(ScPainter *p, double width,

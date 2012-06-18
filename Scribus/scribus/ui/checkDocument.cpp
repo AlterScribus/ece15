@@ -341,7 +341,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 			doc->flag_notesChanged = false;
 		}
 
-		// LAYERS **********************************************
+		// LAYERS **********************************************8
 		QTreeWidgetItem * layerItem = new QTreeWidgetItem(reportDisplay);
 		layerItem->setText(COLUMN_ITEM, tr("Layers"));
 

@@ -30,7 +30,6 @@ pageitem.cpp  -  description
 #include <QList>
 #include <cassert>
 
-#include "desaxe/saxio.h"
 #include "marks.h"
 //#include "text/paragraphlayout.h"
 #include "text/frect.h"
@@ -39,6 +38,7 @@ pageitem.cpp  -  description
 #include "style.h"
 #include "styles/charstyle.h"
 #include "styles/paragraphstyle.h"
+#include "desaxe/saxio.h"
 
 #ifdef NLS_CONFORMANCE
 #define NLS_PRIVATE private
@@ -124,11 +124,11 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
 	// Append chars from another StoryText object
 	void append(const StoryText& other) { insert(length(), other, false); }
 	// Remove len chars at specific position
-	void removeChars(int pos, uint len);
+ 	void removeChars(int pos, uint len);
 	// Insert chars at current cursor position
 	void insertChars(QString txt, bool applyNeighbourStyle = false);
 	// Insert chars ar specific position
-	void insertChars(int pos, QString txt, bool applyNeighbourStyle = false);
+ 	void insertChars(int pos, QString txt, bool applyNeighbourStyle = false);
 	// Insert inline object at current cursor position
 	void insertObject(int obj);
 	// Insert object at specific position
