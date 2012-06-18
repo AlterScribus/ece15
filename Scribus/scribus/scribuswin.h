@@ -56,11 +56,8 @@ public:
 	ScribusDoc* doc() const { return m_Doc;}
 	QMdiSubWindow* getSubWin() { return subWindow; }
 	void setSubWin(QMdiSubWindow *win) { subWindow = win; }
-	void setMasterPagesPalette(MasterPagesPalette* newMPP);
-	MasterPagesPalette* masterPagesPalette() const;
 	void setMenuStatus(int index, bool value) { if (index>=0 && index <=6) MenuStat[index]=value;}
 	bool menuStatus(int index) const { if (index>=0 && index <=6) return MenuStat[index]; else return false; }
-	void setMasterPagesPaletteShown(bool isShown) const;
 	
 public slots:
 	void slotAutoSave();
@@ -75,7 +72,6 @@ protected:
 	ScribusMainWindow* m_MainWindow;
 	ScribusView* m_View;
 	ScribusDoc* m_Doc;
-	MasterPagesPalette* m_masterPagesPalette;
 	QFrame *statusFrame;
 	QMdiSubWindow* subWindow;
 	bool MenuStat[7];
