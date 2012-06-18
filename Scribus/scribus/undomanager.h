@@ -566,6 +566,7 @@ public:
 	static QString AddPage;
 	static QString AddPages;
 	static QString DeleteText;
+	static QString InsertText;
 	static QString DeletePage;
 	static QString DeletePages;
 	static QString ChangePageProps;

@@ -4365,6 +4365,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreLineShade(ss, isUndo);
 		else if (ss->contains("DELETE_FRAMETEXT"))
 			restoreDeleteFrameText(ss, isUndo);
+		else if (ss->contains("INSERT_FRAMETEXT"))
+			restoreInsertFrameText(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4484,6 +4486,17 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo){
 	} else {
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
+	}
+}
+
+void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo){
+	QString text = ss->get("TEXT_STR");
+	int start = ss->getInt("START");
+	if(isUndo){
+		itemText.select(start,text.length());
+		asTextFrame()->deleteSelectedTextFromFrame();
+	} else {
+		itemText.insertChars(start,text);
 	}
 }
 
