@@ -91,6 +91,8 @@ SET(SCRIBUS_UI_SRC
   ui/nftdialog.ui
   ui/nftwidget.ui
   ui/pageitemattributes.ui
+  ui/pagepalette_pagesbase.ui
+  ui/pagepalette_masterpagesbase.ui
   ui/paintmanagerbase.ui
   ui/picsearch.ui
   ui/picsearchoptions.ui
@@ -116,6 +118,7 @@ SET(SCRIBUS_UI_SRC
   ui/prefs_preflightverifierbase.ui
   ui/prefs_printerbase.ui
   ui/prefs_scrapbookbase.ui
+  ui/prefs_spellingbase.ui
   ui/prefs_typographybase.ui
   ui/prefs_userinterfacebase.ui
   ui/prefs_itemtoolsbase.ui
@@ -193,6 +196,8 @@ SET(SCRIBUS_MOC_CLASSES
   commonstrings.h
   deferredtask.h
   docinfo.h
+  downloadmanager/scdlmgr.h
+  downloadmanager/scdlthread.h
   fileloader.h
   filesearch.h
   filewatcher.h
@@ -315,7 +320,6 @@ SET(SCRIBUS_MOC_CLASSES
   ui/marginpresetlayout.h
   ui/marginwidget.h
   ui/newmarginwidget.h
-  ui/masterpagepalette.h
   ui/measurements.h
   ui/mergedoc.h
   ui/missing.h
@@ -332,6 +336,9 @@ SET(SCRIBUS_MOC_CLASSES
   ui/pageitemattributes.h
   ui/pagelayout.h
   ui/pagepalette.h
+  ui/pagepalette_pages.h
+  ui/pagepalette_masterpages.h
+  ui/pagepalette_widgets.h
   ui/pageselector.h
   ui/paintmanager.h
   ui/patternpropsdialog.h
@@ -362,6 +369,7 @@ SET(SCRIBUS_MOC_CLASSES
   ui/prefs_preflightverifier.h
   ui/prefs_printer.h
   ui/prefs_scrapbook.h
+  ui/prefs_spelling.h
   ui/prefs_typography.h
   ui/prefs_userinterface.h
   ui/prefs_itemtools.h
@@ -516,6 +524,8 @@ SET(SCRIBUS_SOURCES
   docinfo.cpp
   documentchecker.cpp
   documentinformation.cpp
+  downloadmanager/scdlmgr.cpp
+  downloadmanager/scdlthread.cpp
   exif.cpp
   fileloader.cpp
   filesearch.cpp
@@ -741,7 +751,6 @@ SET(SCRIBUS_SOURCES
   ui/marginpresetlayout.cpp
   ui/marginwidget.cpp
   ui/newmarginwidget.cpp
-  ui/masterpagepalette.cpp
   ui/mergedoc.cpp
   ui/missing.cpp
   ui/movepage.cpp
@@ -758,6 +767,9 @@ SET(SCRIBUS_SOURCES
   ui/pageitemattributes.cpp
   ui/pagelayout.cpp
   ui/pagepalette.cpp
+  ui/pagepalette_pages.cpp
+  ui/pagepalette_masterpages.cpp
+  ui/pagepalette_widgets.cpp
   ui/pageselector.cpp
   ui/paintmanager.cpp
   ui/patternpropsdialog.cpp
@@ -787,6 +799,7 @@ SET(SCRIBUS_SOURCES
   ui/prefs_preflightverifier.cpp
   ui/prefs_printer.cpp
   ui/prefs_scrapbook.cpp
+  ui/prefs_spelling.cpp
   ui/prefs_typography.cpp
   ui/prefs_userinterface.cpp
   ui/prefs_itemtools.cpp

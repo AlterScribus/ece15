@@ -21,7 +21,7 @@
 			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus"
 			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\Scribus-build.vsprops"
+			InheritedPropertySheets="..\Scribus-build-props.vsprops"
 			UseOfMFC="0"
 			CharacterSet="2"
 			>
@@ -44,14 +44,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\..\..\scribus\third_party\cairo;..\..\..\scribus;&quot;$(PIXMAN_DIR)\pixman&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CAIRO_BUILD_DLL;CAIROWIN32_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;CAIRO_BUILD_DLL;CAIROWIN32_EXPORTS"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="1"
 				DisableSpecificWarnings="4018;4100;4127;4244;4550;4996"
 			/>
@@ -106,7 +106,7 @@
 			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus"
 			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\Scribus-build.vsprops"
+			InheritedPropertySheets="..\Scribus-build-props.vsprops"
 			CharacterSet="2"
 			>
 			<Tool
@@ -129,7 +129,7 @@
 				InlineFunctionExpansion="1"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories="..;..\..\..\scribus\third_party\cairo;..\..\..\scribus;&quot;$(PIXMAN_DIR)\pixman&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CAIRO_BUILD_DLL;CAIROWIN32_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;CAIRO_BUILD_DLL;CAIROWIN32_EXPORTS"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"

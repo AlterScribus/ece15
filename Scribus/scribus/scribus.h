@@ -272,10 +272,6 @@ public slots:
 	void closeActiveWindowMasterPageEditor();
 	void updateActiveWindowCaption(const QString &newCaption);
 	void windowsMenuActivated(int id);
-	void UnDoAction();
-	void RedoAction();
-	void slotTest();
-	void slotTest2();
 	void PutScrap(int scID);
 	void PutToPatterns();
 	void changeLayer(int);
@@ -405,7 +401,6 @@ public slots:
 	void ToggleRulers();
 	void ToggleRulerMode();
 	void togglePagePalette();
-	void setPagePalette(bool visible);
 	void toggleUndoPalette();
 	void setUndoPalette(bool visible);
 	void toggleCheckPal();
