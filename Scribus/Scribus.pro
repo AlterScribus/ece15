@@ -297,14 +297,12 @@ HEADERS += scribus/actionmanager.h \
            scribus/langmgr.h \
            scribus/latexhelpers.h \
            scribus/loadsaveplugin.h \
-           scribus/marks.h \
            scribus/menumanager.h \
            scribus/mesh.h \
            scribus/navigator.h \
            scribus/nftrcreader.h \
            scribus/nftsettings.h \
            scribus/nfttemplate.h \
-           scribus/notesset.h \
            scribus/observable.h \
            scribus/openpalettemanager.h \
            scribus/openpalettemodel.h \
@@ -599,13 +597,6 @@ HEADERS += scribus/actionmanager.h \
            scribus/ui/margindialog.h \
            scribus/ui/marginpresetlayout.h \
            scribus/ui/marginwidget.h \
-           scribus/ui/mark2item.h \
-           scribus/ui/mark2mark.h \
-           scribus/ui/markanchor.h \
-           scribus/ui/MarkInsertDlg.h \
-           scribus/ui/marknote.h \
-           scribus/ui/marksmanager.h \
-           scribus/ui/markvariabletext.h \
            scribus/ui/masterpagepalette.h \
            scribus/ui/measurements.h \
            scribus/ui/mergedoc.h \
@@ -620,7 +611,6 @@ HEADERS += scribus/actionmanager.h \
            scribus/ui/nftdialog.h \
            scribus/ui/nftwidget.h \
            scribus/ui/nodeeditpalette.h \
-           scribus/ui/notessetmanager.h \
            scribus/ui/oneclick.h \
            scribus/ui/openpalette.h \
            scribus/ui/openpaletteview.h \
@@ -1088,49 +1078,17 @@ HEADERS += scribus/actionmanager.h \
            scribus/main_nix.cpp \
            scribus/main_win32.cpp \
            scribus/styles/linestyle.attrdefs.cxx \
-    scribus/pageitem_noteframe.h
-    scribus/ui/markervariabletext.h \
-    scribus/ui/MarkerInsertDlg.h \
-    scribus/ui/markeranchor.h \
-    scribus/ui/marker2marker.h \
-    scribus/tableutils.h \
-    scribus/tablepainter.h \
-    scribus/tablehandle.h \
-    scribus/tablecell.h \
-    scribus/tableborder.h \
-    scribus/scpage.h \
-    scribus/pageitem_table.h \
-    scribus/collapsedtablepainter.h \
-    scribus/cellarea.h \
-    scribus/canvasmode_editweldpoint.h \
-    scribus/canvasmode_edittable.h \
-    scribus/canvasmode_editmeshpatch.h \
-    scribus/canvasgesture_tableresize.h \
-    scribus/canvasgesture_table.h \
-    scribus/canvasgesture_rowresize.h \
-    scribus/canvasgesture_columnresize.h \
-    scribus/canvasgesture_cellselect.h \
-    scribus/ui/marker2item.h \
-    scribus/markers.h \
-    scribus/ui/markersmanager.h \
-    scribus/ui/weldedit.h \
-    scribus/ui/tablesideselector.h \
-    scribus/ui/tablerowheightsdialog.h \
-    scribus/ui/tablecolumnwidthsdialog.h \
-    scribus/ui/smtablestylewidget.h \
-    scribus/ui/smtablestyle.h \
-    scribus/ui/smcellstylewidget.h \
-    scribus/ui/smcellstyle.h \
-    scribus/ui/sclistwidgetdelegate.h \
-    scribus/ui/propertywidget_orphans.h \
-    scribus/ui/propertywidget_dropcap.h \
-    scribus/ui/propertiespalette_table.h \
-    scribus/ui/inserttablerowsdialog.h \
-    scribus/ui/inserttablecolumnsdialog.h \
-    scribus/pageitem_textnote.h \
+    scribus/marks.h \
     scribus/notesset.h \
-    scribus/ui/markernote.h \
-    scribus/ui/markerinsertdlgbase.h
+    scribus/pageitem_noteframe.h \
+    scribus/ui/notessetmanager.h \
+    scribus/ui/markvariabletext.h \
+    scribus/ui/marksmanager.h \
+    scribus/ui/marknote.h \
+    scribus/ui/MarkInsertDlg.h \
+    scribus/ui/markanchor.h \
+    scribus/ui/mark2mark.h \
+    scribus/ui/mark2item.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1152,19 +1110,12 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/inserttablecolumnsdialog.ui \
          scribus/ui/inserttablerowsdialog.ui \
          scribus/ui/latexeditor.ui \
-         scribus/ui/mark2item.ui \
-         scribus/ui/mark2mark.ui \
-         scribus/ui/markanchor.ui \
-         scribus/ui/marknote.ui \
-         scribus/ui/marksmanager.ui \
-         scribus/ui/markvariabletext.ui \
          scribus/ui/measurementsbase.ui \
          scribus/ui/multipleduplicate.ui \
          scribus/ui/multiprogressdialog.ui \
          scribus/ui/newmarginwidgetbase.ui \
          scribus/ui/nftdialog.ui \
          scribus/ui/nftwidget.ui \
-         scribus/ui/notessetmanager.ui \
          scribus/ui/osgeditor.ui \
          scribus/ui/pageitemattributes.ui \
          scribus/ui/paintmanagerbase.ui \
@@ -1262,22 +1213,13 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
          scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
-    scribus/ui/markervariabletext.ui \
-    scribus/ui/markeranchor.ui \
-    scribus/ui/marker2marker.ui \
-    scribus/ui/marker2item.ui \
-    scribus/ui/markersmanager.ui \
-    scribus/ui/weldeditbase.ui \
-    scribus/ui/tablerowheightsdialog.ui \
-    scribus/ui/tablecolumnwidthsdialog.ui \
-    scribus/ui/smtablestylewidget.ui \
-    scribus/ui/smcellstylewidget.ui \
-    scribus/ui/propertywidget_orphansbase.ui \
-    scribus/ui/propertywidget_dropcapbase.ui \
-    scribus/ui/propertiespalette_tablebase.ui \
-    scribus/ui/inserttablerowsdialog.ui \
-    scribus/ui/inserttablecolumnsdialog.ui \
-    scribus/ui/markernote.ui
+    scribus/ui/notessetmanager.ui \
+    scribus/ui/markvariabletext.ui \
+    scribus/ui/marksmanager.ui \
+    scribus/ui/marknote.ui \
+    scribus/ui/markanchor.ui \
+    scribus/ui/mark2mark.ui \
+    scribus/ui/mark2item.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -1367,7 +1309,6 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/nftrcreader.cpp \
            scribus/nftsettings.cpp \
            scribus/nfttemplate.cpp \
-           scribus/notesset.cpp \
            scribus/observable.cpp \
            scribus/openpalettemanager.cpp \
            scribus/openpalettemodel.cpp \
@@ -1631,12 +1572,6 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/ui/margindialog.cpp \
            scribus/ui/marginpresetlayout.cpp \
            scribus/ui/marginwidget.cpp \
-           scribus/ui/mark2item.cpp \
-           scribus/ui/mark2mark.cpp \
-           scribus/ui/markanchor.cpp \
-           scribus/ui/marknote.cpp \
-           scribus/ui/marksmanager.cpp \
-           scribus/ui/markvariabletext.cpp \
            scribus/ui/masterpagepalette.cpp \
            scribus/ui/measurements.cpp \
            scribus/ui/mergedoc.cpp \
@@ -1651,7 +1586,6 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/ui/nftdialog.cpp \
            scribus/ui/nftwidget.cpp \
            scribus/ui/nodeeditpalette.cpp \
-           scribus/ui/notessetmanager.cpp \
            scribus/ui/oneclick.cpp \
            scribus/ui/openpalette.cpp \
            scribus/ui/openpaletteview.cpp \
@@ -2159,45 +2093,15 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp \
-    scribus/pageitem_noteframe.cpp
-RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
-    scribus/ui/markervariabletext.cpp \
-    scribus/ui/markeranchor.cpp \
-    scribus/ui/marker2marker.cpp \
-    scribus/tableutils.cpp \
-    scribus/tablecell.cpp \
-    scribus/tableborder.cpp \
-    scribus/scpage.cpp \
-    scribus/pageitem_table.cpp \
-    scribus/collapsedtablepainter.cpp \
-    scribus/cellarea.cpp \
-    scribus/canvasmode_editweldpoint.cpp \
-    scribus/canvasmode_edittable.cpp \
-    scribus/canvasmode_editmeshpatch.cpp \
-    scribus/canvasgesture_tableresize.cpp \
-    scribus/canvasgesture_table.cpp \
-    scribus/canvasgesture_rowresize.cpp \
-    scribus/canvasgesture_columnresize.cpp \
-    scribus/canvasgesture_cellselect.cpp \
-    scribus/ui/marker2item.cpp \
-    scribus/ui/markersmanager.cpp \
-    scribus/ui/weldedit.cpp \
-    scribus/ui/tablesideselector.cpp \
-    scribus/ui/tablerowheightsdialog.cpp \
-    scribus/ui/tablecolumnwidthsdialog.cpp \
-    scribus/ui/smtablestylewidget.cpp \
-    scribus/ui/smtablestyle.cpp \
-    scribus/ui/smcellstylewidget.cpp \
-    scribus/ui/smcellstyle.cpp \
-    scribus/ui/sclistwidgetdelegate.cpp \
-    scribus/ui/propertywidget_orphans.cpp \
-    scribus/ui/propertywidget_dropcap.cpp \
-    scribus/ui/propertiespalette_table.cpp \
-    scribus/ui/inserttablerowsdialog.cpp \
-    scribus/ui/inserttablecolumnsdialog.cpp \
-    scribus/pageitem_textnote.cpp \
     scribus/notesset.cpp \
-    scribus/ui/markernote.cpp
+    scribus/pageitem_noteframe.cpp \
+    scribus/ui/mark2item.cpp \
+    scribus/ui/notessetmanager.cpp \
+    scribus/ui/markvariabletext.cpp \
+    scribus/ui/marksmanager.cpp \
+    scribus/ui/marknote.cpp \
+    scribus/ui/markanchor.cpp \
+    scribus/ui/mark2mark.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
@@ -2243,7 +2147,3 @@ TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.uk.ts \
                 resources/translations/po/scribus.zh_CN.ts \
                 resources/translations/po/scribus.zh_TW.ts
-
-OTHER_FILES += \
-    scribus/CMakeLists.txt
-
