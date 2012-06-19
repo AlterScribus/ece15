@@ -3821,6 +3821,20 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
 		if (kk == Qt::Key_Tab)
 		{
+			if (UndoManager::undoEnabled())
+			{
+				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+				if(ss && ss->get("ETEA") == "insert_frametext")
+						ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(SpecialChars::TAB));
+				else {
+					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+					ss->set("INSERT_FRAMETEXT", "insert_frametext");
+					ss->set("ETEA", QString("insert_frametext"));
+					ss->set("TEXT_STR", QString(SpecialChars::TAB));
+					ss->set("START", itemText.cursorPosition());
+					undoManager->action(this, ss);
+				}
+			}
 			itemText.insertChars(QString(SpecialChars::TAB), true);
 //			Tinput = true;
 //			view->RefreshItem(this);
@@ -3834,7 +3848,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + uc);
 				else {
-					ss = new SimpleState(Um::InsertText,"",Um::IDelete);
+					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
 					ss->set("INSERT_FRAMETEXT", "insert_frametext");
 					ss->set("ETEA", QString("insert_frametext"));
 					ss->set("TEXT_STR",uc);
