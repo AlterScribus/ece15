@@ -3786,6 +3786,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		break;
 	default:
 		bool doUpdate = false;
+		UndoTransaction* activeTransaction = NULL;
 		if (itemText.lengthOfSelection() > 0) //(kk < 0x1000)
 		{
 			bool x11Hack=false;
@@ -3801,6 +3802,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 #endif
 			if (!controlCharHack && !x11Hack && !k->text().isEmpty())
 			{
+				if (UndoManager::undoEnabled())
+					activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Selection, Um::IGroup, Um::ReplaceText, "", Um::IDelete));
+
 				deleteSelectedTextFromFrame();
 				doUpdate = true;
 			}
@@ -3865,6 +3869,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		if (doUpdate)
 		{
+			if (activeTransaction)
+			{
+				activeTransaction->commit();
+				delete activeTransaction;
+				activeTransaction = NULL;
+			}
 			// update layout immediately, we need MaxChars to be correct to detect 
 			// if we need to move to next frame or not
 			updateLayout();
