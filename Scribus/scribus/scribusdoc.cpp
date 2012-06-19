@@ -8595,6 +8595,15 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 					length = start < currItem->itemText.length() ? 1 : 0;
 				}
 			}
+			if (UndoManager::undoEnabled())
+			{
+				ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
+				is->set("APPLY_CHARSTYLE", "apply_charstyle");
+				is->set("START",start);
+				is->set("LENGTH",qMax(0,length));
+				is->setItem(QPair<CharStyle,CharStyle>(newStyle, currItem->itemText.charStyle(start)));
+				undoManager->action(currItem, is);
+			}
 			currItem->itemText.applyCharStyle(start, qMax(0, length), newStyle);
 			currItem->invalid = true;
 		}

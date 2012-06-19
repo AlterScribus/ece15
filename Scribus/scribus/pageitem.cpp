@@ -4369,6 +4369,17 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreInsertFrameText(ss,isUndo);
 		else if (ss->contains("LOREM_FRAMETEXT"))
 			restoreLoremIpsum(ss,isUndo);
+		else if (ss->contains("APPLY_CHARSTYLE")){
+			ScItemState<QPair<CharStyle, CharStyle > > *is = dynamic_cast<ScItemState<QPair<CharStyle, CharStyle> >*>(ss);
+			int length = is->getInt("LENGTH");
+			int start = is->getInt("START");
+			if(isUndo){
+				itemText.eraseCharStyle(start,length,is->getItem().first);
+				itemText.applyCharStyle(start,length,is->getItem().second);
+			} else {
+				itemText.applyCharStyle(start,length,is->getItem().first);
+			}
+		}
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
