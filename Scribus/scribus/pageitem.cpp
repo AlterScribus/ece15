@@ -4367,6 +4367,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreDeleteFrameText(ss, isUndo);
 		else if (ss->contains("INSERT_FRAMETEXT"))
 			restoreInsertFrameText(ss,isUndo);
+		else if (ss->contains("LOREM_FRAMETEXT"))
+			restoreLoremIpsum(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4476,6 +4478,17 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
+{
+	QString sampleText = ss->get("TEXT_STR");
+	if(isUndo){
+		itemText.selectAll();
+		asTextFrame()->deleteSelectedTextFromFrame();
+	} else {
+		itemText.insertChars(0,sampleText);
+	}
 }
 
 void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo){

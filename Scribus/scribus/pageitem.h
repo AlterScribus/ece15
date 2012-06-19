@@ -1209,6 +1209,7 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restoreLoremIpsum(SimpleState *state, bool isUndo);
 	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
 	void restoreInsertFrameText(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
