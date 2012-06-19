@@ -3301,7 +3301,10 @@ void PageItem_TextFrame::clearContents()
 		nextItem = nextItem->prevInChain();
 
 	ParagraphStyle defaultStyle = nextItem->itemText.defaultStyle();
-	nextItem->itemText.clear();
+	nextItem->itemText.selectAll();
+	nextItem->asTextFrame()->deleteSelectedTextFromFrame();
+	if(UndoManager::undoEnabled())
+		undoManager->getLastUndo()->setName(Um::ClearText);
 	nextItem->itemText.setDefaultStyle(defaultStyle);
 
 	while (nextItem != 0)

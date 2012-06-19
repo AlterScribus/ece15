@@ -568,6 +568,7 @@ public:
 	static QString ReplaceText;
 	static QString AppendText;
 	static QString ImportText;
+	static QString ClearText;
 	static QString AddLoremIpsum;
 	static QString DeleteText;
 	static QString InsertText;
