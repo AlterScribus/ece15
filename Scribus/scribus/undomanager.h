@@ -596,6 +596,7 @@ public:
 	static QString ChangeFormula;
 	static QString MultipleDuplicate;
 	static QString ApplyTextStyle;
+	static QString RemoveTextStyle;
 	static QString MenuUndo;
 	static QString MenuUndoEmpty;
 	static QString MenuRedo;

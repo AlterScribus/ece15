@@ -989,6 +989,7 @@ void UndoManager::languageChange()
 	UndoManager::ChangeFormula      = tr("Change formula");
 	UndoManager::MultipleDuplicate  = tr("Multiple duplicate");
 	UndoManager::ApplyTextStyle     = tr("Apply text style");
+	UndoManager::RemoveTextStyle    = tr("Remove text style");
 	UndoManager::MenuUndo           = tr("&Undo: %1", "f.e. Undo: Move");
 	UndoManager::MenuUndoEmpty      = tr("&Undo");
 	UndoManager::MenuRedo           = tr("&Redo: %1", "f.e. Redo: Move");
@@ -1222,6 +1223,7 @@ QString UndoManager::GetImage           = "";
 QString UndoManager::ChangeFormula      = "";
 QString UndoManager::MultipleDuplicate  = "";
 QString UndoManager::ApplyTextStyle     = "";
+QString UndoManager::RemoveTextStyle    = "";
 QString UndoManager::MenuUndo           = "";
 QString UndoManager::MenuUndoEmpty      = "";
 QString UndoManager::MenuRedo           = "";

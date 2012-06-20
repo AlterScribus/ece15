@@ -4371,6 +4371,10 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreLoremIpsum(ss,isUndo);
 		else if (ss->contains("APPLY_CHARSTYLE"))
 			restoreCharStyle(ss,isUndo);
+		else if (ss->contains("SET_CHARSTYLE"))
+			restoreSetCharStyle(ss,isUndo);
+		else if (ss->contains("SET_PARASTYLE"))
+			restoreSetParagraphStyle(ss,isUndo);
 		else if (ss->contains("APPLY_PARASTYLE"))
 			restoreParagraphStyle(ss,isUndo);
 		else if (ss->contains("APPLY_DEFAULTPARASTYLE"))
@@ -4531,6 +4535,29 @@ void PageItem::restoreCharStyle(SimpleState *ss, bool isUndo)
 		itemText.applyCharStyle(start,length,is->getItem().second);
 	} else {
 		itemText.applyCharStyle(start,length,is->getItem().first);
+	}
+}
+
+void PageItem::restoreSetCharStyle(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<CharStyle, CharStyle > > *is = dynamic_cast<ScItemState<QPair<CharStyle, CharStyle> >*>(ss);
+	int length = is->getInt("LENGTH");
+	int start = is->getInt("START");
+	if(isUndo){
+		itemText.setCharStyle(start,length,is->getItem().second);
+	} else {
+		itemText.setCharStyle(start,length,is->getItem().first);
+	}
+}
+
+void PageItem::restoreSetParagraphStyle(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<ParagraphStyle, ParagraphStyle > > *is = dynamic_cast<ScItemState<QPair<ParagraphStyle, ParagraphStyle> >*>(ss);
+	int pos = is->getInt("POS");
+	if(isUndo){
+		itemText.setStyle(pos,is->getItem().second);
+	} else {
+		itemText.setStyle(pos,is->getItem().first);
 	}
 }
 
