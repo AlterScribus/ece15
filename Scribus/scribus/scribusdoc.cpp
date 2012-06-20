@@ -8400,8 +8400,8 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 	if (selectedItemCount == 0)
 		return;
 	UndoTransaction* activeTransaction = NULL;
-	if (selectedItemCount > 1)
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
+	if (UndoManager::undoEnabled())
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::SetStyle, newStyle.displayName(), Um::IFont));
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
@@ -8524,6 +8524,13 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		{
 			ParagraphStyle dstyle(currItem->itemText.defaultStyle());
 			dstyle.applyStyle(newStyle);
+			if (UndoManager::undoEnabled())
+			{
+				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
+				is->setItem(QPair<ParagraphStyle,ParagraphStyle>(dstyle, currItem->itemText.defaultStyle()));
+				undoManager->action(currItem, is);
+			}
 			currItem->itemText.setDefaultStyle(dstyle);
 		}
 		if (currItemTextCount > 0)
@@ -8541,8 +8548,24 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			{
 				if (currItem->itemText.text(pos) == SpecialChars::PARSEP)
 				{
+					if (UndoManager::undoEnabled())
+					{
+						ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+						is->set("APPLY_PARASTYLE", "apply_parastyle");
+						is->set("POS",pos);
+						is->setItem(QPair<ParagraphStyle,ParagraphStyle>(newStyle, currItem->itemText.paragraphStyle(pos)));
+						undoManager->action(currItem, is);
+					}
 					currItem->itemText.applyStyle(pos, newStyle, rmDirectFormatting);
 				}
+			}
+			if (UndoManager::undoEnabled())
+			{
+				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+				is->set("APPLY_PARASTYLE", "apply_parastyle");
+				is->set("POS",stop);
+				is->setItem(QPair<ParagraphStyle,ParagraphStyle>(newStyle, currItem->itemText.paragraphStyle(stop)));
+				undoManager->action(currItem, is);
 			}
 			currItem->itemText.applyStyle(stop, newStyle, rmDirectFormatting);
 			currItem->invalid = true;
@@ -8569,7 +8592,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 	if (selectedItemCount == 0)
 		return;
 	UndoTransaction* activeTransaction = NULL;
-	if (selectedItemCount > 1)
+	if (UndoManager::undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
@@ -8611,6 +8634,20 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 		{
 			ParagraphStyle dstyle(currItem->itemText.defaultStyle());
 			dstyle.charStyle().applyCharStyle(newStyle);
+			if (UndoManager::undoEnabled())
+			{
+				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
+				is->setItem(QPair<ParagraphStyle,ParagraphStyle>(dstyle, currItem->itemText.defaultStyle()));
+				undoManager->action(currItem, is);
+
+				ScItemState<QPair<CharStyle,CharStyle> > *ist = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
+				ist->set("APPLY_CHARSTYLE", "apply_charstyle");
+				ist->set("START",0);
+				ist->set("LENGTH",currItem->itemText.length());
+				ist->setItem(QPair<CharStyle,CharStyle>(newStyle, currItem->itemText.charStyle(0)));
+				undoManager->action(currItem, ist);
+			}
 			currItem->itemText.setDefaultStyle(dstyle);
 //			if (currItem->asPathText())
 			currItem->itemText.applyCharStyle(0, currItem->itemText.length(), newStyle);

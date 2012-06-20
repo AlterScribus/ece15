@@ -4369,17 +4369,12 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreInsertFrameText(ss,isUndo);
 		else if (ss->contains("LOREM_FRAMETEXT"))
 			restoreLoremIpsum(ss,isUndo);
-		else if (ss->contains("APPLY_CHARSTYLE")){
-			ScItemState<QPair<CharStyle, CharStyle > > *is = dynamic_cast<ScItemState<QPair<CharStyle, CharStyle> >*>(ss);
-			int length = is->getInt("LENGTH");
-			int start = is->getInt("START");
-			if(isUndo){
-				itemText.eraseCharStyle(start,length,is->getItem().first);
-				itemText.applyCharStyle(start,length,is->getItem().second);
-			} else {
-				itemText.applyCharStyle(start,length,is->getItem().first);
-			}
-		}
+		else if (ss->contains("APPLY_CHARSTYLE"))
+			restoreCharStyle(ss,isUndo);
+		else if (ss->contains("APPLY_PARASTYLE"))
+			restoreParagraphStyle(ss,isUndo);
+		else if (ss->contains("APPLY_DEFAULTPARASTYLE"))
+			restoreDefaultParagraphStyle(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4489,6 +4484,41 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restoreDefaultParagraphStyle(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<ParagraphStyle, ParagraphStyle > > *is = dynamic_cast<ScItemState<QPair<ParagraphStyle, ParagraphStyle> >*>(ss);
+	if(isUndo){
+		itemText.setDefaultStyle(is->getItem().second);
+	} else {
+		itemText.setDefaultStyle(is->getItem().first);
+	}
+}
+
+void PageItem::restoreParagraphStyle(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<ParagraphStyle, ParagraphStyle > > *is = dynamic_cast<ScItemState<QPair<ParagraphStyle, ParagraphStyle> >*>(ss);
+	int pos = is->getInt("POS");
+	if(isUndo){
+		itemText.eraseStyle(pos,is->getItem().first);
+		itemText.applyStyle(pos,is->getItem().second);
+	} else {
+		itemText.applyStyle(pos,is->getItem().first);
+	}
+}
+
+void PageItem::restoreCharStyle(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<CharStyle, CharStyle > > *is = dynamic_cast<ScItemState<QPair<CharStyle, CharStyle> >*>(ss);
+	int length = is->getInt("LENGTH");
+	int start = is->getInt("START");
+	if(isUndo){
+		itemText.eraseCharStyle(start,length,is->getItem().first);
+		itemText.applyCharStyle(start,length,is->getItem().second);
+	} else {
+		itemText.applyCharStyle(start,length,is->getItem().first);
+	}
 }
 
 void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
