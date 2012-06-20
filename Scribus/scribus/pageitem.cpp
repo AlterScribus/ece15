@@ -4375,6 +4375,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreParagraphStyle(ss,isUndo);
 		else if (ss->contains("APPLY_DEFAULTPARASTYLE"))
 			restoreDefaultParagraphStyle(ss,isUndo);
+		else if (ss->contains("FIRSTLINEOFFSET"))
+			restoreFirstLineOffset(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4484,6 +4486,17 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restoreFirstLineOffset(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<FirstLineOffsetPolicy, FirstLineOffsetPolicy > > *is = dynamic_cast<ScItemState<QPair<FirstLineOffsetPolicy, FirstLineOffsetPolicy> >*>(ss);
+	if(isUndo){
+		firstLineOffsetP = is->getItem().first;
+	} else {
+		firstLineOffsetP = is->getItem().second;
+	}
+	update();
 }
 
 void PageItem::restoreDefaultParagraphStyle(SimpleState *ss, bool isUndo)
@@ -7428,6 +7441,13 @@ void PageItem::setFirstLineOffset(FirstLineOffsetPolicy flop)
 {
 	if(firstLineOffsetP != flop)
 	{
+		if (UndoManager::undoEnabled())
+		{
+			ScItemState<QPair<FirstLineOffsetPolicy,FirstLineOffsetPolicy> > *is = new ScItemState<QPair <FirstLineOffsetPolicy,FirstLineOffsetPolicy> >(Um::FirstLineOffset);
+			is->set("FIRSTLINEOFFSET", "fisrtlineoffset");
+			is->setItem(QPair<FirstLineOffsetPolicy,FirstLineOffsetPolicy>(firstLineOffsetP, flop));
+			undoManager->action(this, is);
+		}
 		firstLineOffsetP = flop;
 	}
 }

@@ -1209,6 +1209,7 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restoreFirstLineOffset(SimpleState *state, bool isUndo);
 	void restoreParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreDefaultParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreCharStyle(SimpleState *state, bool isUndo);

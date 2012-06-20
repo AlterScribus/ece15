@@ -959,6 +959,7 @@ void UndoManager::languageChange()
 	UndoManager::AddPage            = tr("Add page");
 	UndoManager::AddPages           = tr("Add pages");
 	UndoManager::ReplaceText        = tr("Replace text");
+	UndoManager::FirstLineOffset    = tr("Change First Line Offset");
 	UndoManager::DeleteText         = tr("Delete text");
 	UndoManager::InsertText         = tr("Insert text");
 	UndoManager::AppendText         = tr("Append text");
@@ -1128,6 +1129,7 @@ QString UndoManager::Cut                = "";
 QString UndoManager::Transparency       = "";
 QString UndoManager::LineTransparency   = "";
 QString UndoManager::LineStyle          = "";
+QString UndoManager::FirstLineOffset    = "";
 QString UndoManager::LineEnd            = "";
 QString UndoManager::LineJoin           = "";
 QString UndoManager::LineWidth          = "";
