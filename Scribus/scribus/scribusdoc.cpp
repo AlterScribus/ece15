@@ -1806,15 +1806,14 @@ void ScribusDoc::restoreAddMasterPage(SimpleState *ss, bool isUndo){
 
 		scMW()->deletePage2(MasterNames[pageName]);
 		rebuildMasterNames();
-		scMW()->ActWin->masterPagesPalette()->updateMasterPageList(CommonStrings::masterPageNormal);
+		scMW()->pagePalette->updateMasterPageList();
 	} else {
 		ScPage* Mpage = addMasterPage(pageNr, pageName);
 		setCurrentPage(Mpage);
 		UndoObject *tmp = undoManager->replaceObject(
 					ss->getUInt("DUMMY_ID"), Pages->at(MasterNames[pageName]));
 		delete tmp;
-		scMW()->ActWin->masterPagesPalette()->updateMasterPageList(pageName);
-		scMW()->ActWin->masterPagesPalette()->selectMasterPage(pageName);
+		scMW()->pagePalette->updateMasterPageList();
 		m_View->reformPages();
 	}
 }
