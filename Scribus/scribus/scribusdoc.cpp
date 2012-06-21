@@ -49,6 +49,7 @@ for which a new license (GPL+exception) is in place.
 #include "filewatcher.h"
 #include "fpoint.h"
 #include "ui/guidemanager.h"
+#include "ui/outlinepalette.h"
 #include "hyphenator.h"
 #include "ui/inserttablecolumnsdialog.h"
 #include "ui/inserttablerowsdialog.h"
@@ -4341,8 +4342,11 @@ void ScribusDoc::restoreCopyPage(SimpleState *state, bool isUndo)
 				--destLocation;
 		}
 	}
-	else
+	else{
 		copyPage(pnum, extPage, whereTo, copyCount);
+		if(m_ScMW->outlinePalette->isVisible())
+			m_ScMW->outlinePalette->BuildTree();
+	}
 
 }
 
@@ -6500,15 +6504,19 @@ void ScribusDoc::setFirstSectionFromFirstPageNumber()
 
 void ScribusDoc::copyPage(int pageNumberToCopy, int existingPage, int whereToInsert, int copyCount)
 {
-	UndoTransaction copyTransaction(undoManager->beginTransaction(getUName(), Um::IDocument, Um::CopyPage, "", Um::ICreate));
-	SimpleState *ss = new SimpleState(Um::Copy, "", Um::ICreate);
-	ss->set("PAGE_COPY", "copy_page");
-	ss->set("PAGE_NUM", pageNumberToCopy);
-	ss->set("EXISTING_PAGE", existingPage);
-	ss->set("WHERE_TO", whereToInsert);
-	ss->set("COPY_COUNT", copyCount);
-	undoManager->action(this, ss);
+	UndoTransaction *copyTransaction = NULL;
+	if(UndoManager::undoEnabled()){
+		copyTransaction = new UndoTransaction(undoManager->beginTransaction(getUName(), Um::IDocument, Um::CopyPage, "", Um::ICreate));
+		SimpleState *ss = new SimpleState(Um::Copy, "", Um::ICreate);
+		ss->set("PAGE_COPY", "copy_page");
+		ss->set("PAGE_NUM", pageNumberToCopy);
+		ss->set("EXISTING_PAGE", existingPage);
+		ss->set("WHERE_TO", whereToInsert);
+		ss->set("COPY_COUNT", copyCount);
+		undoManager->action(this, ss);
+	}
 
+	undoManager->setUndoEnabled(false);
 	//CB Should we really be disabling auto text frames here?
 	bool autoText = usesAutomaticTextFrames();
 	setUsesAutomaticTextFrames(false);
@@ -6641,7 +6649,12 @@ void ScribusDoc::copyPage(int pageNumberToCopy, int existingPage, int whereToIns
 	else
 		setCurrentPage(from);
 	changed();
-	copyTransaction.commit();
+	undoManager->setUndoEnabled(true);
+	if(copyTransaction){
+		copyTransaction->commit();
+		delete copyTransaction;
+		copyTransaction = NULL;
+	}
 }
 
 
