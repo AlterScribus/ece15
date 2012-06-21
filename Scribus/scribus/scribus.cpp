@@ -8879,10 +8879,8 @@ void ScribusMainWindow::restoreDeletePage(SimpleState *state, bool isUndo)
 		doc->rebuildMasterNames();
 		pagePalette->rebuildMasters();
 	}
-	if (doc->masterPageMode() && !pageName.isEmpty()){
+	if (doc->masterPageMode() && !pageName.isEmpty())
 		pagePalette->updateMasterPageList();
-		pagePalette->selectMasterPage(pageName);
-	}
 	pagePalette->rebuildPages();
 }
 
