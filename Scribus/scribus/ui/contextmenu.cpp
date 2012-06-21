@@ -250,7 +250,8 @@ void ContextMenu::createMenuItems_Selection()
 			addAction(m_AP->scrActions["tableAdjustFrameToTable"]);
 		if (m_actionList.contains("tableAdjustTableToFrame"))
 			addAction(m_AP->scrActions["tableAdjustTableToFrame"]);
-
+		if (m_actionList.contains("itemAdjustFrameHeightToText"))
+			addAction(m_AP->scrActions["itemAdjustFrameHeightToText"]);
 		if (m_actionList.contains("itemExtendedImageProperties"))
 			addAction(m_AP->scrActions["itemExtendedImageProperties"]);
 		if (m_actionList.contains("itemAdjustFrameToImage"))
@@ -304,6 +305,11 @@ void ContextMenu::createMenuItems_Selection()
 			}
 		}
 		
+		if ((selectedItemCount==1) && currItem->asTextFrame())
+		{
+			if (currItem->itemText.length() > 0)
+				m_AP->scrActions["itemAdjustFrameHeightToText"]->setEnabled(true);
+		}
 	}
 	//-->
 	
