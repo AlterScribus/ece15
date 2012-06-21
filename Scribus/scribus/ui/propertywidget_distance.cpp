@@ -360,7 +360,9 @@ void PropertyWidget_Distance::handleTabs()
 			{
 				ParagraphStyle newStyle(m_item->itemText.defaultStyle());
 				newStyle.setTabValues(dia->tmpTab);
-				m_item->itemText.setDefaultStyle(newStyle);
+				Selection tempSelection(this, false);
+				tempSelection.addItem(m_item, true);
+				m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
 			}
 			else
 			{
