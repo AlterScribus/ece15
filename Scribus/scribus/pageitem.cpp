@@ -1376,34 +1376,83 @@ void PageItem::currentTextProps(ParagraphStyle& parStyle) const
 
 void PageItem::setTextToFrameDistLeft(double newLeft)
 {
+	if(Extra==newLeft)
+		return;
+	if (UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
+		ss->set("LEFT_TEXTFRAMEDIST", "left_textframedist");
+		ss->set("OLD_DIST",Extra);
+		ss->set("NEW_DIST",newLeft);
+		undoManager->action(this, ss);
+	}
 	Extra=newLeft;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDistRight(double newRight)
 {
+	if(RExtra==newRight)
+		return;
+	if (UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
+		ss->set("RIGHT_TEXTFRAMEDIST", "right_textframedist");
+		ss->set("OLD_DIST",RExtra);
+		ss->set("NEW_DIST",newRight);
+		undoManager->action(this, ss);
+	}
 	RExtra=newRight;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDistTop(double newTop)
 {
+	if(TExtra==newTop)
+		return;
+	if (UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
+		ss->set("TOP_TEXTFRAMEDIST", "top_textframedist");
+		ss->set("OLD_DIST",TExtra);
+		ss->set("NEW_DIST",newTop);
+		undoManager->action(this, ss);
+	}
 	TExtra=newTop;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDistBottom(double newBottom)
 {
+	if(BExtra==newBottom)
+		return;
+	if (UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
+		ss->set("BOTTOM_TEXTFRAMEDIST", "bottom_textframedist");
+		ss->set("OLD_DIST",BExtra);
+		ss->set("NEW_DIST",newBottom);
+		undoManager->action(this, ss);
+	}
 	BExtra=newBottom;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDist(double newLeft, double newRight, double newTop, double newBottom)
 {
-	Extra=newLeft;
-	RExtra=newRight;
-	TExtra=newTop;
-	BExtra=newBottom;
+	UndoTransaction* activeTransaction = NULL;
+	if (UndoManager::undoEnabled())
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::TextFrame, Um::IDocument, Um::TextFrameDist, "", Um::ITextFrame));
+	setTextToFrameDistLeft(newLeft);
+	setTextToFrameDistRight(newRight);
+	setTextToFrameDistTop(newTop);
+	setTextToFrameDistBottom(newBottom);
+	if (activeTransaction)
+	{
+		activeTransaction->commit();
+		delete activeTransaction;
+		activeTransaction = NULL;
+	}
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
@@ -1414,11 +1463,29 @@ void PageItem::setGridOffset(double) { } // FIXME
 void PageItem::setGridDistance(double) { } // FIXME
 void PageItem::setColumns(int n) 
 {
-	Cols = qMax(1, n); //FIXME: undo
+	if(Cols==n)
+		return;
+	if(UndoManager::undoEnabled()){
+		SimpleState *ss = new SimpleState(Um::Columns, "", Um::IBorder);
+		ss->set("COLUMNS", "columns");
+		ss->set("OLD_COLUMNS", Cols);
+		ss->set("NEW_COLUMNS",n);
+		undoManager->action(this, ss);
+	}
+	Cols = qMax(1, n);
 }
 void PageItem::setColumnGap(double gap)
 {
-	ColGap = gap; //FIXME: undo
+	if(ColGap==gap)
+		return;
+	if(UndoManager::undoEnabled()){
+		SimpleState *ss = new SimpleState(Um::Columns, "", Um::IBorder);
+		ss->set("COLUMNSGAP", "columnsgap");
+		ss->set("OLD_COLUMNS", ColGap);
+		ss->set("NEW_COLUMNS",gap);
+		undoManager->action(this, ss);
+	}
+	ColGap = gap;
 }
 
 void PageItem::setCornerRadius(double newRadius)
@@ -4361,6 +4428,10 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreShade(ss, isUndo);
 		else if (ss->contains("LINE_COLOR"))
 			restoreLineColor(ss, isUndo);
+		else if (ss->contains("COLUMNS"))
+			restoreColumns(ss, isUndo);
+		else if (ss->contains("COLUMNSGAP"))
+			restoreColumnsGap(ss, isUndo);
 		else if (ss->contains("LINE_SHADE"))
 			restoreLineShade(ss, isUndo);
 		else if (ss->contains("DELETE_FRAMETEXT"))
@@ -4379,6 +4450,14 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreParagraphStyle(ss,isUndo);
 		else if (ss->contains("APPLY_DEFAULTPARASTYLE"))
 			restoreDefaultParagraphStyle(ss,isUndo);
+		else if (ss->contains("LEFT_TEXTFRAMEDIST"))
+			restoreLeftTextFrameDist(ss,isUndo);
+		else if (ss->contains("RIGHT_TEXTFRAMEDIST"))
+			restoreRightTextFrameDist(ss,isUndo);
+		else if (ss->contains("TOP_TEXTFRAMEDIST"))
+			restoreTopTextFrameDist(ss,isUndo);
+		else if (ss->contains("BOTTOM_TEXTFRAMEDIST"))
+			restoreBottomTextFrameDist(ss,isUndo);
 		else if (ss->contains("FIRSTLINEOFFSET"))
 			restoreFirstLineOffset(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
@@ -4490,6 +4569,66 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restoreColumnsGap(SimpleState *ss, bool isUndo)
+{
+	if(isUndo){
+		ColGap = ss->getInt("OLD_COLUMNS");
+	} else {
+		ColGap = ss->getInt("NEW_COLUMNS");
+	}
+	update();
+}
+
+void PageItem::restoreLeftTextFrameDist(SimpleState *ss, bool isUndo)
+{
+	if(isUndo){
+		Extra = ss->getInt("OLD_DIST");
+	} else {
+		Extra = ss->getInt("NEW_DIST");
+	}
+	update();
+}
+
+void PageItem::restoreRightTextFrameDist(SimpleState *ss, bool isUndo)
+{
+	if(isUndo){
+		RExtra = ss->getInt("OLD_DIST");
+	} else {
+		RExtra = ss->getInt("NEW_DIST");
+	}
+	update();
+}
+
+void PageItem::restoreTopTextFrameDist(SimpleState *ss, bool isUndo)
+{
+	if(isUndo){
+		TExtra = ss->getInt("OLD_DIST");
+	} else {
+		TExtra = ss->getInt("NEW_DIST");
+	}
+	update();
+}
+
+void PageItem::restoreBottomTextFrameDist(SimpleState *ss, bool isUndo)
+{
+	if(isUndo){
+		BExtra = ss->getInt("OLD_DIST");
+	} else {
+		BExtra = ss->getInt("NEW_DIST");
+	}
+	update();
+}
+
+void PageItem::restoreColumns(SimpleState *ss, bool isUndo)
+{
+	if(isUndo){
+		Cols = ss->getInt("OLD_COLUMNS");
+	} else {
+		Cols = ss->getInt("NEW_COLUMNS");
+	}
+	update();
 }
 
 void PageItem::restoreFirstLineOffset(SimpleState *ss, bool isUndo)

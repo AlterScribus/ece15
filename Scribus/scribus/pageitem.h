@@ -1213,7 +1213,13 @@ protected:
 	void restoreParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreDefaultParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreCharStyle(SimpleState *state, bool isUndo);
+	void restoreLeftTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreRightTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreTopTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreBottomTextFrameDist(SimpleState *state, bool isUndo);
 	void restoreSetCharStyle(SimpleState *state, bool isUndo);
+	void restoreColumns(SimpleState *state, bool isUndo);
+	void restoreColumnsGap(SimpleState *state, bool isUndo);
 	void restoreSetParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreLoremIpsum(SimpleState *state, bool isUndo);
 	void restoreDeleteFrameText(SimpleState *state, bool isUndo);

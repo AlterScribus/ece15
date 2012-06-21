@@ -597,6 +597,9 @@ public:
 	static QString MultipleDuplicate;
 	static QString ApplyTextStyle;
 	static QString RemoveTextStyle;
+	static QString Columns;
+	static QString ColumnsGap;
+	static QString TextFrameDist;
 	static QString MenuUndo;
 	static QString MenuUndoEmpty;
 	static QString MenuRedo;
