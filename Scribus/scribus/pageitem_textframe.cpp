@@ -2900,19 +2900,27 @@ NoRoom:
 	{
 		//check if last visible glyph in frame change
 		//if not then do not force invalidation of next frame
-		uint pos = MaxChars-1;
-		ScText * lastGlyph = itemText.item(pos);
-		while (!lastGlyph->isVisible())
-			lastGlyph = itemText.item(--pos);
-		
-		if (lastGlyph != lastVisibleGlyph)
+		ScText * lastGlyph = NULL;
+		if (MaxChars > 0)
+		{
+			uint pos = MaxChars-1;
+			lastGlyph = itemText.item(pos);
+			while (!lastGlyph->isVisible())
+				lastGlyph = itemText.item(--pos);
+		}
+		if ((lastGlyph != lastVisibleGlyph))
 		{
 			//force invalidating next frame
 			next->invalid = true;
+			// relayout next frame
+//			qDebug("textframe: len=%d, going to next", itemText.length());
+			next->layout();
 			next->firstChar = MaxChars;
 			lastVisibleGlyph = lastGlyph;
 			next->lastVisibleGlyph = NULL;
 		}
+		if (next->firstChar != MaxChars)
+			next->invalid = true;
 		if (itemText.cursorPosition() > signed(MaxChars))
 		{
 			int nCP = itemText.cursorPosition();
@@ -2927,13 +2935,9 @@ NoRoom:
 				return;
 			}
 		}
-		// relayout next frame
-//		qDebug("textframe: len=%d, going to next", itemText.length());
-		next->layout();
 	}
-	//	qDebug("textframe: len=%d, done relayout (no room %d)", itemText.length(), MaxChars);
-
-	invalid = false;
+//	qDebug("textframe: len=%d, done relayout (no room %d)", itemText.length(), MaxChars);
+	invalid = false; //to be sure
 	itemText.blockSignals(false);
 }
 
