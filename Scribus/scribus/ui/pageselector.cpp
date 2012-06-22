@@ -19,6 +19,7 @@ for which a new license (GPL+exception) is in place.
 #include <QPixmap>
 #include <QHBoxLayout>
 #include <QValidator>
+#include "scribusdoc.h"
 #include "sccombobox.h"
 #include "util_icon.h"
 #include "util.h"
@@ -57,10 +58,16 @@ for which a new license (GPL+exception) is in place.
 // }
 // 	
 
-PageSelector::PageSelector( QWidget* parent, int maxPg ) : QWidget( parent, 0 )
+PageSelector::PageSelector( QWidget* parent, ScribusDoc* doc ) : QWidget( parent, 0 )
 {
 	PageCountString = "%1" ;
-	LastPG = maxPg;
+	LastPG = -1;
+	m_Doc = NULL;
+	if (doc != NULL)
+	{
+		LastPG = doc->DocPages.count();
+		m_Doc = doc;
+	}
 	APage = 1;
 	PageSelectorLayout = new QHBoxLayout( this );
 	PageSelectorLayout->setMargin(0);
@@ -108,9 +115,14 @@ PageSelector::PageSelector( QWidget* parent, int maxPg ) : QWidget( parent, 0 )
 	PageCombo->setEditable(true);
 	PageCombo->setDuplicatesEnabled( false );
 	PageCombo->lineEdit()->setAlignment(Qt::AlignHCenter);
+	QString virtualPN;
 	for (int a = 0; a < LastPG; ++a)
 	{
-		PageCombo->addItem(QString::number(a+1));
+		if (m_Doc != NULL)
+			virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(a),
+											 m_Doc->getSectionPageNumberWidthForPageIndex(a),
+											 m_Doc->getSectionPageNumberFillCharForPageIndex(a)) + "]";
+		PageCombo->addItem(QString::number(a+1) + virtualPN);
 	}
 	PageCombo->setValidator(m_validator);
 	PageCombo->setMinimumSize(fontMetrics().width( "999" )+20, 20);
@@ -189,7 +201,12 @@ void PageSelector::GotoPg(int a)
 {
 	disconnect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
 	PageCombo->setCurrentIndex(a);
-	setCurrentComboItem(PageCombo, QString::number(a+1));
+	QString virtualPN = "";
+	if (m_Doc != NULL)
+		virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(a),
+										 m_Doc->getSectionPageNumberWidthForPageIndex(a),
+										 m_Doc->getSectionPageNumberFillCharForPageIndex(a)) + "]";
+	setCurrentComboItem(PageCombo, QString::number(a+1) + virtualPN);
 	APage = a+1;
 	Back->setEnabled(true);
 	Start->setEnabled(true);
@@ -215,11 +232,20 @@ void PageSelector::setMaximum(int a)
 	LastPG = a;
 //	v->setTop(LastPG);
 	m_validator->setRange(1, LastPG);
+	QString virtualPN = "";
 	for (int b = 0; b < LastPG; ++b)
 	{
-		PageCombo->addItem(QString::number(b+1));
+		if (m_Doc != NULL)
+			virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(b),
+											 m_Doc->getSectionPageNumberWidthForPageIndex(b),
+											 m_Doc->getSectionPageNumberFillCharForPageIndex(b)) + "]";
+		PageCombo->addItem(QString::number(b+1) + virtualPN);
 	}
-	setCurrentComboItem(PageCombo, QString::number(APage));
+	if (m_Doc != NULL)
+		virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(APage),
+										 m_Doc->getSectionPageNumberWidthForPageIndex(APage),
+										 m_Doc->getSectionPageNumberFillCharForPageIndex(APage)) + "]";
+	setCurrentComboItem(PageCombo, QString::number(APage) + virtualPN);
 	PageCount->setText(PageCountString.arg(LastPG));
 	connect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
 }
@@ -272,7 +298,12 @@ void PageSelector::languageChange()
 	PageCountString =  tr(" of %1", "number of pages in document");
 	PageCount->setText(PageCountString.arg(LastPG));
 	disconnect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
-	setCurrentComboItem(PageCombo, QString::number(APage));
+	QString virtualPN = "";
+	if (m_Doc != NULL)
+		virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(APage),
+										 m_Doc->getSectionPageNumberWidthForPageIndex(APage),
+										 m_Doc->getSectionPageNumberFillCharForPageIndex(APage)) + "]";
+	setCurrentComboItem(PageCombo, QString::number(APage) + virtualPN);
 	connect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
 }
 
