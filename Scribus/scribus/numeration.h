@@ -28,15 +28,17 @@ public:
 	Numeration() : numStyle(Type_1_2_3) {}
 	void setType(NumStyle style) { numStyle = style; }
 	const NumStyle style() { return numStyle; }
-	const QString numString(const uint num, const QChar leadingChar='0', const ushort charsLen = 1); 
-	const QString numString(const uint num, const QChar asterix); 
+	const QString numString(const uint num); 
 
 private:
 	NumStyle numStyle;
-	const QString getStringFromSequence(NumStyle style, uint index,  const QChar leadingChar='0', const ushort charsLen);
-	const QString getAsterixStringFromSequence(NumStyle style, uint index, QString asterix);
+	QString asterix;
+	QChar lead;
+	uint len;
+	NumerationRange range;
 };
 
-
+const QString getStringFromNum(NumStyle style, uint num, const QChar leadingChar='0', const ushort charsLen=0);
+const QString getAsterixStringFromNum(uint num, QString asterix, const QChar leadingChar='_', const ushort charsLen=0);
 
 #endif // NUMERATION_H
