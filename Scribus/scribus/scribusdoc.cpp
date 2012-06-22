@@ -1766,6 +1766,14 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			restoreCopyPage(ss, isUndo);
 		else if (ss->contains("PAGE_MOVE"))
 			restoreMovePage(ss, isUndo);
+		else if (ss->contains("LEVEL_DOWN"))
+			restoreLevelDown(ss,isUndo);
+		else if (ss->contains("LEVEL_UP"))
+			restoreLevelDown(ss,!isUndo);
+		else if (ss->contains("LEVEL_BOTTOM"))
+			restoreLevelBottom(ss,isUndo);
+		else if (ss->contains("LEVEL_TOP"))
+			restoreLevelBottom(ss,!isUndo);
 		else if (ss->contains("PAGE_CHANGEPROPS"))
 		{
 			if (isUndo)
@@ -1794,6 +1802,30 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			}
 		}
 	}
+}
+
+void ScribusDoc::restoreLevelDown(SimpleState *ss, bool isUndo){
+	ScItemState<QList<QPointer<PageItem> > > *is = dynamic_cast<ScItemState<QList<QPointer<PageItem> > > *>(ss);
+	QList<QPointer<PageItem> > listItem = is->getItem();
+	m_Selection->clear();
+	for(int i = 0; i<listItem.size();i++)
+		m_Selection->addItem(listItem.at(i));
+	if(isUndo)
+		itemSelection_RaiseItem();
+	else
+		itemSelection_LowerItem();
+}
+
+void ScribusDoc::restoreLevelBottom(SimpleState *ss, bool isUndo){
+	ScItemState<QList<QPointer<PageItem> > > *is = dynamic_cast<ScItemState<QList<QPointer<PageItem> > > *>(ss);
+	QList<QPointer<PageItem> > listItem = is->getItem();
+	m_Selection->clear();
+	for(int i = 0; i<listItem.size();i++)
+		m_Selection->addItem(listItem.at(i));
+	if(isUndo)
+		bringItemSelectionToFront();
+	else
+		sendItemSelectionToBack();
 }
 
 void ScribusDoc::restoreAddMasterPage(SimpleState *ss, bool isUndo){
@@ -6883,6 +6915,13 @@ void ScribusDoc::sendItemSelectionToBack()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelBottom);
+		is->set("LEVEL_BOTTOM","level_bottom");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
@@ -6940,6 +6979,13 @@ void ScribusDoc::bringItemSelectionToFront()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelTop);
+		is->set("LEVEL_TOP","level_top");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
@@ -6997,6 +7043,13 @@ void ScribusDoc::itemSelection_LowerItem()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelDown);
+		is->set("LEVEL_DOWN","level_down");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
@@ -7062,6 +7115,13 @@ void ScribusDoc::itemSelection_RaiseItem()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelUp);
+		is->set("LEVEL_UP","level_up");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
