@@ -47,6 +47,7 @@ PropertiesPalette_Image::PropertiesPalette_Image( QWidget* parent) : QWidget(par
 	imagePageNumber->setMinimum(0);
 	imagePageNumber->setSpecialValueText(tr( "Auto" ));
 	imagePageNumber->setDecimals(0);
+	imagePageNumber->setSuffix("");
 	imagePageNumberLabel->setBuddy(imagePageNumber);
 	installSniffer(imagePageNumber);
 	
