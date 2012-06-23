@@ -5149,7 +5149,14 @@ void ScribusMainWindow::slotEditPaste()
 				dig.parseMemory(xml, xml.length());
 
 				StoryText* story = dig.result<StoryText>();
-
+				if (UndoManager::undoEnabled())
+				{
+					ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
+					is->set("PASTE_TEXT", "paste_text");
+					is->set("START",currItem->itemText.cursorPosition());
+					is->setItem(*story);
+					undoManager->action(currItem, is);
+				}
 				currItem->itemText.insert(*story);
 
 				delete story;
@@ -5216,8 +5223,16 @@ void ScribusMainWindow::slotEditPaste()
 				doc->maxCanvasCoordinate = maxSize;
 				if (outlinePalette->isVisible())
 					outlinePalette->BuildTree();
-				currItem->itemText.insertObject(fIndex);
 				undoManager->setUndoEnabled(true);
+				if (UndoManager::undoEnabled())
+				{
+					SimpleState *is = new SimpleState(Um::Paste,"",Um::IPaste);
+					is->set("PASTE_INLINE", "paste_inline");
+					is->set("START",currItem->itemText.cursorPosition());
+					is->set("INDEX",fIndex);
+					undoManager->action(currItem, is);
+				}
+				currItem->itemText.insertObject(fIndex);
 				doc->m_Selection->delaySignalsOff();
 				inlinePalette->unsetDoc();
 				inlinePalette->setDoc(doc);

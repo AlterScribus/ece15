@@ -4460,6 +4460,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreBottomTextFrameDist(ss,isUndo);
 		else if (ss->contains("FIRSTLINEOFFSET"))
 			restoreFirstLineOffset(ss,isUndo);
+		else if (ss->contains("PASTE_TEXT"))
+			restorePasteText(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4561,6 +4563,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreReverseText(ss, isUndo);
 		else if (ss->contains("CLEAR_IMAGE"))
 			restoreClearImage(ss,isUndo);
+		else if (ss->contains("PASTE_INLINE"))
+			restorePasteInline(ss,isUndo);
 		else if (ss->contains("PATH_OPERATION"))
 			restorePathOperation(ss, isUndo);
 	}
@@ -4569,6 +4573,29 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restorePasteInline(SimpleState *is, bool isUndo)
+{
+	int start = is->getInt("START");
+	if(isUndo){
+		itemText.select(start,1);
+		asTextFrame()->deleteSelectedTextFromFrame();
+	} else {
+		itemText.insertObject(is->getInt("INDEX"));
+	}
+}
+
+void PageItem::restorePasteText(SimpleState *ss, bool isUndo)
+{
+	ScItemState<StoryText> *is = dynamic_cast<ScItemState<StoryText>*>(ss);
+	int start = is->getInt("START");
+	if(isUndo){
+		itemText.select(start,is->getItem().length());
+		asTextFrame()->deleteSelectedTextFromFrame();
+	} else {
+		itemText.insert(is->getItem());
+	}
 }
 
 void PageItem::restoreColumnsGap(SimpleState *ss, bool isUndo)
