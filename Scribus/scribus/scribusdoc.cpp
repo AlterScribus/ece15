@@ -10367,6 +10367,9 @@ void ScribusDoc::itemSelection_ChangePreviewResolution(int id)
 	uint selectedItemCount=m_Selection->count();
 	if (selectedItemCount != 0)
 	{
+		UndoTransaction* activeTransaction = NULL;
+		if(UndoManager::undoEnabled())
+			activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Selection, Um::IGroup,Um::ResTyp, "", Um::IImageFrame));
 		PageItem *currItem;
 		bool found=false;
 		for (uint i = 0; i < selectedItemCount; ++i)
@@ -10375,23 +10378,19 @@ void ScribusDoc::itemSelection_ChangePreviewResolution(int id)
 			if (currItem!=NULL)
 				if (currItem->asImageFrame())
 				{
-					currItem->pixm.imgInfo.lowResType = id;
+					currItem->setResolution(id);
 					if (!found)
 						found=true;
 				}
 		}
+		if(activeTransaction){
+			activeTransaction->commit();
+			delete activeTransaction;
+			activeTransaction = NULL;
+		}
 		if (!found) //No image frames in the current selection!
 			return;
 		updatePic();
-		disconnect( m_ScMW->scrActions["itemPreviewLow"], SIGNAL(triggeredData(int)) , 0, 0 );
-		disconnect( m_ScMW->scrActions["itemPreviewNormal"], SIGNAL(triggeredData(int)) , 0, 0 );
-		disconnect( m_ScMW->scrActions["itemPreviewFull"], SIGNAL(triggeredData(int)) , 0, 0 );
-		m_ScMW->scrActions["itemPreviewLow"]->setChecked(id==m_ScMW->scrActions["itemPreviewLow"]->actionInt());
-		m_ScMW->scrActions["itemPreviewNormal"]->setChecked(id==m_ScMW->scrActions["itemPreviewNormal"]->actionInt());
-		m_ScMW->scrActions["itemPreviewFull"]->setChecked(id==m_ScMW->scrActions["itemPreviewFull"]->actionInt());
-		connect( m_ScMW->scrActions["itemPreviewLow"], SIGNAL(triggeredData(int)), this, SLOT(itemSelection_ChangePreviewResolution(int)) );
-		connect( m_ScMW->scrActions["itemPreviewNormal"], SIGNAL(triggeredData(int)), this, SLOT(itemSelection_ChangePreviewResolution(int)) );
-		connect( m_ScMW->scrActions["itemPreviewFull"], SIGNAL(triggeredData(int)), this, SLOT(itemSelection_ChangePreviewResolution(int)) );
 	}
 }
 

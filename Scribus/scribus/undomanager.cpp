@@ -880,6 +880,7 @@ void UndoManager::languageChange()
 	UndoManager::FlipH              = tr("Flip horizontally");
 	UndoManager::FlipV              = tr("Flip vertically");
 	UndoManager::Lock               = tr("Lock");
+	UndoManager::ResTyp             = tr("Change image resolution");
 	UndoManager::UnLock             = tr("Unlock");
 	UndoManager::SizeLock           = tr("Lock size");
 	UndoManager::SizeUnLock         = tr("Unlock size");
@@ -1093,6 +1094,7 @@ QString UndoManager::Rotate             = "";
 QString UndoManager::MoveFromTo         = "";
 QString UndoManager::ImageOffset        = "";
 QString UndoManager::ImageScale         = "";
+QString UndoManager::ResTyp             = "";
 QString UndoManager::ImageOffsetFromTo  = "";
 QString UndoManager::ImageScaleFromTo   = "";
 QString UndoManager::ResizeFromTo       = "";
