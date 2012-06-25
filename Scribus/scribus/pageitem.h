@@ -1227,6 +1227,7 @@ protected:
 	void restoreLoremIpsum(SimpleState *state, bool isUndo);
 	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
 	void restoreInsertFrameText(SimpleState *state, bool isUndo);
+	void restoreShowImage(SimpleState *state, bool isUndo);
 	void restoreResTyp(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
 	void restoreResize(SimpleState *state, bool isUndo);
