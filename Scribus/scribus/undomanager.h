@@ -530,6 +530,7 @@ public:
 	static QString ResTyp;
 	static QString Polygon;
 	static QString BezierCurve;
+	static QString ShowImage;
 	static QString Polyline;
 	static QString PathText;
 	static QString ConvertTo;

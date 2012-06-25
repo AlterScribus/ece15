@@ -4452,6 +4452,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 		}
 		else if (ss->contains("NEW_NAME"))
 			restoreName(ss, isUndo);
+		else if (ss->contains("SHOW_IMAGE"))
+			restoreShowImage(ss, isUndo);
 		else if (ss->contains("TRANSPARENCY"))
 			restoreFillTP(ss, isUndo);
 		else if (ss->contains("LINE_TRANSPARENCY"))
@@ -4627,6 +4629,16 @@ void PageItem::restoreRotate(SimpleState *state, bool isUndo)
 	oldOwnPage = OwnPage;
 	oldWidth = Width;
 	oldHeight = Height;
+}
+
+void PageItem::restoreShowImage(SimpleState *state, bool isUndo)
+{
+	bool old = state->getBool("OLD");
+	if (isUndo)
+		PicArt = old;
+	else
+		PicArt = !old;
+	update();
 }
 
 void PageItem::restoreFill(SimpleState *state, bool isUndo)
@@ -7123,6 +7135,14 @@ void PageItem::setAnnotation(const Annotation& ad)
 
 void PageItem::setImageShown(bool isShown)
 {
+	if(PicArt==isShown)
+		return;
+	if(UndoManager::undoEnabled()){
+		SimpleState *ss = new SimpleState(Um::ResTyp,"",Um::IImageFrame);
+		ss->set("SHOW_IMAGE","show_image");
+		ss->set("OLD",PicArt);
+		undoManager->action(this,ss);
+	}
 	PicArt=isShown;
 }
 

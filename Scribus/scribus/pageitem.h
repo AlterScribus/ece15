@@ -1211,6 +1211,7 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restoreShowImage(SimpleState *state, bool isUndo);
 	void restoreResTyp(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
 	void restoreResize(SimpleState *state, bool isUndo);

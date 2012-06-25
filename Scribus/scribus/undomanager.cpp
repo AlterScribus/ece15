@@ -923,6 +923,7 @@ void UndoManager::languageChange()
 	UndoManager::NoObjectFrame      = tr("No object frame");
 	UndoManager::NoBoundingBox      = tr("No bounding box");
 	UndoManager::NoContourLine      = tr("No contour line");
+	UndoManager::ShowImage          = tr("Show image");
 	UndoManager::PageNmbr           = tr("Page %1");
 	UndoManager::ImageScaling       = tr("Set image scaling");
 	UndoManager::FrameSize          = tr("Frame size");
@@ -1058,6 +1059,7 @@ QString UndoManager::MoveFromTo         = "";
 QString UndoManager::ImageOffset        = "";
 QString UndoManager::ImageScale         = "";
 QString UndoManager::ResTyp             = "";
+QString UndoManager::ShowImage          = "";
 QString UndoManager::ImageOffsetFromTo  = "";
 QString UndoManager::ImageScaleFromTo   = "";
 QString UndoManager::ResizeFromTo       = "";
