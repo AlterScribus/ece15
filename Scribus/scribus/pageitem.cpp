@@ -4486,6 +4486,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restorePoly(ss, isUndo, true);
 		else if (ss->contains("EDIT_SHAPE"))
 			restorePoly(ss, isUndo, false);
+		else if (ss->contains("RES_TYP"))
+			restoreResTyp(ss, isUndo);
 		else if (ss->contains("RESET_CONTOUR"))
 			restoreContourLine(ss, isUndo);
 		else if (ss->contains("CHANGE_SHAPE_TYPE"))
@@ -4634,6 +4636,16 @@ void PageItem::restoreFill(SimpleState *state, bool isUndo)
 		fill = state->get("NEW_FILL");
 	select();
 	m_Doc->itemSelection_SetItemBrush(fill);
+}
+
+void PageItem::restoreResTyp(SimpleState *state, bool isUndo)
+{
+	if (isUndo){
+		setResolution(state->getInt("OLD_RES"));
+	} else {
+		setResolution(state->getInt("NEW_RES"));
+	}
+	doc()->updatePic();
 }
 
 void PageItem::restoreShade(SimpleState *state, bool isUndo)
@@ -7089,6 +7101,19 @@ void PageItem::setIsBookMark(bool isBM)
 		undoManager->action(this, ss);
 	}
 	isBookmark=isBM;
+}
+
+void PageItem::setResolution(int id){
+	if(pixm.imgInfo.lowResType==id)
+		return;
+	if(UndoManager::undoEnabled()){
+		SimpleState *ss = new SimpleState(Um::ResTyp,"",Um::IImageFrame);
+		ss->set("RES_TYP","res_typ");
+		ss->set("OLD_RES",pixm.imgInfo.lowResType);
+		ss->set("NEW_RES",id);
+		undoManager->action(this,ss);
+	}
+	pixm.imgInfo.lowResType = id;
 }
 
 void PageItem::setAnnotation(const Annotation& ad)

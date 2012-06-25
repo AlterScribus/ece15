@@ -527,6 +527,7 @@ public:
 	static QString ImageFrame;
 	static QString TextFrame;
 	static QString LatexFrame;
+	static QString ResTyp;
 	static QString Polygon;
 	static QString BezierCurve;
 	static QString Polyline;

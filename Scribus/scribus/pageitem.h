@@ -488,6 +488,7 @@ public:
 	QString externalFile() const { return Pfile; }
 	void setExternalFile(QString val);
 	void setImagePagenumber(int num) { pixm.imgInfo.actualPageNumber = num; }
+	void setResolution(int);
 	
 	//FIXME: maybe these should go into annotation?
 	QString fileIconPressed() const { return Pfile2; }
@@ -1210,6 +1211,7 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restoreResTyp(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
 	void restoreResize(SimpleState *state, bool isUndo);
 	void restoreRotate(SimpleState *state, bool isUndo);
