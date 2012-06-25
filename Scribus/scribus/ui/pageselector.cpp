@@ -271,7 +271,7 @@ void PageSelector::languageChange()
 	Back->setToolTip( tr("Go to the previous page") );
 	Forward->setToolTip( tr("Go to the next page") );
 	Last->setToolTip( tr("Go to the last page") );
-	PageCombo->setToolTip( tr("Select the current page") );
+	PageCombo->setToolTip( tr("Go to page") );
 	PageCountString =  tr(" of %1", "number of pages in document");
 	PageCount->setText(PageCountString.arg(LastPG));
 	disconnect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
