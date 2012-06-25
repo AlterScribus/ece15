@@ -115,15 +115,8 @@ PageSelector::PageSelector( QWidget* parent, ScribusDoc* doc ) : QWidget( parent
 	PageCombo->setEditable(true);
 	PageCombo->setDuplicatesEnabled( false );
 	PageCombo->lineEdit()->setAlignment(Qt::AlignHCenter);
-	QString virtualPN;
 	for (int a = 0; a < LastPG; ++a)
-	{
-		if (m_Doc != NULL)
-			virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(a),
-											 m_Doc->getSectionPageNumberWidthForPageIndex(a),
-											 m_Doc->getSectionPageNumberFillCharForPageIndex(a)) + "]";
-		PageCombo->addItem(QString::number(a+1) + virtualPN);
-	}
+		PageCombo->addItem(QString::number(a+1) + virtualPN(a));
 	PageCombo->setValidator(m_validator);
 	PageCombo->setMinimumSize(fontMetrics().width( "999" )+20, 20);
 	PageCombo->setFocusPolicy(Qt::ClickFocus);
@@ -201,12 +194,7 @@ void PageSelector::GotoPg(int a)
 {
 	disconnect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
 	PageCombo->setCurrentIndex(a);
-	QString virtualPN = "";
-	if (m_Doc != NULL)
-		virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(a),
-										 m_Doc->getSectionPageNumberWidthForPageIndex(a),
-										 m_Doc->getSectionPageNumberFillCharForPageIndex(a)) + "]";
-	setCurrentComboItem(PageCombo, QString::number(a+1) + virtualPN);
+	setCurrentComboItem(PageCombo, QString::number(a+1) + virtualPN(a));
 	APage = a+1;
 	Back->setEnabled(true);
 	Start->setEnabled(true);
@@ -232,20 +220,9 @@ void PageSelector::setMaximum(int a)
 	LastPG = a;
 //	v->setTop(LastPG);
 	m_validator->setRange(1, LastPG);
-	QString virtualPN = "";
 	for (int b = 0; b < LastPG; ++b)
-	{
-		if (m_Doc != NULL)
-			virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(b),
-											 m_Doc->getSectionPageNumberWidthForPageIndex(b),
-											 m_Doc->getSectionPageNumberFillCharForPageIndex(b)) + "]";
-		PageCombo->addItem(QString::number(b+1) + virtualPN);
-	}
-	if (m_Doc != NULL)
-		virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(APage),
-										 m_Doc->getSectionPageNumberWidthForPageIndex(APage),
-										 m_Doc->getSectionPageNumberFillCharForPageIndex(APage)) + "]";
-	setCurrentComboItem(PageCombo, QString::number(APage) + virtualPN);
+		PageCombo->addItem(QString::number(b+1) + virtualPN(b));
+	setCurrentComboItem(PageCombo, QString::number(APage) + virtualPN(APage));
 	PageCount->setText(PageCountString.arg(LastPG));
 	connect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
 }
@@ -298,16 +275,35 @@ void PageSelector::languageChange()
 	PageCountString =  tr(" of %1", "number of pages in document");
 	PageCount->setText(PageCountString.arg(LastPG));
 	disconnect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
-	QString virtualPN = "";
-	if (m_Doc != NULL)
-		virtualPN = " [" + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(APage),
-										 m_Doc->getSectionPageNumberWidthForPageIndex(APage),
-										 m_Doc->getSectionPageNumberFillCharForPageIndex(APage)) + "]";
-	setCurrentComboItem(PageCombo, QString::number(APage) + virtualPN);
+
+	setCurrentComboItem(PageCombo, QString::number(APage) + virtualPN(APage));
 	connect( PageCombo, SIGNAL( activated(int) ), this, SLOT( GotoPgE(int) ) );
 }
 
 void PageSelector::clearFocus()
 {
 	PageCombo->clearFocus();	
+}
+
+QString PageSelector::virtualPN(int page)
+{
+	QString res = QString();
+	if (m_Doc != NULL)
+	{
+		bool show = false;
+		DocumentSection section = m_Doc->sections().value(m_Doc->getSectionKeyForPageIndex(page));
+		if (section.active)
+		{
+			if (section.type != Type_1_2_3)
+				show = true;
+			else if (QString::number(page+1) != m_Doc->getSectionPageNumberForPageIndex(page))
+				show = true;
+		}
+		
+		if (show)
+			res = " / " + QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(page),
+											 m_Doc->getSectionPageNumberWidthForPageIndex(page),
+											 m_Doc->getSectionPageNumberFillCharForPageIndex(page));
+	}
+	return res;
 }

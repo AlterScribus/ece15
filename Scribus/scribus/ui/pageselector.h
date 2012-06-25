@@ -77,6 +77,9 @@ protected:
 signals:
 	void GotoPage(int);
 
+private:
+	//returns string with "virtual" page number if it is different than "normal" page number
+	QString virtualPN(int page);
 };
 
 #endif // PAGESELECTOR_H
