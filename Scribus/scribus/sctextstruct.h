@@ -116,7 +116,7 @@ public:
 	ScText() : 
 		CharStyle(),
 		parstyle(NULL), glyph(), 
-		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), ch() {}
+		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), mark(0), ch() {}
 	ScText(const ScText& other) : 
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
