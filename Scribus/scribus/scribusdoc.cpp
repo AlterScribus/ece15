@@ -9894,9 +9894,9 @@ void ScribusDoc::itemSelection_FlipH()
 	uint docSelectionCount=m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	UndoTransaction trans(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::FlipH, 0, Um::IFlipH));
 	if (docSelectionCount > 1)
 	{
-		UndoTransaction trans(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::FlipH, 0, Um::IFlipH));
 		double gx, gy, gh, gw, ix, iy, iw, ih;
 		m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
 		for (uint a = 0; a < docSelectionCount; ++a)
@@ -9946,55 +9946,52 @@ void ScribusDoc::itemSelection_FlipH()
 				emit updateEditItem();
 			currItem->setRedrawBounding();
 		}
-		trans.commit();
 	}
 	else
 	{
-		for (uint a = 0; a < docSelectionCount; ++a)
+		PageItem* currItem=m_Selection->itemAt(0);
+		if (currItem->isImageFrame() || currItem->isTextFrame() || currItem->isLatexFrame() || currItem->isOSGFrame() || currItem->isSymbol() || currItem->isGroup() || currItem->isSpiral())
+			currItem->flipImageH();
+		if (currItem->itemType() != PageItem::Line)
+			MirrorPolyH(currItem);
+		else
 		{
-			PageItem* currItem=m_Selection->itemAt(a);
-			if (currItem->isImageFrame() || currItem->isTextFrame() || currItem->isLatexFrame() || currItem->isOSGFrame() || currItem->isSymbol() || currItem->isGroup() || currItem->isSpiral())
-				currItem->flipImageH();
-			if (currItem->itemType() != PageItem::Line)
-				MirrorPolyH(currItem);
-			else
-			{
-				double ix2, iy2, iw2, ih2, ix, iy, iw, ih;
-				currItem->getBoundingRect(&ix, &iy, &iw, &ih);
-				currItem->rotateBy(currItem->rotation() * -2.0);
-				currItem->setRedrawBounding();
-				currItem->getBoundingRect(&ix2, &iy2, &iw2, &ih2);
-				currItem->moveBy(ix-ix2, iy-iy2, true);
-				currItem->setRedrawBounding();
-			}
-			currItem->GrStartX = currItem->width() - currItem->GrStartX;
-			currItem->GrEndX = currItem->width() - currItem->GrEndX;
-			if (currItem->isArc())
-			{
-				PageItem_Arc *ar = currItem->asArc();
-				ar->arcStartAngle = (180 - ar->arcStartAngle) - ar->arcSweepAngle;
-				if (ar->arcStartAngle < 0)
-					ar->arcStartAngle += 360;
-				else if (ar->arcStartAngle > 360)
-					ar->arcStartAngle -= 360;
-				ar->recalcPath();
-				FPoint tp2(getMinClipF(&currItem->PoLine));
-				currItem->PoLine.translate(-tp2.x(), -tp2.y());
-				AdjustItemSize(currItem);
-				emit updateEditItem();
-			}
-			else if (currItem->isRegularPolygon())
-			{
-				PageItem_RegularPolygon *ar = currItem->asRegularPolygon();
-				ar->polyRotation *= -1;
-				ar->polyInnerRot *= -1;
-				ar->recalcPath();
-				emit updateEditItem();
-			}
-			else if (currItem->isSpiral())
-				emit updateEditItem();
+			double ix2, iy2, iw2, ih2, ix, iy, iw, ih;
+			currItem->getBoundingRect(&ix, &iy, &iw, &ih);
+			currItem->rotateBy(currItem->rotation() * -2.0);
+			currItem->setRedrawBounding();
+			currItem->getBoundingRect(&ix2, &iy2, &iw2, &ih2);
+			currItem->moveBy(ix-ix2, iy-iy2, true);
+			currItem->setRedrawBounding();
 		}
+		currItem->GrStartX = currItem->width() - currItem->GrStartX;
+		currItem->GrEndX = currItem->width() - currItem->GrEndX;
+		if (currItem->isArc())
+		{
+			PageItem_Arc *ar = currItem->asArc();
+			ar->arcStartAngle = (180 - ar->arcStartAngle) - ar->arcSweepAngle;
+			if (ar->arcStartAngle < 0)
+				ar->arcStartAngle += 360;
+			else if (ar->arcStartAngle > 360)
+				ar->arcStartAngle -= 360;
+			ar->recalcPath();
+			FPoint tp2(getMinClipF(&currItem->PoLine));
+			currItem->PoLine.translate(-tp2.x(), -tp2.y());
+			AdjustItemSize(currItem);
+			emit updateEditItem();
+		}
+		else if (currItem->isRegularPolygon())
+		{
+			PageItem_RegularPolygon *ar = currItem->asRegularPolygon();
+			ar->polyRotation *= -1;
+			ar->polyInnerRot *= -1;
+			ar->recalcPath();
+			emit updateEditItem();
+		}
+		else if (currItem->isSpiral())
+			emit updateEditItem();
 	}
+	trans.commit();
 	regionsChanged()->update(QRectF());
 	changed();
 	emit firstSelectedItemType(m_Selection->itemAt(0)->itemType());
@@ -10006,9 +10003,9 @@ void ScribusDoc::itemSelection_FlipV()
 	uint docSelectionCount=m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	UndoTransaction trans(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::FlipV, 0, Um::IFlipV));
 	if (docSelectionCount > 1)
 	{
-		UndoTransaction trans(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::FlipV, 0, Um::IFlipV));
 		double gx, gy, gh, gw, ix, iy, iw, ih;
 		m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
 		for (uint a = 0; a < docSelectionCount; ++a)
@@ -10061,58 +10058,55 @@ void ScribusDoc::itemSelection_FlipV()
 			currItem->setRedrawBounding();
 		}
 		regionsChanged()->update(QRectF());
-		trans.commit();
 	}
 	else
 	{
-		for (uint a = 0; a < docSelectionCount; ++a)
+		PageItem* currItem=m_Selection->itemAt(0);
+		if (currItem->isImageFrame() || currItem->isTextFrame() || currItem->isLatexFrame() || currItem->isOSGFrame() || currItem->isSymbol() || currItem->isGroup() || currItem->isSpiral())
+			currItem->flipImageV();
+		if (currItem->itemType() != PageItem::Line)
+			MirrorPolyV(currItem);
+		else
 		{
-			PageItem* currItem=m_Selection->itemAt(a);
-			if (currItem->isImageFrame() || currItem->isTextFrame() || currItem->isLatexFrame() || currItem->isOSGFrame() || currItem->isSymbol() || currItem->isGroup() || currItem->isSpiral())
-				currItem->flipImageV();
-			if (currItem->itemType() != PageItem::Line)
-				MirrorPolyV(currItem);
-			else
-			{
-				double ix2, iy2, iw2, ih2, ix, iy, iw, ih;
-				currItem->getBoundingRect(&ix, &iy, &iw, &ih);
-				currItem->rotateBy(currItem->rotation() * -2.0);
-				currItem->setRedrawBounding();
-				currItem->getBoundingRect(&ix2, &iy2, &iw2, &ih2);
-				currItem->moveBy(ix-ix2, iy-iy2, true);
-				currItem->setRedrawBounding();
-			}
-			currItem->GrStartY = currItem->height() - currItem->GrStartY;
-			currItem->GrEndY = currItem->height() - currItem->GrEndY;
-			if (currItem->isArc())
-			{
-				PageItem_Arc *ar = currItem->asArc();
-				ar->arcStartAngle *= -1;
-				ar->arcStartAngle -= ar->arcSweepAngle;
-				if (ar->arcStartAngle < 0)
-					ar->arcStartAngle += 360;
-				else if (ar->arcStartAngle > 360)
-					ar->arcStartAngle -= 360;
-				ar->recalcPath();
-				FPoint tp2(getMinClipF(&currItem->PoLine));
-				currItem->PoLine.translate(-tp2.x(), -tp2.y());
-				AdjustItemSize(currItem);
-				emit updateEditItem();
-			}
-			else if (currItem->isRegularPolygon())
-			{
-				PageItem_RegularPolygon *ar = currItem->asRegularPolygon();
-				ar->polyRotation = 180.0 - ar->polyRotation;
-				ar->polyRotation *= -1;
-				ar->polyInnerRot *= -1;
-				ar->recalcPath();
-				emit updateEditItem();
-			}
-			else if (currItem->isSpiral())
-				emit updateEditItem();
+			double ix2, iy2, iw2, ih2, ix, iy, iw, ih;
+			currItem->getBoundingRect(&ix, &iy, &iw, &ih);
+			currItem->rotateBy(currItem->rotation() * -2.0);
+			currItem->setRedrawBounding();
+			currItem->getBoundingRect(&ix2, &iy2, &iw2, &ih2);
+			currItem->moveBy(ix-ix2, iy-iy2, true);
+			currItem->setRedrawBounding();
 		}
+		currItem->GrStartY = currItem->height() - currItem->GrStartY;
+		currItem->GrEndY = currItem->height() - currItem->GrEndY;
+		if (currItem->isArc())
+		{
+			PageItem_Arc *ar = currItem->asArc();
+			ar->arcStartAngle *= -1;
+			ar->arcStartAngle -= ar->arcSweepAngle;
+			if (ar->arcStartAngle < 0)
+				ar->arcStartAngle += 360;
+			else if (ar->arcStartAngle > 360)
+				ar->arcStartAngle -= 360;
+			ar->recalcPath();
+			FPoint tp2(getMinClipF(&currItem->PoLine));
+			currItem->PoLine.translate(-tp2.x(), -tp2.y());
+			AdjustItemSize(currItem);
+			emit updateEditItem();
+		}
+		else if (currItem->isRegularPolygon())
+		{
+			PageItem_RegularPolygon *ar = currItem->asRegularPolygon();
+			ar->polyRotation = 180.0 - ar->polyRotation;
+			ar->polyRotation *= -1;
+			ar->polyInnerRot *= -1;
+			ar->recalcPath();
+			emit updateEditItem();
+		}
+		else if (currItem->isSpiral())
+			emit updateEditItem();
 		regionsChanged()->update(QRectF());
 	}
+	trans.commit();
 	changed();
 	emit firstSelectedItemType(m_Selection->itemAt(0)->itemType());
 }
