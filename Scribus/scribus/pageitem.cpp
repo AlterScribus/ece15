@@ -1490,6 +1490,13 @@ void PageItem::setColumnGap(double gap)
 
 void PageItem::setCornerRadius(double newRadius)
 {
+	if(RadRect==newRadius)
+		return;
+	SimpleState *state = new SimpleState(Um::RoundCorner,"",Um::IBorder);
+	state->set("CORNER_RADIUS","corner_radius");
+	state->set("OLD_RADIUS",RadRect);
+	state->set("NEW_RADIUS",newRadius);
+	undoManager->action(this,state);
 	RadRect=newRadius;
 	//emit cornerRadius(RadRect);
 }
@@ -4462,6 +4469,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreFirstLineOffset(ss,isUndo);
 		else if (ss->contains("PASTE_TEXT"))
 			restorePasteText(ss,isUndo);
+		else if (ss->contains("CORNER_RADIUS"))
+			restoreCornerRadius(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
@@ -4762,6 +4771,18 @@ void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo){
 	} else {
 		itemText.insertChars(start,text);
 	}
+
+void PageItem::restoreCornerRadius(SimpleState *state, bool isUndo)
+{
+	if(isUndo)
+		RadRect=state->getDouble("OLD_RADIUS");
+	else
+		RadRect=state->getDouble("NEW_RADIUS");
+	Selection tmpSelection(doc()->m_Selection);
+	doc()->m_Selection->clear();
+	doc()->m_Selection->addItem(this);
+	doc()->scMW()->view->SetFrameRounded();
+	*(doc()->m_Selection) = tmpSelection;
 }
 
 void PageItem::restoreMove(SimpleState *state, bool isUndo)

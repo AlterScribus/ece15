@@ -538,6 +538,7 @@ public:
 	static QString PathText;
 	static QString ConvertTo;
 	static QString ImportSVG;
+	static QString RoundCorner;
 	static QString ImportUniconv;
 	static QString ImportEPS;
 	static QString ImportBarcode;
