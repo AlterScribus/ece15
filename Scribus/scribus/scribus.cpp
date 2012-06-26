@@ -9902,7 +9902,6 @@ void ScribusMainWindow::PutToPatterns()
 	uint docSelectionCount = doc->m_Selection->count();
 	QString patternName = "Pattern_"+doc->m_Selection->itemAt(0)->itemName();
 	patternName = patternName.trimmed().simplified().replace(" ", "_");
-	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	PageItem* currItem;
 	Selection itemSelection(this, false);
@@ -10009,7 +10008,7 @@ void ScribusMainWindow::PutToPatterns()
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
 	view->DrawNew();
-	undoManager->setUndoEnabled(wasUndo);
+	undoManager->setUndoEnabled(true);
 }
 
 void ScribusMainWindow::managePaints()

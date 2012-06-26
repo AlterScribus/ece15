@@ -738,7 +738,6 @@ public:
 	 * @brief Undo function for grouping/ungrouping
 	 */
 	void restoreGrouping(SimpleState *state, bool isUndo);
-	void restoreUngrouping(SimpleState *state, bool isUndo);
 	/**
 	 * @brief Save function
 	 */
@@ -1009,7 +1008,7 @@ public:
 	PageItem* groupObjectsSelection(Selection* customSelection=0);
 	PageItem* groupObjectsList(QList<PageItem*> &itemList);
 	void groupObjectsToItem(PageItem* groupItem, QList<PageItem*> &itemList);
-	const PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
+	PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
 	void itemSelection_UnGroupObjects(Selection* customSelection=0);
 	void addToGroup(PageItem* group, PageItem* item);
 	void removeFromGroup(PageItem* item);
