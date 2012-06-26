@@ -869,6 +869,7 @@ void UndoManager::languageChange()
 	UndoManager::ApplyMasterPage    = tr("Apply Master Page");
 	UndoManager::Paste              = tr("Paste");
 	UndoManager::Cut                = tr("Cut");
+	UndoManager::RoundCorner        = tr("Change round corner");
 	UndoManager::Transparency       = tr("Set fill color transparency");
 	UndoManager::LineTransparency   = tr("Set line color transparency");
 	UndoManager::LineStyle          = tr("Set line style");
@@ -1067,6 +1068,7 @@ QString UndoManager::Selection          = "";
 QString UndoManager::Group              = "";
 QString UndoManager::SelectionGroup     = "";
 QString UndoManager::Create             = "";
+QString UndoManager::RoundCorner        = "";
 QString UndoManager::CreateTo           = "";
 QString UndoManager::AlignDistribute    = "";
 QString UndoManager::ItemsInvolved      = "";
