@@ -40,6 +40,7 @@ for which a new license (GPL+exception) is in place.
 #include <qtconcurrentmap.h>
 
 #include "canvas.h"
+#include "ui/masterpagepalette.h"
 #include "colorblind.h"
 #include "commonstrings.h"
 #include "desaxe/digester.h"
@@ -48,6 +49,7 @@ for which a new license (GPL+exception) is in place.
 #include "filewatcher.h"
 #include "fpoint.h"
 #include "ui/guidemanager.h"
+#include "ui/outlinepalette.h"
 #include "hyphenator.h"
 #include "ui/inserttablecolumnsdialog.h"
 #include "ui/inserttablerowsdialog.h"
@@ -1758,10 +1760,20 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 		}
 		else if (ss->contains("OLD_MASTERPAGE"))
 			restoreMasterPageApplying(ss, isUndo);
+		else if (ss->contains("MASTERPAGE_ADD"))
+			restoreAddMasterPage(ss, isUndo);
 		else if (ss->contains("PAGE_COPY"))
 			restoreCopyPage(ss, isUndo);
 		else if (ss->contains("PAGE_MOVE"))
 			restoreMovePage(ss, isUndo);
+		else if (ss->contains("LEVEL_DOWN"))
+			restoreLevelDown(ss,isUndo);
+		else if (ss->contains("LEVEL_UP"))
+			restoreLevelDown(ss,!isUndo);
+		else if (ss->contains("LEVEL_BOTTOM"))
+			restoreLevelBottom(ss,isUndo);
+		else if (ss->contains("LEVEL_TOP"))
+			restoreLevelBottom(ss,!isUndo);
 		else if (ss->contains("PAGE_CHANGEPROPS"))
 		{
 			if (isUndo)
@@ -1789,6 +1801,53 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				m_ScMW->layerPalette->rebuildList();
 			}
 		}
+	}
+}
+
+void ScribusDoc::restoreLevelDown(SimpleState *ss, bool isUndo){
+	ScItemState<QList<QPointer<PageItem> > > *is = dynamic_cast<ScItemState<QList<QPointer<PageItem> > > *>(ss);
+	QList<QPointer<PageItem> > listItem = is->getItem();
+	m_Selection->clear();
+	for(int i = 0; i<listItem.size();i++)
+		m_Selection->addItem(listItem.at(i));
+	if(isUndo)
+		itemSelection_RaiseItem();
+	else
+		itemSelection_LowerItem();
+}
+
+void ScribusDoc::restoreLevelBottom(SimpleState *ss, bool isUndo){
+	ScItemState<QList<QPointer<PageItem> > > *is = dynamic_cast<ScItemState<QList<QPointer<PageItem> > > *>(ss);
+	QList<QPointer<PageItem> > listItem = is->getItem();
+	m_Selection->clear();
+	for(int i = 0; i<listItem.size();i++)
+		m_Selection->addItem(listItem.at(i));
+	if(isUndo)
+		bringItemSelectionToFront();
+	else
+		sendItemSelectionToBack();
+}
+
+void ScribusDoc::restoreAddMasterPage(SimpleState *ss, bool isUndo){
+	QString pageName = ss->get("MASTERPAGE_NAME");
+	int pageNr = ss->getInt("MASTERPAGE_NR");
+	if(isUndo){
+		DummyUndoObject *duo = new DummyUndoObject();
+		uint did = static_cast<uint>(duo->getUId());
+		undoManager->replaceObject(Pages->at(MasterNames[pageName])->getUId(), duo);
+		ss->set("DUMMY_ID", did);
+
+		scMW()->deletePage2(MasterNames[pageName]);
+		rebuildMasterNames();
+		scMW()->pagePalette->updateMasterPageList();
+	} else {
+		ScPage* Mpage = addMasterPage(pageNr, pageName);
+		setCurrentPage(Mpage);
+		UndoObject *tmp = undoManager->replaceObject(
+					ss->getUInt("DUMMY_ID"), Pages->at(MasterNames[pageName]));
+		delete tmp;
+		scMW()->pagePalette->updateMasterPageList();
+		m_View->reformPages();
 	}
 }
 
@@ -2108,6 +2167,13 @@ ScPage* ScribusDoc::addMasterPage(const int pageNumber, const QString& pageName)
 	assert(MasterPages.at(pageNumber)!=NULL);
 	if  (!isLoading())
 		changed();
+	if(UndoManager::undoEnabled()){
+		SimpleState *ss = new SimpleState(Um::MovePage, "", Um::IDocument);
+		ss->set("MASTERPAGE_ADD", "masterpage_add");
+		ss->set("MASTERPAGE_NAME", pageName);
+		ss->set("MASTERPAGE_NBR", pageNumber);
+		undoManager->action(this, ss);
+	}
 	return addedPage;
 }
 
@@ -4308,8 +4374,11 @@ void ScribusDoc::restoreCopyPage(SimpleState *state, bool isUndo)
 				--destLocation;
 		}
 	}
-	else
+	else{
 		copyPage(pnum, extPage, whereTo, copyCount);
+		if(m_ScMW->outlinePalette->isVisible())
+			m_ScMW->outlinePalette->BuildTree();
+	}
 
 }
 
@@ -6467,15 +6536,19 @@ void ScribusDoc::setFirstSectionFromFirstPageNumber()
 
 void ScribusDoc::copyPage(int pageNumberToCopy, int existingPage, int whereToInsert, int copyCount)
 {
-	UndoTransaction copyTransaction(undoManager->beginTransaction(getUName(), Um::IDocument, Um::CopyPage, "", Um::ICreate));
-	SimpleState *ss = new SimpleState(Um::Copy, "", Um::ICreate);
-	ss->set("PAGE_COPY", "copy_page");
-	ss->set("PAGE_NUM", pageNumberToCopy);
-	ss->set("EXISTING_PAGE", existingPage);
-	ss->set("WHERE_TO", whereToInsert);
-	ss->set("COPY_COUNT", copyCount);
-	undoManager->action(this, ss);
+	UndoTransaction *copyTransaction = NULL;
+	if(UndoManager::undoEnabled()){
+		copyTransaction = new UndoTransaction(undoManager->beginTransaction(getUName(), Um::IDocument, Um::CopyPage, "", Um::ICreate));
+		SimpleState *ss = new SimpleState(Um::Copy, "", Um::ICreate);
+		ss->set("PAGE_COPY", "copy_page");
+		ss->set("PAGE_NUM", pageNumberToCopy);
+		ss->set("EXISTING_PAGE", existingPage);
+		ss->set("WHERE_TO", whereToInsert);
+		ss->set("COPY_COUNT", copyCount);
+		undoManager->action(this, ss);
+	}
 
+	undoManager->setUndoEnabled(false);
 	//CB Should we really be disabling auto text frames here?
 	bool autoText = usesAutomaticTextFrames();
 	setUsesAutomaticTextFrames(false);
@@ -6608,7 +6681,12 @@ void ScribusDoc::copyPage(int pageNumberToCopy, int existingPage, int whereToIns
 	else
 		setCurrentPage(from);
 	changed();
-	copyTransaction.commit();
+	undoManager->setUndoEnabled(true);
+	if(copyTransaction){
+		copyTransaction->commit();
+		delete copyTransaction;
+		copyTransaction = NULL;
+	}
 }
 
 
@@ -6837,6 +6915,13 @@ void ScribusDoc::sendItemSelectionToBack()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelBottom);
+		is->set("LEVEL_BOTTOM","level_bottom");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
@@ -6894,6 +6979,13 @@ void ScribusDoc::bringItemSelectionToFront()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelTop);
+		is->set("LEVEL_TOP","level_top");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
@@ -6951,6 +7043,13 @@ void ScribusDoc::itemSelection_LowerItem()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelDown);
+		is->set("LEVEL_DOWN","level_down");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);
@@ -7016,6 +7115,13 @@ void ScribusDoc::itemSelection_RaiseItem()
 	int docSelectionCount = m_Selection->count();
 	if (docSelectionCount == 0)
 		return;
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(Um::LevelUp);
+		is->set("LEVEL_UP","level_up");
+		is->setItem(m_Selection->selectionList());
+		undoManager->action(this, is);
+	}
 	if (docSelectionCount > 1)
 	{
 		PageItem *firstItem = m_Selection->itemAt(0);

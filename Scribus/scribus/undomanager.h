@@ -455,6 +455,10 @@ public:
 	static QString LockGuides;
 	static QString UnlockGuides;
 	static QString Move;
+	static QString NewMasterPage;
+	static QString DelMasterPage;
+	static QString ImportMasterPage;
+	static QString DuplicateMasterPage;
 	static QString Resize;
 	static QString Rotate;
 	static QString MoveFromTo;
@@ -590,6 +594,10 @@ public:
 	static QString ResetControlPoint;
 	static QString ResetControlPoints;
 	static QString ImageEffects;
+	static QString LevelUp;
+	static QString LevelDown;
+	static QString LevelBottom;
+	static QString LevelTop;
 	static QString InsertFrame;
 	static QString AdjustFrameToImage;
 	static QString Copy;

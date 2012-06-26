@@ -311,8 +311,6 @@ void ScPage::restorePageItemCreation(ScItemState<PageItem*> *state, bool isUndo)
 		return;
 	int stateCode = state->transactionCode;
 	PageItem *ite = state->getItem();
-	bool old_lock =ite->locked();
-	ite->setLocked(false);
 	bool oldMPMode=m_Doc->masterPageMode();
 	if ((stateCode == 0) || (stateCode == 1))
 	{
@@ -340,12 +338,12 @@ void ScPage::restorePageItemCreation(ScItemState<PageItem*> *state, bool isUndo)
 		if ((stateCode == 0) || (stateCode == 1))
 			m_Doc->view()->Deselect(true);
 		m_Doc->Items->append(ite);
+		ite->OwnPage = m_Doc->OnPage(ite);
 		if ((stateCode == 0) || (stateCode == 2))
 			update();
 	}
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->m_Selection->delaySignalsOff();
-	ite->setLocked(old_lock);
 }
 
 void ScPage::restorePageItemDeletion(ScItemState< QList<PageItem*> > *state, bool isUndo)
