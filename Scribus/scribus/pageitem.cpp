@@ -5085,13 +5085,15 @@ void PageItem::restoreShapeType(SimpleState *state, bool isUndo)
 		{
 			this->FrameType = is->getInt("OLD_FRAME_TYPE");
 			this->PoLine = is->getItem().first;
+			ClipEdited = !(FrameType == 0 || FrameType == 1);
 		}
 		else
 		{
 			this->FrameType = is->getInt("NEW_FRAME_TYPE");
 			this->PoLine = is->getItem().second;
+			ClipEdited = (FrameType == 0 || FrameType == 1);
 		}
-		ClipEdited = true;
+		Clip = FlattenPath(PoLine,Segments);
 	}
 }
 
