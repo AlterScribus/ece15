@@ -1831,6 +1831,9 @@ void ScribusDoc::restoreLevelBottom(SimpleState *ss, bool isUndo){
 void ScribusDoc::restoreAddMasterPage(SimpleState *ss, bool isUndo){
 	QString pageName = ss->get("MASTERPAGE_NAME");
 	int pageNr = ss->getInt("MASTERPAGE_NR");
+
+	bool oldMPMode=masterPageMode();
+	setMasterPageMode(true);
 	if(isUndo){
 		DummyUndoObject *duo = new DummyUndoObject();
 		uint did = static_cast<uint>(duo->getUId());
@@ -1849,6 +1852,7 @@ void ScribusDoc::restoreAddMasterPage(SimpleState *ss, bool isUndo){
 		scMW()->pagePalette->updateMasterPageList();
 		m_View->reformPages();
 	}
+	setMasterPageMode(oldMPMode);
 }
 
 void ScribusDoc::restoreGrouping(SimpleState *state, bool isUndo)
@@ -2168,7 +2172,7 @@ ScPage* ScribusDoc::addMasterPage(const int pageNumber, const QString& pageName)
 	if  (!isLoading())
 		changed();
 	if(UndoManager::undoEnabled()){
-		SimpleState *ss = new SimpleState(Um::MovePage, "", Um::IDocument);
+		SimpleState *ss = new SimpleState(Um::NewMasterPage, "", Um::IDocument);
 		ss->set("MASTERPAGE_ADD", "masterpage_add");
 		ss->set("MASTERPAGE_NAME", pageName);
 		ss->set("MASTERPAGE_NBR", pageNumber);
