@@ -745,6 +745,11 @@ public:
 	void restoreLevelDown(SimpleState *state, bool isUndo);
 	void restoreLevelBottom(SimpleState *state, bool isUndo);
 	/**
+	 * @brief Undo function for level
+	 */
+	void restoreLevelDown(SimpleState *state, bool isUndo);
+	void restoreLevelBottom(SimpleState *state, bool isUndo);
+	/**
 	 * @brief Save function
 	 */
 	bool save(const QString& fileName, QString* savedFile = NULL);
