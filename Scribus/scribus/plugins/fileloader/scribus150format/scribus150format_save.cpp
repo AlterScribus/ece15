@@ -1621,19 +1621,19 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		lastPos = k + 1;
 	}
 	// write pending chars
-	if ( iTLen - lastPos > 0)
+	if ( item->itemText.length() - lastPos > 0)
 	{
 		docu.writeEmptyElement("ITEXT");
 		/*if (item->asPathText())
 			putCStylePT(docu, lastStyle);
 		else*/
 			putCStyle(docu, lastStyle);
-		docu.writeAttribute("CH", textWithSoftHyphens(item->itemText, lastPos, iTLen));
+		docu.writeAttribute("CH", textWithSoftHyphens(item->itemText, lastPos, item->itemText.length()));
 	}
 	// paragraphstyle for trailing chars
-	if (iTLen == 0 || item->itemText.text(iTLen-1) != SpecialChars::PARSEP)
+	if (item->itemText.length() == 0 || item->itemText.text(item->itemText.length()-1) != SpecialChars::PARSEP)
 	{
-		putPStyle(docu, item->itemText.paragraphStyle(iTLen), "trail");
+		putPStyle(docu, item->itemText.paragraphStyle(item->itemText.length()), "trail");
 	}
 }
 

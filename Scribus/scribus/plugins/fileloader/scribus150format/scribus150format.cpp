@@ -205,8 +205,6 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 	QStack< QList<PageItem*> > groupStackP;
 	QStack<int> groupStack2;
 
-	ScColor lf = ScColor();
-
 	itemRemap.clear();
 	itemNext.clear();
 	itemCount = 0;
@@ -707,7 +705,6 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 		return false;
 	}
 	QString fileDir = QFileInfo(fileName).absolutePath();
-	ScColor lf = ScColor();
 	
 	if (m_mwProgressBar!=0)
 	{
@@ -1230,7 +1227,7 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	notesFramesData.clear();
 	notesMasterMarks.clear();
 	notesNSets.clear();
-	
+
 	QString f(readSLA(fileName));
 	if (f.isEmpty())
 	{
@@ -1240,7 +1237,6 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	QString fileDir = QFileInfo(fileName).absolutePath();
 	int firstPage = 0;
 	int layerToSetActive = 0;
-	ScColor lf = ScColor();
 	
 	if (m_mwProgressBar!=0)
 	{

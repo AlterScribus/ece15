@@ -74,31 +74,29 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 	currDoc->masterItemErrors.clear();
 	currDoc->docLayerErrors.clear();
 	errorCodes itemError;
+	errorCodes layerError;
+	int Lnr;
+	ScLayer ll;
+	ll.ID = 0;
+	Lnr = 0;
+	uint layerCount= currDoc->layerCount();
+	for (uint la = 0; la < layerCount; ++la)
 	{
-		errorCodes layerError;
-		int Lnr;
-		ScLayer ll;
-		ll.ID = 0;
-		Lnr = 0;
-		uint layerCount= currDoc->layerCount();
-		for (uint la = 0; la < layerCount; ++la)
-		{
-			layerError.clear();
-			currDoc->Layers.levelToLayer(ll, Lnr);
-			if ((ll.isViewable != ll.isPrintable) && (checkerSettings.checkOffConflictLayers))
-				layerError.insert(OffConflictLayers, 0);
-			if ((!ll.isViewable) && (checkerSettings.ignoreOffLayers))
-				continue;
-			if ((!ll.isPrintable) && (checkerSettings.ignoreOffLayers))
-				continue;
-			if ((ll.transparency != 1.0) && (checkerSettings.checkTransparency))
-				layerError.insert(Transparency, 0);
-			if ((ll.blendMode != 0) && (checkerSettings.checkTransparency))
-				layerError.insert(BlendMode, 1);
-			Lnr++;
-			if (layerError.count() != 0)
-				currDoc->docLayerErrors.insert(ll.ID, layerError);
-		}
+		layerError.clear();
+		currDoc->Layers.levelToLayer(ll, Lnr);
+		if ((ll.isViewable != ll.isPrintable) && (checkerSettings.checkOffConflictLayers))
+			layerError.insert(OffConflictLayers, 0);
+		if ((!ll.isViewable) && (checkerSettings.ignoreOffLayers))
+			continue;
+		if ((!ll.isPrintable) && (checkerSettings.ignoreOffLayers))
+			continue;
+		if ((ll.transparency != 1.0) && (checkerSettings.checkTransparency))
+			layerError.insert(Transparency, 0);
+		if ((ll.blendMode != 0) && (checkerSettings.checkTransparency))
+			layerError.insert(BlendMode, 1);
+		Lnr++;
+		if (layerError.count() != 0)
+			currDoc->docLayerErrors.insert(ll.ID, layerError);
 	}
 
 	//update all marks references and check if that changes anything in doc

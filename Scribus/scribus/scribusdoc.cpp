@@ -1284,7 +1284,6 @@ void ScribusDoc::replaceNamedResources(ResourceCollection& newNames)
 		if (newNames.charStyles().contains(nSet->marksChStyle()))
 			nSet->setMarksCharStyle(newNames.charStyles().value(nSet->marksChStyle()));
 	}
-
 	for (QHash<int, PageItem*>::iterator itf = FrameItems.begin(); itf != FrameItems.end(); ++itf)
 	{
 		PageItem *currItem = itf.value();
@@ -6407,6 +6406,7 @@ QString ScribusDoc::getSectionNameForPageIndex(const uint pageIndex) const
 	return QString();
 }
 
+
 const QString ScribusDoc::getSectionPageNumberForPageIndex(const uint pageIndex) const
 {
 	QString retVal(QString::null);
@@ -8375,7 +8375,7 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 		else
 		{
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem);
+				updateItemNotesFramesStyles(currItem, newStyle);
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 			currItem->itemText.setDefaultStyle(newStyle);
@@ -8436,19 +8436,16 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 		else
 		{
 			ParagraphStyle newStyle;
-			if (currItem->isNoteFrame())
+			if (currItem->isNoteFrame() && (currItem->asNoteFrame()->masterFrame() != NULL))
 			{
-				if (currItem->asNoteFrame()->masterFrame() != NULL)
-				{
-					newStyle.setParent(currItem->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
-					newStyle.applyStyle(currItem->asNoteFrame()->masterFrame()->currentStyle());
-				}
-				else
-					newStyle.setParent(currItem->itemText.defaultStyle().parent());
+				newStyle.setParent(currItem->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
+				newStyle.applyStyle(currItem->asNoteFrame()->masterFrame()->currentStyle());
 			}
+			else
+				newStyle.setParent(currItem->itemText.defaultStyle().parent());
 			currItem->itemText.setDefaultStyle(newStyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem);
+				updateItemNotesFramesStyles(currItem, newStyle);
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}
@@ -8490,20 +8487,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			dstyle.applyStyle(newStyle);
 			currItem->itemText.setDefaultStyle(dstyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-			{
-				foreach (PageItem_NoteFrame* nF, currItem->asTextFrame()->notesFramesList())
-				{
-					if (nF->isEndNotesFrame())
-						continue;
-					NotesSet* nSet = nF->notesSet();
-					if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
-					{
-						nF->itemText.setDefaultStyle(dstyle);
-						nF->invalid = true;
-						flag_notesChanged = true;
-					}
-				}
-			}
+				updateItemNotesFramesStyles(currItem, dstyle);
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}
@@ -8592,20 +8576,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 			currItem->itemText.applyCharStyle(0, currItem->itemText.length(), newStyle);
 			currItem->invalid = true;
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-			{
-				foreach (PageItem_NoteFrame* nF, currItem->asTextFrame()->notesFramesList())
-				{
-					if (nF->isEndNotesFrame())
-						continue;
-					NotesSet* nSet = nF->notesSet();
-					if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
-					{
-						nF->itemText.setDefaultStyle(dstyle);
-						nF->invalid = true;
-						flag_notesChanged = true;
-					}
-				}
-			}
+				updateItemNotesFramesStyles(currItem, dstyle);
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}
@@ -8670,7 +8641,7 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 //			if (currItem->asPathText())
 			currItem->itemText.setCharStyle(0, currItem->itemText.length(), newStyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem);
+				updateItemNotesFramesStyles(currItem, dstyle);
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}
@@ -8757,7 +8728,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 			defStyle.charStyle() = newStyle;
 			currItem->itemText.setDefaultStyle(defStyle);
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem);
+				updateItemNotesFramesStyles(currItem, defStyle);
 			else if (currItem->isNoteFrame())
 				flag_notesChanged = true;
 		}
@@ -10455,23 +10426,21 @@ void ScribusDoc::itemSelection_ClearItem(Selection* customSelection)
 				if ((ScCore->fileWatcher->files().contains(currItem->Pfile) != 0) && (currItem->PictureIsAvailable))
 					ScCore->fileWatcher->removeFile(currItem->Pfile);
 			}
-			else if (currItem->asTextFrame())
+			else
+			if (currItem->asTextFrame() && ScCore->usingGUI())
 			{
-				if (ScCore->usingGUI())
+				if (currItem->itemText.length() != 0 && (currItem->nextInChain() == 0 || currItem->prevInChain() == 0))
 				{
-					if (currItem->itemText.length() != 0 && (currItem->nextInChain() == 0 || currItem->prevInChain() == 0))
-					{
-						int t = ScMessageBox::warning(m_ScMW, CommonStrings::trWarning,
-													  tr("Do you really want to clear all your text?"),
-													  QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
-						if (t == QMessageBox::No)
-							continue;
-					}
+					int t = ScMessageBox::warning(m_ScMW, CommonStrings::trWarning,
+										tr("Do you really want to clear all your text?"),
+										QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
+					if (t == QMessageBox::No)
+						continue;
 				}
-				//remove marks - with GUI ask user if he knows that marks are in text and were deleted
-				if (!currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
-					continue;
 			}
+			//remove marks - with GUI ask user if he knows that marks are in text and were deleted
+			if (!currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
+				continue;
 			currItem->clearContents();
 		}
 		regionsChanged()->update(QRectF());
@@ -10607,7 +10576,13 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 					continue;
 				currItem->asTextFrame()->delAllNoteFrames(false);
 				currItem->dropLinks();
+			}
 				/* this code will instead remove the contained text
+		if (currItem->asTextFrame())
+		{
+			currItem->dropLinks();
+			
+			/* this code will instead remove the contained text
 			// unlink after
 			currItem->unlink();
 			if (before != 0)
@@ -10621,26 +10596,25 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 				}
 			}
 			*/
-			}
-			if (currItem->isWelded())
-				currItem->unWeld();
-			if (currItem->isBookmark)
-				//CB From view   emit DelBM(currItem);
-				m_ScMW->DelBookMark(currItem);
-			if (UndoManager::undoEnabled() && (selectedItemCount > 0) && !forceDeletion)
-			{
-				ScItemState< QList<PageItem*> > *is = new ScItemState< QList<PageItem*> >(Um::Delete + " " + currItem->getUName(), "", Um::IDelete);
-				is->setItem(delItems);
-				is->set("ITEMID", itemList->indexOf(currItem));
-				is->set("DELETE_ITEM", "delete_item");
-				undoManager->action(Pages->at(0), is, currItem->getUPixmap());
-			}
-			//FIX ME - itemList->removeOne will not be suitable and faster?
-			itemList->removeAll(currItem);
-			//		if (forceDeletion || !UndoManager::undoEnabled())
-			if (forceDeletion)
-				delete currItem;
 		}
+		if (currItem->isWelded())
+			currItem->unWeld();
+		if (currItem->isBookmark)
+			//CB From view   emit DelBM(currItem);
+			m_ScMW->DelBookMark(currItem);
+		if (UndoManager::undoEnabled() && (selectedItemCount > 0) && !forceDeletion)
+		{
+			ScItemState< QList<PageItem*> > *is = new ScItemState< QList<PageItem*> >(Um::Delete + " " + currItem->getUName(), "", Um::IDelete);
+			is->setItem(delItems);
+			is->set("ITEMID", itemList->indexOf(currItem));
+			is->set("DELETE_ITEM", "delete_item");
+			undoManager->action(Pages->at(0), is, currItem->getUPixmap());
+		}
+			//FIX ME - itemList->removeOne will not be suitable and faster?
+		itemList->removeAll(currItem);
+//		if (forceDeletion || !UndoManager::undoEnabled())
+		if (forceDeletion)
+			delete currItem;
 	}
 	itemSelection->delaySignalsOff();
 	if (activeTransaction)
@@ -15616,36 +15590,36 @@ void ScribusDoc::setCursor2MarkPos(Mark *mark)
 bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 {
 	bool found = false;
-	if (item != NULL)
-	{
-		int MPos = -1;
-		while (findMarkCPos(mrk, item, MPos))
+		if (item != NULL)
 		{
+			int MPos = -1;
+			while (findMarkCPos(mrk, item, MPos))
+			{
 			item->itemText.item(MPos)->mark = NULL;
 			if (fromText)
 				item->itemText.removeChars(MPos,1);
 				found = true;
+			}
 		}
-	}
-	else
-	{
-		//find and delete all mark`s apperences in text
-		int MPos = -1;
-		int itemIndex = -1;
-		PageItem* item = findMark(mrk, itemIndex);
-		while (item != NULL)
+		else
 		{
-			while (findMarkCPos(mrk, item, MPos))
+			//find and delete all mark`s apperences in text
+			int MPos = -1;
+			int itemIndex = -1;
+			PageItem* item = findMark(mrk, itemIndex);
+			while (item != NULL)
+			{
+				while (findMarkCPos(mrk, item, MPos))
 			{
 				item->itemText.item(MPos)->mark = NULL;
 				if (fromText)
 					item->itemText.removeChars(MPos,1);
 			}
-			found = true;
-			item->asTextFrame()->invalidateLayout();
-			item = findMark(mrk, itemIndex);
+				found = true;
+				item->asTextFrame()->invalidateLayout();
+				item = findMark(mrk, itemIndex);
+			}
 		}
-	}
 	//remove mark references
 	for (int a=0; a < m_docMarksList.count(); ++a)
 	{
@@ -15704,13 +15678,13 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 			if (invalidateMarkMasterText(mrk, false))
 				docWasChanged = true;
 		}
-		else if (mrk->isUnique())
-		{
-			PageItem* mItem = findMark(mrk);
-			mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
-			mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
+			else if (mrk->isUnique())
+			{
+				PageItem* mItem = findMark(mrk);
+				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
+				mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
+			}
 		}
-	}
 
 	//update marks for foot/endnotes
 	if (updateNotesMarks)
@@ -15883,6 +15857,11 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 		nF = findMark(note->noteMark())->asNoteFrame();
 	Q_ASSERT(nF != NULL);
 	nF->removeNote(note);
+	if (fromText)
+	{
+		nF->invalid = true;
+		nF->masterFrame()->invalid = true;
+	}
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), fromText);
 	if (note->noteMark() != NULL)
@@ -16256,7 +16235,7 @@ void ScribusDoc::updateNotesFramesStyles(NotesSet *nSet)
 	}
 }
 
-void ScribusDoc::updateItemNotesFramesStyles(PageItem* item)
+void ScribusDoc::updateItemNotesFramesStyles(PageItem* item, ParagraphStyle newStyle)
 {
 	if (item->isTextFrame() && !item->isNoteFrame())
 	{
@@ -16267,22 +16246,10 @@ void ScribusDoc::updateItemNotesFramesStyles(PageItem* item)
 			foreach (PageItem_NoteFrame* nF, item->asTextFrame()->notesFramesList())
 			{
 				NotesSet* nSet = nF->notesSet();
-				ParagraphStyle newStyle;
+				if (nSet->isEndNotes())
+					continue;
 				if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
-				{
-					if (nSet->isEndNotes())
-						//set default doc style
-						newStyle.setParent(paragraphStyles()[0].name());
-					else
-					{
-						//set back style from master frame
-						newStyle.setParent(item->itemText.defaultStyle().parent());
-						newStyle.applyStyle(item->currentStyle());
-					}
-				}
-				else
-					newStyle.setParent(nSet->notesParStyle());
-				nF->itemText.setDefaultStyle(newStyle);
+					nF->itemText.setDefaultStyle(newStyle);
 				flag_notesChanged = true;
 			}
 			item = item->nextInChain();
@@ -16337,20 +16304,17 @@ void ScribusDoc::notesFramesUpdate()
 				continue;
 			if (item->isNoteFrame())
 			{
-				 if (item->asNoteFrame()->isEndNotesFrame())
+				if (item->asNoteFrame()->isEndNotesFrame())
 					//update content and move endnotes if pages were removed
 					updateEndNotesFrameContent(item->asNoteFrame());
-				 if (!item->asNoteFrame()->deleteIt)
+				if (!item->asNoteFrame()->deleteIt)
 				{
-					 if (item->asNoteFrame()->masterFrame() != NULL)
-					 {
-						 //updayte styles for endnotes
-						 item->asNoteFrame()->masterFrame()->layout();
-					 }
-					 item->invalid = true;
-					 item->layout();
-				 }
-				 else
+					if (item->itemText.length() == 0 && !item->asNoteFrame()->notesList().isEmpty())
+						item->asNoteFrame()->updateNotes(item->asNoteFrame()->notesList(), true);
+					item->invalid = true;
+					item->layout();
+				}
+				else
 					removeEmptyNF = true;
 			}
 			else if (item->asTextFrame()->hasNoteFrame(NULL, true))
@@ -16465,7 +16429,7 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF)
 		return;
 
 	QList<TextNote*> oldList = nF->notesList();
-	nF->updateNotes(m_docNotesInFrameMap.value(nF));
+	nF->updateNotes(m_docNotesInFrameMap.value(nF), !oldList.isEmpty());
 	qSort(nList.begin(), nList.end(), ascendingSort);
 	if (nList != oldList)
 	{

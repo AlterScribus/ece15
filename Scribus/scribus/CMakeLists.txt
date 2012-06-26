@@ -217,8 +217,8 @@ SET(SCRIBUS_MOC_CLASSES
   loadsaveplugin.h
   menumanager.h
 marks.h
-notesset.h
   navigator.h
+notesset.h
   observable.h
   pageitem.h
   pageitem_arc.h

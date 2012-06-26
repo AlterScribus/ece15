@@ -537,30 +537,30 @@ QString getFileNameByPage(ScribusDoc* currDoc, uint pageNo, QString extension)
 	return QString("%1-%2%3.%4").arg(defaultName).arg(QObject::tr("page", "page export")).arg(number, 3, 10, QChar('0')).arg(extension);
 }
 
-const QString getStringFromSequence(DocumentSectionType type, uint index, QString asterix)
+const QString getStringFromSequence(DocumentSectionType type, uint position, QString asterix)
 {
 	QString retVal("");
 	switch( type )
 	{
 		case Type_1_2_3:
-			retVal=QString::number(index);
+			retVal=QString::number(position);
 			break;
 		case Type_A_B_C:
-			retVal=numberToLetterSequence(index).toUpper();
+			retVal=numberToLetterSequence(position).toUpper();
 			break;
 		case Type_a_b_c:
-			retVal=numberToLetterSequence(index);
+			retVal=numberToLetterSequence(position);
 			break;
 		case Type_I_II_III:
-			retVal=arabicToRoman(index);
+			retVal=arabicToRoman(position);
 			break;
 		case Type_i_ii_iii:
 			//well, for lower case people will want that, even if its "wrong"
 			//ie, X=10, x=10000
-			retVal=arabicToRoman(index).toLower();
+			retVal=arabicToRoman(position).toLower();
 			break;
 		case Type_asterix:
-			for (uint a=1; a <= index; ++a)
+			for (uint a=1; a <= position; ++a)
 				retVal.append(asterix);
 			break;
 		case Type_None:

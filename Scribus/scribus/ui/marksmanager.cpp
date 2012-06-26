@@ -44,7 +44,7 @@ void MarksManager::addListItem(MarkType typeMrk, QString typeStr, QList<Mark*> &
 		{
 			QTreeWidgetItem *listItem2 = new QTreeWidgetItem(listItem);
 			listItem2->setText(0, marks[i]->label);
-			listItem2->setData(0, Qt::UserRole,QVariant::fromValue<void*>(marks[i]));
+			listItem2->setData(1, Qt::UserRole,QVariant::fromValue<void*>(marks[i]));
 			index++;
 			noSuchMarks = false;
 		}
@@ -53,6 +53,10 @@ void MarksManager::addListItem(MarkType typeMrk, QString typeStr, QList<Mark*> &
 	{
 		listView->removeItemWidget(listItem,0);
 		delete listItem;
+	}
+	else
+	{
+		listItem->sortChildren(0, Qt::AscendingOrder);
 	}
 }
 
@@ -148,7 +152,7 @@ Mark* MarksManager::getMarkFromListView()
 	QTreeWidgetItem* selectedItem = listView->currentItem();
 	if (selectedItem == NULL)
 		return NULL;
-	Mark* mrk = reinterpret_cast<Mark*>(selectedItem->data(0, Qt::UserRole).value<void*>());
+	Mark* mrk = reinterpret_cast<Mark*>(selectedItem->data(1, Qt::UserRole).value<void*>());
 	return mrk;
 }
 

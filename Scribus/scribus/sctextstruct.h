@@ -116,7 +116,7 @@ public:
 	ScText() : 
 		CharStyle(),
 		parstyle(NULL), glyph(), 
-		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), mark(0), ch() {}
+		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), mark(NULL), ch() {}
 	ScText(const ScText& other) : 
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
@@ -140,7 +140,6 @@ public:
 	bool hasObject(ScribusDoc *doc) const;
 	//returns true if given MRK is found, if MRK is NULL then any mark returns true
 	bool hasMark(Mark * MRK = NULL) const;
-	bool isVisible(); //returns true if glyph gives printable and visible sign on page
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
 };

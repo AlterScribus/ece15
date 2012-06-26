@@ -170,12 +170,16 @@ void PageItem_NoteFrame::layout()
 {
 	if (!invalid || deleteIt)
 		return;
-	if (!m_Doc->flag_layoutNotesFrames || m_Doc->isLoading())
+	if (!m_Doc->flag_layoutNotesFrames)
 		return;
 	if (itemText.length() == 0)
 		return;
 	if ((masterFrame() != NULL) && masterFrame()->invalid)
+	{
 		masterFrame()->layout();
+		//will be layouted by call from masterFrame->layout()
+		return;
+	}
 
 	if (m_nset->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
@@ -288,10 +292,10 @@ void PageItem_NoteFrame::insertNote(TextNote *note, int index)
 
 void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 {
-	if ((nList == l_notes) && !m_Doc->flag_notesChanged)
-		return; //seems nothig changes
+	if (nList == l_notes && !clear)
+		return;
 	m_Doc->flag_notesChanged = true;
-	itemText.blockSignals(true);
+	//itemText.blockSignals(true);
 
 	if (clear)
 	{
@@ -317,7 +321,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 			}
 		}
 	}
-	itemText.blockSignals(false);
+	//itemText.blockSignals(false);
 	invalid = true;
 }
 

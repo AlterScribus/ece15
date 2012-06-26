@@ -48,7 +48,7 @@ class ScText;
 class ScStyleRun;
 #endif
 
-//cezaryece: used by PageItem_NoteFrame
+//cezaryece: I remove static statement and made it public as this function is used also by PageItem_NoteFrame
 double calculateLineSpacing (const ParagraphStyle &style, PageItem *item);
 
 class SCRIBUS_API PageItem_TextFrame : public PageItem
@@ -119,7 +119,6 @@ protected:
 	// Move incomplete lines from the previous frame if needed.
 	bool moveLinesFromPreviousFrame ();
 	void adjustParagraphEndings ();
-	ScText * lastVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
 
 private:
 	bool cursorBiasBackward;
@@ -133,13 +132,6 @@ private:
 	QString currentShadow;
 	QMap<QString,StoryText> shadows;
 	bool checkKeyIsShortcut(QKeyEvent *k);
-	
-	// set text frame height to last line of text
-	double maxY;
-	void setMaxY(double y);
-
-public:
-	void setTextFrameHeight();
 
 private slots:
 	void slotInvalidateLayout();
@@ -173,5 +165,13 @@ private:
 	Mark* selectedMark(bool onlySelection = true);
 	TextNote* selectedNoteMark(ScText* &hl, bool onlySelection = true);
 	TextNote* selectedNoteMark(bool onlySelection = true);
+	
+	// set text frame height to last line of text
+	double maxY;
+	void setMaxY(double y);
+
+public:
+	void setTextFrameHeight();
 };
+
 #endif

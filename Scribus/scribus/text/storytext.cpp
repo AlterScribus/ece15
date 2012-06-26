@@ -305,9 +305,9 @@ void StoryText::insert(int pos, const StoryText& other, bool onlySelection)
 {
 	if (pos < 0)
 		pos += length()+1;
-	
-	CharStyle cstyle(charStyle(pos));
-	ParagraphStyle pstyle(paragraphStyle(pos));
+	int referenceChar = qMax(0, qMin(pos, length()-1));
+	CharStyle cstyle(charStyle(referenceChar));
+	ParagraphStyle pstyle(paragraphStyle(referenceChar));
 	
 	// this style represents all differences between this and other's defaultstyles
 	ParagraphStyle otherDefault(other.defaultStyle());

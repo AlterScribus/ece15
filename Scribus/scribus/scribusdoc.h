@@ -1718,7 +1718,7 @@ private:
 	//renumber notes with given notes set for given frame starting from number num
 	void updateItemNotesNums(PageItem_TextFrame *frame, NotesSet *nSet, int &num);
 	//update notesframes text styles
-	void updateItemNotesFramesStyles(PageItem *item);
+	void updateItemNotesFramesStyles(PageItem *item, ParagraphStyle newStyle);
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update

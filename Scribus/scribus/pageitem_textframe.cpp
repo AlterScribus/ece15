@@ -73,7 +73,6 @@ PageItem_TextFrame::PageItem_TextFrame(ScribusDoc *pa, double x, double y, doubl
 	unicodeTextEditMode = false;
 	unicodeInputCount = 0;
 	unicodeInputString = "";
-	lastVisibleGlyph = NULL;
 	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
@@ -86,7 +85,6 @@ PageItem_TextFrame::PageItem_TextFrame(const PageItem & p) : PageItem(p)
 	unicodeInputCount = 0;
 	unicodeInputString = "";
 	m_notesFramesMap.clear();
-	lastVisibleGlyph = NULL;
 	
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
@@ -1167,7 +1165,7 @@ static double nextAutoTab (const LineControl &current, PageItem *item)
 	return res;
 }
 
-//cezaryece: this function is used by PageItem_NoteFrame
+//cezaryece: I remove static statement as this function is used also by PageItem_NoteFrame
 double calculateLineSpacing (const ParagraphStyle &style, PageItem *item)
 {
 	if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
@@ -1299,7 +1297,7 @@ void PageItem_TextFrame::layout()
 	QPoint pt1, pt2;
 	QRect pt;
 	double chs, chsd = 0;
-	double oldCurY, EndX, OFs, wide, kernVal;
+	double EndX, OFs, wide, kernVal;
 	QString chstr;
 	ScText *hl;
 	ParagraphStyle style;
@@ -1348,6 +1346,7 @@ void PageItem_TextFrame::layout()
 	//hold Y position of last computed line of text (with glyphs descent)
 	//for moving next line if glyphs are higher than that
 	double lastLineY = 0;
+
 	QMap<int, Mark*> noteMarksPosMap;  //maping notes marks and its position in text
 
 	// dump styles
@@ -1375,7 +1374,8 @@ void PageItem_TextFrame::layout()
 		}
 		return;
 	}
-	if ((itemText.length() != 0)) // || (NextBox != 0))
+
+	if ((itLen != 0)) // || (NextBox != 0))
 	{
 		// determine layout area
 		m_availableRegion = calcAvailableRegion();
@@ -1408,7 +1408,7 @@ void PageItem_TextFrame::layout()
 		double autoLS = static_cast<double>(m_Doc->typographicPrefs().autoLineSpacing) / 100.0;
 
 		// find start of first line
-		if (firstInFrame() < itemText.length())
+		if (firstInFrame() < itLen)
 		{
 			hl = itemText.item(firstInFrame());
 			style = itemText.paragraphStyle(firstInFrame());
@@ -1449,14 +1449,14 @@ void PageItem_TextFrame::layout()
 		current.mustLineEnd = current.colRight;
 		current.restartX = 0;
 		int lastStat = 0, curStat = 0;
-		setMaxY(-1);
-		double maxYAsc = 0.0, maxYDesc = 0.0;
 
 		//why emit invalidating signals each time text is changed by appling styles?
 		//this speed up layouting in case of using notes marks and drop caps
 		itemText.blockSignals(true);
+		setMaxY(-1);
+		double maxYAsc = 0.0, maxYDesc = 0.0;
 
-		for (int a = firstInFrame(); a < itemText.length(); ++a)
+		for (int a = firstInFrame(); a < itLen; ++a)
 		{
 			hl = itemText.item(a);
 			bool HasObject = hl->hasObject(m_Doc);
@@ -1533,10 +1533,7 @@ void PageItem_TextFrame::layout()
 			double hlcsize10 = charStyle.fontSize() / 10.0;
 			double scaleV = charStyle.scaleV() / 1000.0;
 			double scaleH = charStyle.scaleH() / 1000.0;
-			offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
-
-			if (chstr.isEmpty())
-				chstr = SpecialChars::ZWNBSPACE;
+			double offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 			// find out about par gap and dropcap
 			if (a == firstInFrame())
@@ -1575,7 +1572,7 @@ void PageItem_TextFrame::layout()
 					CharStyle newStyle;
 					newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
 					charStyle.setStyle(newStyle);
-					itemText.setCharStyle(a, chstrLen ,charStyle);
+					itemText.setCharStyle(a, chstr.length(),charStyle);
 				}
 			}
 
@@ -1699,7 +1696,7 @@ void PageItem_TextFrame::layout()
 				itemText.item(a)->setEffects(itemText.item(a)->effects() & ~ScStyle_StartOfLine);
 			}
 			hl->glyph.yadvance = 0;
-			oldCurY = layoutGlyphs(*hl, chstr, hl->glyph);
+			layoutGlyphs(*hl, chstr, hl->glyph);
 			// find out width, ascent and descent of char
 			if (HasObject)
 			{
@@ -2226,7 +2223,6 @@ void PageItem_TextFrame::layout()
 					yoffset = qMax(yoffset, charStyle.font().realCharHeight(chstr[i], chsd / 10.0) - charStyle.font().realCharAscent(chstr[i], chsd / 10.0));
 				hl->glyph.yoffset -= yoffset;
 			}
-
 			// remember x pos
 			double breakPos = current.xPos;
 			
@@ -2251,7 +2247,7 @@ void PageItem_TextFrame::layout()
 					current.rememberBreak(a, breakPos, style.rightMargin());
 				}
 			}
-			if  (HasObject)
+			if  ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
 				current.rememberBreak(a, breakPos, style.rightMargin());
 			// CJK break
 			if(a > current.line.firstItem)
@@ -2679,7 +2675,7 @@ void PageItem_TextFrame::layout()
 						if (current.itemsInLine == 0 || current.column+1 == Cols)
 						{
 							goNoRoom = true;
-							MaxChars = a; // + 1;  - FIX ME - why +1 as in other places is =a;
+							MaxChars = a + 1;
 							break;
 						}
 						goNextColumn = true;
@@ -2746,6 +2742,7 @@ void PageItem_TextFrame::layout()
 							maxDX = 0;
 						}
 					}
+					lastLineY = current.rowDesc;
 					current.mustLineEnd = current.colRight;
 					current.restartRowIndex = current.restartIndex;
 				}
@@ -2773,7 +2770,7 @@ void PageItem_TextFrame::layout()
 				if (goNoRoom)
 				{
 					goNoRoom = false;
-					MaxChars = a; //+1; - FIX ME - why +1 as in other places is =a;
+					MaxChars = a+1;
 					goto NoRoom;
 				}
 				if (goNextColumn)
@@ -2900,9 +2897,28 @@ void PageItem_TextFrame::layout()
 		}
 	}
 	MaxChars = itemText.length();
-
-NoRoom:
 	invalid = false;
+	if (!isNoteFrame() && !m_Doc->m_docNotesList.isEmpty())
+	{ //if notes are used
+		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
+		if (notesMap != m_notesFramesMap)
+			updateNotesMarks(notesMap);
+		if (!m_notesFramesMap.isEmpty() && m_Doc->flag_layoutNotesFrames)
+			notesFramesLayout(false);
+	}
+	if (NextBox != NULL) 
+	{
+		PageItem_TextFrame * nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
+		nextFrame->invalid = true;
+		nextFrame->firstChar = MaxChars;
+	}
+	itemText.blockSignals(false);
+//	qDebug("textframe: len=%d, done relayout", itemText.length());
+	return;
+
+NoRoom:     
+	invalid = false;
+
 	adjustParagraphEndings ();
 
 	if (!isNoteFrame() && !m_Doc->m_docNotesList.isEmpty())
@@ -2917,29 +2933,8 @@ NoRoom:
 	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (next != NULL)
 	{
-		//check if last visible glyph in frame change
-		//if not then do not force invalidation of next frame
-		ScText * lastGlyph = NULL;
-		if (MaxChars > 0)
-		{
-			uint pos = MaxChars-1;
-			lastGlyph = itemText.item(pos);
-			while (!lastGlyph->isVisible())
-				lastGlyph = itemText.item(--pos);
-		}
-		if ((lastGlyph != lastVisibleGlyph))
-		{
-			//force invalidating next frame
-			next->invalid = true;
-			// relayout next frame
-//			qDebug("textframe: len=%d, going to next", itemText.length());
-			next->layout();
-			next->firstChar = MaxChars;
-			lastVisibleGlyph = lastGlyph;
-			next->lastVisibleGlyph = NULL;
-		}
-		if (next->firstChar != MaxChars)
-			next->invalid = true;
+		next->invalid = true;
+		next->firstChar = MaxChars;
 		if (itemText.cursorPosition() > signed(MaxChars))
 		{
 			int nCP = itemText.cursorPosition();
@@ -2954,9 +2949,11 @@ NoRoom:
 				return;
 			}
 		}
+		// relayout next frame
+//		qDebug("textframe: len=%d, going to next", itemText.length());
+		next->layout();
 	}
 //	qDebug("textframe: len=%d, done relayout (no room %d)", itemText.length(), MaxChars);
-	invalid = false; //to be sure
 	itemText.blockSignals(false);
 }
 
@@ -3008,12 +3005,15 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	if (invalid)
 	{
 		if (isNoteFrame() && asNoteFrame()->deleteIt)
-			return //do not layout notes frames which should be deleted
+		//do not layout notes frames which should be deleted
+			return;
 		layout();
 	}
+	if (invalid)
+		return;
 	QTransform pf2;
 	QPoint pt1, pt2;
-	double wide, lineCorr;
+	double wide;
 	QChar chstr0;
 	QString cachedStroke = "";
 	QString cachedFill = "";
@@ -3026,7 +3026,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	QColor cachedFillQ;
 	QColor cachedStrokeQ;
 	//	QValueList<ParagraphStyle::TabRecord> tTabValues;
-	double desc, asce, tabDist;
+	double desc, asce;
 	//	tTabValues.clear();
 	p->save(); //SA1
 	//	QRect e2;
@@ -3050,10 +3050,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->fillPath();
 		}
 	}
-	if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
-		lineCorr = m_lineWidth / 2.0;
-	else
-		lineCorr = 0;
 	if ((isAnnotation()) && (annotation().Type() == 2) && (!Pfile.isEmpty()) && (PictureIsAvailable) && (PicArt) && (annotation().UseIcons()))
 	{
 		p->save();//SA2
@@ -3114,14 +3110,12 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			pf2.translate(0, Height);
 			pf2.scale(1, -1);
 		}
-		uint tabCc = 0;
 		assert( firstInFrame() >= 0 );
 		assert( lastInFrame() < itemText.length() );
 		LineSpec ls;
 		for (uint ll=0; ll < itemText.lines(); ++ll)
 		{
 			ls = itemText.line(ll);
-			tabDist = ls.x;
 			double CurX = ls.x;
 
 			// Draw text selection rectangles
@@ -3130,7 +3124,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			bool previousWasObject(false);
 			double selX = ls.x;
 			ScText *hls = 0;
-			for (int as = ls.firstItem; as <= qMin(ls.lastItem, itemText.length() - 1); ++as)
+			int last = qMin(ls.lastItem, itemText.length() - 1);
+			for (int as = ls.firstItem; as <= last; ++as)
 			{
 				bool selecteds = itemText.selected(as);
 				hls = itemText.item(as);
@@ -3140,7 +3135,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				if(selecteds)
 				{
 					const CharStyle& charStyleS(itemText.charStyle(as));
-					if (((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
+					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
 						|| ((!selectedFrame.isNull()) && HasObject)
 					    || previousWasObject)
 					{
@@ -3204,15 +3199,12 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 
 			QColor tmp;
 			ScText *hl = 0;
-			for (int a = ls.firstItem; a <= qMin(ls.lastItem, itemText.length() - 1); ++a)
+			for (int a = ls.firstItem; a <= last; ++a)
 			{
 				hl = itemText.item(a);
 				const CharStyle& charStyle(itemText.charStyle(a));
-				double chs = charStyle.fontSize() * hl->glyph.scaleV;
 				bool selected = itemText.selected(a);
-				if (charStyle.effects() & ScStyle_StartOfLine)
-					tabCc = 0;
-				chstr0 = hl->ch;
+
 				actFill = charStyle.fillColor();
 				actFillShade = charStyle.fillShade();
 				if (actFill != CommonStrings::None)
@@ -3231,14 +3223,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				}
 				else
 					p->setFillMode(ScPainter::None);
-				if (charStyle.effects() & ScStyle_DropCap)
-				{
-					const ParagraphStyle& style(itemText.paragraphStyle(a));
-					double spacing = calculateLineSpacing (style, this);
-					chs = qRound(10 * ((spacing * (style.dropCapLines()-1) + (charStyle.font().ascent(style.charStyle().fontSize() / 10.0))) / charStyle.font().realCharHeight(chstr0, 10)));
-				}
-				if (chstr0 == SpecialChars::TAB)
-					tabCc++;
 
 				if (!m_Doc->RePos)
 				{
@@ -3282,7 +3266,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 					else*/
 					CurX += hl->glyph.wide();
 				}
-				tabDist = CurX;
 			}
 		}
 	//	else {
@@ -3484,7 +3467,9 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 
 void PageItem_TextFrame::clearContents()
 {
-	PageItem *nextItem = this->firstInChain();
+	PageItem *nextItem = this;
+	while (nextItem->prevInChain() != 0)
+		nextItem = nextItem->prevInChain();
 
 	//delete all marks in itemText
 	for (int a=0; a < nextItem->itemText.length(); ++a)
@@ -3505,7 +3490,6 @@ void PageItem_TextFrame::clearContents()
 	while (nextItem != 0)
 	{
 		nextItem->invalid = true;
-		nextItem->asTextFrame()->lastVisibleGlyph = NULL;
 		nextItem = nextItem->nextInChain();
 	}
 }
@@ -3547,7 +3531,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	int oldPos = itemText.cursorPosition(); // 15-mar-2004 jjsa for cursor movement with Shift + Arrow key
 	int kk = k->key();
 
-	//*****************************************
 	//check for deleting marks in selected text
 	bool marksDeleted = false;
 	QList<NotesSet*> ns2Update; //list of sets to do update after notes removing
@@ -3557,8 +3540,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		assert(itemText.startOfSelection() + itemText.lengthOfSelection() < itemText.length());  //cezaryece: I saw that situation
 		if (!k->text().isEmpty())
 		{
-			ScText* hl = NULL;
-			TextNote* note = selectedNoteMark(hl);
+			TextNote* note = selectedNoteMark();
 			if (note != NULL)
 			{
 				if (m_Doc->hasGUI() &&
@@ -3570,9 +3552,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					if (note->isEndNote())
 						m_Doc->flag_updateEndNotes = true;
 					ns2Update.append(note->notesSet());
-					hl->mark = NULL;
-					m_Doc->deleteNote(note);
-					note = selectedNoteMark(hl);
+					m_Doc->deleteNote(note, isNoteFrame());
+					note = selectedNoteMark();
 				}
 			}
 			Mark* mrk = selectedMark();
@@ -3604,12 +3585,11 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				TextNote* note = mrk->getNotePtr();
 				if (note->isEndNote())
 					m_Doc->flag_updateEndNotes = true;
-				m_Doc->deleteNote(note);
+				m_Doc->deleteNote(note, isNoteFrame());
 				ns2Update.append(note->notesSet());
 			}
 			else if (mrk->isUnique())
 				m_Doc->eraseMark(mrk);
-			hl->mark = NULL;
 			marksDeleted = true;
 		}
 	}
@@ -4159,6 +4139,15 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		break;
 	}
+	if (marksDeleted)
+	{
+		if (m_Doc->updateMarks(true))
+		{
+			m_Doc->changed();
+			m_Doc->regionsChanged()->update(QRectF());
+		}
+	}
+
 // 	update();
 //	view->slotDoCurs(true);
 	if ((kk == Qt::Key_Left) || (kk == Qt::Key_Right) || (kk == Qt::Key_Up) || (kk == Qt::Key_Down))
@@ -4402,7 +4391,6 @@ void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 		p->drawLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
 	if (BExtra + lineCorr!=0.0)
 		p->drawLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
-	double oldColRightX = Extra + lineCorr;
 	while(curCol < Cols)
 	{
 		colLeft=(colWidth + ColGap) * curCol + Extra + lineCorr;
@@ -4410,7 +4398,6 @@ void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 			p->drawLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
 		if (colLeft + colWidth != Width)
 			p->drawLine(FPoint(colLeft+colWidth, 0), FPoint(colLeft+colWidth, 0+Height));
-		oldColRightX=colLeft+colWidth;
 		++curCol;
 	}
 	
@@ -4673,7 +4660,7 @@ TextNote* PageItem_TextFrame::selectedNoteMark(ScText* &hl, bool onlySelection)
 	MarkType typ = isNoteFrame()? MARKNoteFrameType : MARKNoteMasterType;
 	for (int pos = start; pos < stop; ++pos)
 	{
-		hl = itemText.item(pos);
+		ScText* hl = itemText.item(pos);
 		if (hl->hasMark() && hl->mark->isType(typ))
 			return hl->mark->getNotePtr();
 	}
@@ -4827,9 +4814,10 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 			continue;
 
 		QList<TextNote*> nList = notesMap.value(nF);
+		bool clear = !nF->notesList().isEmpty();
 		if (nList != nF->notesList() || m_Doc->flag_notesChanged)
 		{
-			nF->updateNotes(nList);
+			nF->updateNotes(nList, clear);
 			docWasChanged = true;
 		}
 	}

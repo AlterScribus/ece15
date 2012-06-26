@@ -2529,6 +2529,7 @@ void ScribusMainWindow::HaveNewDoc()
 // 	scrActions["shade100"]->setChecked(true);
 	propertiesPalette->setDoc(doc);
 	nsManager->setDoc(doc);
+	marksManager->setDoc(doc);
 	symbolPalette->setDoc(doc);
 	inlinePalette->setDoc(doc);
 //	propertiesPalette->Cpal->displayGradient(0);
@@ -2923,7 +2924,6 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			setTBvals(currItem);
 			scrActions["editSelectAll"]->setEnabled(true);
 			scrActions["editSelectAllOnLayer"]->setEnabled(false);
-			scrActions["insertSampleText"]->setEnabled(true);
 			scrMenuMgr->setMenuEnabled("InsertMark",true);
 			charPalette->setEnabled(true, currItem);
 			if (currItem->asTextFrame())
@@ -4152,6 +4152,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 					bookmarkPalette->BView->ChangeItem(ite->BMnr, ite->ItemNr);
 			} */
 		}
+		doc->updateMarks(true);
 		for (QHash<int, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
 		{
 			PageItem *ite = itf.value();
@@ -4171,7 +4172,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		{
 			Apply_MasterPage(doc->DocPages.at(p)->MPageNam, p, false);
 		}
-		doc->updateMarks(true);
 		view->reformPages(false);
 		doc->setLoading(false);
 /*		if (fileLoader->FileType > FORMATID_NATIVEIMPORTEND)
@@ -5220,6 +5220,7 @@ void ScribusMainWindow::slotEditPaste()
 					}
 				}
 				currItem->itemText.insert(*story);
+
 				delete story;
 			}
 			else if (ScMimeData::clipboardHasScribusElem() || ScMimeData::clipboardHasScribusFragment())
@@ -5684,6 +5685,7 @@ void ScribusMainWindow::slotNewPageP(int wo, QString templ)
 		doc->addPageToSection(wo, where, 1);
 	else
 		doc->addPageToSection(wo+1, where, 1);
+
 	doc->updateEndnotesFrames();
 	doc->changed();
 	updateGUIAfterPagesChanged();
