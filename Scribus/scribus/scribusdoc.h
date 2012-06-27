@@ -537,7 +537,6 @@ public:
 	bool isDefaultStyle( const ParagraphStyle& p ) const { return docParagraphStyles.isDefault(p); }
 	bool isDefaultStyle( const CharStyle& c ) const { return docCharStyles.isDefault(c); }
 // 	bool isDefaultStyle( LineStyle& l ) const { return MLineStyles......; }
-
 	/**
 	 * Returns the table style named @a name.
 	 */
@@ -1031,6 +1030,8 @@ public:
 	void itemSelection_SetNamedParagraphStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedCharStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedLineStyle(const QString & name, Selection* customSelection=0);
+	void itemSelection_SetNamedTableStyle(const QString & name, Selection* customSelection=0);
+	void itemSelection_SetNamedCellStyle(const QString & name, Selection* customSelection=0);
 
 	void itemSelection_SetLineWidth(double w);
 	void itemSelection_SetLineArt(Qt::PenStyle w);

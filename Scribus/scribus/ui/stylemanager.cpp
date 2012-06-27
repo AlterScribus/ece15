@@ -1318,7 +1318,7 @@ void StyleManager::loadType(const QString &name)
 	}
 	m_widget = m_item->widget(); // show the widget for the style type
 	//<<#8230: Hide the shortcut page as it does not work
-	//insertShortcutPage(m_widget);
+	insertShortcutPage(m_widget);
 	//>>
 	m_widget->setParent(mainFrame);
 	m_layout->addWidget(m_widget, 0, 0);

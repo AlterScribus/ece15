@@ -10255,3 +10255,65 @@ void ScribusMainWindow::updateTableMenuActions()
 	scrActions["tableAdjustTableToFrame"]->setEnabled(table);
 }
 
+bool ScribusMainWindow::stylesShortcutKeyEvent(const QKeyEvent* k)
+{
+	int keyCode =0;
+	if (k->modifiers() & Qt::ShiftModifier)
+		keyCode |= Qt::SHIFT;
+	if (k->modifiers() & Qt::ControlModifier)
+		keyCode |= Qt::CTRL;
+	if (k->modifiers() & Qt::AltModifier)
+		keyCode |= Qt::ALT;
+	keyCode|=k->key();
+
+	QKeySequence key = QKeySequence(keyCode);
+	QString shortcut = key.toString();
+	
+	//check if shortcut is used by setyles
+	for (int ff = 0; ff < doc->paragraphStyles().count(); ++ff)
+	{
+		if (doc->paragraphStyles()[ff].shortcut() == shortcut)
+		{
+			QString name = doc->paragraphStyles()[ff].name();
+			doc->itemSelection_SetNamedParagraphStyle(name);
+			return true;
+		}
+	}
+	for (int ff = 0; ff < doc->charStyles().count(); ++ff)
+	{
+		if (doc->charStyles()[ff].shortcut() == shortcut)
+		{
+			QString name = doc->charStyles()[ff].name();
+			doc->itemSelection_SetNamedCharStyle(name.isEmpty()? Style::INHERIT_PARENT : name);
+			return true;
+		}
+	}
+	for (QHash<QString,multiLine>::Iterator itMU = doc->MLineStyles.begin(); itMU != doc->MLineStyles.end(); ++itMU)
+	{
+		if (itMU.value().shortcut == shortcut)
+		{
+			QString name = itMU.key();
+			doc->itemSelection_SetNamedLineStyle(name.isEmpty()? Style::INHERIT_PARENT : name);
+			return true;
+		}
+	}
+	for (int ff = 0; ff < doc->tableStyles().count(); ++ff)
+	{
+		if (doc->tableStyles()[ff].shortcut() == shortcut)
+		{
+			QString name = doc->tableStyles()[ff].name();
+			doc->itemSelection_SetNamedTableStyle(name.isEmpty()? Style::INHERIT_PARENT : name);
+			return true;
+		}
+	}
+	for (int ff = 0; ff < doc->cellStyles().count(); ++ff)
+	{
+		if (doc->cellStyles()[ff].shortcut() == shortcut)
+		{
+			QString name = doc->cellStyles()[ff].name();
+			doc->itemSelection_SetNamedCellStyle(name.isEmpty()? Style::INHERIT_PARENT : name);
+			return true;
+		}
+	}
+	return false;
+}

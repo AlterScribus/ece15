@@ -7384,7 +7384,13 @@ void ScribusDoc::itemSelection_SetNamedLineStyle(const QString &name, Selection*
 		changed();
 	}
 }
-
+//FIX ME - please implement these method
+void ScribusDoc::itemSelection_SetNamedTableStyle(const QString &name, Selection* customSelection)
+{
+}
+void ScribusDoc::itemSelection_SetNamedCellStyle(const QString &name, Selection* customSelection)
+{
+}
 
 void ScribusDoc::itemSelection_SetItemPen(QString farbe)
 {

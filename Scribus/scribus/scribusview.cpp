@@ -4256,6 +4256,8 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	else if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
+		if (m_ScMW->stylesShortcutKeyEvent(m))
+			return true;
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyPressEvent(m);
 		else

@@ -608,6 +608,10 @@ private:
 	FormatsManager *formatsManager;
 
 	QPointer<HelpBrowser> helpBrowser;
+
+//for styles shortcuts
+public:
+	bool stylesShortcutKeyEvent(const QKeyEvent*);
 };
 
 #endif
