@@ -353,6 +353,8 @@ public:
 	 */
 	bool isGlobalMode();
 
+	UndoState* getLastUndo();
+
 private:
 	/**
 	 * @brief The only instance of UndoManager available.
@@ -448,11 +450,17 @@ public:
 	static QString DelHAGuide;
 	static QString MoveVGuide;
 	static QString MoveHGuide;
+	static QString UniteItem;
+	static QString SplitItem;
 	static QString RemoveAllGuides;
 	static QString RemoveAllPageGuides;
 	static QString LockGuides;
 	static QString UnlockGuides;
 	static QString Move;
+	static QString NewMasterPage;
+	static QString DelMasterPage;
+	static QString ImportMasterPage;
+	static QString DuplicateMasterPage;
 	static QString Resize;
 	static QString Rotate;
 	static QString MoveFromTo;
@@ -557,6 +565,14 @@ public:
 	static QString ResetContourLine;
 	static QString AddPage;
 	static QString AddPages;
+	static QString ReplaceText;
+	static QString FirstLineOffset;
+	static QString AppendText;
+	static QString ImportText;
+	static QString ClearText;
+	static QString AddLoremIpsum;
+	static QString DeleteText;
+	static QString InsertText;
 	static QString DeletePage;
 	static QString DeletePages;
 	static QString ChangePageProps;
@@ -580,6 +596,10 @@ public:
 	static QString ChangeFormula;
 	static QString MultipleDuplicate;
 	static QString ApplyTextStyle;
+	static QString RemoveTextStyle;
+	static QString Columns;
+	static QString ColumnsGap;
+	static QString TextFrameDist;
 	static QString MenuUndo;
 	static QString MenuUndoEmpty;
 	static QString MenuRedo;
@@ -588,10 +608,16 @@ public:
 	static QString ResetControlPoint;
 	static QString ResetControlPoints;
 	static QString ImageEffects;
+	static QString LevelUp;
+	static QString LevelDown;
+	static QString LevelBottom;
+	static QString LevelTop;
 	static QString InsertFrame;
 	static QString AdjustFrameToImage;
 	static QString Copy;
 	static QString CopyPage;
+	static QString ChangePageAttrs;
+	static QString ImportPage;
 	static QString MovePage;
 	static QString ToOutlines;
 	static QString LinkTextFrame;

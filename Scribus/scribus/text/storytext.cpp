@@ -124,17 +124,7 @@ StoryText StoryText::copy() const
 	StoryText result(doc);
 	*(result.d) = *d;
 	return result;
-//	qDebug() << QString("StoryText::copy:");
-	QListIterator<ScText*> it( *(result.d) );
-	ScText* elem;
-	while ( it.hasNext() ) {
-		elem = it.next();
-//		qDebug() << QString("\tchar '%1' size %2 (orig %3)").arg(elem->ch).arg(elem->fontSize()).arg(charStyle(i++).fontSize());
-	}
-	
-	return result;
 }
-
 
 StoryText& StoryText::operator= (const StoryText & other)
 {
@@ -652,7 +642,7 @@ void StoryText::insertMark(Mark* Mark, int pos)
 	if (pos < 0)
 		pos = d->cursorPosition;
 
-	insertChars(pos, SpecialChars::OBJECT, true);
+	insertChars(pos, SpecialChars::OBJECT, false);
 	const_cast<StoryText *>(this)->d->at(pos)->mark = Mark;
 }
 
@@ -810,9 +800,11 @@ const CharStyle & StoryText::charStyle(int pos) const
 		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
+	//for notes frames - get style from note text, not from mark
+	if ((pos+1 < length()) && hasMark(pos) && mark(pos)->isNoteType())
+		++pos;
 	if (text(pos) == SpecialChars::PARSEP)
 		return paragraphStyle(pos).charStyle();
-	
 	StoryText* that = const_cast<StoryText *>(this);
 	return dynamic_cast<const CharStyle &> (*that->d->at(pos));
 }

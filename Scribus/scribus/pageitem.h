@@ -1217,6 +1217,23 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restorePasteInline(SimpleState *state, bool isUndo);
+	void restorePasteText(SimpleState *state, bool isUndo);
+	void restoreFirstLineOffset(SimpleState *state, bool isUndo);
+	void restoreParagraphStyle(SimpleState *state, bool isUndo);
+	void restoreDefaultParagraphStyle(SimpleState *state, bool isUndo);
+	void restoreCharStyle(SimpleState *state, bool isUndo);
+	void restoreLeftTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreRightTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreTopTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreBottomTextFrameDist(SimpleState *state, bool isUndo);
+	void restoreSetCharStyle(SimpleState *state, bool isUndo);
+	void restoreColumns(SimpleState *state, bool isUndo);
+	void restoreColumnsGap(SimpleState *state, bool isUndo);
+	void restoreSetParagraphStyle(SimpleState *state, bool isUndo);
+	void restoreLoremIpsum(SimpleState *state, bool isUndo);
+	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
+	void restoreInsertFrameText(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
 	void restoreResize(SimpleState *state, bool isUndo);
 	void restoreRotate(SimpleState *state, bool isUndo);
@@ -1244,6 +1261,8 @@ protected:
 	void restoreClearImage(UndoState *state, bool isUndo);
 	void restoreGetImage(UndoState *state, bool isUndo);
 	void restorePoly(SimpleState *state, bool isUndo, bool isContour);
+	void restoreUniteItem(SimpleState *state, bool isUndo);
+	void restoreSplitItem(SimpleState *state, bool isUndo);
 	void restoreContourLine(SimpleState *state, bool isUndo);
 	void restoreShapeType(SimpleState *state, bool isUndo);
 	void restoreLayer(SimpleState *state, bool isUndo);

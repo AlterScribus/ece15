@@ -49,8 +49,8 @@ private:
 	NotesSet* m_nset;
 	PageItem_TextFrame *m_masterFrame;
 
-	//insert note at `index` position in noteframe
-	void insertNote(TextNote* note, int index = 0);
+	//insert note at end of text in noteframe
+	void insertNote(TextNote* note);
 
 //not used???
 	//find position of note marker in text

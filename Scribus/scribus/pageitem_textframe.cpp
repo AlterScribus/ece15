@@ -3014,7 +3014,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	QTransform pf2;
 	QPoint pt1, pt2;
 	double wide;
-	QChar chstr0;
 	QString cachedStroke = "";
 	QString cachedFill = "";
 	double cachedFillShade = -1;
@@ -3484,8 +3483,14 @@ void PageItem_TextFrame::clearContents()
 		}
 	}
 	ParagraphStyle defaultStyle = nextItem->itemText.defaultStyle();
-	nextItem->itemText.clear();
-	nextItem->itemText.setDefaultStyle(defaultStyle);
+	nextItem->itemText.selectAll();
+	nextItem->asTextFrame()->deleteSelectedTextFromFrame();
+	if (!isNoteFrame())
+	{
+		if(UndoManager::undoEnabled())
+			undoManager->getLastUndo()->setName(Um::ClearText);
+		nextItem->itemText.setDefaultStyle(defaultStyle);
+	}
 
 	while (nextItem != 0)
 	{
@@ -3633,6 +3638,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	case Qt::Key_Down:
 		if ( (buttonModifiers & Qt::ShiftModifier) == 0 )
 			deselectAll();
+		if (UndoManager::undoEnabled())
+		{
+			SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+			if(ss)
+				ss->set("ETEA",QString(""));
+		}
 	}
 
 	if (unicodeTextEditMode)
@@ -4052,6 +4063,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		break;
 	default:
 		bool doUpdate = false;
+		UndoTransaction* activeTransaction = NULL;
 		if (itemText.lengthOfSelection() > 0) //(kk < 0x1000)
 		{
 			bool x11Hack=false;
@@ -4067,6 +4079,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 #endif
 			if (!controlCharHack && !x11Hack && !k->text().isEmpty())
 			{
+				if (UndoManager::undoEnabled())
+					activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Selection, Um::IGroup, Um::ReplaceText, "", Um::IDelete));
+
 				deleteSelectedTextFromFrame();
 				doUpdate = true;
 			}
@@ -4083,6 +4098,20 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
 		if (kk == Qt::Key_Tab)
 		{
+			if (UndoManager::undoEnabled())
+			{
+				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+				if(ss && ss->get("ETEA") == "insert_frametext")
+						ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(SpecialChars::TAB));
+				else {
+					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+					ss->set("INSERT_FRAMETEXT", "insert_frametext");
+					ss->set("ETEA", QString("insert_frametext"));
+					ss->set("TEXT_STR", QString(SpecialChars::TAB));
+					ss->set("START", itemText.cursorPosition());
+					undoManager->action(this, ss);
+				}
+			}
 			itemText.insertChars(QString(SpecialChars::TAB), true);
 //			Tinput = true;
 //			view->RefreshItem(this);
@@ -4090,6 +4119,20 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
 		{
+			if (UndoManager::undoEnabled())
+			{
+				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+				if(ss && ss->get("ETEA") == "insert_frametext")
+						ss->set("TEXT_STR",ss->get("TEXT_STR") + uc);
+				else {
+					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+					ss->set("INSERT_FRAMETEXT", "insert_frametext");
+					ss->set("ETEA", QString("insert_frametext"));
+					ss->set("TEXT_STR",uc);
+					ss->set("START", itemText.cursorPosition());
+					undoManager->action(this, ss);
+				}
+			}
 			itemText.insertChars(uc, true);
 			if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
 			{
@@ -4117,6 +4160,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		if (doUpdate)
 		{
+			if (activeTransaction)
+			{
+				activeTransaction->commit();
+				delete activeTransaction;
+				activeTransaction = NULL;
+			}
 			// update layout immediately, we need MaxChars to be correct to detect 
 			// if we need to move to next frame or not
 			while (!ns2Update.isEmpty())
@@ -4141,11 +4190,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	}
 	if (marksDeleted)
 	{
-		if (m_Doc->updateMarks(true))
-		{
-			m_Doc->changed();
-			m_Doc->regionsChanged()->update(QRectF());
-		}
+		m_Doc->updateMarks(true);
+		m_Doc->changed();
+		m_Doc->regionsChanged()->update(QRectF());
 	}
 
 // 	update();
@@ -4160,6 +4207,24 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 void PageItem_TextFrame::deleteSelectedTextFromFrame()
 {
 	if (itemText.lengthOfSelection() > 0) {
+		if (UndoManager::undoEnabled())
+		{
+			SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+			if(ss && ss->get("ETEA") == "delete_frametext"){
+				if(itemText.startOfSelection()<ss->getInt("START")){
+					ss->set("START",itemText.startOfSelection());
+					ss->set("TEXT_STR",itemText.text(itemText.startOfSelection(),itemText.lengthOfSelection()) + ss->get("TEXT_STR"));
+				} else
+					ss->set("TEXT_STR",ss->get("TEXT_STR") + itemText.text(itemText.startOfSelection(),itemText.lengthOfSelection()));
+			}else {
+				ss = new SimpleState(Um::DeleteText,"",Um::IDelete);
+				ss->set("DELETE_FRAMETEXT", "delete_frametext");
+				ss->set("ETEA", QString("delete_frametext"));
+				ss->set("TEXT_STR",itemText.text(itemText.startOfSelection(),itemText.lengthOfSelection()));
+				ss->set("START", itemText.startOfSelection());
+				undoManager->action(this, ss);
+			}
+		}
 		itemText.setCursorPosition( itemText.startOfSelection() );
 		itemText.removeSelection();
 		HasSel = false;

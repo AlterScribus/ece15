@@ -223,9 +223,8 @@ void PageItem_NoteFrame::layout()
 	invalid = false;
 }
 
-void PageItem_NoteFrame::insertNote(TextNote *note, int index)
+void PageItem_NoteFrame::insertNote(TextNote *note)
 {
-	if (index < 0) return;
 	Mark* mrk = note->noteMark();
 	if (mrk == NULL)
 	{
@@ -247,47 +246,17 @@ void PageItem_NoteFrame::insertNote(TextNote *note, int index)
 		m_Doc->m_docMarksList.append(mrk);
 	}
 	mrk->setItemPtr(this);
-
 	mrk->setString(notesSet()->prefix() + note->numString() + note->notesSet()->suffix());
 
-	//find position for inserting new note
-	int len = itemText.length();
-	if (index == 0)
-	{
-		itemText.insertMark(mrk,0);
-		if (len > 0)
-			itemText.insertChars(1, SpecialChars::PARSEP);
-		if (!note->saxedText().isEmpty())
-			itemText.insert(1, desaxeString(m_Doc, note->saxedText()));
-	}
-	else
-	{
-		int notesIndex = 0;
-		int pos;
-		for (pos=0; pos < len; ++pos)
-		{
-			ScText* hl = itemText.item(pos);
-			//inside footnote frame are available endnotes marks, so we must check if mark`s noteset is same as noteset of note
-			if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType) && (hl->mark->getNotePtr()->notesSet() == note->notesSet()))
-			{
-				if (notesIndex == index)
-				{
-					itemText.insertMark(mrk,pos);
-					itemText.insertChars(pos +1, SpecialChars::PARSEP);
-					if (!note->saxedText().isEmpty())
-						itemText.insert(pos+1,desaxeString(m_Doc, note->saxedText()));
-					invalidateLayout();
-					return;
-				}
-				++notesIndex;
-			}
-		}
-		//inserting note at end of notes frame
+	StoryText story;
+	if (!note->saxedText().isEmpty())
+		story = desaxeString(m_Doc, note->saxedText());
+	story.insertMark(mrk, 0);
+	story.setDefaultStyle(itemText.defaultStyle());
+//	story.applyCharStyle(0, story.length(), itemText.charStyle());
+	if (itemText.length() > 0)
 		itemText.insertChars(itemText.length(), SpecialChars::PARSEP);
-		itemText.insertMark(mrk, itemText.length());
-		if (!note->saxedText().isEmpty())
-			itemText.insert(itemText.length(), desaxeString(m_Doc, note->saxedText()));
-	}
+	itemText.insert(itemText.length(), story);
 }
 
 void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
@@ -302,7 +271,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 		clearContents();
 		l_notes = nList;
 		for (int a=0; a < l_notes.count(); ++a)
-			insertNote(l_notes.at(a),a);
+			insertNote(l_notes.at(a));
 	}
 	else
 	{
@@ -316,7 +285,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 				if (!l_notes.contains(note))
 				{
 					l_notes.append(note);
-					insertNote(note, note->num() -1);
+					insertNote(note);
 				}
 			}
 		}
