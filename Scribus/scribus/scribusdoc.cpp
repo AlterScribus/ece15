@@ -11229,6 +11229,7 @@ void ScribusDoc::itemSelection_SetImageRotation(double rot, Selection* customSel
 	uint selectedItemCount=itemSelection->count();
 	if (selectedItemCount != 0)
 	{
+		UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IImageFrame,Um::Rotate,"",Um::IRotate));
 		for (uint a = 0; a < selectedItemCount; ++a)
 		{
 			PageItem *currItem = itemSelection->itemAt(a);
@@ -11244,6 +11245,7 @@ void ScribusDoc::itemSelection_SetImageRotation(double rot, Selection* customSel
 			}
 			currItem->update();
 		}
+		trans.commit();
 		changed();
 	}
 }

@@ -487,6 +487,9 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 			cbProportional->setChecked(m_item->AspectRatio);
 			freeScale->setEnabled(true);
 			frameScale->setEnabled(true);
+			//Necessary for undo action
+			keepImageWHRatioButton->setEnabled(setter);
+			keepImageDPIRatioButton->setEnabled(setter);
 		}
 //CB Why do we need this? Setting it too much here
 // 		if (setter == true)

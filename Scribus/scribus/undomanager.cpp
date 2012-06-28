@@ -947,7 +947,7 @@ void UndoManager::languageChange()
 	UndoManager::ObjectFrame        = tr("Text flows around the frame");
 	UndoManager::BoundingBox        = tr("Text flows around bounding box");
 	UndoManager::ContourLine        = tr("Text flows around contour line");
-	UndoManager::ImageClip        = tr("Text flows around image clipping path");
+	UndoManager::ImageClip          = tr("Text flows around image clipping path");
 	UndoManager::NoTextFlow         = tr("No text flow");
 	UndoManager::NoObjectFrame      = tr("No object frame");
 	UndoManager::NoBoundingBox      = tr("No bounding box");
@@ -977,7 +977,7 @@ void UndoManager::languageChange()
 	UndoManager::DeletePages        = tr("Delete pages");
 	UndoManager::ChangePageProps    = tr("Change page properties");
 	UndoManager::AddLayer           = tr("Add layer");
-	UndoManager::DuplicateLayer	= tr("Duplicate layer %1");
+	UndoManager::DuplicateLayer	    = tr("Duplicate layer %1");
 	UndoManager::DeleteLayer        = tr("Delete layer");
 	UndoManager::RenameLayer        = tr("Rename layer");
 	UndoManager::RaiseLayer         = tr("Raise layer");
@@ -1008,7 +1008,7 @@ void UndoManager::languageChange()
 	UndoManager::InsertFrame        = tr("Insert frame");
 	UndoManager::AdjustFrameToImage = tr("Adjust frame to the image size");
 	UndoManager::RemoveAllGuides    = tr("Remove all guides");
-	UndoManager::RemoveAllPageGuides = tr("Remove page guides");
+	UndoManager::RemoveAllPageGuides= tr("Remove page guides");
 	UndoManager::Copy               = tr("Copy");
 	UndoManager::CopyPage           = tr("Copy page");
 	UndoManager::MovePage           = tr("Move page");

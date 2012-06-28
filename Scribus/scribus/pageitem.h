@@ -1211,6 +1211,7 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
+	void restoreImageRotation(SimpleState *state, bool isUndo);
 	void restorePasteInline(SimpleState *state, bool isUndo);
 	void restorePasteText(SimpleState *state, bool isUndo);
 	void restoreFirstLineOffset(SimpleState *state, bool isUndo);

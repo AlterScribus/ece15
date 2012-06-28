@@ -1028,6 +1028,13 @@ void PageItem::moveImageXYOffsetBy(const double dX, const double dY)
 
 void PageItem::setImageRotation(const double newRotation)
 {
+	if(LocalRot == newRotation)
+		return;
+	SimpleState *ss = new SimpleState(Um::Rotate,"",Um::IRotate);
+	ss->set("IMAGE_ROTATION","image_rotation");
+	ss->set("OLD_ROT",LocalRot);
+	ss->set("NEW_ROT",newRotation);
+	undoManager->action(this,ss);
 	LocalRot = newRotation;
 	if (m_Doc->isLoading())
 		return;
@@ -4452,6 +4459,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	{
 		if (ss->contains("OLD_XPOS"))
 			restoreMove(ss, isUndo);
+		if (ss->contains("IMAGE_ROTATION"))
+			restoreImageRotation(ss, isUndo);
 		else if (ss->contains("OLD_HEIGHT"))
 			restoreResize(ss, isUndo);
 		else if (ss->contains("OLD_ROT"))
@@ -4648,6 +4657,14 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
+}
+
+void PageItem::restoreImageRotation(SimpleState *is, bool isUndo)
+{
+	if (isUndo)
+		LocalRot = is->getInt("OLD_ROT");
+	else
+		LocalRot = is->getInt("NEW_ROT");
 }
 
 void PageItem::restorePasteInline(SimpleState *is, bool isUndo)
@@ -5152,6 +5169,13 @@ void PageItem::restoreImageScaleMode(SimpleState *state, bool isUndo)
 			tempSelection.addItem(this, true);
 			m_Doc->itemSelection_SetImageScale(oscx, oscy, &tempSelection);
 			m_Doc->itemSelection_SetImageOffset(ox, oy, &tempSelection);
+		}
+		else
+		{
+			state->set("OLD_IMAGEXOFFSET", LocalX);
+			state->set("OLD_IMAGEYOFFSET", LocalY);
+			state->set("OLD_IMAGEXSCALE", LocalScX);
+			state->set("OLD_IMAGEYSCALE", LocalScY);
 		}
 	}
 
