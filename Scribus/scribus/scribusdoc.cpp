@@ -7639,11 +7639,12 @@ void ScribusDoc::itemSelection_SetItemGradFill(int typ)
 	{
 		m_updateManager.setUpdatesDisabled();
 		PageItem *currItem;
+		UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::SetFill,"",Um::IFill));
 		for (uint a = 0; a < selectedItemCount; ++a)
 		{
 			currItem = m_Selection->itemAt(a);
-			currItem->GrType = typ;
-			switch (currItem->GrType)
+			currItem->setGradientType(typ);
+			switch (currItem->gradientType())
 			{
 				case 0:
 					if (currItem->fillColor() != CommonStrings::None)
@@ -7672,41 +7673,41 @@ void ScribusDoc::itemSelection_SetItemGradFill(int typ)
 					}
 					break;
 				case 1:
-					currItem->GrStartX = 0;
-					currItem->GrStartY = currItem->height() / 2.0;
-					currItem->GrEndX = currItem->width();
-					currItem->GrEndY = currItem->height() / 2.0;
+					currItem->setGradientStartX(0);
+					currItem->setGradientStartY(currItem->height() / 2.0);
+					currItem->setGradientEndX(currItem->width());
+					currItem->setGradientEndY(currItem->height() / 2.0);
 					break;
 				case 2:
-					currItem->GrStartX = currItem->width() / 2.0;
-					currItem->GrStartY = 0;
-					currItem->GrEndX = currItem->width() / 2.0;
-					currItem->GrEndY = currItem->height();
+					currItem->setGradientStartX(currItem->width() / 2.0);
+					currItem->setGradientStartY(0);
+					currItem->setGradientEndX(currItem->width() / 2.0);
+					currItem->setGradientEndY(currItem->height());
 					break;
 				case 3:
-					currItem->GrStartX = 0;
-					currItem->GrStartY = 0;
-					currItem->GrEndX = currItem->width();
-					currItem->GrEndY = currItem->height();
+					currItem->setGradientStartX(0);
+					currItem->setGradientStartY(0);
+					currItem->setGradientEndX(currItem->width());
+					currItem->setGradientEndY(currItem->height());
 					break;
 				case 4:
-					currItem->GrStartX = 0;
-					currItem->GrStartY = currItem->height();
-					currItem->GrEndX = currItem->width();
-					currItem->GrEndY = 0;
+					currItem->setGradientStartX(0);
+					currItem->setGradientStartY(currItem->height());
+					currItem->setGradientEndX(currItem->width());
+					currItem->setGradientEndY(0);
 					break;
 				case 5:
-					currItem->GrStartX = currItem->width() / 2.0;
-					currItem->GrStartY = currItem->height() / 2.0;
+					currItem->setGradientStartX(currItem->width() / 2.0);
+					currItem->setGradientStartY(currItem->height() / 2.0);
 					if (currItem->width() >= currItem->height())
 					{
-						currItem->GrEndX = currItem->width();
-						currItem->GrEndY = currItem->height() / 2.0;
+						currItem->setGradientEndX(currItem->width());
+						currItem->setGradientEndY(currItem->height() / 2.0);
 					}
 					else
 					{
-						currItem->GrEndX = currItem->width() / 2.0;
-						currItem->GrEndY = currItem->height();
+						currItem->setGradientEndX(currItem->width() / 2.0);
+						currItem->setGradientEndY(currItem->height());
 					}
 					break;
 				default:
@@ -7714,10 +7715,11 @@ void ScribusDoc::itemSelection_SetItemGradFill(int typ)
 			}
 			if ((typ > 0) && (typ < 8))
 				currItem->updateGradientVectors();
-			if (currItem->GrType == 13)
+			if (currItem->gradientType() == 13)
 				currItem->createConicalMesh();
 			currItem->update();
 		}
+		trans.commit();
 		m_updateManager.setUpdatesEnabled();
 		changed();
 	}
@@ -10934,8 +10936,8 @@ void ScribusDoc::itemSelection_SetFillGradient(VGradient& newGradient, Selection
 	{
 		PageItem *currItem;
 		currItem = itemSelection->itemAt(i);
-		currItem->fill_gradient = newGradient;
-		if (currItem->GrType == 13)
+		currItem->setFillGradient(newGradient);
+		if (currItem->gradientType() == 13)
 			currItem->createConicalMesh();
 		currItem->update();
 	}

@@ -527,8 +527,7 @@ void UndoManager::action(UndoObject* target, UndoState* state,
 }
 
 UndoState* UndoManager::getLastUndo(){
-	UndoState* state = stacks_[currentDoc_].getNextUndo(currentUndoObjectId_);
-	return state;
+	return stacks_[currentDoc_].getNextUndo(currentUndoObjectId_);
 }
 
 void UndoManager::undo(int steps)
@@ -911,8 +910,13 @@ void UndoManager::languageChange()
 	UndoManager::RowsCols           = tr("Rows: %1, Cols: %2");
 	UndoManager::SetFont            = tr("Set font");
 	UndoManager::SetFontSize        = tr("Set font size");
+	UndoManager::StartArrowScale    = tr("Set start arrow scale");
+	UndoManager::EndArrowScale      = tr("Set end arrow scale");
+	UndoManager::SetFontSize        = tr("Set font size");
 	UndoManager::SetFontWidth       = tr("Set font width");
-	UndoManager::SetFontHeight       = tr("Set font height");
+	UndoManager::SetFontHeight      = tr("Set font height");
+	UndoManager::GradType           = tr("Change gradient type");
+	UndoManager::GradVal            = tr("Change gradient values");
 	UndoManager::SetFontFill        = tr("Set font fill color");
 	UndoManager::SetFontStroke      = tr("Set font stroke color");
 	UndoManager::SetFontFillShade   = tr("Set font fill color shade");
@@ -981,6 +985,7 @@ void UndoManager::languageChange()
 	UndoManager::DeleteLayer        = tr("Delete layer");
 	UndoManager::RenameLayer        = tr("Rename layer");
 	UndoManager::RaiseLayer         = tr("Raise layer");
+	UndoManager::GradPos            = tr("Change gradient position");
 	UndoManager::LowerLayer         = tr("Lower layer");
 	UndoManager::SendToLayer        = tr("Send to layer");
 	UndoManager::PrintLayer         = tr("Enable printing of layer");
@@ -1092,6 +1097,9 @@ QString UndoManager::BlendMode          = "";
 QString UndoManager::ActionPDF          = "";
 QString UndoManager::Move               = "";
 QString UndoManager::NewMasterPage      = "";
+QString UndoManager::GradType           = "";
+QString UndoManager::GradPos            = "";
+QString UndoManager::GradVal            = "";
 QString UndoManager::ImportMasterPage   = "";
 QString UndoManager::DuplicateMasterPage= "";
 QString UndoManager::DelMasterPage      = "";
@@ -1102,6 +1110,8 @@ QString UndoManager::ImageOffset        = "";
 QString UndoManager::ImageScale         = "";
 QString UndoManager::ResTyp             = "";
 QString UndoManager::ShowImage          = "";
+QString UndoManager::StartArrowScale    = "";
+QString UndoManager::EndArrowScale      = "";
 QString UndoManager::ImageOffsetFromTo  = "";
 QString UndoManager::ImageScaleFromTo   = "";
 QString UndoManager::ResizeFromTo       = "";

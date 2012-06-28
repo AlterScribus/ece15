@@ -600,8 +600,13 @@ public:
 	static QString SetLayerTransparency;
 	static QString SetLayerLocked;
 	static QString SetLayerUnlocked;
+	static QString StartArrowScale;
+	static QString EndArrowScale;
 	static QString GetImage;
 	static QString ChangeFormula;
+	static QString GradType;
+	static QString GradPos;
+	static QString GradVal;
 	static QString MultipleDuplicate;
 	static QString ApplyTextStyle;
 	static QString RemoveTextStyle;
