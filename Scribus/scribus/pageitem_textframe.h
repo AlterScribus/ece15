@@ -101,7 +101,7 @@ protected:
 	virtual QString infoDescription();
 	// Move incomplete lines from the previous frame if needed.
 	bool moveLinesFromPreviousFrame ();
-	void adjustParagraphEndings ();
+	void adjustParagraphEndings(int &a, bool EndOfFrame = true);
 
 private:
 	bool cursorBiasBackward;
@@ -123,6 +123,11 @@ private:
 public:
 	void setTextFrameHeight();
 
+	//preflight warnings
+	QList< QPair<int, int> > warnedList; //pairs of start-end for text indicated by Selection2
+private:
+	bool isWarnedText(int pos);
+	
 private slots:
 	void slotInvalidateLayout();
 };
