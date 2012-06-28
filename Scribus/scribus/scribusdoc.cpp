@@ -1870,15 +1870,15 @@ void ScribusDoc::restoreGrouping(SimpleState *state, bool isUndo)
 	m_Selection->getGroupRect(&x, &y, &w, &h);
 	m_Selection->delaySignalsOn();
 	Selection tempSelect(this,false);
-	if(isUndo){
+	if(isUndo)
+	{
 		tempSelect.addItem(select.last());
 		itemSelection_UnGroupObjects(&tempSelect);
 	}
-	else {
+	else
+	{
 		for (int i = 0; i < select.size()-1; ++i)
-		{
 			tempSelect.addItem(select.at(i));
-		}
 		select.removeLast();
 		select.append(itemSelection_GroupObjects(false, false,&tempSelect));
 		is->setItem(select);
@@ -2396,9 +2396,8 @@ int ScribusDoc::addAutomaticTextFrame(const int pageNumber)
 		Items->at(z)->isAutoText = true;
 		Items->at(z)->Cols = qRound(PageSp);
 		Items->at(z)->ColGap = PageSpa;
-		if (LastAuto != 0) {
+		if (LastAuto != 0)
 			LastAuto->link(Items->at(z));
-		}	
 		else
 			FirstAuto = Items->at(z);
 		LastAuto = Items->at(z);
@@ -9763,7 +9762,8 @@ void ScribusDoc::updatePic()
 		{
 			if (m_Selection->itemAt(i)!=NULL)
 			{
-				if (m_Selection->itemAt(i)->asLatexFrame()) {
+				if (m_Selection->itemAt(i)->asLatexFrame())
+				{
 					PageItem_LatexFrame *latexframe =
 						m_Selection->itemAt(i)->asLatexFrame();
 					latexframe->rerunApplication();
@@ -10406,7 +10406,8 @@ void ScribusDoc::itemSelection_ChangePreviewResolution(int id)
 						found=true;
 				}
 		}
-		if(activeTransaction){
+		if(activeTransaction)
+		{
 			activeTransaction->commit();
 			delete activeTransaction;
 			activeTransaction = NULL;
@@ -10844,6 +10845,9 @@ void ScribusDoc::itemSelection_SetItemFillBlend(int t)
 	uint selectedItemCount=m_Selection->count();
 	if (selectedItemCount != 0)
 	{
+		UndoTransaction* activeTransaction = NULL;
+		if (UndoManager::undoEnabled())
+			activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 		for (uint i = 0; i < selectedItemCount; ++i)
 		{
 			PageItem *currItem = m_Selection->itemAt(i);
@@ -10853,6 +10857,16 @@ void ScribusDoc::itemSelection_SetItemFillBlend(int t)
 		}
 		regionsChanged()->update(QRectF());
 		changed();
+		if (activeTransaction)
+		{
+			activeTransaction->commit(Um::Selection,
+									  Um::IGroup,
+									  Um::BlendMode,
+									  "",
+									  Um::IGroup);
+			delete activeTransaction;
+			activeTransaction = NULL;
+		}
 	}
 }
 
@@ -10862,6 +10876,9 @@ void ScribusDoc::itemSelection_SetItemLineBlend(int t)
 	uint selectedItemCount=m_Selection->count();
 	if (selectedItemCount != 0)
 	{
+		UndoTransaction* activeTransaction = NULL;
+		if (UndoManager::undoEnabled())
+			activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 		for (uint i = 0; i < selectedItemCount; ++i)
 		{
 			PageItem *currItem = m_Selection->itemAt(i);
@@ -10869,6 +10886,16 @@ void ScribusDoc::itemSelection_SetItemLineBlend(int t)
 		}
 		regionsChanged()->update(QRectF());
 		changed();
+		if (activeTransaction)
+		{
+			activeTransaction->commit(Um::Selection,
+									  Um::IGroup,
+									  Um::BlendMode,
+									  "",
+									  Um::IGroup);
+			delete activeTransaction;
+			activeTransaction = NULL;
+		}
 	}
 }
 
@@ -10944,11 +10971,24 @@ void ScribusDoc::itemSelection_SetOverprint(bool overprint, Selection* customSel
 	if (selectedItemCount == 0)
 		return;
 	m_updateManager.setUpdatesDisabled();
+	UndoTransaction* activeTransaction = NULL;
+	if (UndoManager::undoEnabled())
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 	for (uint i = 0; i < selectedItemCount; ++i)
 	{
 		PageItem* currItem = itemSelection->itemAt(i);
 		currItem->setOverprint(overprint);
 		currItem->update();
+	}
+	if (activeTransaction)
+	{
+		activeTransaction->commit(Um::Selection,
+								  Um::IGroup,
+								  Um::Overprint,
+								  "",
+								  Um::IGroup);
+		delete activeTransaction;
+		activeTransaction = NULL;
 	}
 	m_updateManager.setUpdatesEnabled();
 	changed();
@@ -11310,12 +11350,15 @@ void ScribusDoc::itemSelection_AlignItemRight(int i, double newX, AlignMethod ho
 	double width=AObjects[i].x2-AObjects[i].x1;
 	bool resize = (how == alignByResizing && diff > -width);
 	for (int j = 0; j < AObjects[i].Objects.count(); ++j)
-		if (!AObjects[i].Objects.at(j)->locked()) {
-			if (resize) {
+		if (!AObjects[i].Objects.at(j)->locked())
+		{
+			if (resize)
+			{
 				AObjects[i].Objects.at(j)->resizeBy(diff, 0.0);
 				AObjects[i].Objects.at(j)->updateClip();
 			}
-			else AObjects[i].Objects.at(j)->moveBy(diff, 0.0);
+			else
+				AObjects[i].Objects.at(j)->moveBy(diff, 0.0);
 		}
 }
 
@@ -11325,9 +11368,11 @@ void ScribusDoc::itemSelection_AlignItemLeft(int i, double newX, AlignMethod how
 	double width=AObjects[i].x2-AObjects[i].x1;
 	bool resize = (how == alignByResizing && -diff > -width);
 	for (int j = 0; j < AObjects[i].Objects.count(); ++j)
-		if (!AObjects[i].Objects.at(j)->locked()) {
+		if (!AObjects[i].Objects.at(j)->locked())
+		{
 			AObjects[i].Objects.at(j)->moveBy(diff, 0.0);
-			if (resize) {
+			if (resize)
+			{
 				AObjects[i].Objects.at(j)->resizeBy(-diff, 0.0);
 				AObjects[i].Objects.at(j)->updateClip();
 			}
@@ -11340,8 +11385,10 @@ void ScribusDoc::itemSelection_AlignItemBottom(int i, double newY, AlignMethod h
 	double height=AObjects[i].y2-AObjects[i].y1;
 	bool resize = (how == alignByResizing && diff > -height);
 	for (int j = 0; j < AObjects[i].Objects.count(); ++j)
-		if (!AObjects[i].Objects.at(j)->locked()) {
-			if (resize) {
+		if (!AObjects[i].Objects.at(j)->locked())
+		{
+			if (resize)
+			{
 				AObjects[i].Objects.at(j)->resizeBy(0.0, diff);
 				AObjects[i].Objects.at(j)->updateClip();
 			}
@@ -11355,9 +11402,11 @@ void ScribusDoc::itemSelection_AlignItemTop(int i, double newY, AlignMethod how)
 	double height=AObjects[i].y2-AObjects[i].y1;
 	bool resize = (how == alignByResizing && -diff > -height);
 	for (int j = 0; j < AObjects[i].Objects.count(); ++j)
-		if (!AObjects[i].Objects.at(j)->locked()) {
+		if (!AObjects[i].Objects.at(j)->locked())
+		{
 			AObjects[i].Objects.at(j)->moveBy(0.0, diff);
-			if (resize) {
+			if (resize)
+			{
 				AObjects[i].Objects.at(j)->resizeBy(0.0, -diff);
 				AObjects[i].Objects.at(j)->updateClip();
 			}

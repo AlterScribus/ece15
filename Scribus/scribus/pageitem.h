@@ -704,7 +704,7 @@ public:
 	void setFillEvenOdd(bool val) { fillRule = val; }
 	//
 	bool overprint() const { return doOverprint; }
-	void setOverprint(bool val) { doOverprint = val; }
+	void setOverprint(bool val);
 	// rect / oval / round / other
 	int frameType() const { return FrameType; }
 	void setFrameType(int val) { FrameType = val; }
@@ -1181,6 +1181,7 @@ public:
 	
 	bool isAnnotation() const { return m_isAnnotation; }
 	void setIsAnnotation(bool);
+	void setIsBookMark(bool);
 	void setAnnotation(const Annotation& ad);
 	Annotation& annotation() { return m_annotation; }
 	const Annotation& annotation() const { return m_annotation; }
