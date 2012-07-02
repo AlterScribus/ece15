@@ -997,7 +997,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["viewFit200"], "View", false);
 	scrMenuMgr->addMenuItem(scrActions["viewFit400"], "View", false);
 	scrMenuMgr->addMenuSeparator("View");
-	scrMenuMgr->addMenuItem(scrActions["viewFitPreview"], "View", true);
+	scrMenuMgr->addMenuItem(scrActions["viewPreviewMode"], "View", true);
 	scrMenuMgr->addMenuSeparator("View");
 	scrMenuMgr->addMenuItem(scrActions["viewShowMargins"], "View", true);
 	scrMenuMgr->addMenuItem(scrActions["viewShowBleeds"], "View", true);
@@ -10100,7 +10100,6 @@ void ScribusMainWindow::PutToPatterns()
 	uint docSelectionCount = doc->m_Selection->count();
 	QString patternName = "Pattern_"+doc->m_Selection->itemAt(0)->itemName();
 	patternName = patternName.trimmed().simplified().replace(" ", "_");
-	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	PageItem* currItem;
 	Selection itemSelection(this, false);
@@ -10207,7 +10206,7 @@ void ScribusMainWindow::PutToPatterns()
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
 	view->DrawNew();
-	undoManager->setUndoEnabled(wasUndo);
+	undoManager->setUndoEnabled(true);
 }
 
 void ScribusMainWindow::managePaints()
