@@ -40,7 +40,6 @@ for which a new license (GPL+exception) is in place.
 #include "annotation.h"
 #include "colormgmt/sccolormgmtstructs.h"
 #include "desaxe/saxio.h"
-//#include "notesset.h"
 #include "observable.h"
 #include "pagestructs.h"
 #include "scimage.h"
@@ -73,7 +72,6 @@ class PageItem_PolyLine;
 class PageItem_RegularPolygon;
 class PageItem_Table;
 class PageItem_TextFrame;
-class PageItem_NoteFrame;
 class PageItem_PathText;
 class PageItem_LatexFrame;
 class PageItem_Spiral;
@@ -101,9 +99,6 @@ class SCRIBUS_API PageItem : public QObject, public UndoObject, public SaxIO, pu
 	Q_PROPERTY(double lineTransparency READ lineTransparency WRITE setLineTransparency DESIGNABLE false)
 	Q_PROPERTY(bool m_Locked READ locked WRITE setLocked DESIGNABLE false)
 	Q_PROPERTY(bool m_SizeLocked READ sizeLocked WRITE setSizeLocked DESIGNABLE false)
-	//used for notes frames
-	Q_PROPERTY(bool m_SizeHLocked READ sizeHLocked WRITE setSizeHLocked DESIGNABLE false)
-	Q_PROPERTY(bool m_SizeVLocked READ sizeVLocked WRITE setSizeVLocked DESIGNABLE false)
 	Q_PROPERTY(bool m_ImageIsFlippedV READ imageFlippedV WRITE setImageFlippedV DESIGNABLE false)
 	Q_PROPERTY(bool m_ImageIsFlippedH READ imageFlippedH WRITE setImageFlippedH DESIGNABLE false)
 	Q_PROPERTY(double lineWidth READ lineWidth WRITE setLineWidth DESIGNABLE false)
@@ -200,7 +195,6 @@ public:
 	virtual PageItem_Polygon * asPolygon() { return NULL; }
 	virtual PageItem_PolyLine * asPolyLine() { return NULL; }
 	virtual PageItem_TextFrame * asTextFrame() { return NULL; }
-	virtual PageItem_NoteFrame * asNoteFrame() { return NULL; }
 	virtual PageItem_LatexFrame * asLatexFrame() { return NULL; }
 
 	virtual PageItem_OSGFrame * asOSGFrame() { return NULL; }
@@ -225,7 +219,6 @@ public:
 	virtual bool isArc()			const { return false; }
 	virtual bool isSpiral()			const { return false; }
 	virtual bool isTable()			const { return false; }
-	virtual bool isNoteFrame()		const { return false; }
 
 	/** @brief Frame Type
 	 *
@@ -244,7 +237,15 @@ protected:
 	
 public:
 	PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double w, double h, double w2, QString fill, QString outline);
-	~PageItem();
+	~PageItem()
+	{
+		if (tempImageFile != NULL)
+			delete tempImageFile;
+//		if (isWeld())
+//			unWeldFromMaster(true);
+//		if (isWelded())
+//			unWeldChild();
+	}
 
 	// Get item level relative to its parent doc or group
 	int level();
@@ -321,8 +322,7 @@ public:
 	void SetFrameRound();
 	void setPolyClip(int up, int down = 0);
 	void updatePolyClip();
-	//added switch for not updating welded items - used by notes frames with automatic size adjusted
-	void updateClip(bool updateWelded = true);
+	void updateClip();
 	void convertClip();
 	void getBoundingRect(double *x1, double *y1, double *x2, double *y2) const;
 	void getVisualBoundingRect(double *x1, double *y1, double *x2, double *y2) const;
@@ -488,7 +488,6 @@ public:
 	QString externalFile() const { return Pfile; }
 	void setExternalFile(QString val);
 	void setImagePagenumber(int num) { pixm.imgInfo.actualPageNumber = num; }
-	void setResolution(int);
 	
 	//FIXME: maybe these should go into annotation?
 	QString fileIconPressed() const { return Pfile2; }
@@ -543,16 +542,12 @@ public:
 	PageItem* nextInChain() { return NextBox; }
 	const PageItem* prevInChain() const { return BackBox; }
 	const PageItem* nextInChain() const { return NextBox; }
-	//you can change all code for search first or last item in chain
-	PageItem* firstInChain();
-	PageItem* lastInChain();
 	PageItem *Parent;
 
 	bool testLinkCandidate(PageItem* nextFrame);
 	void unlink();
 	void link(PageItem* nextFrame);
 	void dropLinks();
-	void unlinkWithText(bool);
 
 protected:
 	PageItem *BackBox;
@@ -667,16 +662,7 @@ public:
 	void setIsPDFBookmark(bool val) { isBookmark = val; }
 	// 0=none, 1,2,3,4=linear, 5=radial, 6=free linear, 7=free radial, 8=pattern 
 	int gradientType() const { return GrType; }
-	void setGradientType(int val);
-	int gradientStartX() const { return GrStartX; }
-	void setGradientStartX(int val);
-	int gradientStartY() const { return GrStartY; }
-	void setGradientStartY(int val);
-	int gradientEndX() const { return GrEndX; }
-	void setGradientEndX(int val);
-	int gradientEndY() const { return GrEndX; }
-	void setGradientEndY(int val);
-	void setFillGradient(VGradient grad);
+	void setGradientType(int val) { GrType = val; }
 	void set4ColorGeometry(FPoint c1, FPoint c2, FPoint c3, FPoint c4);
 	void set4ColorTransparency(double t1, double t2, double t3, double t4);
 	void set4ColorShade(int t1, int t2, int t3, int t4);
@@ -716,7 +702,7 @@ public:
 	void setFillEvenOdd(bool val) { fillRule = val; }
 	//
 	bool overprint() const { return doOverprint; }
-	void setOverprint(bool val);
+	void setOverprint(bool val) { doOverprint = val; }
 	// rect / oval / round / other
 	int frameType() const { return FrameType; }
 	void setFrameType(int val) { FrameType = val; }
@@ -1027,12 +1013,8 @@ public:
 	void toggleSizeLock();
 	/** @brief Is the item's size locked? */
 	bool sizeLocked() const { return m_SizeLocked; }
-	bool sizeHLocked() const { return m_SizeHLocked || m_SizeLocked; }
-	bool sizeVLocked() const { return m_SizeVLocked || m_SizeLocked; }
 	/** @brief set lock for resizing */
 	void setSizeLocked(bool isLocked);
-	void setSizeHLocked(bool isLocked) { m_SizeHLocked = isLocked; }
-	void setSizeVLocked(bool isLocked) { m_SizeVLocked = isLocked; }
 
 	/**
 	 * @brief Does text flow around this object and how
@@ -1143,9 +1125,8 @@ public:
 	 * @author Craig Ringer
 	 *
 	 * Usually of the form 'Copy of [name]' or 'Copy of [name] (n)'
-	 * cezaryece: if prependCopy is false then form '[name] (n)' is generated
 	 */
-	QString generateUniqueCopyName(const QString originalName, bool prependCopy = true) const;
+	QString generateUniqueCopyName(const QString originalName) const;
 	/**
 	 * @brief Is this item printed?
 	 * @sa setPrintEnabled()
@@ -1198,7 +1179,6 @@ public:
 	
 	bool isAnnotation() const { return m_isAnnotation; }
 	void setIsAnnotation(bool);
-	void setIsBookMark(bool);
 	void setAnnotation(const Annotation& ad);
 	Annotation& annotation() { return m_annotation; }
 	const Annotation& annotation() const { return m_annotation; }
@@ -1228,35 +1208,6 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
-	void restoreFillGradient(SimpleState *state, bool isUndo);
-	void restoreGradientStartX(SimpleState *state, bool isUndo);
-	void restoreGradientStartY(SimpleState *state, bool isUndo);
-	void restoreGradientEndX(SimpleState *state, bool isUndo);
-	void restoreGradientEndY(SimpleState *state, bool isUndo);
-	void restoreGradientType(SimpleState *state, bool isUndo);
-	void restoreStartArrowScale(SimpleState *state, bool isUndo);
-	void restoreEndArrowScale(SimpleState *state, bool isUndo);
-	void restoreImageRotation(SimpleState *state, bool isUndo);
-	void restorePasteInline(SimpleState *state, bool isUndo);
-	void restorePasteText(SimpleState *state, bool isUndo);
-	void restoreFirstLineOffset(SimpleState *state, bool isUndo);
-	void restoreParagraphStyle(SimpleState *state, bool isUndo);
-	void restoreDefaultParagraphStyle(SimpleState *state, bool isUndo);
-	void restoreCharStyle(SimpleState *state, bool isUndo);
-	void restoreLeftTextFrameDist(SimpleState *state, bool isUndo);
-	void restoreRightTextFrameDist(SimpleState *state, bool isUndo);
-	void restoreTopTextFrameDist(SimpleState *state, bool isUndo);
-	void restoreBottomTextFrameDist(SimpleState *state, bool isUndo);
-	void restoreSetCharStyle(SimpleState *state, bool isUndo);
-	void restoreColumns(SimpleState *state, bool isUndo);
-	void restoreColumnsGap(SimpleState *state, bool isUndo);
-	void restoreSetParagraphStyle(SimpleState *state, bool isUndo);
-	void restoreLoremIpsum(SimpleState *state, bool isUndo);
-	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
-	void restoreInsertFrameText(SimpleState *state, bool isUndo);
-	void restoreCornerRadius(SimpleState *state, bool isUndo);
-	void restoreShowImage(SimpleState *state, bool isUndo);
-	void restoreResTyp(SimpleState *state, bool isUndo);
 	void restoreMove(SimpleState *state, bool isUndo);
 	void restoreResize(SimpleState *state, bool isUndo);
 	void restoreRotate(SimpleState *state, bool isUndo);
@@ -1285,7 +1236,10 @@ protected:
 	void restoreGetImage(UndoState *state, bool isUndo);
 	void restorePoly(SimpleState *state, bool isUndo, bool isContour);
 	void restoreUniteItem(SimpleState *state, bool isUndo);
+<<<<<<< HEAD
 	void restoreSplitItem(SimpleState *state, bool isUndo);
+=======
+>>>>>>> Bug 4718 : add an undo/redo for combine polygons action
 	void restoreContourLine(SimpleState *state, bool isUndo);
 	void restoreShapeType(SimpleState *state, bool isUndo);
 	void restoreLayer(SimpleState *state, bool isUndo);
@@ -1426,11 +1380,6 @@ protected:
 	 */
 	bool m_SizeLocked;
 
-	/**
-	 * @for notes frames - locking horizontal or vertical size
-	**/
-	bool m_SizeHLocked;
-	bool m_SizeVLocked;
 	/**
 	 * @brief Should text flow around the item
 	 * @sa PageItem::textFlowMode(), PateItem::setTextFlowMode()
@@ -1629,8 +1578,8 @@ signals:
 	//void textToFrameDistances(double, double, double, double); //left, top, bottom, right: Extra, TExtra, BExtra, RExtra
 	//FIXME: columns, grid ?
 	
-public:
 	//items welding (item follows while item moves which they are connected with)
+public:
 	struct weldingInfo
 	{
 		PageItem *weldItem;
@@ -1646,11 +1595,6 @@ public:
 	void moveWelded(double DX, double DY, int weld);
 	void moveWelded(double DX, double DY, PageItem* except = NULL);
 	void rotateWelded(double dR, double oldRot);
-	//added for autowelding feature of notes frames
-	//setting welding point with given pItem to given coords
-	void setWeldPoint(double DX, double DY, PageItem *pItem);
-	//used by notes frames to get content of notes from itemText
-	QString getItemTextSaxed(int selStart, int selLength);
 };
 
 Q_DECLARE_METATYPE(PageItem*)
