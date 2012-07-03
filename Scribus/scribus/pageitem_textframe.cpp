@@ -1218,13 +1218,13 @@ bool PageItem_TextFrame::moveLinesFromPreviousFrame ()
 }
 
 // called at the end of a frame or column
-void PageItem_TextFrame::adjustParagraphEndings (int &a, bool EndOfFrame)
+bool PageItem_TextFrame::adjustParagraphEndings (int &a, bool EndOfFrame)
 {
 	// More text to go - let's apply paragraph flowing options - orphans/widows, etc
 	int pos = a;
 	if (EndOfFrame)
 		pos = itemText.lastInFrame();
-	if (pos >= itemText.length() - 1) return;
+	if (pos >= itemText.length() - 1) return false;
 
 	ParagraphStyle style = itemText.paragraphStyle (pos);
 	int paragraphStart = itemText.prevParagraph (pos) + 1;
@@ -1262,11 +1262,12 @@ void PageItem_TextFrame::adjustParagraphEndings (int &a, bool EndOfFrame)
 				if (nextInChain())
 					frame = nextInChain()->asTextFrame();
 			}
-			else
-				a = lastInFrame();
-			frame->warnedList.append(QPair<int, int>(itemText.startOfParagraph(itemText.nrOfParagraph(MaxChars)), itemText.endOfParagraph(itemText.nrOfParagraph(MaxChars))));
+			a = itemText.lastInFrame();
+			frame->warnedList.append(QPair<int, int>(itemText.startOfParagraph(itemText.nrOfParagraph(a)), itemText.endOfParagraph(itemText.nrOfParagraph(a +1))));
+			return true;
 		}
 	}
+	return false;
 }
 
 void PageItem_TextFrame::layout() 
@@ -1977,6 +1978,8 @@ void PageItem_TextFrame::layout()
 					a--;
 					current.recalculateY = true;
 					current.addLeftIndent = true;
+					if (adjustParagraphEndings (a, false))
+						current.startLine(a + 1);
 					continue;
 				}
 				current.line.x = current.restartX = current.xPos;
@@ -2306,7 +2309,7 @@ void PageItem_TextFrame::layout()
 					//check if after overflow text can be placed
 					overflowWidth = realEnd - (current.xPos - current.maxShrink);
 					double newXAdd = overflowWidth - style.rightMargin() + style.minGlyphExtension() * wide + hyphWidth;
-					if (current.isEndOfLine(newXAdd) || current.xPos + newXAdd >= current.colRight || realEnd >= current.mustLineEnd)
+					if (current.isEndOfLine(newXAdd) || (current.xPos + newXAdd >= current.colRight) || (realEnd >= current.mustLineEnd))
 					{
 						if (!current.afterOverflow)
 						{
@@ -2726,7 +2729,8 @@ void PageItem_TextFrame::layout()
 				if (DropCmode)
 					addAsce = qMax(realAsce, asce + offset);
 				else
-					addAsce = asce + offset;				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+					addAsce = asce + offset;
+				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;

@@ -101,7 +101,7 @@ protected:
 	virtual QString infoDescription();
 	// Move incomplete lines from the previous frame if needed.
 	bool moveLinesFromPreviousFrame ();
-	void adjustParagraphEndings(int &a, bool EndOfFrame = true);
+	bool adjustParagraphEndings(int &a, bool EndOfFrame = true);
 
 private:
 	bool cursorBiasBackward;
