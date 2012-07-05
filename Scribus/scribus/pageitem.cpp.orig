@@ -35,19 +35,15 @@ for which a new license (GPL+exception) is in place.
 #include <QMessageBox>
 #include <QPolygon>
 #include <cassert>
-#include <sstream>
 #include <QDebug>
 
 #include "canvas.h"
 #include "cmsettings.h"
 #include "colorblind.h"
 #include "commonstrings.h"
-#include "desaxe/saxXML.h"
-#include "marks.h"
 
 #include "pageitem_group.h"
 #include "pageitem_textframe.h"
-#include "pageitem_noteframe.h"
 #include "pageitem_latexframe.h"
 #include "prefsmanager.h"
 
@@ -829,32 +825,6 @@ PageItem::PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double 
 	isInlineImage = false;
 }
 
-PageItem::~PageItem()
-{
-	if (tempImageFile != NULL)
-		delete tempImageFile;
-	//remove marks
-
-	if (isTextFrame())
-	{
-		if (!asTextFrame()->isInChain() && itemText.length() >0)
-		{
-			for (int pos=0; pos < itemText.length(); ++pos)
-			{
-				if (itemText.item(pos)->hasMark())
-				{
-					Mark* mrk = itemText.item(pos)->mark;
-					m_Doc->eraseMark(mrk);
-				}
-			}
-		}
-	}
-//		if (isWeld())
-//			unWeldFromMaster(true);
-//		if (isWelded())
-//			unWeldChild();
-}
-
 void PageItem::setXPos(const double newXPos, bool drawingOnly)
 {
 	Xpos = newXPos;
@@ -1058,13 +1028,6 @@ void PageItem::moveImageXYOffsetBy(const double dX, const double dY)
 
 void PageItem::setImageRotation(const double newRotation)
 {
-	if(LocalRot == newRotation)
-		return;
-	SimpleState *ss = new SimpleState(Um::Rotate,"",Um::IRotate);
-	ss->set("IMAGE_ROTATION","image_rotation");
-	ss->set("OLD_ROT",LocalRot);
-	ss->set("NEW_ROT",newRotation);
-	undoManager->action(this,ss);
 	LocalRot = newRotation;
 	if (m_Doc->isLoading())
 		return;
@@ -1343,23 +1306,6 @@ void PageItem::dropLinks()
 	}
 }
 
-//unlink selected frame from text chain
-//but copy or cut its content from itemText
-void PageItem::unlinkWithText(bool cutText)
-{
-	// FIX ME - make this operation undoable
-	PageItem * Next = NextBox;
-	itemText.select(firstInFrame(),lastInFrame() - firstInFrame() +1);
-	StoryText content(m_Doc);
-	content.insert(0, itemText, true);
-	if (cutText)
-		itemText.removeSelection();
-	dropLinks();
-	itemText.append(content);
-	if (Next)
-		Next->update();
-}
-
 /// tests if a character is displayed by this frame
 bool PageItem::frameDisplays(int textpos) const
 {
@@ -1413,83 +1359,34 @@ void PageItem::currentTextProps(ParagraphStyle& parStyle) const
 
 void PageItem::setTextToFrameDistLeft(double newLeft)
 {
-	if(Extra==newLeft)
-		return;
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
-		ss->set("LEFT_TEXTFRAMEDIST", "left_textframedist");
-		ss->set("OLD_DIST",Extra);
-		ss->set("NEW_DIST",newLeft);
-		undoManager->action(this, ss);
-	}
 	Extra=newLeft;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDistRight(double newRight)
 {
-	if(RExtra==newRight)
-		return;
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
-		ss->set("RIGHT_TEXTFRAMEDIST", "right_textframedist");
-		ss->set("OLD_DIST",RExtra);
-		ss->set("NEW_DIST",newRight);
-		undoManager->action(this, ss);
-	}
 	RExtra=newRight;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDistTop(double newTop)
 {
-	if(TExtra==newTop)
-		return;
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
-		ss->set("TOP_TEXTFRAMEDIST", "top_textframedist");
-		ss->set("OLD_DIST",TExtra);
-		ss->set("NEW_DIST",newTop);
-		undoManager->action(this, ss);
-	}
 	TExtra=newTop;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDistBottom(double newBottom)
 {
-	if(BExtra==newBottom)
-		return;
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::TextFrameDist, "", Um::ITextFrame);
-		ss->set("BOTTOM_TEXTFRAMEDIST", "bottom_textframedist");
-		ss->set("OLD_DIST",BExtra);
-		ss->set("NEW_DIST",newBottom);
-		undoManager->action(this, ss);
-	}
 	BExtra=newBottom;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
 void PageItem::setTextToFrameDist(double newLeft, double newRight, double newTop, double newBottom)
 {
-	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled())
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::TextFrame, Um::IDocument, Um::TextFrameDist, "", Um::ITextFrame));
-	setTextToFrameDistLeft(newLeft);
-	setTextToFrameDistRight(newRight);
-	setTextToFrameDistTop(newTop);
-	setTextToFrameDistBottom(newBottom);
-	if (activeTransaction)
-	{
-		activeTransaction->commit();
-		delete activeTransaction;
-		activeTransaction = NULL;
-	}
+	Extra=newLeft;
+	RExtra=newRight;
+	TExtra=newTop;
+	BExtra=newBottom;
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
@@ -1500,40 +1397,15 @@ void PageItem::setGridOffset(double) { } // FIXME
 void PageItem::setGridDistance(double) { } // FIXME
 void PageItem::setColumns(int n) 
 {
-	if(Cols==n)
-		return;
-	if(UndoManager::undoEnabled()){
-		SimpleState *ss = new SimpleState(Um::Columns, "", Um::IBorder);
-		ss->set("COLUMNS", "columns");
-		ss->set("OLD_COLUMNS", Cols);
-		ss->set("NEW_COLUMNS",n);
-		undoManager->action(this, ss);
-	}
-	Cols = qMax(1, n);
+	Cols = qMax(1, n); //FIXME: undo
 }
 void PageItem::setColumnGap(double gap)
 {
-	if(ColGap==gap)
-		return;
-	if(UndoManager::undoEnabled()){
-		SimpleState *ss = new SimpleState(Um::Columns, "", Um::IBorder);
-		ss->set("COLUMNSGAP", "columnsgap");
-		ss->set("OLD_COLUMNS", ColGap);
-		ss->set("NEW_COLUMNS",gap);
-		undoManager->action(this, ss);
-	}
-	ColGap = gap;
+	ColGap = gap; //FIXME: undo
 }
 
 void PageItem::setCornerRadius(double newRadius)
 {
-	if(RadRect==newRadius)
-		return;
-	SimpleState *state = new SimpleState(Um::RoundCorner,"",Um::IBorder);
-	state->set("CORNER_RADIUS","corner_radius");
-	state->set("OLD_RADIUS",RadRect);
-	state->set("NEW_RADIUS",newRadius);
-	undoManager->action(this,state);
 	RadRect=newRadius;
 	//emit cornerRadius(RadRect);
 }
@@ -2250,15 +2122,6 @@ QString PageItem::ExpandToken(uint base)
 		else
 			return "%";
 	}
-	//check for marks
-	else if (ch == SpecialChars::OBJECT)
-	{
-		ScText* hl = itemText.item(base);
-		if ((hl->mark != NULL) && !hl->mark->isType(MARKAnchorType) && !hl->mark->isType(MARKIndexType))
-		{
-			chstr = hl->mark->getString();
-		}
-	}
 	return chstr;
 }
 
@@ -2440,13 +2303,6 @@ void PageItem::drawGlyphs(ScPainter *p, const CharStyle& style, GlyphLayout& gly
 		{
 			points.resize(0);
 			points.addQuadPoint(0, -10, 0, -10, 0, -6, 0, -6);
-			stroke = true;
-		}
-		else if (glyph == SpecialChars::OBJECT.unicode())
-		{
-			//for showing marks entries as control chars
-			points.resize(0);
-			points.addQuadPoint(0, -8, 1, -8, 0, -6, 1, -6);
 			stroke = true;
 		}
 		else // ???
@@ -2705,16 +2561,6 @@ void PageItem::setGradient(const QString &newGradient)
 {
 	if (gradientVal != newGradient)
 		gradientVal = newGradient;
-}
-
-void PageItem::setFillGradient(VGradient grad){
-	if(fill_gradient==grad)
-		return;
-	ScItemState<QPair<VGradient,VGradient> > *is = new ScItemState<QPair<VGradient,VGradient> >(Um::GradVal);
-	is->set("FILL_GRAD","fill_grad");
-	is->setItem(qMakePair(fill_gradient,grad));
-	undoManager->action(this,is);
-	fill_gradient=grad;
 }
 
 void PageItem::setPattern(const QString &newPattern)
@@ -2977,82 +2823,88 @@ void PageItem::setMeshPointColor(int x, int y, QString color, int shade, double 
 		VisionDefectColor defect;
 		MQColor = defect.convertDefect(MQColor, m_Doc->previewVisual);
 	}
-	meshPoint* mp;
-	UndoTransaction trans(undoManager->beginTransaction(Um::Move,Um::IFill,Um::GradVal,"",Um::IShade));
 	if (forPatch)
 	{
-		meshGradientPatch *patch = &(meshGradientPatches[x]);
+		meshGradientPatch patch = meshGradientPatches[x];
+		meshPoint mp;
 		switch (y)
 		{
 			case 1:
-				mp = &(patch->TL);
+				mp = meshGradientPatches[x].TL;
+				meshGradientPatches[x].TL.colorName = MColor;
+				meshGradientPatches[x].TL.color = MQColor;
+				meshGradientPatches[x].TL.shade = shade;
+				meshGradientPatches[x].TL.transparency = transparency;
 				break;
 			case 2:
-				mp = &(patch->TR);
+				mp = meshGradientPatches[x].TR;
+				meshGradientPatches[x].TR.colorName = MColor;
+				meshGradientPatches[x].TR.color = MQColor;
+				meshGradientPatches[x].TR.shade = shade;
+				meshGradientPatches[x].TR.transparency = transparency;
 				break;
 			case 3:
-				mp = &(patch->BR);
+				mp = meshGradientPatches[x].BR;
+				meshGradientPatches[x].BR.colorName = MColor;
+				meshGradientPatches[x].BR.color = MQColor;
+				meshGradientPatches[x].BR.shade = shade;
+				meshGradientPatches[x].BR.transparency = transparency;
 				break;
 			case 4:
-				mp = &(patch->BL);
+				mp = meshGradientPatches[x].BL;
+				meshGradientPatches[x].BL.colorName = MColor;
+				meshGradientPatches[x].BL.color = MQColor;
+				meshGradientPatches[x].BL.shade = shade;
+				meshGradientPatches[x].BL.transparency = transparency;
 				break;
 		}
-		mp->setColorName(MColor);
-		mp->setColor(MQColor);
-		mp->setShade(shade);
-		mp->setTransparency(transparency);
-		FPoint xx = mp->gridPoint;
+		FPoint xx = mp.gridPoint;
 		for (int col = 0; col < meshGradientPatches.count(); col++)
 		{
 			if (col != x)
 			{
 				if (meshGradientPatches[col].TL.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].TL);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].TL.colorName = MColor;
+					meshGradientPatches[col].TL.color = MQColor;
+					meshGradientPatches[col].TL.shade = shade;
+					meshGradientPatches[col].TL.transparency = transparency;
 				}
 				if (meshGradientPatches[col].TR.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].TR);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].TR.colorName = MColor;
+					meshGradientPatches[col].TR.color = MQColor;
+					meshGradientPatches[col].TR.shade = shade;
+					meshGradientPatches[col].TR.transparency = transparency;
 				}
 				if (meshGradientPatches[col].BR.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].BR);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].BR.colorName = MColor;
+					meshGradientPatches[col].BR.color = MQColor;
+					meshGradientPatches[col].BR.shade = shade;
+					meshGradientPatches[col].BR.transparency = transparency;
 				}
 				if (meshGradientPatches[col].BL.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].BL);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].BL.colorName = MColor;
+					meshGradientPatches[col].BL.color = MQColor;
+					meshGradientPatches[col].BL.shade = shade;
+					meshGradientPatches[col].BL.transparency = transparency;
 				}
 			}
 		}
+
 	}
 	else
 	{
 		if ((x > -1) && (y > -1))
 		{
-			mp = &(meshGradientArray[x][y]);
-			mp->setColorName(MColor);
-			mp->setColor(MQColor);
-			mp->setShade(shade);
-			mp->setTransparency(transparency);
+			meshGradientArray[x][y].colorName = MColor;
+			meshGradientArray[x][y].color = MQColor;
+			meshGradientArray[x][y].shade = shade;
+			meshGradientArray[x][y].transparency = transparency;
 		}
 	}
-	trans.commit();
 }
 
 void PageItem::createGradientMesh(int rows, int cols)
@@ -3640,13 +3492,6 @@ void PageItem::setFillBlendmode(int newBlendmode)
 {
 	if (fillBlendmodeVal == newBlendmode)
 		return; // nothing to do -> return
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::BlendMode, 0, Um::IGroup);
-		ss->set("FILLBLENDMODE", newBlendmode);
-		ss->set("FILLBLENDMODE_OLD", fillBlendmodeVal);
-		undoManager->action(this, ss);
-	}
 	fillBlendmodeVal = newBlendmode;
 }
 
@@ -3873,13 +3718,6 @@ void PageItem::setLineBlendmode(int newBlendmode)
 {
 	if (lineBlendmodeVal == newBlendmode)
 		return; // nothing to do -> return
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::BlendMode, 0, Um::IGroup);
-		ss->set("LINEBLENDMODE", newBlendmode);
-		ss->set("LINEBLENDMODE_OLD", lineBlendmodeVal);
-		undoManager->action(this, ss);
-	}
 	lineBlendmodeVal = newBlendmode;
 }
 
@@ -3998,11 +3836,6 @@ void PageItem::setStartArrowScale(int newScale)
 {
 	if (m_startArrowScale == newScale)
 		return; // nothing to do -> return
-	SimpleState *ss = new SimpleState(Um::StartArrowScale,"",Um::IArrow);
-	ss->set("START_ARROWSCALE","start_arrowscale");
-	ss->set("OLD_SCALE",m_startArrowScale);
-	ss->set("NEW_SCALE",newScale);
-	undoManager->action(this,ss);
 	m_startArrowScale = newScale;
 }
 
@@ -4010,11 +3843,6 @@ void PageItem::setEndArrowScale(int newScale)
 {
 	if (m_endArrowScale == newScale)
 		return; // nothing to do -> return
-	SimpleState *ss = new SimpleState(Um::EndArrowScale,"",Um::IArrow);
-	ss->set("END_ARROWSCALE","end_arrowscale");
-	ss->set("OLD_SCALE",m_endArrowScale);
-	ss->set("NEW_SCALE",newScale);
-	undoManager->action(this,ss);
 	m_endArrowScale = newScale;
 }
 
@@ -4087,19 +3915,6 @@ void PageItem::setImageScalingMode(bool freeScale, bool keepRatio)
 	AspectRatio = keepRatio;
 	AdjustPictScale();
 	update();
-}
-
-void PageItem::setOverprint(bool val) {
-	if(doOverprint==val)
-			return;
-
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::Overprint, 0, Um::IGroup);
-		ss->set("OVERPRINT", val);
-		undoManager->action(this, ss);
-	}
-	doOverprint = val;
 }
 
 void PageItem::toggleLock()
@@ -4519,24 +4334,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	{
 		if (ss->contains("OLD_XPOS"))
 			restoreMove(ss, isUndo);
-		if (ss->contains("FILL_GRAD"))
-			restoreFillGradient(ss, isUndo);
-		if (ss->contains("GRAD_STARTX"))
-			restoreGradientStartX(ss, isUndo);
-		if (ss->contains("GRAD_ENDX"))
-			restoreGradientEndX(ss, isUndo);
-		if (ss->contains("GRAD_STARTY"))
-			restoreGradientStartY(ss, isUndo);
-		if (ss->contains("GRAD_ENDY"))
-			restoreGradientEndY(ss, isUndo);
-		if (ss->contains("GRAD_TYPE"))
-			restoreGradientType(ss, isUndo);
-		if (ss->contains("END_ARROWSCALE"))
-			restoreEndArrowScale(ss, isUndo);
-		if (ss->contains("START_ARROWSCALE"))
-			restoreStartArrowScale(ss, isUndo);
-		if (ss->contains("IMAGE_ROTATION"))
-			restoreImageRotation(ss, isUndo);
 		else if (ss->contains("OLD_HEIGHT"))
 			restoreResize(ss, isUndo);
 		else if (ss->contains("OLD_ROT"))
@@ -4547,81 +4344,12 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreShade(ss, isUndo);
 		else if (ss->contains("LINE_COLOR"))
 			restoreLineColor(ss, isUndo);
-		else if (ss->contains("COLUMNS"))
-			restoreColumns(ss, isUndo);
-		else if (ss->contains("COLUMNSGAP"))
-			restoreColumnsGap(ss, isUndo);
 		else if (ss->contains("LINE_SHADE"))
 			restoreLineShade(ss, isUndo);
-		else if (ss->contains("DELETE_FRAMETEXT"))
-			restoreDeleteFrameText(ss, isUndo);
-		else if (ss->contains("INSERT_FRAMETEXT"))
-			restoreInsertFrameText(ss,isUndo);
-		else if (ss->contains("LOREM_FRAMETEXT"))
-			restoreLoremIpsum(ss,isUndo);
-		else if (ss->contains("APPLY_CHARSTYLE"))
-			restoreCharStyle(ss,isUndo);
-		else if (ss->contains("SET_CHARSTYLE"))
-			restoreSetCharStyle(ss,isUndo);
-		else if (ss->contains("SET_PARASTYLE"))
-			restoreSetParagraphStyle(ss,isUndo);
-		else if (ss->contains("APPLY_PARASTYLE"))
-			restoreParagraphStyle(ss,isUndo);
-		else if (ss->contains("APPLY_DEFAULTPARASTYLE"))
-			restoreDefaultParagraphStyle(ss,isUndo);
-		else if (ss->contains("LEFT_TEXTFRAMEDIST"))
-			restoreLeftTextFrameDist(ss,isUndo);
-		else if (ss->contains("RIGHT_TEXTFRAMEDIST"))
-			restoreRightTextFrameDist(ss,isUndo);
-		else if (ss->contains("TOP_TEXTFRAMEDIST"))
-			restoreTopTextFrameDist(ss,isUndo);
-		else if (ss->contains("BOTTOM_TEXTFRAMEDIST"))
-			restoreBottomTextFrameDist(ss,isUndo);
-		else if (ss->contains("FIRSTLINEOFFSET"))
-			restoreFirstLineOffset(ss,isUndo);
-		else if (ss->contains("PASTE_TEXT"))
-			restorePasteText(ss,isUndo);
-		else if (ss->contains("CORNER_RADIUS"))
-			restoreCornerRadius(ss,isUndo);
 		else if (ss->contains("IMAGEFLIPH"))
 		{
 			select();
 			m_Doc->itemSelection_FlipH();
-		}
-		else if (ss->contains("OVERPRINT"))
-		{
-			if (isUndo)
-				doOverprint=!ss->getBool("OVERPRINT");
-			else
-				doOverprint=ss->getBool("OVERPRINT");
-		}
-		else if (ss->contains("FILLBLENDMODE"))
-		{
-			if (isUndo)
-				fillBlendmodeVal=ss->getInt("FILLBLENDMODE_OLD");
-			else
-				fillBlendmodeVal=ss->getInt("FILLBLENDMODE");
-		}
-		else if (ss->contains("ACTIONPDFANNOTATION"))
-		{
-			if (isUndo)
-				m_isAnnotation=!ss->getBool("ACTIONPDFANNOTATION");
-			else
-				m_isAnnotation=ss->getBool("ACTIONPDFANNOTATION");
-		}
-		else if (ss->contains("ACTIONPDFBOOKMARK"))
-		{
-			if (isUndo)
-				isBookmark=!ss->getBool("ACTIONPDFBOOKMARK");
-			else
-				isBookmark=ss->getBool("ACTIONPDFBOOKMARK");
-		}
-		else if (ss->contains("LINEBLENDMODE"))
-		{
-			if (isUndo)
-				lineBlendmodeVal=ss->getInt("LINEBLENDMODE_OLD");
-			else
-				lineBlendmodeVal=ss->getInt("LINEBLENDMODE");
 		}
 		else if (ss->contains("IMAGEFLIPV"))
 		{
@@ -4645,8 +4373,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 		}
 		else if (ss->contains("NEW_NAME"))
 			restoreName(ss, isUndo);
-		else if (ss->contains("SHOW_IMAGE"))
-			restoreShowImage(ss, isUndo);
 		else if (ss->contains("TRANSPARENCY"))
 			restoreFillTP(ss, isUndo);
 		else if (ss->contains("LINE_TRANSPARENCY"))
@@ -4681,16 +4407,17 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restorePoly(ss, isUndo, true);
 		else if (ss->contains("EDIT_SHAPE"))
 			restorePoly(ss, isUndo, false);
-		else if (ss->contains("RES_TYP"))
-			restoreResTyp(ss, isUndo);
 		else if (ss->contains("RESET_CONTOUR"))
 			restoreContourLine(ss, isUndo);
 		else if (ss->contains("CHANGE_SHAPE_TYPE"))
 			restoreShapeType(ss, isUndo);
 		else if (ss->contains("UNITEITEM"))
 			restoreUniteItem(ss, isUndo);
+<<<<<<< HEAD
 		else if (ss->contains("SPLITITEM"))
 			restoreSplitItem(ss, isUndo);
+=======
+>>>>>>> Bug 4718 : add an undo/redo for combine polygons action
 		else if (ss->contains("MIRROR_PATH_H"))
 		{
 			bool editContour = m_Doc->nodeEdit.isContourLine;
@@ -4723,8 +4450,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreReverseText(ss, isUndo);
 		else if (ss->contains("CLEAR_IMAGE"))
 			restoreClearImage(ss,isUndo);
-		else if (ss->contains("PASTE_INLINE"))
-			restorePasteInline(ss,isUndo);
 		else if (ss->contains("PATH_OPERATION"))
 			restorePathOperation(ss, isUndo);
 	}
@@ -4733,276 +4458,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->setMasterPageMode(oldMPMode);
 	m_Doc->useRaster = useRasterBackup;
 	m_Doc->SnapGuides = SnapGuidesBackup;
-}
-
-void PageItem::restoreFillGradient(SimpleState *state, bool isUndo)
-{
-	ScItemState<QPair<VGradient,VGradient> > *is = dynamic_cast<ScItemState<QPair<VGradient,VGradient> > *>(state);
-	if (isUndo)
-		fill_gradient = is->getItem().first;
-	else
-		fill_gradient = is->getItem().second;
-	update();
-}
-
-void PageItem::restoreGradientStartX(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrStartX = is->getDouble("OLD");
-	else
-		GrStartX = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientStartY(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrStartY = is->getDouble("OLD");
-	else
-		GrStartY = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientEndX(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrEndX = is->getDouble("OLD");
-	else
-		GrEndX = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientEndY(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrEndY= is->getDouble("OLD");
-	else
-		GrEndY = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientType(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrType = is->getInt("OLD");
-	else
-		GrType = is->getInt("NEW");
-}
-
-void PageItem::restoreEndArrowScale(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		m_endArrowScale = is->getInt("OLD_SCALE");
-	else
-		m_endArrowScale = is->getInt("NEW_SCALE");
-}
-
-void PageItem::restoreStartArrowScale(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		m_startArrowScale = is->getInt("OLD_SCALE");
-	else
-		m_startArrowScale = is->getInt("NEW_SCALE");
-}
-
-void PageItem::restoreImageRotation(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		LocalRot = is->getInt("OLD_ROT");
-	else
-		LocalRot = is->getInt("NEW_ROT");
-}
-
-void PageItem::restorePasteInline(SimpleState *is, bool isUndo)
-{
-	int start = is->getInt("START");
-	if (isUndo)
-	{
-		itemText.select(start,1);
-		asTextFrame()->deleteSelectedTextFromFrame();
-	}
-	else
-		itemText.insertObject(is->getInt("INDEX"));
-}
-
-void PageItem::restorePasteText(SimpleState *ss, bool isUndo)
-{
-	ScItemState<StoryText> *is = dynamic_cast<ScItemState<StoryText>*>(ss);
-	int start = is->getInt("START");
-	if (isUndo)
-	{
-		itemText.select(start,is->getItem().length());
-		asTextFrame()->deleteSelectedTextFromFrame();
-	}
-	else
-		itemText.insert(is->getItem());
-}
-
-void PageItem::restoreColumnsGap(SimpleState *ss, bool isUndo)
-{
-	if (isUndo)
-		ColGap = ss->getInt("OLD_COLUMNS");
-	else
-		ColGap = ss->getInt("NEW_COLUMNS");
-	update();
-}
-
-void PageItem::restoreLeftTextFrameDist(SimpleState *ss, bool isUndo)
-{
-	if (isUndo)
-		Extra = ss->getInt("OLD_DIST");
-	else
-		Extra = ss->getInt("NEW_DIST");
-	update();
-}
-
-void PageItem::restoreRightTextFrameDist(SimpleState *ss, bool isUndo)
-{
-	if (isUndo)
-		RExtra = ss->getInt("OLD_DIST");
-	else
-		RExtra = ss->getInt("NEW_DIST");
-	update();
-}
-
-void PageItem::restoreTopTextFrameDist(SimpleState *ss, bool isUndo)
-{
-	if (isUndo)
-		TExtra = ss->getInt("OLD_DIST");
-	else
-		TExtra = ss->getInt("NEW_DIST");
-	update();
-}
-
-void PageItem::restoreBottomTextFrameDist(SimpleState *ss, bool isUndo)
-{
-	if (isUndo)
-		BExtra = ss->getInt("OLD_DIST");
-	else
-		BExtra = ss->getInt("NEW_DIST");
-	update();
-}
-
-void PageItem::restoreColumns(SimpleState *ss, bool isUndo)
-{
-	if (isUndo)
-		Cols = ss->getInt("OLD_COLUMNS");
-	else
-		Cols = ss->getInt("NEW_COLUMNS");
-	update();
-}
-
-void PageItem::restoreFirstLineOffset(SimpleState *ss, bool isUndo)
-{
-	ScItemState<QPair<FirstLineOffsetPolicy, FirstLineOffsetPolicy > > *is = dynamic_cast<ScItemState<QPair<FirstLineOffsetPolicy, FirstLineOffsetPolicy> >*>(ss);
-	if (isUndo)
-		firstLineOffsetP = is->getItem().first;
-	else
-		firstLineOffsetP = is->getItem().second;
-	update();
-}
-
-void PageItem::restoreDefaultParagraphStyle(SimpleState *ss, bool isUndo)
-{
-	ScItemState<QPair<ParagraphStyle, ParagraphStyle > > *is = dynamic_cast<ScItemState<QPair<ParagraphStyle, ParagraphStyle> >*>(ss);
-	if (isUndo)
-		itemText.setDefaultStyle(is->getItem().second);
-	else
-		itemText.setDefaultStyle(is->getItem().first);
-}
-
-void PageItem::restoreParagraphStyle(SimpleState *ss, bool isUndo)
-{
-	ScItemState<QPair<ParagraphStyle, ParagraphStyle > > *is = dynamic_cast<ScItemState<QPair<ParagraphStyle, ParagraphStyle> >*>(ss);
-	int pos = is->getInt("POS");
-	if (isUndo)
-	{
-		itemText.eraseStyle(pos,is->getItem().first);
-		itemText.applyStyle(pos,is->getItem().second);
-	}
-	else
-		itemText.applyStyle(pos,is->getItem().first);
-}
-
-void PageItem::restoreCharStyle(SimpleState *ss, bool isUndo)
-{
-	ScItemState<QPair<CharStyle, CharStyle > > *is = dynamic_cast<ScItemState<QPair<CharStyle, CharStyle> >*>(ss);
-	int length = is->getInt("LENGTH");
-	int start = is->getInt("START");
-	if (isUndo)
-	{
-		itemText.eraseCharStyle(start,length,is->getItem().first);
-		itemText.applyCharStyle(start,length,is->getItem().second);
-	}
-	else
-		itemText.applyCharStyle(start,length,is->getItem().first);
-}
-
-void PageItem::restoreSetCharStyle(SimpleState *ss, bool isUndo)
-{
-	ScItemState<QPair<CharStyle, CharStyle > > *is = dynamic_cast<ScItemState<QPair<CharStyle, CharStyle> >*>(ss);
-	int length = is->getInt("LENGTH");
-	int start = is->getInt("START");
-	if (isUndo)
-		itemText.setCharStyle(start,length,is->getItem().second);
-	else
-		itemText.setCharStyle(start,length,is->getItem().first);
-}
-
-void PageItem::restoreSetParagraphStyle(SimpleState *ss, bool isUndo)
-{
-	ScItemState<QPair<ParagraphStyle, ParagraphStyle > > *is = dynamic_cast<ScItemState<QPair<ParagraphStyle, ParagraphStyle> >*>(ss);
-	int pos = is->getInt("POS");
-	if (isUndo)
-		itemText.setStyle(pos,is->getItem().second);
-	else
-		itemText.setStyle(pos,is->getItem().first);
-}
-
-void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
-{
-	QString sampleText = ss->get("TEXT_STR");
-	if (isUndo)
-	{
-		itemText.selectAll();
-		asTextFrame()->deleteSelectedTextFromFrame();
-	}
-	else
-		itemText.insertChars(0,sampleText);
-}
-
-void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
-{
-	QString text = ss->get("TEXT_STR");
-	int start = ss->getInt("START");
-	if (isUndo){
-		itemText.insertChars(start,text);
-	} else {
-		itemText.select(start,text.length());
-		asTextFrame()->deleteSelectedTextFromFrame();
-	}
-}
-
-void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo)
-{
-	QString text = ss->get("TEXT_STR");
-	int start = ss->getInt("START");
-	if (isUndo)
-	{
-		itemText.select(start,text.length());
-		asTextFrame()->deleteSelectedTextFromFrame();
-	}
-	else
-		itemText.insertChars(start,text);
-}
-
-void PageItem::restoreCornerRadius(SimpleState *state, bool isUndo)
-{
-	if (isUndo)
-		RadRect=state->getDouble("OLD_RADIUS");
-	else
-		RadRect=state->getDouble("NEW_RADIUS");
-	Selection tmpSelection(doc()->m_Selection);
-	doc()->m_Selection->clear();
-	doc()->m_Selection->addItem(this);
-	doc()->scMW()->view->SetFrameRounded();
-	*(doc()->m_Selection) = tmpSelection;
 }
 
 void PageItem::restoreMove(SimpleState *state, bool isUndo)
@@ -5096,16 +4551,6 @@ void PageItem::restoreRotate(SimpleState *state, bool isUndo)
 	oldHeight = Height;
 }
 
-void PageItem::restoreShowImage(SimpleState *state, bool isUndo)
-{
-	bool old = state->getBool("OLD");
-	if (isUndo)
-		PicArt = old;
-	else
-		PicArt = !old;
-	update();
-}
-
 void PageItem::restoreFill(SimpleState *state, bool isUndo)
 {
 	QString fill = state->get("OLD_FILL");
@@ -5113,15 +4558,6 @@ void PageItem::restoreFill(SimpleState *state, bool isUndo)
 		fill = state->get("NEW_FILL");
 	select();
 	m_Doc->itemSelection_SetItemBrush(fill);
-}
-
-void PageItem::restoreResTyp(SimpleState *state, bool isUndo)
-{
-	if (isUndo)
-		setResolution(state->getInt("OLD_RES"));
-	else
-		setResolution(state->getInt("NEW_RES"));
-	doc()->updatePic();
 }
 
 void PageItem::restoreShade(SimpleState *state, bool isUndo)
@@ -5311,13 +4747,6 @@ void PageItem::restoreImageScaleMode(SimpleState *state, bool isUndo)
 			tempSelection.addItem(this, true);
 			m_Doc->itemSelection_SetImageScale(oscx, oscy, &tempSelection);
 			m_Doc->itemSelection_SetImageOffset(ox, oy, &tempSelection);
-		}
-		else
-		{
-			state->set("OLD_IMAGEXOFFSET", LocalX);
-			state->set("OLD_IMAGEYOFFSET", LocalY);
-			state->set("OLD_IMAGEXSCALE", LocalScX);
-			state->set("OLD_IMAGEYSCALE", LocalScY);
 		}
 	}
 
@@ -5510,6 +4939,7 @@ void PageItem::restoreUniteItem(SimpleState *state, bool isUndo)
 	}
 }
 
+<<<<<<< HEAD
 void PageItem::restoreSplitItem(SimpleState *state, bool isUndo)
 {
 	ScItemState< QList<int> > *is = dynamic_cast<ScItemState< QList<int> >*>(state);
@@ -5529,6 +4959,8 @@ void PageItem::restoreSplitItem(SimpleState *state, bool isUndo)
 	}
 }
 
+=======
+>>>>>>> Bug 4718 : add an undo/redo for combine polygons action
 void PageItem::restoreContourLine(SimpleState *state, bool isUndo)
 {
 	ScItemState<FPointArray> *is = dynamic_cast<ScItemState<FPointArray>*>(state);
@@ -5556,15 +4988,13 @@ void PageItem::restoreShapeType(SimpleState *state, bool isUndo)
 		{
 			this->FrameType = is->getInt("OLD_FRAME_TYPE");
 			this->PoLine = is->getItem().first;
-			ClipEdited = !(FrameType == 0 || FrameType == 1);
 		}
 		else
 		{
 			this->FrameType = is->getInt("NEW_FRAME_TYPE");
 			this->PoLine = is->getItem().second;
-			ClipEdited = (FrameType == 0 || FrameType == 1);
 		}
-		Clip = FlattenPath(PoLine,Segments);
+		ClipEdited = true;
 	}
 }
 
@@ -5716,8 +5146,7 @@ void PageItem::setObjectAttributes(ObjAttrVector* map)
 	pageItemAttributes=*map;
 }
 
-//if not `prependCopy` then string "Copy of" wil not be prepended
-QString PageItem::generateUniqueCopyName(const QString originalName, bool prependCopy) const
+QString PageItem::generateUniqueCopyName(const QString originalName) const
 {
 	if (!m_Doc->itemNameExists(originalName))
 		return originalName;
@@ -5725,7 +5154,7 @@ QString PageItem::generateUniqueCopyName(const QString originalName, bool prepen
 	// Start embellishing the name until we get an acceptable unique name
 	// first we prefix `Copy of' if it's not already there
 	QString newname(originalName);
-	if (prependCopy && !originalName.startsWith( tr("Copy of")))
+	if (!originalName.startsWith( tr("Copy of")))
 		newname.prepend( tr("Copy of")+" ");
 
 	// See if the name prefixed by "Copy of " is free
@@ -6009,60 +5438,6 @@ void PageItem::replaceNamedResources(ResourceCollection& newNames)
 		itemText.replaceNamedResources(newNames);
 }
 
-void PageItem::setGradientType(int val){
-	if(GrType==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradType,"",Um::IFill);
-	ss->set("GRAD_TYPE","grad_type");
-	ss->set("OLD",GrType);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrType = val;
-}
-
-void PageItem::setGradientStartX(int val){
-	if(GrStartX==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_STARTX","grad_startx");
-	ss->set("OLD",GrStartX);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrStartX = val;
-}
-
-void PageItem::setGradientStartY(int val){
-	if(GrStartY==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_STARTY","grad_starty");
-	ss->set("OLD",GrStartY);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrStartY = val;
-}
-
-void PageItem::setGradientEndX(int val){
-	if(GrEndX==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_ENDX","grad_endx");
-	ss->set("OLD",GrEndX);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrEndX = val;
-}
-
-void PageItem::setGradientEndY(int val){
-	if(GrEndY==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_ENDY","grad_sendy");
-	ss->set("OLD",GrEndY);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrEndY = val;
-}
 
 void PageItem::getNamedResources(ResourceCollection& lists) const
 {
@@ -7395,24 +6770,6 @@ void PageItem::setFileIconRollover(QString val)
 	}
 }
 
-PageItem* PageItem::firstInChain()
-{
-	Q_ASSERT(this != NULL);
-	PageItem* first = this;
-	while (first->prevInChain() != NULL)
-		first = first->prevInChain();
-	return first;
-}
-
-PageItem* PageItem::lastInChain()
-{
-	Q_ASSERT(this != NULL);
-	PageItem* last = this;
-	while (last->nextInChain() != NULL)
-		last = last->nextInChain();
-	return last;
-}
-
 QRect PageItem::getRedrawBounding(const double viewScale)
 {
 	int x = qRound(floor(BoundingX - Oldm_lineWidth / 2.0 - 5) * viewScale);
@@ -7443,41 +6800,41 @@ void PageItem::updateGradientVectors()
 	{
 		case 0:
 		case 1:
-			setGradientStartX(0);
-			setGradientStartY(Height / 2.0);
-			setGradientEndX(Width);
-			setGradientEndY(Height / 2.0);
+			GrStartX = 0;
+			GrStartY = Height / 2.0;
+			GrEndX = Width;
+			GrEndY = Height / 2.0;
 			break;
 		case 2:
-			setGradientStartX(Width / 2.0);
-			setGradientStartY(0);
-			setGradientEndX(Width / 2.0);
-			setGradientEndY(Height);
+			GrStartX = Width / 2.0;
+			GrStartY = 0;
+			GrEndX = Width / 2.0;
+			GrEndY = Height;
 			break;
 		case 3:
-			setGradientStartX(0);
-			setGradientStartY(0);
-			setGradientEndX(Width);
-			setGradientEndY(Height);
+			GrStartX = 0;
+			GrStartY = 0;
+			GrEndX = Width;
+			GrEndY = Height;
 			break;
 		case 4:
-			setGradientStartX(0);
-			setGradientStartY(Height);
-			setGradientEndX(Width);
-			setGradientEndY(0);
+			GrStartX = 0;
+			GrStartY = Height;
+			GrEndX = Width;
+			GrEndY = 0;
 			break;
 		case 5:
-			setGradientStartX(Width / 2.0);
-			setGradientStartY(Height / 2.0);
+			GrStartX = Width / 2.0;
+			GrStartY = Height / 2.0;
 			if (Width >= Height)
 			{
-				setGradientEndX(Width);
-				setGradientEndY(Height / 2.0);
+				GrEndX = Width;
+				GrEndY = Height / 2.0;
 			}
 			else
 			{
-				setGradientEndX(Width / 2.0);
-				setGradientEndY(Height);
+				GrEndX = Width / 2.0;
+				GrEndY = Height;
 			}
 			break;
 		default:
@@ -7637,42 +6994,7 @@ void PageItem::emitAllToGUI()
 
 void PageItem::setIsAnnotation(bool isAnnot)
 {
-	if (m_isAnnotation==isAnnot)
-		return; // nothing to do -> return
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::ActionPDF, 0, Um::IGroup);
-		ss->set("ACTIONPDFANNOTATION", isAnnot);
-		undoManager->action(this, ss);
-	}
 	m_isAnnotation=isAnnot;
-}
-
-void PageItem::setIsBookMark(bool isBM)
-{
-	if (isBookmark==isBM)
-		return; // nothing to do -> return
-	if (UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::ActionPDF, 0, Um::IGroup);
-		ss->set("ACTIONPDFBOOKMARK", isBM);
-		undoManager->action(this, ss);
-	}
-	isBookmark=isBM;
-}
-
-void PageItem::setResolution(int id){
-	if(pixm.imgInfo.lowResType==id)
-		return;
-	if(UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::ResTyp,"",Um::IImageFrame);
-		ss->set("RES_TYP","res_typ");
-		ss->set("OLD_RES",pixm.imgInfo.lowResType);
-		ss->set("NEW_RES",id);
-		undoManager->action(this,ss);
-	}
-	pixm.imgInfo.lowResType = id;
 }
 
 void PageItem::setAnnotation(const Annotation& ad)
@@ -7682,15 +7004,6 @@ void PageItem::setAnnotation(const Annotation& ad)
 
 void PageItem::setImageShown(bool isShown)
 {
-	if(PicArt==isShown)
-		return;
-	if(UndoManager::undoEnabled())
-	{
-		SimpleState *ss = new SimpleState(Um::ResTyp,"",Um::IImageFrame);
-		ss->set("SHOW_IMAGE","show_image");
-		ss->set("OLD",PicArt);
-		undoManager->action(this,ss);
-	}
 	PicArt=isShown;
 }
 
@@ -7761,8 +7074,7 @@ void PageItem::convertClip()
 	}
 }
 
-//udateWelded determine if welded items should be updated as well (default behaviour)
-void PageItem::updateClip(bool updateWelded)
+void PageItem::updateClip()
 {
 	if (m_Doc->appMode == modeDrawBezierLine)
 		return;
@@ -7872,40 +7184,18 @@ void PageItem::updateClip(bool updateWelded)
 					else
 						Clip = FlattenPath(PoLine, Segments);
 				}
-				if (updateWelded)
+				for (int i = 0 ; i < weldList.count(); i++)
 				{
-					for (int i = 0 ; i < weldList.count(); i++)
-					{
-						weldingInfo wInf = weldList.at(i);
-						if (wInf.weldItem->isNoteFrame())
-						{
-							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-							if (noteFrame->notesSet()->isAutoWeldNotesFrames())
-							{
-								if (noteFrame->notesSet()->isAutoNotesWidth())
-								{
-									if (noteFrame->width() != width())
-									{
-										noteFrame->setWidth(width());
-										noteFrame->updateClip();
-									}
-								}
-								noteFrame->setXYPos(xPos(),yPos() + height());
-								setWeldPoint(0, height(), noteFrame);
-								noteFrame->setWeldPoint(0,0, this);
-								continue;
-							}
-						}
-						FPointArray gr4;
-						FPoint wp = wInf.weldPoint;
-						gr4.addPoint(wp);
-						gr4.map(ma);
-						double dx = gr4.point(0).x() - wp.x();
-						double dy = gr4.point(0).y() - wp.y();
-						moveWelded(dx, dy, i);
-						wInf.weldPoint = gr4.point(0);
-						weldList[i] = wInf;
-					}
+					weldingInfo wInf = weldList.at(i);
+					FPointArray gr4;
+					FPoint wp = wInf.weldPoint;
+					gr4.addPoint(wp);
+					gr4.map(ma);
+					double dx = gr4.point(0).x() - wp.x();
+					double dy = gr4.point(0).y() - wp.y();
+					moveWelded(dx, dy, i);
+					wInf.weldPoint = gr4.point(0);
+					weldList[i] = wInf;
 				}
 			}
 			OldB2 = width();
@@ -8007,39 +7297,18 @@ void PageItem::updateClip(bool updateWelded)
 				Clip = FlattenPath(PoLine, Segments);
 			OldB2 = width();
 			OldH2 = height();
-			if (updateWelded)
+			for (int i = 0 ; i < weldList.count(); i++)
 			{
-				for (int i = 0 ; i < weldList.count(); i++)
-				{
-					weldingInfo wInf = weldList.at(i);
-					if (wInf.weldItem->isNoteFrame())
-					{
-						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-						if (noteFrame->notesSet()->isAutoWeldNotesFrames())
-						{
-							if (noteFrame->notesSet()->isAutoNotesWidth())
-							{
-								if (noteFrame->width() != width())
-								{
-									noteFrame->setWidth(width());
-									noteFrame->updateClip();
-								}
-							}
-							setWeldPoint(0, height(), noteFrame);
-							noteFrame->setWeldPoint(0,0, this);
-							continue;
-						}
-					}
-					FPointArray gr4;
-					FPoint wp = wInf.weldPoint;
-					gr4.addPoint(wp);
-					gr4.map(ma);
-					double dx = gr4.point(0).x() - wp.x();
-					double dy = gr4.point(0).y() - wp.y();
-					moveWelded(dx, dy, i);
-					wInf.weldPoint = gr4.point(0);
-					weldList[i] = wInf;
-				}
+				weldingInfo wInf = weldList.at(i);
+				FPointArray gr4;
+				FPoint wp = wInf.weldPoint;
+				gr4.addPoint(wp);
+				gr4.map(ma);
+				double dx = gr4.point(0).x() - wp.x();
+				double dy = gr4.point(0).y() - wp.y();
+				moveWelded(dx, dy, i);
+				wInf.weldPoint = gr4.point(0);
+				weldList[i] = wInf;
 			}
 		}
 		break;
@@ -8068,13 +7337,6 @@ void PageItem::setFirstLineOffset(FirstLineOffsetPolicy flop)
 {
 	if(firstLineOffsetP != flop)
 	{
-		if (UndoManager::undoEnabled())
-		{
-			ScItemState<QPair<FirstLineOffsetPolicy,FirstLineOffsetPolicy> > *is = new ScItemState<QPair <FirstLineOffsetPolicy,FirstLineOffsetPolicy> >(Um::FirstLineOffset);
-			is->set("FIRSTLINEOFFSET", "fisrtlineoffset");
-			is->setItem(QPair<FirstLineOffsetPolicy,FirstLineOffsetPolicy>(firstLineOffsetP, flop));
-			undoManager->action(this, is);
-		}
 		firstLineOffsetP = flop;
 	}
 }
@@ -8156,8 +7418,6 @@ void PageItem::weldTo(PageItem* pIt)
 
 void PageItem::moveWelded(double DX, double DY, int weld)
 {
-	if ((DX == 0) && (DY == 0))
-		return;
 	weldingInfo wInf = weldList.at(weld);
 	PageItem *pIt = wInf.weldItem;
 	pIt->setXPos(pIt->xPos() + DX);
@@ -8168,8 +7428,6 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
 {
-	if ((DX == 0) && (DY == 0))
-		return;
 	for (int i = 0 ; i < weldList.count(); i++)
 	{
 		weldingInfo wInf = weldList.at(i);
@@ -8178,8 +7436,7 @@ void PageItem::moveWelded(double DX, double DY, PageItem* except)
 		{
 			pIt->setXPos(pIt->xPos() + DX);
 			pIt->setYPos(pIt->yPos() + DY);
-			if (!pIt->isNoteFrame())
-				pIt->update();
+			pIt->update();
 			pIt->moveWelded(DX, DY, this);
 		}
 	}
@@ -8236,19 +7493,6 @@ QList<PageItem*> PageItem::itemsWeldedTo(PageItem* except)
 	return ret;
 }
 
-void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
-{
-	for (int i = 0 ; i < weldList.count(); i++)
-	{
-		PageItem *pIt = weldList[i].weldItem;
-		if (pIt == pItem)
-		{
-			weldList[i].weldPoint = FPoint(DX, DY);
-			return;
-		}
-	}
-}
-
 void PageItem::unWeld()
 {
 	for (int a = 0 ; a < weldList.count(); a++)
@@ -8267,28 +7511,4 @@ void PageItem::unWeld()
 		}
 	}
 	weldList.clear();
-}
-
-QString PageItem::getItemTextSaxed(int selStart, int selLength)
-{
-	if (selStart < 0 || selLength < 0)
-		return QString();
-	
-	StoryText it(m_Doc);
-	it.setDefaultStyle(itemText.defaultStyle());
-
-	if (selLength == 0)
-		selLength = 1;
-	itemText.select(selStart, selLength);
-	it.insert(0, itemText, true);
-	itemText.deselectAll();
-
-	//saxing text
-	std::ostringstream xmlString;
-	SaxXML xmlStream(xmlString);
-	xmlStream.beginDoc();
-	it.saxx(xmlStream, "SCRIBUSTEXT");
-	xmlStream.endDoc();
-	std::string xml(xmlString.str());
-	return QString(xml.c_str());
 }

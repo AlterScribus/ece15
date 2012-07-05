@@ -21,10 +21,12 @@ for which a new license (GPL+exception) is in place.
  *                                                                         *
  ***************************************************************************/
 
+#include <QDebug>
 #include "mesh.h"
 #include "fpointarray.h"
 
-meshPoint::meshPoint()
+meshPoint::meshPoint():
+undoManager(UndoManager::instance())
 {
 }
 
@@ -75,4 +77,88 @@ void meshPoint::resetTo(FPoint p)
 	controlTop = gridPoint;
 	controlBottom = gridPoint;
 	controlColor = gridPoint;
+}
+
+void meshPoint::restore(UndoState *state, bool isUndo)
+{
+	SimpleState *ss = dynamic_cast<SimpleState*>(state);
+	if (ss)
+	{
+		if (ss->contains("TRANSPARENCY"))
+			restoreTransparency(ss, isUndo);
+		else if (ss->contains("SHADE"))
+			restoreShade(ss, isUndo);
+		else if (ss->contains("COLOR_NAME"))
+			restoreColorName(ss, isUndo);
+		else if (ss->contains("COLOR"))
+			restoreColor(ss, isUndo);
+	}
+}
+
+void meshPoint::restoreTransparency(SimpleState *state, bool isUndo)
+{
+	if(isUndo)
+		transparency = state->getDouble("OLD");
+	else
+		transparency = state->getDouble("NEW");
+}
+
+void meshPoint::restoreShade(SimpleState *state, bool isUndo)
+{
+	if(isUndo)
+		shade = state->getInt("OLD");
+	else
+		shade = state->getInt("NEW");
+}
+
+void meshPoint::restoreColorName(SimpleState *state, bool isUndo)
+{
+	if(isUndo)
+		colorName = state->get("OLD");
+	else
+		colorName = state->get("NEW");
+}
+
+void meshPoint::restoreColor(SimpleState *ss, bool isUndo)
+{
+	ScItemState<QPair<QColor,QColor> > *state = dynamic_cast<ScItemState<QPair<QColor,QColor> > *>(ss);
+	if(isUndo)
+		color = state->getItem().first;
+	else
+		color = state->getItem().second;
+}
+
+void meshPoint::setShade(int x)
+{
+	if(shade == x)
+		return;
+	SimpleState *ss = new SimpleState(Um::GradVal,"",Um::IFill);
+	ss->set("SHADE","shade");
+	ss->set("OLD",shade);
+	ss->set("NEW",x);
+	undoManager->action(this,ss);
+	shade = x;
+}
+
+void meshPoint::setColorName(QString x)
+{
+	if(colorName == x)
+		return;
+	SimpleState *ss = new SimpleState(Um::Rename,"",Um::IFont);
+	ss->set("COLOR_NAME","color_name");
+	ss->set("OLD",colorName);
+	ss->set("NEW",x);
+	undoManager->action(this,ss);
+	colorName = x;
+}
+
+void meshPoint::setColor(QColor x)
+{
+	if(color == x)
+		return;
+	ScItemState<QPair<QColor,QColor> > *ss = new ScItemState<QPair<QColor,QColor> >(Um::GradVal,"",Um::IFill);
+	ss->set("COLOR","color");
+	ss->setItem(qMakePair(color,x));
+	undoManager->action(this,ss);
+	color = x;
 }
