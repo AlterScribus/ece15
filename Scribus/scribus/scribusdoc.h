@@ -744,7 +744,6 @@ public:
 	 * @brief Undo function for grouping/ungrouping
 	 */
 	void restoreGrouping(SimpleState *state, bool isUndo);
-	void restoreUngrouping(SimpleState *state, bool isUndo);
 	/**
 	 * @brief Undo function for level
 	 */
@@ -1026,7 +1025,7 @@ public:
 	PageItem* groupObjectsSelection(Selection* customSelection=0);
 	PageItem* groupObjectsList(QList<PageItem*> &itemList);
 	void groupObjectsToItem(PageItem* groupItem, QList<PageItem*> &itemList);
-	const PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
+	PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
 	void itemSelection_UnGroupObjects(Selection* customSelection=0);
 	void addToGroup(PageItem* group, PageItem* item);
 	void removeFromGroup(PageItem* item);
@@ -1034,7 +1033,7 @@ public:
 
 	void itemSelection_ApplyParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0, bool rmDirectFormatting = false);
 	void itemSelection_SetParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0);
-	void itemSelection_ApplyCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
+	void itemSelection_ApplyCharStyle(const CharStyle & newstyle, Selection* customSelection=0, QString ETEA = "");
 	void itemSelection_SetCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
 	void itemSelection_EraseParagraphStyle(Selection* customSelection=0);
 	void itemSelection_EraseCharStyle(Selection* customSelection=0);

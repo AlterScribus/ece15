@@ -527,10 +527,8 @@ void UndoManager::action(UndoObject* target, UndoState* state,
 }
 
 UndoState* UndoManager::getLastUndo(){
-	if(stacks_[currentDoc_].undoActions_.size()>0)
-		return stacks_[currentDoc_].undoActions_[0];
-	else
-		return 0;
+	UndoState* state = stacks_[currentDoc_].getNextUndo(currentUndoObjectId_);
+	return state;
 }
 
 void UndoManager::undo(int steps)
@@ -722,10 +720,8 @@ bool TransactionState::contains(int uid) const
 {
 	for (uint i = 0; i < states_.size(); ++i)
 	{
-		//FIX ME: hack - with notes frames it seems not working sometimes
-		if (states_[i]->undoObject() == NULL)
-			continue;
-		if (states_[i]->undoObject()->getUId() == static_cast<uint>(uid))
+		UndoObject* undoObject = states_[i]->undoObject();
+		if (undoObject && undoObject->getUId() == static_cast<uint>(uid))
 			return true;
 	}
 	return false;
@@ -735,10 +731,8 @@ bool TransactionState::containsOnly(int uid) const
 {
 	for (uint i = 0; i < states_.size(); ++i)
 	{
-		//FIX ME: hack - with notes frames it seems not working sometimes
-		if (states_[i]->undoObject() == NULL)
-			continue;
-		if (states_[i]->undoObject()->getUId() != static_cast<uint>(uid))
+		UndoObject* undoObject = states_[i]->undoObject();
+		if (undoObject && undoObject->getUId() != static_cast<uint>(uid))
 			return false;
 	}
 	return true;
@@ -850,6 +844,9 @@ void UndoManager::languageChange()
 	UndoManager::MoveHGuide         = tr("Move horizontal guide");
 	UndoManager::LockGuides         = tr("Lock guides");
 	UndoManager::UnlockGuides       = tr("Unlock guides");
+	UndoManager::Overprint          = tr("Change overprint");
+	UndoManager::BlendMode          = tr("Change blend mode");
+	UndoManager::ActionPDF          = tr("Change action PDF");
 	UndoManager::Move               = tr("Move");
 	UndoManager::NewMasterPage      = tr("Add master page");
 	UndoManager::DelMasterPage      = tr("Del master page");
@@ -886,6 +883,7 @@ void UndoManager::languageChange()
 	UndoManager::FlipH              = tr("Flip horizontally");
 	UndoManager::FlipV              = tr("Flip vertically");
 	UndoManager::Lock               = tr("Lock");
+	UndoManager::ResTyp             = tr("Change image resolution");
 	UndoManager::UnLock             = tr("Unlock");
 	UndoManager::SizeLock           = tr("Lock size");
 	UndoManager::SizeUnLock         = tr("Unlock size");
@@ -898,6 +896,7 @@ void UndoManager::languageChange()
 	UndoManager::ApplyMasterPage    = tr("Apply Master Page");
 	UndoManager::Paste              = tr("Paste");
 	UndoManager::Cut                = tr("Cut");
+	UndoManager::RoundCorner        = tr("Change round corner");
 	UndoManager::Transparency       = tr("Set fill color transparency");
 	UndoManager::LineTransparency   = tr("Set line color transparency");
 	UndoManager::LineStyle          = tr("Set line style");
@@ -955,6 +954,7 @@ void UndoManager::languageChange()
 	UndoManager::NoObjectFrame      = tr("No object frame");
 	UndoManager::NoBoundingBox      = tr("No bounding box");
 	UndoManager::NoContourLine      = tr("No contour line");
+	UndoManager::ShowImage          = tr("Show image");
 	UndoManager::PageNmbr           = tr("Page %1");
 	UndoManager::ImageScaling       = tr("Set image scaling");
 	UndoManager::FrameSize          = tr("Frame size");
@@ -1089,6 +1089,9 @@ QString UndoManager::UniteItem          = "";
 QString UndoManager::SplitItem          = "";
 QString UndoManager::LockGuides         = "";
 QString UndoManager::UnlockGuides       = "";
+QString UndoManager::Overprint          = "";
+QString UndoManager::BlendMode          = "";
+QString UndoManager::ActionPDF          = "";
 QString UndoManager::Move               = "";
 QString UndoManager::NewMasterPage      = "";
 QString UndoManager::ImportMasterPage   = "";
@@ -1099,6 +1102,8 @@ QString UndoManager::Rotate             = "";
 QString UndoManager::MoveFromTo         = "";
 QString UndoManager::ImageOffset        = "";
 QString UndoManager::ImageScale         = "";
+QString UndoManager::ResTyp             = "";
+QString UndoManager::ShowImage          = "";
 QString UndoManager::ImageOffsetFromTo  = "";
 QString UndoManager::ImageScaleFromTo   = "";
 QString UndoManager::ResizeFromTo       = "";
@@ -1106,6 +1111,7 @@ QString UndoManager::Selection          = "";
 QString UndoManager::Group              = "";
 QString UndoManager::SelectionGroup     = "";
 QString UndoManager::Create             = "";
+QString UndoManager::RoundCorner        = "";
 QString UndoManager::CreateTo           = "";
 QString UndoManager::AlignDistribute    = "";
 QString UndoManager::ItemsInvolved      = "";
