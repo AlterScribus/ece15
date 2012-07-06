@@ -29,21 +29,15 @@ for which a new license (GPL+exception) is in place.
 #include <QTransform>
 #include "fpoint.h"
 #include "scribusapi.h"
-#include "undoobject.h"
-#include "undomanager.h"
 
-class SCRIBUS_API meshPoint: public UndoObject
+class SCRIBUS_API meshPoint
 {
 public:
 	meshPoint();
-
 	void moveRel(double dx, double dy);
 	void moveAbs(double x, double y);
 	void transform(QTransform t);
 	void resetTo(FPoint p);
-	void restore(UndoState *state, bool isUndo);
-
-	//point
 	FPoint gridPoint;
 	FPoint controlTop;
 	FPoint controlBottom;
@@ -54,20 +48,6 @@ public:
 	int    shade;
 	QString colorName;
 	QColor  color;
-
-	UndoManager *undoManager;
-
-	//setter
-	void setTransparency(double x);
-	void setShade(int x);
-	void setColorName(QString name);
-	void setColor(QColor co);
-
-	//restore
-	void restoreTransparency(SimpleState *state, bool isUndo);
-	void restoreShade(SimpleState *state, bool isUndo);
-	void restoreColorName(SimpleState *state, bool isUndo);
-	void restoreColor(SimpleState *state, bool isUndo);
 };
 
 struct meshGradientPatch

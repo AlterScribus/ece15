@@ -1058,13 +1058,6 @@ void PageItem::moveImageXYOffsetBy(const double dX, const double dY)
 
 void PageItem::setImageRotation(const double newRotation)
 {
-	if(LocalRot == newRotation)
-		return;
-	SimpleState *ss = new SimpleState(Um::Rotate,"",Um::IRotate);
-	ss->set("IMAGE_ROTATION","image_rotation");
-	ss->set("OLD_ROT",LocalRot);
-	ss->set("NEW_ROT",newRotation);
-	undoManager->action(this,ss);
 	LocalRot = newRotation;
 	if (m_Doc->isLoading())
 		return;
@@ -2707,16 +2700,6 @@ void PageItem::setGradient(const QString &newGradient)
 		gradientVal = newGradient;
 }
 
-void PageItem::setFillGradient(VGradient grad){
-	if(fill_gradient==grad)
-		return;
-	ScItemState<QPair<VGradient,VGradient> > *is = new ScItemState<QPair<VGradient,VGradient> >(Um::GradVal);
-	is->set("FILL_GRAD","fill_grad");
-	is->setItem(qMakePair(fill_gradient,grad));
-	undoManager->action(this,is);
-	fill_gradient=grad;
-}
-
 void PageItem::setPattern(const QString &newPattern)
 {
 	if (patternVal != newPattern)
@@ -2977,82 +2960,88 @@ void PageItem::setMeshPointColor(int x, int y, QString color, int shade, double 
 		VisionDefectColor defect;
 		MQColor = defect.convertDefect(MQColor, m_Doc->previewVisual);
 	}
-	meshPoint* mp;
-	UndoTransaction trans(undoManager->beginTransaction(Um::Move,Um::IFill,Um::GradVal,"",Um::IShade));
 	if (forPatch)
 	{
-		meshGradientPatch *patch = &(meshGradientPatches[x]);
+		meshGradientPatch patch = meshGradientPatches[x];
+		meshPoint mp;
 		switch (y)
 		{
 			case 1:
-				mp = &(patch->TL);
+				mp = meshGradientPatches[x].TL;
+				meshGradientPatches[x].TL.colorName = MColor;
+				meshGradientPatches[x].TL.color = MQColor;
+				meshGradientPatches[x].TL.shade = shade;
+				meshGradientPatches[x].TL.transparency = transparency;
 				break;
 			case 2:
-				mp = &(patch->TR);
+				mp = meshGradientPatches[x].TR;
+				meshGradientPatches[x].TR.colorName = MColor;
+				meshGradientPatches[x].TR.color = MQColor;
+				meshGradientPatches[x].TR.shade = shade;
+				meshGradientPatches[x].TR.transparency = transparency;
 				break;
 			case 3:
-				mp = &(patch->BR);
+				mp = meshGradientPatches[x].BR;
+				meshGradientPatches[x].BR.colorName = MColor;
+				meshGradientPatches[x].BR.color = MQColor;
+				meshGradientPatches[x].BR.shade = shade;
+				meshGradientPatches[x].BR.transparency = transparency;
 				break;
 			case 4:
-				mp = &(patch->BL);
+				mp = meshGradientPatches[x].BL;
+				meshGradientPatches[x].BL.colorName = MColor;
+				meshGradientPatches[x].BL.color = MQColor;
+				meshGradientPatches[x].BL.shade = shade;
+				meshGradientPatches[x].BL.transparency = transparency;
 				break;
 		}
-		mp->setColorName(MColor);
-		mp->setColor(MQColor);
-		mp->setShade(shade);
-		mp->setTransparency(transparency);
-		FPoint xx = mp->gridPoint;
+		FPoint xx = mp.gridPoint;
 		for (int col = 0; col < meshGradientPatches.count(); col++)
 		{
 			if (col != x)
 			{
 				if (meshGradientPatches[col].TL.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].TL);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].TL.colorName = MColor;
+					meshGradientPatches[col].TL.color = MQColor;
+					meshGradientPatches[col].TL.shade = shade;
+					meshGradientPatches[col].TL.transparency = transparency;
 				}
 				if (meshGradientPatches[col].TR.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].TR);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].TR.colorName = MColor;
+					meshGradientPatches[col].TR.color = MQColor;
+					meshGradientPatches[col].TR.shade = shade;
+					meshGradientPatches[col].TR.transparency = transparency;
 				}
 				if (meshGradientPatches[col].BR.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].BR);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].BR.colorName = MColor;
+					meshGradientPatches[col].BR.color = MQColor;
+					meshGradientPatches[col].BR.shade = shade;
+					meshGradientPatches[col].BR.transparency = transparency;
 				}
 				if (meshGradientPatches[col].BL.gridPoint == xx)
 				{
-					mp = &(meshGradientPatches[col].BL);
-					mp->setColorName(MColor);
-					mp->setColor(MQColor);
-					mp->setShade(shade);
-					mp->setTransparency(transparency);
+					meshGradientPatches[col].BL.colorName = MColor;
+					meshGradientPatches[col].BL.color = MQColor;
+					meshGradientPatches[col].BL.shade = shade;
+					meshGradientPatches[col].BL.transparency = transparency;
 				}
 			}
 		}
+
 	}
 	else
 	{
 		if ((x > -1) && (y > -1))
 		{
-			mp = &(meshGradientArray[x][y]);
-			mp->setColorName(MColor);
-			mp->setColor(MQColor);
-			mp->setShade(shade);
-			mp->setTransparency(transparency);
+			meshGradientArray[x][y].colorName = MColor;
+			meshGradientArray[x][y].color = MQColor;
+			meshGradientArray[x][y].shade = shade;
+			meshGradientArray[x][y].transparency = transparency;
 		}
 	}
-	trans.commit();
 }
 
 void PageItem::createGradientMesh(int rows, int cols)
@@ -3998,11 +3987,6 @@ void PageItem::setStartArrowScale(int newScale)
 {
 	if (m_startArrowScale == newScale)
 		return; // nothing to do -> return
-	SimpleState *ss = new SimpleState(Um::StartArrowScale,"",Um::IArrow);
-	ss->set("START_ARROWSCALE","start_arrowscale");
-	ss->set("OLD_SCALE",m_startArrowScale);
-	ss->set("NEW_SCALE",newScale);
-	undoManager->action(this,ss);
 	m_startArrowScale = newScale;
 }
 
@@ -4010,11 +3994,6 @@ void PageItem::setEndArrowScale(int newScale)
 {
 	if (m_endArrowScale == newScale)
 		return; // nothing to do -> return
-	SimpleState *ss = new SimpleState(Um::EndArrowScale,"",Um::IArrow);
-	ss->set("END_ARROWSCALE","end_arrowscale");
-	ss->set("OLD_SCALE",m_endArrowScale);
-	ss->set("NEW_SCALE",newScale);
-	undoManager->action(this,ss);
 	m_endArrowScale = newScale;
 }
 
@@ -4519,24 +4498,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	{
 		if (ss->contains("OLD_XPOS"))
 			restoreMove(ss, isUndo);
-		if (ss->contains("FILL_GRAD"))
-			restoreFillGradient(ss, isUndo);
-		if (ss->contains("GRAD_STARTX"))
-			restoreGradientStartX(ss, isUndo);
-		if (ss->contains("GRAD_ENDX"))
-			restoreGradientEndX(ss, isUndo);
-		if (ss->contains("GRAD_STARTY"))
-			restoreGradientStartY(ss, isUndo);
-		if (ss->contains("GRAD_ENDY"))
-			restoreGradientEndY(ss, isUndo);
-		if (ss->contains("GRAD_TYPE"))
-			restoreGradientType(ss, isUndo);
-		if (ss->contains("END_ARROWSCALE"))
-			restoreEndArrowScale(ss, isUndo);
-		if (ss->contains("START_ARROWSCALE"))
-			restoreStartArrowScale(ss, isUndo);
-		if (ss->contains("IMAGE_ROTATION"))
-			restoreImageRotation(ss, isUndo);
 		else if (ss->contains("OLD_HEIGHT"))
 			restoreResize(ss, isUndo);
 		else if (ss->contains("OLD_ROT"))
@@ -4735,80 +4696,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	m_Doc->SnapGuides = SnapGuidesBackup;
 }
 
-void PageItem::restoreFillGradient(SimpleState *state, bool isUndo)
-{
-	ScItemState<QPair<VGradient,VGradient> > *is = dynamic_cast<ScItemState<QPair<VGradient,VGradient> > *>(state);
-	if (isUndo)
-		fill_gradient = is->getItem().first;
-	else
-		fill_gradient = is->getItem().second;
-	update();
-}
-
-void PageItem::restoreGradientStartX(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrStartX = is->getDouble("OLD");
-	else
-		GrStartX = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientStartY(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrStartY = is->getDouble("OLD");
-	else
-		GrStartY = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientEndX(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrEndX = is->getDouble("OLD");
-	else
-		GrEndX = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientEndY(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrEndY= is->getDouble("OLD");
-	else
-		GrEndY = is->getDouble("NEW");
-}
-
-void PageItem::restoreGradientType(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		GrType = is->getInt("OLD");
-	else
-		GrType = is->getInt("NEW");
-}
-
-void PageItem::restoreEndArrowScale(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		m_endArrowScale = is->getInt("OLD_SCALE");
-	else
-		m_endArrowScale = is->getInt("NEW_SCALE");
-}
-
-void PageItem::restoreStartArrowScale(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		m_startArrowScale = is->getInt("OLD_SCALE");
-	else
-		m_startArrowScale = is->getInt("NEW_SCALE");
-}
-
-void PageItem::restoreImageRotation(SimpleState *is, bool isUndo)
-{
-	if (isUndo)
-		LocalRot = is->getInt("OLD_ROT");
-	else
-		LocalRot = is->getInt("NEW_ROT");
-}
-
 void PageItem::restorePasteInline(SimpleState *is, bool isUndo)
 {
 	int start = is->getInt("START");
@@ -4825,8 +4712,7 @@ void PageItem::restorePasteText(SimpleState *ss, bool isUndo)
 {
 	ScItemState<StoryText> *is = dynamic_cast<ScItemState<StoryText>*>(ss);
 	int start = is->getInt("START");
-	if (isUndo)
-	{
+	if (isUndo){
 		itemText.select(start,is->getItem().length());
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
@@ -4969,10 +4855,14 @@ void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
 
 void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 {
-	QString text = ss->get("TEXT_STR");
-	int start = ss->getInt("START");
+	ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
+	QString text = is->get("TEXT_STR");
+	int start = is->getInt("START");
 	if (isUndo){
 		itemText.insertChars(start,text);
+		itemText.applyCharStyle(start, text.length(), is->getItem());
+		invalid = true;
+		invalidateLayout();
 	} else {
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
@@ -5311,13 +5201,6 @@ void PageItem::restoreImageScaleMode(SimpleState *state, bool isUndo)
 			tempSelection.addItem(this, true);
 			m_Doc->itemSelection_SetImageScale(oscx, oscy, &tempSelection);
 			m_Doc->itemSelection_SetImageOffset(ox, oy, &tempSelection);
-		}
-		else
-		{
-			state->set("OLD_IMAGEXOFFSET", LocalX);
-			state->set("OLD_IMAGEYOFFSET", LocalY);
-			state->set("OLD_IMAGEXSCALE", LocalScX);
-			state->set("OLD_IMAGEYSCALE", LocalScY);
 		}
 	}
 
@@ -6009,60 +5892,6 @@ void PageItem::replaceNamedResources(ResourceCollection& newNames)
 		itemText.replaceNamedResources(newNames);
 }
 
-void PageItem::setGradientType(int val){
-	if(GrType==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradType,"",Um::IFill);
-	ss->set("GRAD_TYPE","grad_type");
-	ss->set("OLD",GrType);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrType = val;
-}
-
-void PageItem::setGradientStartX(int val){
-	if(GrStartX==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_STARTX","grad_startx");
-	ss->set("OLD",GrStartX);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrStartX = val;
-}
-
-void PageItem::setGradientStartY(int val){
-	if(GrStartY==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_STARTY","grad_starty");
-	ss->set("OLD",GrStartY);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrStartY = val;
-}
-
-void PageItem::setGradientEndX(int val){
-	if(GrEndX==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_ENDX","grad_endx");
-	ss->set("OLD",GrEndX);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrEndX = val;
-}
-
-void PageItem::setGradientEndY(int val){
-	if(GrEndY==val)
-		return;
-	SimpleState *ss = new SimpleState(Um::GradPos,"",Um::IFill);
-	ss->set("GRAD_ENDY","grad_sendy");
-	ss->set("OLD",GrEndY);
-	ss->set("NEW",val);
-	undoManager->action(this,ss);
-	GrEndY = val;
-}
 
 void PageItem::getNamedResources(ResourceCollection& lists) const
 {
@@ -7443,41 +7272,41 @@ void PageItem::updateGradientVectors()
 	{
 		case 0:
 		case 1:
-			setGradientStartX(0);
-			setGradientStartY(Height / 2.0);
-			setGradientEndX(Width);
-			setGradientEndY(Height / 2.0);
+			GrStartX = 0;
+			GrStartY = Height / 2.0;
+			GrEndX = Width;
+			GrEndY = Height / 2.0;
 			break;
 		case 2:
-			setGradientStartX(Width / 2.0);
-			setGradientStartY(0);
-			setGradientEndX(Width / 2.0);
-			setGradientEndY(Height);
+			GrStartX = Width / 2.0;
+			GrStartY = 0;
+			GrEndX = Width / 2.0;
+			GrEndY = Height;
 			break;
 		case 3:
-			setGradientStartX(0);
-			setGradientStartY(0);
-			setGradientEndX(Width);
-			setGradientEndY(Height);
+			GrStartX = 0;
+			GrStartY = 0;
+			GrEndX = Width;
+			GrEndY = Height;
 			break;
 		case 4:
-			setGradientStartX(0);
-			setGradientStartY(Height);
-			setGradientEndX(Width);
-			setGradientEndY(0);
+			GrStartX = 0;
+			GrStartY = Height;
+			GrEndX = Width;
+			GrEndY = 0;
 			break;
 		case 5:
-			setGradientStartX(Width / 2.0);
-			setGradientStartY(Height / 2.0);
+			GrStartX = Width / 2.0;
+			GrStartY = Height / 2.0;
 			if (Width >= Height)
 			{
-				setGradientEndX(Width);
-				setGradientEndY(Height / 2.0);
+				GrEndX = Width;
+				GrEndY = Height / 2.0;
 			}
 			else
 			{
-				setGradientEndX(Width / 2.0);
-				setGradientEndY(Height);
+				GrEndX = Width / 2.0;
+				GrEndY = Height;
 			}
 			break;
 		default:

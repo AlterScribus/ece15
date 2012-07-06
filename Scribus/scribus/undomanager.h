@@ -75,7 +75,7 @@ public:
 	~TransactionState();
 	/** @brief To know if the state is a Transaction */
 	bool isTransaction(){return true;};
-	
+
 	/**
 	 * @brief Add a new <code>UndoState</code> object to the transaction.
 	 * @param state state to be added to the transaction
@@ -600,13 +600,8 @@ public:
 	static QString SetLayerTransparency;
 	static QString SetLayerLocked;
 	static QString SetLayerUnlocked;
-	static QString StartArrowScale;
-	static QString EndArrowScale;
 	static QString GetImage;
 	static QString ChangeFormula;
-	static QString GradType;
-	static QString GradPos;
-	static QString GradVal;
 	static QString MultipleDuplicate;
 	static QString ApplyTextStyle;
 	static QString RemoveTextStyle;
