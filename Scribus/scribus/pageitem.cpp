@@ -1165,7 +1165,7 @@ bool PageItem::testLinkCandidate(PageItem* nxt)
 	return true;
 }
 
-void PageItem::link(PageItem* nxt)
+void PageItem::link(PageItem* nxt, bool addPARSEP)
 {
 	assert( !nextInChain() );
 	assert( !nxt->prevInChain() );
@@ -1175,8 +1175,20 @@ void PageItem::link(PageItem* nxt)
 	}
 	// Append only if necessary to avoid the
 	// charstyle: access at end of text warning
+	bool first = false;
+	
+	if (nxt->prevInChain() == NULL)
+		first = true;
+	int textLen = itemText.length();
 	if (nxt->itemText.length() > 0)
+	{
+		if (itemText.text.at(itemText.length()-1) == SpecialChars::PARSEP)
+			addPARSEP = false;
+		//add parsep at end of text if it is not here
+		if (textLen > 0 && addPARSEP)
+			itemText.insertChars(textLen, SpecialChars::PARSEP);
 		itemText.append(nxt->itemText);
+	}
 	NextBox = nxt;
 	nxt->BackBox = this;
 	// update AutoText
@@ -1212,6 +1224,11 @@ void PageItem::link(PageItem* nxt)
 	{
 		ScItemState<std::pair<PageItem*, PageItem*> > *is = new ScItemState<std::pair<PageItem*, PageItem*> >(UndoManager::LinkTextFrame);
 		is->set("LINK_TEXT_FRAME", "linkTextFrame");
+		if (addPARSEP)
+		{
+			is->set("FIRST", first);
+			is->set("JOIN_POS", textLen);
+		}
 		is->setItem(std::pair<PageItem*, PageItem*>(this, NextBox));
 		undoManager->action(this, is);
 	}
@@ -1310,17 +1327,57 @@ void PageItem::dropLinks()
 //but copy or cut its content from itemText
 void PageItem::unlinkWithText(bool cutText)
 {
-	// FIX ME - make this operation undoable
 	PageItem * Next = NextBox;
-	itemText.select(firstInFrame(),lastInFrame() - firstInFrame() +1);
-	StoryText content(m_Doc);
-	content.insert(0, itemText, true);
-	if (cutText)
-		itemText.removeSelection();
-	dropLinks();
-	itemText.append(content);
-	if (Next)
-		Next->update();
+	PageItem * Prev = BackBox;
+	int length = itemText.length();
+	UndoManager* undoManager = UndoManager::instance();
+	bool undoTemp = undoManager->undoEnabled();
+	undoManager->setUndoEnabled(false);
+
+	//unlink first frame in chain
+	if (Prev == NULL)
+	{
+		if (lastInFrame() < length -1)
+		{
+			StoryText content(m_Doc);
+			itemText.select(lastInFrame() +1, length - (lastInFrame() +1));
+			content.insert(0, itemText, cutText);
+			itemText.removeSelection();
+			unlink();
+			Next->itemText.insert(0, content);
+			Next->update();
+		}
+		else
+		{
+			unlink();
+			if (!cutText)
+			{
+				Next->itemText.insert(0, itemText);
+				Next->update();
+			}
+		}
+	}
+	else
+	{
+		itemText.select(firstInFrame(), length - firstInFrame());
+		StoryText content(m_Doc);
+		content.insert(0, itemText, true);
+		if (cutText)
+			itemText.removeSelection();
+		Prev->unlink();
+		itemText.insert(0, content);
+		update();
+	}
+	undoManager->setUndoEnabled(undoTemp);
+	if (UndoManager::undoEnabled())
+	{
+		ScItemsState<PageItem*> *is = new ScItemsState<PageItem*> (UndoManager::UnlinkTextFrame);
+		is->set("UNLINK_TEXT_FRAME", "unlinkTextFrame");
+		is->set("CUT_TEXT", cutText);
+		is->appendItem(Prev);
+		is->appendItem(Next);
+		undoManager->action(this, is);
+	}
 }
 
 /// tests if a character is displayed by this frame
@@ -5228,6 +5285,37 @@ void PageItem::restoreLinkTextFrame(UndoState *state, bool isUndo)
 	if (isUndo)
 	{
 		unlink();
+		//restore properly text if frame was linked at beginning of chain
+		SimpleState *ss = dynamic_cast<SimpleState*>(state);
+		int joinPos = ss->getInt("JOIN_POS");
+		ScItemState<std::pair<PageItem*, PageItem*> > *is = dynamic_cast<ScItemState<std::pair<PageItem*, PageItem*> >*>(state);
+		if (ss->getBool("FIRST") && (joinPos == 0))
+		{
+			is->getItem().second->itemText.append(itemText);
+			itemText = StoryText(m_Doc);
+			return;
+		}
+		if (joinPos > 0)
+		{
+			StoryText content(m_Doc);
+			if (ss->getBool("FIRST"))
+			{
+				itemText.select(joinPos + 1, itemText.length() - joinPos - 1);
+				content.insert(0, itemText, true);
+				itemText.select(joinPos, itemText.length() - joinPos);
+				itemText.removeSelection();
+				is->getItem().second->itemText.append(content);
+			}
+			else
+			{
+				PageItem* prev = is->getItem().second;
+				prev->itemText.select(joinPos +1, prev->itemText.length() - joinPos -1);
+				content.insert(0, prev->itemText, true);
+				prev->itemText.select(joinPos, prev->itemText.length() - joinPos);
+				prev->itemText.removeSelection();
+				itemText.append(content);
+			}
+		}
 	}
 	else
 	{
@@ -5240,14 +5328,42 @@ void PageItem::restoreUnlinkTextFrame(UndoState *state, bool isUndo)
 {
 	if (!isTextFrame())
 		return;
-	if (isUndo)
+	SimpleState *ss = dynamic_cast<SimpleState*>(state);
+	if (ss->contains("CUT_TEXT"))
 	{
-		ScItemState<std::pair<PageItem*, PageItem*> > *is = dynamic_cast<ScItemState<std::pair<PageItem*, PageItem*> >*>(state);
-		asTextFrame()->link(is->getItem().second->asTextFrame());
+		bool cutText = ss->getBool("CUT_TEXT");
+		if (isUndo)
+		{
+			ScItemsState<PageItem*> *is = dynamic_cast<ScItemsState< PageItem*> *>(state);
+			PageItem* prev = is->getItem();
+			PageItem* next  = is->getItem();
+			if (prev != NULL)
+			{
+				if (!cutText)
+					itemText = StoryText(m_Doc);
+				prev->link(this, false);
+			}
+			else if (next != NULL)
+			{
+				if (!cutText)
+					this->itemText = StoryText(m_Doc);
+				this->link(next, false);
+			}
+			else
+				Q_ASSERT(prev || next);
+		}
+		else
+			unlinkWithText(cutText);
 	}
 	else
 	{
-		unlink();
+		if (isUndo)
+		{
+			ScItemState<std::pair<PageItem*, PageItem*> > *is = dynamic_cast<ScItemState<std::pair<PageItem*, PageItem*> >*>(state);
+			asTextFrame()->link(is->getItem().second->asTextFrame());
+		}
+		else
+			unlink();
 	}
 }
 

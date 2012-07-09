@@ -296,4 +296,18 @@ private:
 	C item_;
 };
 
+/*** multiple ItemsState ***************************************************************************/
+
+template<class C>
+class ScItemsState : public SimpleState
+{
+public:
+	ScItemsState(const QString& name, const QString& description = 0, QPixmap* pixmap = 0)
+	: SimpleState(name, description, pixmap) {}
+	~ScItemsState() {}
+	void appendItem(const C &c) { itemList_.append(c); }
+	C getItem() { if (itemList_.isEmpty()) return NULL; else return itemList_.takeFirst(); }
+private:
+	QList< C > itemList_;
+};
 #endif

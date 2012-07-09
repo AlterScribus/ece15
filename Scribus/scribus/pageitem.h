@@ -547,7 +547,7 @@ public:
 
 	bool testLinkCandidate(PageItem* nextFrame);
 	void unlink();
-	void link(PageItem* nextFrame);
+	void link(PageItem* nextFrame, bool addPARSEP = true);
 	void dropLinks();
 	void unlinkWithText(bool);
 
