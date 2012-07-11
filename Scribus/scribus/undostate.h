@@ -30,6 +30,7 @@ for which a new license (GPL+exception) is in place.
 #include <QMap>
 #include <QPixmap>
 #include <QVariant>
+//#include <QList>
 
 #include "scribusapi.h"
 #include "undoobject.h"
@@ -292,8 +293,24 @@ public:
 	~ScItemState() {}
 	void setItem(const C &c) { item_ = c; }
 	C getItem() const { return item_; }
+	void insertPtr(QString itemname, void * item) { pointerMap.insert(itemname, item); }
+	void* getPtr(QString itemname) const { return pointerMap.value(itemname); }
 private:
 	C item_;
+	QMap<QString,void*> pointerMap;
+};
+/**** ItemsState for list of pointers to items *****/
+//template<class C>
+class ScItemsState : public SimpleState
+{
+public:
+	ScItemsState(const QString& name, const QString& description = 0, QPixmap* pixmap = 0)
+	: SimpleState(name, description, pixmap) {}
+	~ScItemsState() {}
+	void insertItem(QString itemname, void * item) { pointerMap.insert(itemname, item); }
+	void* getItem(QString itemname) const { return pointerMap.value(itemname); }
+private:
+	QMap<QString,void*> pointerMap;
 };
 
 #endif

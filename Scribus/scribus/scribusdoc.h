@@ -1664,7 +1664,7 @@ public:
 	//invalidate all text frames where given mark will found
 	//usefull spacially for varaible text marks after changing its text definition
 	//if forceUpdate then found master frames are relayouted
-	bool invalidateMarkMasterText(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
+	bool invalidateVariableTextFrames(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
 
 	//for foot/endnotes
 	NotesSet* newNotesSet(NotesSet NS);
@@ -1684,7 +1684,7 @@ public:
 	//check conflicts beetween notesset
 	bool validateNSet(NotesSet NS, QString newName = "");
 	//update layout remove empty notesframes
-	void notesFramesUpdate();
+	bool notesFramesUpdate();
 	//update notesframes after changing automatic features of notesset
 	void updateNotesFramesSettings(NotesSet* NS);
 
@@ -1701,6 +1701,10 @@ public:
 	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNoteFrameChanged.append(nF); }
 	//update content for changed endnotesframes
 	void updateChangedEndNotesFrames();
+	//finds mark position in text
+	//return true if mark was found, CPos is set for mark`s position
+	//if item==NULL then search in all items and if mark is found than item is set
+	bool findMarkCPos(Mark* mrk, PageItem* &item, int &CPos);
 
 private:
 	QList<PageItem_NoteFrame*> m_docEndNoteFrameChanged;
@@ -1710,10 +1714,6 @@ private:
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMark(Mark* mrk, int &lastItem);
 	PageItem* findMark(Mark* mrk) { int tmp = -1; return findMark(mrk, tmp); }
-	//finds mark position in text
-	//return true if mark was found, CPos is set for mark`s position
-	//if item==NULL then search in all items and if mark is found than item is set
-	bool findMarkCPos(Mark* mrk, PageItem* &item, int &CPos);
 
 	//search for endnotesframe for given notes set and item holding master mark or section number
 	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, void* item = NULL);

@@ -527,7 +527,8 @@ void UndoManager::action(UndoObject* target, UndoState* state,
 }
 
 UndoState* UndoManager::getLastUndo(){
-	return stacks_[currentDoc_].getNextUndo(currentUndoObjectId_);
+	UndoState* state = stacks_[currentDoc_].getNextUndo(currentUndoObjectId_);
+	return state;
 }
 
 void UndoManager::undo(int steps)
@@ -912,13 +913,8 @@ void UndoManager::languageChange()
 	UndoManager::RowsCols           = tr("Rows: %1, Cols: %2");
 	UndoManager::SetFont            = tr("Set font");
 	UndoManager::SetFontSize        = tr("Set font size");
-	UndoManager::StartArrowScale    = tr("Set start arrow scale");
-	UndoManager::EndArrowScale      = tr("Set end arrow scale");
-	UndoManager::SetFontSize        = tr("Set font size");
 	UndoManager::SetFontWidth       = tr("Set font width");
-	UndoManager::SetFontHeight      = tr("Set font height");
-	UndoManager::GradType           = tr("Change gradient type");
-	UndoManager::GradVal            = tr("Change gradient values");
+	UndoManager::SetFontHeight       = tr("Set font height");
 	UndoManager::SetFontFill        = tr("Set font fill color");
 	UndoManager::SetFontStroke      = tr("Set font stroke color");
 	UndoManager::SetFontFillShade   = tr("Set font fill color shade");
@@ -953,7 +949,7 @@ void UndoManager::languageChange()
 	UndoManager::ObjectFrame        = tr("Text flows around the frame");
 	UndoManager::BoundingBox        = tr("Text flows around bounding box");
 	UndoManager::ContourLine        = tr("Text flows around contour line");
-	UndoManager::ImageClip          = tr("Text flows around image clipping path");
+	UndoManager::ImageClip        = tr("Text flows around image clipping path");
 	UndoManager::NoTextFlow         = tr("No text flow");
 	UndoManager::NoObjectFrame      = tr("No object frame");
 	UndoManager::NoBoundingBox      = tr("No bounding box");
@@ -979,15 +975,17 @@ void UndoManager::languageChange()
 	UndoManager::ImportText         = tr("Import text");
 	UndoManager::ClearText          = tr("Clear text");
 	UndoManager::AddLoremIpsum      = tr("Add Lorem Ipsum");
+	UndoManager::InsertMark         = tr("Insert mark");
+	UndoManager::EditMark           = tr("Edit mark");
+	UndoManager::DeleteMark         = tr("Delete mark");
 	UndoManager::DeletePage         = tr("Delete page");
 	UndoManager::DeletePages        = tr("Delete pages");
 	UndoManager::ChangePageProps    = tr("Change page properties");
 	UndoManager::AddLayer           = tr("Add layer");
-	UndoManager::DuplicateLayer	    = tr("Duplicate layer %1");
+	UndoManager::DuplicateLayer	= tr("Duplicate layer %1");
 	UndoManager::DeleteLayer        = tr("Delete layer");
 	UndoManager::RenameLayer        = tr("Rename layer");
 	UndoManager::RaiseLayer         = tr("Raise layer");
-	UndoManager::GradPos            = tr("Change gradient position");
 	UndoManager::LowerLayer         = tr("Lower layer");
 	UndoManager::SendToLayer        = tr("Send to layer");
 	UndoManager::PrintLayer         = tr("Enable printing of layer");
@@ -1015,7 +1013,7 @@ void UndoManager::languageChange()
 	UndoManager::InsertFrame        = tr("Insert frame");
 	UndoManager::AdjustFrameToImage = tr("Adjust frame to the image size");
 	UndoManager::RemoveAllGuides    = tr("Remove all guides");
-	UndoManager::RemoveAllPageGuides= tr("Remove page guides");
+	UndoManager::RemoveAllPageGuides = tr("Remove page guides");
 	UndoManager::Copy               = tr("Copy");
 	UndoManager::CopyPage           = tr("Copy page");
 	UndoManager::MovePage           = tr("Move page");
@@ -1099,9 +1097,6 @@ QString UndoManager::BlendMode          = "";
 QString UndoManager::ActionPDF          = "";
 QString UndoManager::Move               = "";
 QString UndoManager::NewMasterPage      = "";
-QString UndoManager::GradType           = "";
-QString UndoManager::GradPos            = "";
-QString UndoManager::GradVal            = "";
 QString UndoManager::ImportMasterPage   = "";
 QString UndoManager::DuplicateMasterPage= "";
 QString UndoManager::DelMasterPage      = "";
@@ -1112,8 +1107,6 @@ QString UndoManager::ImageOffset        = "";
 QString UndoManager::ImageScale         = "";
 QString UndoManager::ResTyp             = "";
 QString UndoManager::ShowImage          = "";
-QString UndoManager::StartArrowScale    = "";
-QString UndoManager::EndArrowScale      = "";
 QString UndoManager::ImageOffsetFromTo  = "";
 QString UndoManager::ImageScaleFromTo   = "";
 QString UndoManager::ResizeFromTo       = "";
@@ -1226,6 +1219,9 @@ QString UndoManager::ClearText          = "";
 QString UndoManager::ReplaceText        = "";
 QString UndoManager::InsertText         = "";
 QString UndoManager::AddLoremIpsum      = "";
+QString UndoManager::InsertMark         = "";
+QString UndoManager::EditMark         = "";
+QString UndoManager::DeleteMark         = "";
 QString UndoManager::DeletePage         = "";
 QString UndoManager::DeletePages        = "";
 QString UndoManager::ChangePageProps    = "";

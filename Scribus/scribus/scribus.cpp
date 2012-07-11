@@ -4198,7 +4198,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 					bookmarkPalette->BView->ChangeItem(ite->BMnr, ite->ItemNr);
 			} */
 		}
-		doc->updateMarks(true);
+		if (!doc->m_docMarksList.isEmpty())
+			doc->updateMarks(true);
 		for (QHash<int, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
 		{
 			PageItem *ite = itf.value();
@@ -10527,15 +10528,19 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 		qDebug() << "Dialog not implemented for such marks type " << mrkType;
 		return false;
 	}
+	bool docWasChanged = false;
+	
 	insertMDialog->setWindowTitle(tr("Insert new ") + insertMDialog->windowTitle());
 	if (insertMDialog->exec())
 	{
-		Mark* Mrk = NULL;
+		Mark* mrk = NULL;
+		Mark oldMark;
 		MarkData d;
 		if (currItem != NULL)
 			d.itemName = currItem->itemName();
 		QString label = "", text = "";
 		NotesSet* NSet = NULL;
+		bool insertExistedMark = false;
 		switch (mrkType)
 		{
 		case MARKAnchorType:
@@ -10546,8 +10551,8 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			d.itemPtr = currItem;
 			break;
 		case MARKVariableTextType:
-			Mrk = insertMDialog->values(label, text);
-			if ((Mrk == NULL) && (text.isEmpty()))
+			mrk = insertMDialog->values(label, text);
+			if ((mrk == NULL) && (text.isEmpty()))
 				return false; //FIX ME here user should be warned that inserting of mark fails and why
 			if (label.isEmpty())
 				label = tr("Mark with <%1> variable text").arg(text);
@@ -10598,7 +10603,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 				return false;
 			break;
 		}
-		if (Mrk == NULL)
+		if (mrk == NULL)
 		{
 			//check if label for new mark can be used as is
 			if (mrkType == MARKNoteMasterType)
@@ -10610,30 +10615,71 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			}
 			else
 				getUniqueName(label,doc->marksLabelsList(mrkType), "_");
-			Mrk = new Mark;
-			Mrk->setValues(label, currItem->OwnPage, mrkType, d);
-			doc->m_docMarksList.append(Mrk);
+			mrk = new Mark;
+			mrk->setValues(label, currItem->OwnPage, mrkType, d);
+			doc->m_docMarksList.append(mrk);
 		}
 		else
 		{ // that must be variable text mark
-			Mrk->setString(d.strtxt);
-			doc->invalidateMarkMasterText(Mrk, true);
+			oldMark = *mrk;
+			mrk->setString(d.strtxt);
+			insertExistedMark = true;
+			doc->invalidateVariableTextFrames(mrk, true);
 		}
 
-		currItem->itemText.insertMark(Mrk);
-		Mrk->OwnPage = currItem->OwnPage;
+		currItem->itemText.insertMark(mrk);
+		mrk->OwnPage = currItem->OwnPage;
 
 
 		if (mrkType == MARKNoteMasterType)
 		{
-			Mrk->getNotePtr()->setMasterMark(Mrk);
-			Mrk->setString("");
+			mrk->getNotePtr()->setMasterMark(mrk);
+			mrk->setString("");
 		}
-		delete insertMDialog;
-		return true;
+
+		if (UndoManager::undoEnabled())
+		{
+			ScItemsState *is = new ScItemsState(UndoManager::EditMark);
+			if (insertExistedMark)
+			{
+				is->set("MARK", QString("insert_existing"));
+				if (oldMark.getString() != mrk->getString())
+				{
+					is->set("strOLD", oldMark.getString());
+					is->set("strNEW", mrk->getString());
+				}
+			}
+			else
+			{
+				is->set("MARK", QString("new"));
+				is->set("label", mrk->label);
+				is->set("type", (int) mrk->getType());
+				is->set("strtxt", mrk->getString());
+				if (mrk->isType(MARK2MarkType))
+				{
+					QString dName;
+					MarkType dType;
+					mrk->getMark(dName, dType);
+					is->set("dName", dName);
+					is->set("dType", (int) dType);
+				}
+				if (mrk->isType(MARK2ItemType))
+					is->insertItem("itemPtr", (void*) mrk->getItemPtr());
+				if (mrk->isType(MARKNoteMasterType))
+				{
+					is->insertItem("notePtr", (void*) mrk->getNotePtr());
+					is->insertItem("nset", (void*) mrk->getNotePtr()->notesSet());
+				}
+			}
+			is->insertItem("mark", (void*) mrk);
+			is->set("at", currItem->itemText.cursorPosition() -1);
+			is->insertItem("inItem", currItem);
+			undoManager->action(doc, is);
+			docWasChanged = true;
+		}
 	}
 	delete insertMDialog;
-	return false;
+	return docWasChanged;
 }
 
 bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
@@ -10708,12 +10754,16 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 	editMDialog->setWindowTitle(tr("Edit ") + editMDialog->windowTitle());
 	if (editMDialog->exec())
 	{
+		Mark* oldMarkPtr = mrk;
+		Mark oldMark = *mrk;
 		Mark* Mrk = NULL;
 		MarkData d;
 		if (currItem != NULL)
 			d.itemName = currItem->itemName();
 		QString label = "", text = "";
 		QString oldStr = mrk->getString();
+		bool newMark = false;
+		bool replaceMark = false;
 		switch (mrk->getType())
 		{
 			case MARKAnchorType:
@@ -10741,6 +10791,8 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 						ScText* hl = currItem->itemText.item(currItem->itemText.cursorPosition());
 						hl->mark = Mrk;
 						mrk = Mrk;
+						oldMark = *mrk;
+						replaceMark = true;
 					}
 					if (mrk->label != label)
 					{
@@ -10752,19 +10804,20 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					{
 						mrk->setString(text);
 						if (mrk->getString() != oldStr)
-							docWasChanged = doc->invalidateMarkMasterText(mrk, true);
+							docWasChanged = doc->invalidateVariableTextFrames(mrk, true);
 					}
 				}
 				else
 				{
 					d.strtxt = text;
-					Mrk = new Mark;
+					mrk = new Mark;
 					getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
-					Mrk->setValues(label, currItem->OwnPage, MARKVariableTextType, d);
+					mrk->setValues(label, currItem->OwnPage, MARKVariableTextType, d);
 					doc->m_docMarksList.append(Mrk);
 					ScText* hl = currItem->itemText.item(currItem->itemText.cursorPosition());
-					hl->mark = Mrk;
+					hl->mark = mrk;
 					docWasChanged = true;
+					newMark = true;
 				}
 				break;
 			case MARK2ItemType:
@@ -10817,6 +10870,76 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				break;
 			default:
 				break;
+		}
+		if (UndoManager::undoEnabled())
+		{
+			ScItemsState *is = new ScItemsState(UndoManager::EditMark);
+			if (newMark)
+			{
+				is->set("MARK", QString("new"));
+				is->set("at", currItem->itemText.cursorPosition()-1);
+				is->insertItem("inItem", currItem);
+				is->set("label", mrk->label);
+				is->set("type", (int) mrk->getType());
+				is->set("strtxt", mrk->getString());
+				if (mrk->isType(MARK2MarkType))
+				{
+					QString dName;
+					MarkType dType;
+					mrk->getMark(dName, dType);
+					is->set("dName", dName);
+					is->set("dType", (int) dType);
+				}
+				if (mrk->isType(MARK2ItemType))
+					is->insertItem("itemPtr", (void*) mrk->getItemPtr());
+				if (mrk->isType(MARKNoteMasterType))
+					is->insertItem("notePtr", (void*) mrk->getNotePtr());
+			}
+			else
+			{
+				if (replaceMark)
+				{
+					is->set("MARK", QString("replace"));
+					is->set("at", currItem->itemText.cursorPosition());
+					is->insertItem("inItem", currItem);
+					is->insertItem("markOLD", (void*) oldMarkPtr);
+				}
+				else
+					is->set("MARK", QString("edit"));
+				if (mrk->label != oldMark.label)
+				{
+					is->set("labelOLD", oldMark.label);
+					is->set("labelNEW", mrk->label);
+				}
+				if (mrk->getString() != oldMark.getString())
+				{
+					is->set("strtxtOLD", oldMark.getString());
+					is->set("strtxtNEW", mrk->getString());
+				}
+				if (mrk->isType(MARK2MarkType))
+				{
+					QString dNameOLD;
+					MarkType dTypeOLD;
+					oldMark.getMark(dNameOLD, dTypeOLD);
+					QString dName;
+					MarkType dType;
+					mrk->getMark(dName, dType);
+					if (dName != dNameOLD || dType != dTypeOLD)
+					{
+						is->set("dNameOLD", dNameOLD);
+						is->set("dTypeOLD", (int) dTypeOLD);
+						is->set("dNameNEW", dName);
+						is->set("dTypeNEW", (int) dType);
+					}
+				}
+				if (mrk->isType(MARK2ItemType) && mrk->getItemPtr() != oldMark.getItemPtr())
+				{
+					is->insertItem("itemPtrOLD", (void*) oldMark.getItemPtr());
+					is->insertItem("itemPtrNEW", (void*) mrk->getItemPtr());
+				}
+			}
+			is->insertItem("mark", (void*) mrk);
+			undoManager->action(doc, is);
 		}
 	}
 	delete editMDialog;

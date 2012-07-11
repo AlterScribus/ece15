@@ -175,11 +175,7 @@ void PageItem_NoteFrame::layout()
 	if (itemText.length() == 0)
 		return;
 	if ((masterFrame() != NULL) && masterFrame()->invalid)
-	{
-		masterFrame()->layout();
-		//will be layouted by call from masterFrame->layout()
 		return;
-	}
 
 	if (m_nset->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{

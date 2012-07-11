@@ -667,16 +667,7 @@ public:
 	void setIsPDFBookmark(bool val) { isBookmark = val; }
 	// 0=none, 1,2,3,4=linear, 5=radial, 6=free linear, 7=free radial, 8=pattern 
 	int gradientType() const { return GrType; }
-	void setGradientType(int val);
-	int gradientStartX() const { return GrStartX; }
-	void setGradientStartX(int val);
-	int gradientStartY() const { return GrStartY; }
-	void setGradientStartY(int val);
-	int gradientEndX() const { return GrEndX; }
-	void setGradientEndX(int val);
-	int gradientEndY() const { return GrEndX; }
-	void setGradientEndY(int val);
-	void setFillGradient(VGradient grad);
+	void setGradientType(int val) { GrType = val; }
 	void set4ColorGeometry(FPoint c1, FPoint c2, FPoint c3, FPoint c4);
 	void set4ColorTransparency(double t1, double t2, double t3, double t4);
 	void set4ColorShade(int t1, int t2, int t3, int t4);
@@ -1228,15 +1219,6 @@ protected:
 	 * @author Riku Leino
 	 */
 	/*@{*/
-	void restoreFillGradient(SimpleState *state, bool isUndo);
-	void restoreGradientStartX(SimpleState *state, bool isUndo);
-	void restoreGradientStartY(SimpleState *state, bool isUndo);
-	void restoreGradientEndX(SimpleState *state, bool isUndo);
-	void restoreGradientEndY(SimpleState *state, bool isUndo);
-	void restoreGradientType(SimpleState *state, bool isUndo);
-	void restoreStartArrowScale(SimpleState *state, bool isUndo);
-	void restoreEndArrowScale(SimpleState *state, bool isUndo);
-	void restoreImageRotation(SimpleState *state, bool isUndo);
 	void restorePasteInline(SimpleState *state, bool isUndo);
 	void restorePasteText(SimpleState *state, bool isUndo);
 	void restoreFirstLineOffset(SimpleState *state, bool isUndo);
@@ -1253,6 +1235,7 @@ protected:
 	void restoreSetParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreLoremIpsum(SimpleState *state, bool isUndo);
 	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
+	void restoreDeleteMark(SimpleState *state, bool isUndo);
 	void restoreInsertFrameText(SimpleState *state, bool isUndo);
 	void restoreCornerRadius(SimpleState *state, bool isUndo);
 	void restoreShowImage(SimpleState *state, bool isUndo);
