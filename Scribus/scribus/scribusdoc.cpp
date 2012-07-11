@@ -1830,6 +1830,205 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						ss->get("NEW_PAGE_SIZE"), ss->getInt("NEW_PAGE_MARGINPRESET"), ss->getBool("OLD_PAGE_MOVEOBJECTS"), ss->getInt("PAGE_NUM"), ss->getInt("NEW_PAGE_TYPE"));
 			}
 		}
+		else if (ss->contains("MARK"))
+		{
+			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
+			if (is)
+			{
+				Mark* mrk = (Mark*) is->getItem("mark");
+				PageItem* currItem = (PageItem*) is->getItem("inItem");
+				int pos = is->getInt("at");
+				if (isUndo)
+				{
+					if (is->get("MARK") == "new")
+					{
+						if (mrk->isType(MARKNoteMasterType))
+						{
+							TextNote* note = (TextNote*) is->getItem("notePtr");
+							NotesSet* nSet = note->notesSet();
+							if (note->isEndNote())
+								flag_updateEndNotes = true;
+							deleteNote(note , true);
+						}
+						else
+							eraseMark(mrk, true);
+					}
+					else if (is->get("MARK") == "replace")
+					{
+						currItem->itemText.item(pos)->mark = (Mark*) is->getItem("markOLD");
+						if (is->contains("strtxtOLD"))
+						{
+							mrk->setString(is->get("strtxtOLD"));
+							invalidateMarkMasterText((Mark*) is->getItem("markOLD"), false);
+						}
+						if (is->contains("labelOLD"))
+							mrk->label = is->get("labelOLD");
+					}
+					else if (is->get("MARK") == "edit")
+					{
+						if (is->contains("labelOLD"))
+							mrk->label = is->get("labelOLD");
+						if (is->contains("strtxtOLD"))
+						{
+							mrk->setString(is->get("strtxtOLD"));
+							invalidateMarkMasterText(mrk, false);
+						}
+						if (is->contains("dNameOLD"))
+							mrk->setMark(is->get("dNameOLD"), (MarkType) is->getInt("dTypeOLD"));
+						if (is->getItem("itemPtrOLD") != NULL)
+							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
+					}
+					else if (is->get("MARK") == "insert_existing")
+					{
+						currItem->itemText.removeChars(pos,1);
+						if (is->contains("strOLD"))
+						{
+							mrk->setString(is->get("strOLD"));
+							invalidateMarkMasterText(mrk, false);
+						}
+					}
+					else if (is->get("MARK") == "delete")
+					{
+						if (currItem == NULL)
+						{
+							qDebug() << "Wrong inItem in undo step for mark";
+							return;
+						}
+						mrk = new Mark();
+						mrk->label = is->get("label");
+						mrk->setType((MarkType) is->getInt("type"));
+						m_docMarksList.append(mrk);
+						currItem->itemText.insertMark(mrk, pos);
+						if (is->contains("strtxt"))
+						{
+							mrk->setString(is->get("strtxt"));
+							invalidateMarkMasterText(mrk, false);
+						}
+						if (is->contains("dName"))
+							mrk->setMark(is->get("dName"), (MarkType) is->getInt("dType"));
+						if (is->getItem("itemPtr") != NULL)
+							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
+						if (is->contains("notePtr"))
+						{
+							NotesSet* nSet = (NotesSet*) is->getItem("nset");
+							TextNote* newNote = new TextNote(nSet);
+							m_docNotesList.append(newNote);
+							mrk->setNotePtr(newNote);
+							is->insertItem("notePtr", (void*) newNote);
+							updateNotesNums(nSet);
+						}
+					}
+					else if (is->get("MARK") == "eraseFromText") ////for non-unique marks
+					{
+						currItem->itemText.insertMark(mrk, pos);
+						if (is->contains("strNew"))
+						{
+							mrk->setString(is->get("strNEW"));
+							invalidateMarkMasterText(mrk, false);
+						}
+					}
+					else
+					{
+						qDebug() << "MARK undo - unhandled " << is->get("MARK");
+					}
+				}
+				else  //REDO
+				{
+					if (is->get("MARK") == "new")
+					{
+						if (currItem == NULL)
+						{
+							qDebug() << "Wrong inItem in undo step for mark";
+							return;
+						}
+						mrk = new Mark();
+						mrk->label = is->get("label");
+						mrk->setType((MarkType) is->getInt("type"));
+						m_docMarksList.append(mrk);
+						currItem->itemText.insertMark(mrk, pos);
+						if (is->contains("strtxt"))
+							mrk->setString(is->get("strtxt"));
+						if (is->contains("dName"))
+							mrk->setMark(is->get("dName"), (MarkType) is->getInt("dType"));
+						if (is->getItem("itemPtr") != NULL)
+							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
+						if (is->contains("notePtr"))
+						{
+							NotesSet* nSet = (NotesSet*) is->getItem("nset");
+							TextNote* newNote = new TextNote(nSet);
+							m_docNotesList.append(newNote);
+							mrk->setNotePtr(newNote);
+							is->insertItem("notePtr", (void*) newNote);
+							updateNotesNums(nSet);
+						}
+					}
+					else if (is->get("MARK") == "replace")
+					{
+						currItem->itemText.item(pos)->mark = (Mark*) is->getItem("mark");
+						if (is->contains("strtxtNEW"))
+						{
+							mrk->setString(is->get("strtxtNEW"));
+							invalidateMarkMasterText(mrk, false);
+						}
+						if (is->contains("labelNEW"))
+							mrk->label = is->get("labelNEW");
+					}
+					else if (is->get("MARK") == "edit")
+					{
+						if (is->contains("labelNEW"))
+							mrk->label = is->get("labelNEW");
+						if (is->contains("strtxtNEW"))
+						{
+							mrk->setString(is->get("strtxtNEW"));
+							invalidateMarkMasterText(mrk, false);
+						}
+						if (is->contains("dNameNEW"))
+							mrk->setMark(is->get("dNameNEW"), (MarkType) is->getInt("dTypeNEW"));
+						if (is->getItem("itemPtrNEW") != NULL)
+							mrk->setItemPtr((PageItem*) is->getItem("itemPtrNEW"));
+					}
+					else if (is->get("MARK") == "insert_existing")
+					{
+						currItem->itemText.insertMark(mrk, pos);
+						if (is->contains("strNew"))
+						{
+							mrk->setString(is->get("strNEW"));
+							invalidateMarkMasterText(mrk, false);
+						}
+					}
+					else if (is->get("MARK") == "eraseFromText") //for non-unique marks
+					{
+						currItem->itemText.removeChars(pos,1);
+					}
+					else if (is->get("MARK") == "delete")
+					{
+						if (!mrk->isUnique())
+						{
+							currItem->itemText.removeChars(pos,1);
+						}
+						else
+						{
+							if (mrk->isType(MARKNoteMasterType))
+							{
+								TextNote* note = (TextNote*) is->getItem("notePtr");
+								NotesSet* nSet = note->notesSet();
+								deleteNote(note , true);
+								updateNotesNums(nSet);
+							}
+							else
+								eraseMark(mrk, true);
+						}
+					}
+					else
+					{
+						qDebug() << "MARK redo - unhandled " << is->get("MARK");
+					}
+				}
+				currItem->invalid = true;
+				updateMarks(true);
+				changed();
+			}
+		}
 		if (layersUndo)
 		{
 			if (ScCore->usingGUI())
@@ -15965,6 +16164,8 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 
 bool ScribusDoc::invalidateMarkMasterText(Mark* mrk, bool forceUpdate)
 {
+	if (!mrk->isType(MARKVariableTextType))
+		return false;
 	int itemNo = -1;
 	bool found = false;
 	PageItem* mItem = findMark(mrk, itemNo);
@@ -15984,7 +16185,11 @@ bool ScribusDoc::invalidateMarkMasterText(Mark* mrk, bool forceUpdate)
 bool ScribusDoc::updateMarks(bool updateNotesMarks)
 {
 	if (m_docMarksList.isEmpty())
+	{
+		if (updateNotesMarks)
+			return notesFramesUpdate();
 		return false;
+	}
 	m_docMarksList.removeAll(NULL);
 
 	bool docWasChanged = false;
@@ -16024,7 +16229,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 				updateEndnotesFrames(NS);
 			updateNotesFramesStyles(NS);
 		}
-		notesFramesUpdate();
+		docWasChanged = notesFramesUpdate();
 	}
 
 	//for all marks
@@ -16612,9 +16817,10 @@ const ScPage *ScribusDoc::page4EndNotes(NotesSet *NS, PageItem* item)
 	return scP;
 }
 
-void ScribusDoc::notesFramesUpdate()
+bool ScribusDoc::notesFramesUpdate()
 {
 	bool removeEmptyNF = false;
+	bool docWasChanged = false;
 	int end;
 	do {
 		flag_notesChanged = false;
@@ -16626,6 +16832,8 @@ void ScribusDoc::notesFramesUpdate()
 				continue;
 			if (item->isNoteFrame())
 			{
+				if (item->asNoteFrame()->masterFrame() != NULL)
+					item->asNoteFrame()->masterFrame()->layout();
 				if (item->asNoteFrame()->isEndNotesFrame())
 					//update content and move endnotes if pages were removed
 					updateEndNotesFrameContent(item->asNoteFrame());
@@ -16639,10 +16847,12 @@ void ScribusDoc::notesFramesUpdate()
 				else
 					removeEmptyNF = true;
 			}
-			else if (item->asTextFrame()->hasNoteFrame(NULL, true))
-				item->layout();
 			if (end != Items->count())
+			{
+				end = Items->count();
 				flag_notesChanged = true;
+			}
+			docWasChanged = docWasChanged || flag_notesChanged;
 			if (flag_notesChanged)
 				break;
 		}
@@ -16660,7 +16870,9 @@ void ScribusDoc::notesFramesUpdate()
 		}
 		foreach (PageItem* item, tmplist)
 			delNoteFrame(item->asNoteFrame());
+		docWasChanged = true;
 	}
+	return docWasChanged;
 }
 
 void ScribusDoc::updateNotesFramesSettings(NotesSet *NS)

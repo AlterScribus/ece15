@@ -1684,7 +1684,7 @@ public:
 	//check conflicts beetween notesset
 	bool validateNSet(NotesSet NS, QString newName = "");
 	//update layout remove empty notesframes
-	void notesFramesUpdate();
+	bool notesFramesUpdate();
 	//update notesframes after changing automatic features of notesset
 	void updateNotesFramesSettings(NotesSet* NS);
 

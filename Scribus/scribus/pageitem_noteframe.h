@@ -13,7 +13,7 @@ public:
 	PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nSet);
-	~PageItem_NoteFrame() {}
+	~PageItem_NoteFrame() { unWeld(); }
 
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }

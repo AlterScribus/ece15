@@ -72,6 +72,7 @@ public:
 			data.destmarkType = mP->getType();
 		}
 	}
+	void setMark(QString l, MarkType t) { data.destmarkName = l; data.destmarkType = t; }
 	const MarkType getMarkType() { return data.markTyp; }
 	void setMarkType(MarkType t) { data.markTyp = t; }
 	const QString getString() { return data.strtxt; }
