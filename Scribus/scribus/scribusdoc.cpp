@@ -1830,12 +1830,47 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						ss->get("NEW_PAGE_SIZE"), ss->getInt("NEW_PAGE_MARGINPRESET"), ss->getBool("OLD_PAGE_MOVEOBJECTS"), ss->getInt("PAGE_NUM"), ss->getInt("NEW_PAGE_TYPE"));
 			}
 		}
+		else if (ss->contains("DELETE_NOTE"))
+		{
+			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
+			if (is)
+			{
+				NotesSet* nSet = (NotesSet*) is->getItem("nset");
+				if (isUndo)
+				{
+					TextNote* newNote = new TextNote(nSet);
+					m_docNotesList.append(newNote);
+					Mark* mrk = new Mark();
+					mrk->setType(MARKNoteMasterType);
+					mrk->setNotePtr(newNote);
+					newNote->setMasterMark(mrk);
+					newNote->setSaxedText(is->get("noteTXT"));
+					PageItem* master = (PageItem*) is->getItem("inItem");
+					master->itemText.insertMark(mrk, is->getInt("at"));
+					master->invalid = true;
+					flag_notesChanged = true;
+					if (newNote->isEndNote())
+						flag_updateEndNotes = true;
+				}
+				else
+				{
+					PageItem* master = (PageItem*) is->getItem("inItem");
+					TextNote* note = master->itemText.item(is->getInt("at"))->mark->getNotePtr();
+					if (note->isEndNote())
+						flag_updateEndNotes = true;
+					deleteNote(note, true);
+				}
+				updateNotesNums(nSet);
+			}
+		}
 		else if (ss->contains("MARK"))
 		{
 			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
 			if (is)
 			{
-				Mark* mrk = (Mark*) is->getItem("mark");
+				Mark* mrk = NULL;
+				if (is->contains("mark"))
+					mrk = (Mark*) is->getItem("mark");
 				PageItem* currItem = (PageItem*) is->getItem("inItem");
 				int pos = is->getInt("at");
 				if (isUndo)
@@ -1845,7 +1880,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						if (mrk->isType(MARKNoteMasterType))
 						{
 							TextNote* note = (TextNote*) is->getItem("notePtr");
-							NotesSet* nSet = note->notesSet();
 							if (note->isEndNote())
 								flag_updateEndNotes = true;
 							deleteNote(note , true);
@@ -1908,16 +1942,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setMark(is->get("dName"), (MarkType) is->getInt("dType"));
 						if (is->getItem("itemPtr") != NULL)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
-						if (is->contains("notePtr"))
-						{
-							NotesSet* nSet = (NotesSet*) is->getItem("nset");
-							TextNote* newNote = new TextNote(nSet);
-							m_docNotesList.append(newNote);
-							mrk->setNotePtr(newNote);
-							newNote->setMasterMark(mrk);
-							is->insertItem("notePtr", (void*) newNote);
-							updateNotesNums(nSet);
-						}
 					}
 					else if (is->get("MARK") == "eraseFromText") ////for non-unique marks
 					{

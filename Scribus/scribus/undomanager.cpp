@@ -975,7 +975,6 @@ void UndoManager::languageChange()
 	UndoManager::ImportText         = tr("Import text");
 	UndoManager::ClearText          = tr("Clear text");
 	UndoManager::AddLoremIpsum      = tr("Add Lorem Ipsum");
-	UndoManager::InsertMark         = tr("Insert mark");
 	UndoManager::EditMark           = tr("Edit mark");
 	UndoManager::DeleteMark         = tr("Delete mark");
 	UndoManager::DeletePage         = tr("Delete page");
@@ -1219,8 +1218,7 @@ QString UndoManager::ClearText          = "";
 QString UndoManager::ReplaceText        = "";
 QString UndoManager::InsertText         = "";
 QString UndoManager::AddLoremIpsum      = "";
-QString UndoManager::InsertMark         = "";
-QString UndoManager::EditMark         = "";
+QString UndoManager::EditMark           = "";
 QString UndoManager::DeleteMark         = "";
 QString UndoManager::DeletePage         = "";
 QString UndoManager::DeletePages        = "";
