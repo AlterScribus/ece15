@@ -4859,36 +4859,38 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 {
 	QString text = ss->get("TEXT_STR");
 	int start = ss->getInt("START");
-	qDebug() << "PageItem::restoreDeleteFrameText";
+	if (isUndo){
+		ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
+		itemText.insertChars(start,text);
+		itemText.applyCharStyle(start, text.length(), is->getItem());
+		invalidateLayout();
+	}
+	else { //REDO
+		itemText.select(start,text.length());
+		asTextFrame()->deleteSelectedTextFromFrame();
+	}
+	update();
+}
+
+void PageItem::restoreDeleteMark(SimpleState *ss, bool isUndo)
+{
+	ScItemsState *its = dynamic_cast<ScItemsState *>(ss);
+
 	if (isUndo){
 		if (isNoteFrame() && ss->contains("isNote"))
 		{
-			ScItemsState *is = dynamic_cast<ScItemsState *>(ss);
-			NotesSet * NSet = (NotesSet*) is->getItem("nset");
+			NotesSet * NSet = (NotesSet*) its->getItem("nset");
 			TextNote * note = new TextNote(NSet);
-			note->setSaxedText(is->get("noteTXT"));
-			PageItem* master = (PageItem*) is->getItem("master");
-			QString label = "NoteMark_" + NSet->name();
-			if (NSet->range() == NSRsection)
-				label += " in section " + m_Doc->getSectionNameForPageIndex(master->OwnPage) + " page " + QString::number(master->OwnPage +1);
-			else if (NSet->range() == NSRpage)
-				label += " on page " + QString::number(master->OwnPage +1);
-			else if (NSet->range() == NSRstory)
-				label += " in " + master->firstInChain()->itemName();
-			else if (NSet->range() == NSRframe)
-				label += " in frame" + master->itemName();
-			if (m_Doc->getMarkDefinied(label + "_1", MARKNoteMasterType) != NULL)
-				getUniqueName(label, m_Doc->marksLabelsList(MARKNoteMasterType), "_");
-			else
-				label = label + "_1";
+			note->setSaxedText(its->get("noteTXT"));
+			PageItem* master = (PageItem*) its->getItem("master");
 			Mark* mrk = new Mark();
-			mrk->label = label;
+			mrk->label = "NoteMark_" + NSet->name();
 			mrk->setType(MARKNoteMasterType);
 			mrk->setNotePtr(note);
 			note->setMasterMark(mrk);
 			m_Doc->m_docMarksList.append(mrk);
 			m_Doc->m_docNotesList.append(note);
-			master->itemText.insertMark(mrk, is->getInt("at"));
+			master->itemText.insertMark(mrk, its->getInt("at"));
 			if (m_Doc->updateNotesNums(NSet))
 			{
 				if (note->isEndNote())
@@ -4899,56 +4901,44 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 		}
 		else
 		{
-			ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
-			if (ss->getBool("hasMark"))
-			{
-				Mark* mrk = new Mark();
-				mrk->label = is->get("label");
-				mrk->setType((MarkType) is->getInt("type"));
-				m_Doc->m_docMarksList.append(mrk);
-				itemText.insertMark(mrk, start + text.length());
-				if (is->contains("strtxt"))
-				{
-					mrk->setString(is->get("strtxt"));
-					m_Doc->invalidateVariableTextFrames(mrk, false);
-				}
-				if (is->contains("dName"))
-					mrk->setMark(is->get("dName"), (MarkType) is->getInt("dType"));
-				mrk->setItemPtr((PageItem*) is->getPtr("itemPtrOLD"));
-				if (is->contains("noteTXT")) //is note mark
-				{
-					NotesSet* nSet = (NotesSet*) is->getPtr("nset");
-					TextNote* newNote = new TextNote(nSet);
-					newNote->setSaxedText(is->get("noteTXT"));
-					m_Doc->m_docNotesList.append(newNote);
-					mrk->setNotePtr(newNote);
-					newNote->setMasterMark(mrk);
-					m_Doc->flag_notesChanged;
-					m_Doc->changed();
-					m_Doc->regionsChanged()->update(QRectF());
-				}
-			}
+			Mark* mrk = new Mark();
+			mrk->label = its->get("label");
+			mrk->setType((MarkType) its->getInt("type"));
+			m_Doc->m_docMarksList.append(mrk);
+			int pos = its->getInt("at");
+			if (itemText.text(pos) == SpecialChars::OBJECT)
+				itemText.item(pos)->mark = mrk;
 			else
+				itemText.insertMark(mrk, its->getInt("at"));
+			if (its->contains("strtxt"))
 			{
-				itemText.insertChars(start,text);
-				itemText.applyCharStyle(start, text.length(), is->getItem());
+				mrk->setString(its->get("strtxt"));
+				m_Doc->invalidateVariableTextFrames(mrk, false);
+			}
+			if (its->contains("dName"))
+				mrk->setMark(its->get("dName"), (MarkType) its->getInt("dType"));
+			mrk->setItemPtr((PageItem*) its->getItem("itemPtrOLD"));
+			if (its->contains("noteTXT")) //is note mark
+			{
+				NotesSet* nSet = (NotesSet*) its->getItem("nset");
+				TextNote* newNote = new TextNote(nSet);
+				newNote->setSaxedText(its->get("noteTXT"));
+				m_Doc->m_docNotesList.append(newNote);
+				mrk->setNotePtr(newNote);
+				newNote->setMasterMark(mrk);
+				m_Doc->flag_notesChanged = true;
 			}
 		}
 		invalid = true;
 		//invalidateLayout();
 	}
 	else { //REDO
-		if (ss->getBool("hasMark"))
-			itemText.setCursorPosition(start);
-		else
-			itemText.select(start,text.length());
+		if (its->contains("noteTXT"))
+			m_Doc->flag_notesChanged = true;
+		itemText.select(its->getInt("at"), 1);
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
-}
-
-void PageItem::restoreDeleteMark(SimpleState *ss, bool isUndo)
-{
-	
+	update();
 }
 
 void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo)

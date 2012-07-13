@@ -286,8 +286,8 @@ void LoremManager::insertLoremIpsum(QString name, int paraCount, bool random)
 		if (currItem->isNoteFrame())
 			continue;
 		//removing marks and notes from current text
-		if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!m_Doc->hasGUI()))
-			continue;
+//		if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!m_Doc->hasGUI()))
+//			continue;
 		PageItem *i2 = currItem;
 		if (m_Doc->appMode == modeEditTable)
 			i2 = currItem->asTable()->activeCell().textFrame();

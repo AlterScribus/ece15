@@ -1229,9 +1229,6 @@ void ScribusMainWindow::specialActionKeyEvent(const QString& actionName, int uni
 						if (currItem->HasSel){
 							if (UndoManager::undoEnabled())
 								activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Selection, Um::IGroup, Um::ReplaceText, "", Um::IDelete));
-							//removing marks and notes from selected text
-							if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
-								return;
 							currItem->deleteSelectedTextFromFrame();
 						}
 						if (UndoManager::undoEnabled())
@@ -1658,10 +1655,11 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
 					keyrep=kr;
+					if (doc->flag_notesChanged)
+						doc->notesFramesUpdate();
 				}
-				if (doc->flag_notesChanged)
-					doc->notesFramesUpdate();
-				slotDocCh(false);
+				else
+					slotDocCh(false);
 			}
 		}
 	}
@@ -5088,8 +5086,8 @@ void ScribusMainWindow::slotEditCut()
 				if ((cItem->itemText.length() == 0) || (!cItem->HasSel))
 					return;
 				//removing marks and notes from selected text
-				if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
-					return;
+//				if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
+//					return;
 				StoryText itemText(doc);
 				itemText.setDefaultStyle(cItem->itemText.defaultStyle());
 				itemText.insert(0, cItem->itemText, true);
@@ -5231,8 +5229,8 @@ void ScribusMainWindow::slotEditPaste()
 			if (currItem->HasSel)
 			{
 				//removing marks and notes from selected text
-				if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
-					return;
+//				if (currItem->isTextFrame() && !currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
+//					return;
 				currItem->deleteSelectedTextFromFrame();
 			}
 
@@ -10423,8 +10421,8 @@ void ScribusMainWindow::insertMark(MarkType mType)
 			//inserting mark replace some selected text
 			//remove from selected text all marks
 			//ask user if any notes will be removed
-			if (!currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
-				return;
+//			if (!currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
+//				return;
 		}
 		if (insertMarkDlg(currItem->asTextFrame(), mType))
 		{

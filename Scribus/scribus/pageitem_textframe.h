@@ -147,8 +147,8 @@ public:
 	void delNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
 	void notesFramesLayout(bool force);
-	//removing all marsk from text, if not force and is GUI enabled then user will be warned
-	bool removeMarksFromText(bool force=false);
+	//removing all marsk from text, returns number of removed marks
+	int removeMarksFromText();
 	//return note frame for given notes set if current text frame has notes marks with this notes set
 	PageItem_NoteFrame* itemNoteFrame(NotesSet* nSet);
 	//list all notes frames for current text frame /with endnotes frames if endnotes marks are in that frame/

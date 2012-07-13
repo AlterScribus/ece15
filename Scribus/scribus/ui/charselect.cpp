@@ -103,9 +103,9 @@ void CharSelect::slot_insertSpecialChar()
 		cItem = m_Item->asTextFrame();
 	if (cItem->HasSel)
 	{
-		//removing marks and notes from selected text
-		if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!m_doc->hasGUI()))
-			return;
+//		//removing marks and notes from selected text
+//		if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!m_doc->hasGUI()))
+//			return;
 		cItem->deleteSelectedTextFromFrame();
 	}
 	cItem->invalidateLayout();
@@ -144,8 +144,8 @@ void CharSelect::slot_insertUserSpecialChar(QChar ch, QString font)
 	if (cItem->HasSel)
 	{
 		//removing marks and notes from selected text
-		if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!m_doc->hasGUI()))
-			return;
+//		if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!m_doc->hasGUI()))
+//			return;
 		cItem->deleteSelectedTextFromFrame();
 	}
 	cItem->invalidateLayout();

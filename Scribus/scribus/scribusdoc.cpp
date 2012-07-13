@@ -10917,8 +10917,8 @@ void ScribusDoc::itemSelection_ClearItem(Selection* customSelection)
 				}
 			}
 			//remove marks - with GUI ask user if he knows that marks are in text and were deleted
-			if (!currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
-				continue;
+//			if (!currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
+//				continue;
 			currItem->clearContents();
 		}
 		regionsChanged()->update(QRectF());
@@ -11049,9 +11049,9 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 			{
 				//delete all note`s frame created for that text frame
 				//force deleting all notes frames
-				if (!currItem->asTextFrame()->isInChain() && !currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
-					//frame isn`t in text chain - user decides to not deleting notes
-					continue;
+//				if (!currItem->asTextFrame()->isInChain() && !currItem->asTextFrame()->removeMarksFromText(!hasGUI()))
+//					//frame isn`t in text chain - user decides to not deleting notes
+//					continue;
 				currItem->asTextFrame()->delAllNoteFrames(false);
 				currItem->dropLinks();
 			}
@@ -16183,8 +16183,11 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 		}
 	}
 	//erase mark from marksMap
-	m_docMarksList.removeOne(mrk);
-	delete mrk;
+	if (mrk->isUnique())
+	{
+		m_docMarksList.removeOne(mrk);
+		delete mrk;
+	}
 	return found;
 }
 
@@ -17026,7 +17029,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool force)
 {
 	Q_ASSERT(nF != NULL);
 	if (nF->itemText.length() > 0)
-		nF->removeMarksFromText(true);
+		nF->removeMarksFromText();
 		
 	nF->itemText.clear();
 	if (appMode == modeEdit && nF->isSelected())
