@@ -265,7 +265,7 @@ void Cpalette::updateFromItem()
 	updateCList();
 	displayOverprint(currentItem->doOverprint ? 1 : 0);
 	displayColorValues(currentItem->lineColor(), currentItem->fillColor(), currentItem->lineShade(), currentItem->fillShade());
-	displayGradient(currentItem->gradientType());
+	displayGradient(currentItem->GrType);
 	gradEdit->setGradient(currentItem->fill_gradient);
 	gradEditStroke->setGradient(currentItem->stroke_gradient);
 	if (!currentItem->gradient().isEmpty())
@@ -312,7 +312,7 @@ void Cpalette::updateFromItem()
 		strokeModeCombo->setCurrentIndex(1);
 	else
 		strokeModeCombo->setCurrentIndex(0);
-	if (currentItem->gradientType() == 12)
+	if (currentItem->GrType == 12)
 		setMeshPatchPoint();
 	else
 		setMeshPoint();
@@ -1136,9 +1136,9 @@ void Cpalette::editMeshPointColor()
 {
 	if (editMeshColors->isChecked())
 	{
-		if (currentItem->gradientType() == 11)
+		if (currentItem->GrType == 11)
 			editStrokeGradient = 6;
-		else if (currentItem->gradientType() == 12)
+		else if (currentItem->GrType == 12)
 			editStrokeGradient = 8;
 		else
 			editStrokeGradient = 0;
@@ -1184,7 +1184,7 @@ void Cpalette::resetOneControlPoint()
 	int grow = currentItem->selectedMeshPointX;
 	int gcol = currentItem->selectedMeshPointY;
 	int cont = currentItem->selectedMeshControlPoint;
-	if (currentItem->gradientType() == 12)
+	if (currentItem->GrType == 12)
 	{
 		if ((grow == -1) || (gcol == 0))
 			return;
@@ -1237,7 +1237,7 @@ void Cpalette::resetAllControlPoints()
 {
 	int grow = currentItem->selectedMeshPointX;
 	int gcol = currentItem->selectedMeshPointY;
-	if (currentItem->gradientType() == 12)
+	if (currentItem->GrType == 12)
 	{
 		if ((grow == -1) || (gcol == 0))
 			return;
@@ -1288,31 +1288,31 @@ void Cpalette::editGradientVector()
 	{
 		CGradDia->unitChange(currentDoc->unitIndex());
 		CGradDia->setValues(currentItem->GrStartX, currentItem->GrStartY, currentItem->GrEndX, currentItem->GrEndY, currentItem->GrFocalX, currentItem->GrFocalY, currentItem->GrScale, currentItem->GrSkew, 0, 0);
-		if (currentItem->gradientType() == 6)
+		if (currentItem->GrType == 6)
 			CGradDia->selectLinear();
-		else if (currentItem->gradientType() == 7)
+		else if (currentItem->GrType == 7)
 			CGradDia->selectRadial();
-		else if (currentItem->gradientType() == 9)
+		else if (currentItem->GrType == 9)
 		{
 			CGradDia->setValues(currentItem->GrControl1.x(), currentItem->GrControl1.y(), currentItem->GrControl2.x(), currentItem->GrControl2.y(), currentItem->GrControl3.x(), currentItem->GrControl3.y(), currentItem->GrControl4.x(), currentItem->GrControl4.y(), 0, 0);
 			CGradDia->selectFourColor();
 		}
-		else if (currentItem->gradientType() == 10)
+		else if (currentItem->GrType == 10)
 		{
 			CGradDia->setValues(currentItem->GrControl1.x(), currentItem->GrControl1.y(), currentItem->GrControl2.x(), currentItem->GrControl2.y(), currentItem->GrControl3.x(), currentItem->GrControl3.y(), currentItem->GrControl4.x(), currentItem->GrControl4.y(), currentItem->GrControl5.x(), currentItem->GrControl5.y());
 			CGradDia->selectDiamond();
 		}
-		else if (currentItem->gradientType() == 11)
+		else if (currentItem->GrType == 11)
 		{
 			CGradDia->selectMesh();
 			editMeshColors->setEnabled(false);
 		}
-		else if (currentItem->gradientType() == 12)
+		else if (currentItem->GrType == 12)
 		{
 			CGradDia->selectPatchMesh();
 			editMeshColors->setEnabled(false);
 		}
-		else if (currentItem->gradientType() == 13)
+		else if (currentItem->GrType == 13)
 			CGradDia->selectConical();
 		CGradDia->show();
 	}
@@ -1321,13 +1321,13 @@ void Cpalette::editGradientVector()
 		CGradDia->hide();
 		editMeshColors->setEnabled(true);
 	}
-	if (currentItem->gradientType() == 9)
+	if (currentItem->GrType == 9)
 		editStrokeGradient = 3;
-	else if (currentItem->gradientType() == 10)
+	else if (currentItem->GrType == 10)
 		editStrokeGradient = 4;
-	else if (currentItem->gradientType() == 11)
+	else if (currentItem->GrType == 11)
 		editStrokeGradient = 5;
-	else if (currentItem->gradientType() == 12)
+	else if (currentItem->GrType == 12)
 		editStrokeGradient = 9;
 	else
 		editStrokeGradient = 0;

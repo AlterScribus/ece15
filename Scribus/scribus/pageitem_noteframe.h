@@ -17,6 +17,7 @@ public:
 
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }
+	virtual bool isAutoNoteFrame() const { return m_nset->isAutoRemoveEmptyNotesFrames(); }
 
 	//overloaded text frame layouting
 	void layout();

@@ -1932,7 +1932,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 		{
 			Mark* mrk = mark(i);
 			if ((doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteMasterType))
-				|| (!doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType)))
+				|| (!doc->m_Selection->itemAt(0)->isTextFrame() && mrk->isType(MARKNoteFrameType)))
 				continue; //do not insert notes marks into text frames nad vice versa
 			Xml_attr mark_attr;
 			mark_attr.insert("label", mrk->label);

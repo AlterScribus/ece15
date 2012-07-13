@@ -1475,7 +1475,7 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool 
 		painter->beginLayer(layer.transparency, layer.blendMode);
 
 	//if notes are used
-	//then we must be shure that text frames are valid and all notes frames are created before we start drawing
+	//then we must be sure that text frames are valid and all notes frames are created before we start drawing
 	if (!notesFramesPass && !m_doc->m_docNotesList.isEmpty())
 	{
 		for (int it = 0; it < m_doc->Items->count(); ++it)

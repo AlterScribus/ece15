@@ -12,7 +12,7 @@ Mark2ItemDlg::Mark2ItemDlg(QWidget *parent) : MarkInsertDlg(parent)
 	for (int i = 0; i < scmw->doc->Items->count(); i++)
 	{
 		PageItem* item = scmw->doc->Items->at(i);
-		if (item->isNoteFrame() && item->asNoteFrame()->isAutoRemove())
+		if (item->isAutoNoteFrame())
 			continue; //omit notes frames automaticaly created and removed
 		itemsList.append(item->itemName());
 	}

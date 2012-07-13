@@ -3932,7 +3932,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				update();
+				if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+					asNoteFrame()->masterFrame()->invalid = true;
+				else
+					update();
 //				view->RefreshItem(this);
 			}
 			keyRepeat = false;
@@ -3947,7 +3950,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (itemText.lengthOfSelection() == 0)
 			itemText.select(itemText.cursorPosition(), 1, true);
 		deleteSelectedTextFromFrame();
-		update();
+		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+			asNoteFrame()->masterFrame()->invalid = true;
+		else
+			update();
 //		Tinput = false;
 		if ((cr == QChar(13)) && (itemText.length() != 0))
 		{
@@ -3964,7 +3970,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				update();
+				if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+					asNoteFrame()->masterFrame()->invalid = true;
+				else
+					update();
 			}
 			break;
 		}
@@ -3983,7 +3992,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 //			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
 //			Tinput = false;
 		}
-		updateLayout();
+		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+			asNoteFrame()->masterFrame()->invalid = true;
+		else
+			update();
 		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 			NextBox->updateLayout();
 		if (itemText.cursorPosition() < firstInFrame())
@@ -4000,7 +4012,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 		}
 		m_Doc->scMW()->setTBvals(this);
-		update();
+//		update();
 //		view->RefreshItem(this);
 		break;
 	default:
@@ -4110,12 +4122,16 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 			// update layout immediately, we need MaxChars to be correct to detect 
 			// if we need to move to next frame or not
-			updateLayout();
+			if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+				asNoteFrame()->masterFrame()->invalid = true;
+			else
+				update();
 			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 				NextBox->updateLayout();
 		}
 		//check if cursor need to jump to next linked frame
-		if ((itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
+		//but not for notes frames can`t be updated as may disapper during update
+		if (!(isAutoNoteFrame() && m_Doc->flag_notesChanged) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 		{
 			view->Deselect(true);
 			view->Deselect(true);
@@ -4156,10 +4172,11 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 			is = dynamic_cast<ScItemState<CharStyle>*>(ts->at(ts->sizet()-1));
 			state = ts->at(0);
 		}
-		UndoTransaction * trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete + "o","",Um::IDelete));
+		UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
 		//delete marks
 		int newStop = -1;
-		for (int i=start; i < stop; ++i)
+		int selEnd = qMin(stop, itemText.length()-1);
+		for (int i=start; i < selEnd; ++i)
 		{
 			ScText* hl = itemText.item(i);
 			if (hl->hasMark())
@@ -4252,15 +4269,16 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 				}
 				invalid = true;
 				asNoteFrame()->masterFrame()->invalid = true;
-				update();
+				if (!isAutoNoteFrame())
+					update();
 				break;
 			}
 			const CharStyle& curParent(itemText.charStyle(i));
-			if (!curParent.equiv(lastParent) || (i==stop))
+			if (!curParent.equiv(lastParent) || i==stop)
 			{
 				added = false;
 				lastIsDelete = false;
-				if(is && is->get("ETEA") == "delete_frametext" && lastPos < is->getInt("START"))
+				if(is && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext" && lastPos<is->getInt("START"))
 				{
 					if(is->getItem().equiv(lastParent))
 					{
@@ -4270,7 +4288,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 					}
 					lastIsDelete = true;
 				}
-				else if(is && is->get("ETEA") == "delete_frametext"  && lastPos >= is->getInt("START"))
+				else if(is && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext"  && lastPos>=is->getInt("START"))
 				{
 					if(is && is->getItem().equiv(lastParent)){
 						is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos,i - lastPos));
@@ -4280,7 +4298,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 				}
 				if(!added)
 				{
-					is = new ScItemState<CharStyle>(Um::DeleteText + "a","",Um::IDelete);
+					is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
 					is->set("DELETE_FRAMETEXT", "delete_frametext");
 					is->set("ETEA", QString("delete_frametext"));
 					is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
@@ -4297,13 +4315,13 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 				lastParent = curParent;
 			}
 		}
-
 		if (trans)
 		{
 			trans->commit();
 			delete trans;
 			trans = NULL;
 		}
+
 		while (!ns2Update.isEmpty())
 		{
 			NotesSet* ns = ns2Update.first();

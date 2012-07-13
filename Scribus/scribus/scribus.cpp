@@ -6564,8 +6564,8 @@ void ScribusMainWindow::setAppMode(int mode)
 	scrActions["toolsEditWithStoryEditor"]->setChecked(mode==modeStoryEditor);
 	scrActions["toolsLinkTextFrame"]->setChecked(mode==modeLinkFrames);
 	scrActions["toolsUnlinkTextFrame"]->setChecked(mode==modeUnlinkFrames);
-	scrActions["toolsUnlinkTextFrameWithTextCopy"]->setChecked(mode==modeUnlinkFrames);
-	scrActions["toolsUnlinkTextFrameWithTextCut"]->setChecked(mode==modeUnlinkFrames);
+//	scrActions["toolsUnlinkTextFrameWithTextCopy"]->setChecked(mode==modeUnlinkFrames);
+//	scrActions["toolsUnlinkTextFrameWithTextCut"]->setChecked(mode==modeUnlinkFrames);
 	scrActions["toolsEyeDropper"]->setChecked(mode==modeEyeDropper);
 	scrActions["toolsMeasurements"]->setChecked(mode==modeMeasurementTool);
 	scrActions["toolsCopyProperties"]->setChecked(mode==modeCopyProperties);
@@ -6590,6 +6590,16 @@ void ScribusMainWindow::setAppMode(int mode)
 			NoFrameEdit();
 		else if (oldMode != modeEditClip && mode == modeEditClip)
 			ToggleFrameEdit();
+
+		//Ugly hack but I have absolutly no idea about how to do this in another way
+		if(currItem && oldMode != mode && (mode == modeEditMeshPatch || mode == modeEditMeshGradient || mode == modeEditGradientVectors || oldMode == modeEditMeshPatch || oldMode == modeEditMeshGradient || oldMode == modeEditGradientVectors || oldMode == modeEditPolygon || mode == modeEditPolygon || oldMode == modeEditArc || mode == modeEditArc))
+		{
+			SimpleState *ss = new SimpleState(Um::Mode);
+			ss->set("CHANGE_MODE","change_mode");
+			ss->set("OLD",oldMode);
+			ss->set("NEW",mode);
+			undoManager->action(currItem,ss);
+		}
 		doc->appMode = mode;
 //		if (oldMode == modeMeasurementTool)
 //			disconnect(view, SIGNAL(MVals(double, double, double, double, double, double, int )), measurementPalette, SLOT(setValues(double, double, double, double, double, double, int )));
@@ -6995,7 +7005,7 @@ void ScribusMainWindow::deletePage(int from, int to)
 		{
 			ite = doc->Items->at(d);
 			//do not delete notes frames
-			if (ite->isNoteFrame())
+			if (ite->isAutoNoteFrame())
 				continue;
 			if (ite->OwnPage == a)
 			{
@@ -7617,12 +7627,14 @@ void ScribusMainWindow::duplicateItem()
 	doc->SnapGuides = false;
 	slotEditCopy();
 	view->Deselect(true);
+	UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Duplicate,"",Um::IMultipleDuplicate));
 	slotEditPaste();
 	for (int b=0; b<doc->m_Selection->count(); ++b)
 	{
 		doc->m_Selection->itemAt(b)->setLocked(false);
 		doc->MoveItem(doc->opToolPrefs().dispX, doc->opToolPrefs().dispY, doc->m_Selection->itemAt(b));
 	}
+	trans.commit();
 	doc->useRaster = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
 	internalCopy = false;
@@ -10083,12 +10095,14 @@ void ScribusMainWindow::slotItemTransform()
 		TransformDialog td(this, doc);
 		if (td.exec())
 		{
+			UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Transform,"",Um::IMove));
 			qApp->changeOverrideCursor(QCursor(Qt::WaitCursor));
 			int count=td.getCount();
 			QTransform matrix(td.getTransformMatrix());
 			int basepoint=td.getBasepoint();
 			doc->itemSelection_Transform(count, matrix, basepoint);
 			qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
+			trans.commit();
 		}
 	}
 }

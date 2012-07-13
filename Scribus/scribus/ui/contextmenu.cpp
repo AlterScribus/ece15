@@ -176,15 +176,12 @@ void ContextMenu::createMenuItems_Selection()
 			menuMark->addAction(m_AP->scrActions["insertMarkVariableText"]);
 			if (m_actionList.contains("insertMarkAnchor"))
 			{
-				if (!currItem->isNoteFrame())
-					menuMark->addAction(m_AP->scrActions["insertMarkAnchor"]);
+				menuMark->addAction(m_AP->scrActions["insertMarkAnchor"]);
 				menuMark->addAction(m_AP->scrActions["insertMarkItem"]);
 				menuMark->addAction(m_AP->scrActions["insertMark2Mark"]);
 				if (!currItem->isNoteFrame())
-				{
 					menuMark->addAction(m_AP->scrActions["insertMarkNote"]);
 				//	menuMark->addAction(m_AP->scrActions["insertMarkIndex"]);
-				}
 			}
 			if (currItem->itemText.cursorPosition() < currItem->itemText.length())
 			{

@@ -108,7 +108,7 @@
 		</submenuitem>
 		<area text="Help!!" file="help.html" >
 		</area>
-		<area text="Troubleshooting File Problems" file="fileproblems.html" >
+		<area text="File Problems" file="fileproblems.html" >
 		</area>
 	</area>
 	<area text="My Tutorials" file="tutorials.html" section="tutorials">
