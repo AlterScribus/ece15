@@ -16081,8 +16081,7 @@ PageItem* ScribusDoc::findMark(Mark* mrk, int &lastItem)
 		item = getItemFromName(mrk->getItemName());
 		if (item != NULL)
 		{
-			int Cpos = -1;
-			if (findMarkCPos(mrk, item, Cpos))
+			if (findMarkCPos(mrk, item) > -1)
 			{
 				lastItem = DocItems.indexOf(item);
 				return item;
@@ -16109,21 +16108,24 @@ PageItem* ScribusDoc::findMark(Mark* mrk, int &lastItem)
 	return NULL;
 }
 
-bool ScribusDoc::findMarkCPos(Mark* mrk, PageItem* &currItem, int &pos)
+int ScribusDoc::findMarkCPos(Mark* mrk, PageItem* &currItem, int Start)
 {
+	if (Start < currItem->firstInFrame())
+		Start = currItem->firstInFrame();
 	if (currItem == NULL)
 		currItem = findMark(mrk);
-	if ((currItem != NULL) && currItem->isTextFrame() && (currItem->itemText.length() > 0))
+	if (currItem == NULL)
+		return -1;
+	Q_ASSERT(currItem->isTextFrame());
+	Q_ASSERT(currItem->itemText.length() > 0);
+
+	for (int i = Start; i <= currItem->lastInFrame(); ++i)
 	{
-		for (pos = qMax(pos, currItem->firstInFrame()); pos <= currItem->lastInFrame(); ++pos)
-		{
-			ScText* hl = currItem->itemText.item(pos);
-			if (hl->hasMark(mrk))
-				return true;
-		}
+		ScText* hl = currItem->itemText.item(i);
+		if (hl->hasMark(mrk))
+			return i;
 	}
-	pos = -1;
-	return false;
+	return -1;
 }
 
 bool ScribusDoc::isMarkUsed(Mark* mrk, bool visible)
@@ -16168,8 +16170,8 @@ void ScribusDoc::setCursor2MarkPos(Mark *mark)
 	if (item == NULL)
 		return;
 
-	int CPos = item->firstInFrame();
-	if (findMarkCPos(mark, item, CPos))
+	int CPos = findMarkCPos(mark, item);
+	if (CPos > -1)
 	{
 		scMW()->deselectAll();
 		scMW()->selectItemFromOutlines(item, true, CPos +1);
@@ -16181,13 +16183,14 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 	bool found = false;
 	if (item != NULL)
 	{
-		int MPos = -1;
-		while (findMarkCPos(mrk, item, MPos))
+		int MPos = findMarkCPos(mrk, item);
+		while (MPos > -1)
 		{
 			item->itemText.item(MPos)->mark = NULL;
 			if (fromText)
 				item->itemText.removeChars(MPos,1);
 			found = true;
+			MPos = findMarkCPos(mrk, item);
 		}
 	}
 	else
@@ -16195,14 +16198,16 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 		//find and delete all mark`s apperences in text
 		int MPos = -1;
 		int itemIndex = -1;
-		PageItem* item = findMark(mrk, itemIndex);
+		item = findMark(mrk, itemIndex);
 		while (item != NULL)
 		{
-			while (findMarkCPos(mrk, item, MPos))
+			MPos = findMarkCPos(mrk, item);
+			while (MPos > -1)
 			{
 				item->itemText.item(MPos)->mark = NULL;
 				if (fromText)
 					item->itemText.removeChars(MPos,1);
+				MPos = findMarkCPos(mrk, item);
 			}
 			found = true;
 			item->asTextFrame()->invalidateLayout();
@@ -16919,7 +16924,14 @@ bool ScribusDoc::notesFramesUpdate()
 					item->layout();
 				}
 				if (item->asNoteFrame()->deleteIt)
+				{
 					removeEmptyNF = true;
+					if (item->isSelected())
+					{
+						view()->Deselect(true);
+						view()->SelectItem(item->asNoteFrame()->masterFrame());
+					}
+				}
 			}
 			if (end != Items->count())
 			{
@@ -17080,7 +17092,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool force)
 	if (appMode == modeEdit && nF->isSelected())
 	{
 		view()->Deselect(true);
-		view()->requestMode(modeNormal);
+		view()->SelectItem(nF->masterFrame());
 	}
 	NotesSet* nSet = nF->notesSet();
 	if (nSet->isEndNotes())
