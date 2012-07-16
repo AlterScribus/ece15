@@ -224,7 +224,7 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 	Mark* mrk = note->noteMark();
 	if (mrk == NULL)
 	{
-		mrk = new Mark();
+		mrk = m_Doc->newMark();
 		mrk->setType(MARKNoteFrameType);
 		QString label = "NoteFrameMark_" + notesSet()->name();
 		if (notesSet()->range() == NSRsection)
@@ -239,7 +239,6 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 		mrk->setNotePtr(note);
 		getUniqueName(mrk->label, m_Doc->marksLabelsList(MARKNoteFrameType), "_");
 		note->setNoteMark(mrk);
-		m_Doc->m_docMarksList.append(mrk);
 	}
 	mrk->setItemPtr(this);
 	mrk->setString(notesSet()->prefix() + note->numString() + note->notesSet()->suffix());
@@ -321,6 +320,7 @@ void PageItem_NoteFrame::updateNotesText()
 						note->setSaxedText("");
 					else
 						note->setSaxedText(getItemTextSaxed(startPos, len));
+					note->textLen = len;
 					itemText.deselectAll();
 				}
 			}
@@ -333,7 +333,10 @@ void PageItem_NoteFrame::updateNotesText()
 	{
 		note = prevMrk->getNotePtr();
 		if (startPos != pos && note != NULL)
+		{
 			note->setSaxedText(getItemTextSaxed(startPos, pos - startPos));
+			note->textLen = pos - startPos;
+		}
 	}
 	itemText.deselectAll();
 	if (oldSelLen > 0)

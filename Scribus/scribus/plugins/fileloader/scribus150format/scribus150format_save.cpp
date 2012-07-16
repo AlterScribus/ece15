@@ -1219,10 +1219,10 @@ void Scribus150Format::writeSections(ScXmlStreamWriter & docu)
 void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 {
 	//write list of definied marks to SLA
-	if (m_Doc->m_docMarksList.isEmpty())
+	if (m_Doc->marksList().isEmpty())
 		return;
 	docu.writeStartElement("Marks");
-	foreach(Mark* mrk,  m_Doc->m_docMarksList)
+	foreach(Mark* mrk, m_Doc->marksList())
 	{
 		if (mrk->isType(MARKNoteFrameType))
 			continue;
@@ -1347,12 +1347,12 @@ void Scribus150Format::writeNotesFrames(ScXmlStreamWriter &docu)
 void Scribus150Format::writeNotes(ScXmlStreamWriter & docu)
 {
 	//write notes
-	if (m_Doc->m_docNotesList.isEmpty())
+	if (m_Doc->notesList().isEmpty())
 		return;
 	docu.writeStartElement("Notes");
-	QList<TextNote*>::iterator itTN;
-	QList<TextNote*>::iterator end = m_Doc->m_docNotesList.end();
-	for (itTN = m_Doc->m_docNotesList.begin(); itTN != end; ++itTN)
+	QList<TextNote*>::const_iterator itTN;
+	QList<TextNote*>::const_iterator end = m_Doc->notesList().end();
+	for (itTN = m_Doc->notesList().begin(); itTN != end; ++itTN)
 	{
 		TextNote* TN = (*itTN);
 		if (TN->masterMark() == NULL)

@@ -2145,7 +2145,7 @@ public:
 				mrk = doc->getMarkDefinied(l,t);
 			else
 			{
-				mrk = new Mark();
+				mrk = doc->newMark();
 				getUniqueName(l,doc->marksLabelsList(t), "_");
 				mrk->label = l;
 				mrk->OwnPage = doc->currentPage()->pageNr();
@@ -2179,14 +2179,14 @@ public:
 						NS = doc->m_docNotesSetsList.at(0);
 					else
 						NS = doc->getNS(Xml_data(nsIt));
-					TextNote* note = new TextNote(NS);
+					TextNote* note = doc->newNote(NS);
 					note->setMasterMark(mrk);
 					if (nIt != attr.end())
 						note->setSaxedText(Xml_data(nIt));
 					mrk->setNotePtr(note);
 					doc->flag_notesChanged = true;
 				}
-				doc->m_docMarksList.append(mrk);
+				doc->newMark(mrk);
 			}
 			story->insertMark(mrk);
 		}

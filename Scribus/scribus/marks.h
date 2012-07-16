@@ -38,11 +38,14 @@ struct MarkData
 
 class SCRIBUS_API Mark
 {
-public:
+	friend class ScribusDoc;
+	friend class ScribusMainWindow;
+	//only ScribusDoc can create and delete marks
+private:
 	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
 	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), typ(other.typ), data(other.data) {}
 	~Mark() {}
-
+public:
 	QString label;
 	int OwnPage;
 
@@ -87,7 +90,7 @@ public:
 	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) { return t==typ; }
 
-private:
+protected:
 	MarkType typ;
 	MarkData data;
 };

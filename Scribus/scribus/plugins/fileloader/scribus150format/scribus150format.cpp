@@ -3237,8 +3237,7 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 		if (reader.isStartElement() && reader.name() == "Note")
 		{
 			ScXmlStreamAttributes attrs = reader.scAttributes();
-			TextNote* note = new TextNote(NULL);
-			doc->m_docNotesList.append(note);
+			TextNote* note = m_Doc->newNote(NULL);
 			note->setSaxedText(attrs.valueAsString("Text"));
 			//temporaly insert names of master mark and notesset into maps with note pointer
 			//will be resolved to pointers by updateNames2Ptr() after all will read
@@ -3271,10 +3270,9 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 
 			if (label != "" && type != MARKNoType)
 			{
-				Mark* mark = new Mark;
+				Mark* mark = doc->newMark();
 				mark->label=attrs.valueAsString("label");
 				mark->setType(type);
-				doc->m_docMarksList.append(mark);
 
 				if (type == MARKVariableTextType && attrs.hasAttribute("str"))
 					mark->setString(attrs.valueAsString("str"));
@@ -3781,28 +3779,26 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 					else
 					{
 						//create copy of mark
-						Mark * oldMark = m_Doc->getMarkDefinied(l, t);
+						Mark* oldMark = m_Doc->getMarkDefinied(l, t);
 						if (oldMark == NULL)
 						{
 							qWarning() << "wrong copy of oldMark";
-							mark = new Mark();
+							mark = m_Doc->newMark();
 							mark->setType(t);
 						}
 						else
 						{
-							mark = new Mark(*oldMark);
+							mark = m_Doc->newMark(oldMark);
 							getUniqueName(l,doc->marksLabelsList(t), "_");
 						}
 						mark->label = l;
 						if (t == MARKNoteMasterType)
 						{  //create copy of note
 							TextNote* old = mark->getNotePtr();
-							TextNote* note = new TextNote(old->notesSet());
+							TextNote* note = m_Doc->newNote(old->notesSet());
 							mark->setNotePtr(note);
 							note->setMasterMark(mark);
 							note->setSaxedText(old->saxedText());
-							m_Doc->m_docNotesList.append(note);
-							m_Doc->m_docMarksList.append(mark);
 							m_Doc->flag_notesChanged = true;
 						}
 					}
@@ -6362,7 +6358,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 	//update pointers to notes in master notes marks
 	if (!notesMasterMarks.isEmpty())
 	{
-		assert(!m_Doc->m_docMarksList.isEmpty() && !m_Doc->m_docNotesList.isEmpty());
+		assert(!m_Doc->marksList().isEmpty() && !m_Doc->notesList().isEmpty());
 		QMap<QString, TextNote*>::Iterator it;
 		QMap<QString, TextNote*>::Iterator end = notesMasterMarks.end();
 		for (it = notesMasterMarks.begin(); it != end; ++it)
@@ -6384,9 +6380,9 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 	}
 	if (!notesNSets.isEmpty())
 	{
-		assert(!m_Doc->m_docNotesList.isEmpty());
-		QMap<TextNote*, QString>::Iterator it;
-		QMap<TextNote*, QString>::Iterator end = notesNSets.end();
+		assert(!m_Doc->notesList().isEmpty());
+		QMap<TextNote*, QString>::iterator it;
+		QMap<TextNote*, QString>::iterator end = notesNSets.end();
 		for (it = notesNSets.begin(); it != end; ++it)
 		{
 			TextNote* note = it.key();

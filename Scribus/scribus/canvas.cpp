@@ -1452,7 +1452,7 @@ void Canvas::DrawMasterItems(ScPainter *painter, ScPage *page, ScLayer& layer, Q
  */
 void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool notesFramesPass)
 {
-	if (notesFramesPass && m_doc->m_docNotesList.isEmpty())
+	if (notesFramesPass && m_doc->notesList().isEmpty())
 		return;
 	if ((m_viewMode.previewMode) && (!layer.isPrintable))
 		return;
@@ -1476,7 +1476,7 @@ void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool 
 
 	//if notes are used
 	//then we must be sure that text frames are valid and all notes frames are created before we start drawing
-	if (!notesFramesPass && !m_doc->m_docNotesList.isEmpty())
+	if (!notesFramesPass && !m_doc->notesList().isEmpty())
 	{
 		for (int it = 0; it < m_doc->Items->count(); ++it)
 		{

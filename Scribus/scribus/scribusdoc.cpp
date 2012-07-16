@@ -1838,18 +1838,17 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				NotesSet* nSet = (NotesSet*) is->getItem("nset");
 				if (isUndo)
 				{
-					TextNote* newNote = new TextNote(nSet);
-					m_docNotesList.append(newNote);
-					Mark* mrk = new Mark();
+					TextNote* note = newNote(nSet);
+					Mark* mrk = newMark();
 					mrk->setType(MARKNoteMasterType);
-					mrk->setNotePtr(newNote);
-					newNote->setMasterMark(mrk);
-					newNote->setSaxedText(is->get("noteTXT"));
+					mrk->setNotePtr(note);
+					note->setMasterMark(mrk);
+					note->setSaxedText(is->get("noteTXT"));
 					PageItem* master = (PageItem*) is->getItem("inItem");
 					master->itemText.insertMark(mrk, is->getInt("at"));
 					master->invalid = true;
 					flag_notesChanged = true;
-					if (newNote->isEndNote())
+					if (note->isEndNote())
 						flag_updateEndNotes = true;
 				}
 				else
@@ -1869,16 +1868,17 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			if (is)
 			{
 				Mark* mrk = NULL;
-				if (is->contains("mark"))
-					mrk = (Mark*) is->getItem("mark");
+//				if (is->contains("mark"))
+//					mrk = (Mark*) is->getItem("mark");
 				PageItem* currItem = (PageItem*) is->getItem("inItem");
 				int pos = is->getInt("at");
 				if (isUndo)
 				{
 					if (is->get("MARK") == "new")
 					{
-						if (mrk->isType(MARKNoteMasterType))
+						if (mrk->isNoteType())
 						{
+							Q_ASSERT(false);
 							TextNote* note = (TextNote*) is->getItem("notePtr");
 							if (note->isEndNote())
 								flag_updateEndNotes = true;
@@ -1925,13 +1925,13 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					{
 						if (currItem == NULL)
 						{
+							Q_ASSERT(false);
 							qDebug() << "Wrong inItem in undo step for mark";
 							return;
 						}
-						mrk = new Mark();
+						mrk = newMark();
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
-						m_docMarksList.append(mrk);
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strtxt"))
 						{
@@ -1954,6 +1954,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else
 					{
+						Q_ASSERT(false);
 						qDebug() << "MARK undo - unhandled " << is->get("MARK");
 					}
 				}
@@ -1966,10 +1967,9 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							qDebug() << "Wrong inItem in undo step for mark";
 							return;
 						}
-						mrk = new Mark();
+						mrk = newMark();
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
-						m_docMarksList.append(mrk);
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strtxt"))
 							mrk->setString(is->get("strtxt"));
@@ -1979,12 +1979,12 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
 						if (mrk->isType(MARKNoteMasterType))
 						{
+							Q_ASSERT(false);
 							NotesSet* nSet = (NotesSet*) is->getItem("nset");
-							TextNote* newNote = new TextNote(nSet);
-							m_docNotesList.append(newNote);
-							mrk->setNotePtr(newNote);
-							newNote->setMasterMark(mrk);
-							is->insertItem("notePtr", (void*) newNote);
+							TextNote* note = newNote(nSet);
+							mrk->setNotePtr(note);
+							note->setMasterMark(mrk);
+							is->insertItem("notePtr", (void*) note);
 							updateNotesNums(nSet);
 						}
 					}
@@ -16072,6 +16072,24 @@ Mark* ScribusDoc::getMarkDefinied(QString l, MarkType t)
 	return NULL;
 }
 
+Mark *ScribusDoc::newMark(Mark* mrk)
+{
+	Mark* newMrk = new Mark();
+	if (mrk != NULL)
+		*newMrk = *mrk;
+	m_docMarksList.append(newMrk);
+	return newMrk;
+}
+
+TextNote *ScribusDoc::newNote(NotesSet* NS)
+{
+//	if (newNote == NULL)
+	TextNote* newNote = new TextNote(NS);
+	m_docNotesList.append(newNote);
+	flag_notesChanged = true;
+	return newNote;
+}
+
 PageItem* ScribusDoc::findMark(Mark* mrk, int &lastItem)
 {
 	//except marks to items, in itemPtr should be item which holds this mark
@@ -16269,7 +16287,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 			return notesFramesUpdate();
 		return false;
 	}
-	m_docMarksList.removeAll(NULL);
+	Q_ASSERT(m_docMarksList.removeAll(NULL) == 0);
 
 	bool docWasChanged = false;
 
@@ -16431,11 +16449,12 @@ void ScribusDoc::deleteNoteSet(QString nsName)
 		while (!toDel.isEmpty())
 			deleteNote(toDel.takeFirst(), true);
 	}
+	flag_updateNotesLabels = true;
+	if (NS->isEndNotes())
+		flag_updateEndNotes = true;
 	notesFramesUpdate();
 	m_docNotesSetsList.removeOne(NS);
 	delete NS;
-	flag_updateNotesLabels = true;
-	flag_updateEndNotes = true;
 }
 
 NotesSet* ScribusDoc::getNS(QString nsName)
@@ -16468,10 +16487,13 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), fromText);
 	if (note->noteMark() != NULL)
-		eraseMark(note->noteMark(), fromText);
+		eraseMark(note->noteMark(), false);
 	m_docNotesList.removeOne(note);
-	delete note;
 	flag_notesChanged = true;
+	if (note->isEndNote())
+		flag_updateEndNotes = true;
+	ns2Update.append(note->notesSet());
+	delete note;
 }
 
 void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesSet* nSet, int &num)

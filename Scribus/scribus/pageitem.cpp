@@ -4732,8 +4732,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreLineShade(ss, isUndo);
 		else if (ss->contains("DELETE_FRAMETEXT"))
 			restoreDeleteFrameText(ss, isUndo);
-		else if (ss->contains("DELETE_MARK"))
-			restoreDeleteMark(ss, isUndo);
+//		else if (ss->contains("DELETE_MARK"))
+//			restoreDeleteMark(ss, isUndo);
 		else if (ss->contains("INSERT_FRAMETEXT"))
 			restoreInsertFrameText(ss,isUndo);
 		else if (ss->contains("LOREM_FRAMETEXT"))
@@ -6212,16 +6212,14 @@ void PageItem::restoreDeleteMark(SimpleState *ss, bool isUndo)
 		if (isNoteFrame() && ss->contains("isNote"))
 		{
 			NotesSet * NSet = (NotesSet*) its->getItem("nset");
-			TextNote * note = new TextNote(NSet);
+			TextNote * note = m_Doc->newNote(NSet);
 			note->setSaxedText(its->get("noteTXT"));
 			PageItem* master = (PageItem*) its->getItem("master");
-			Mark* mrk = new Mark();
+			Mark* mrk = m_Doc->newMark();
 			mrk->label = "NoteMark_" + NSet->name();
 			mrk->setType(MARKNoteMasterType);
 			mrk->setNotePtr(note);
 			note->setMasterMark(mrk);
-			m_Doc->m_docMarksList.append(mrk);
-			m_Doc->m_docNotesList.append(note);
 			master->itemText.insertMark(mrk, its->getInt("at"));
 			if (m_Doc->updateNotesNums(NSet))
 			{
@@ -6233,10 +6231,9 @@ void PageItem::restoreDeleteMark(SimpleState *ss, bool isUndo)
 		}
 		else
 		{
-			Mark* mrk = new Mark();
+			Mark* mrk = m_Doc->newMark();
 			mrk->label = its->get("label");
 			mrk->setType((MarkType) its->getInt("type"));
-			m_Doc->m_docMarksList.append(mrk);
 			int pos = its->getInt("at");
 			if (itemText.text(pos) == SpecialChars::OBJECT)
 				itemText.item(pos)->mark = mrk;
@@ -6253,9 +6250,8 @@ void PageItem::restoreDeleteMark(SimpleState *ss, bool isUndo)
 			if (its->contains("noteTXT")) //is note mark
 			{
 				NotesSet* nSet = (NotesSet*) its->getItem("nset");
-				TextNote* newNote = new TextNote(nSet);
+				TextNote* newNote = m_Doc->newNote(nSet);
 				newNote->setSaxedText(its->get("noteTXT"));
-				m_Doc->m_docNotesList.append(newNote);
 				mrk->setNotePtr(newNote);
 				newNote->setMasterMark(mrk);
 				m_Doc->flag_notesChanged = true;

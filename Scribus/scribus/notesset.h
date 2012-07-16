@@ -111,10 +111,12 @@ private:
 class SCRIBUS_API TextNote : public QObject
 {
     Q_OBJECT
-public:
+	friend class ScribusDoc;
+private:
+	//only ScribusDoc can create and delete notes
 	TextNote(NotesSet *nSet) : notesset(nSet), noteSaxedText(""), noteMasterMark(NULL), noteFrameMark(NULL), number(0) { }
 	~TextNote();
-
+public:
 	void setNotesSet (NotesSet* NS) { notesset = NS; }
 	NotesSet* notesSet() { return notesset; }
 	const int num() { return number; }
@@ -127,8 +129,9 @@ public:
 	const QString saxedText() { return noteSaxedText; }
 	void setSaxedText(const QString string) { noteSaxedText = string; }
 	bool isEndNote() { return notesset->isEndNotes(); }
+	int textLen;
 
-private:
+protected:
 	NotesSet *notesset;
 	QString noteSaxedText;
 	Mark *noteMasterMark;

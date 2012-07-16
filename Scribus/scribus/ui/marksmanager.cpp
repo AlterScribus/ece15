@@ -31,7 +31,7 @@ MarksManager::~MarksManager()
 	storeSize();
 }
 
-void MarksManager::addListItem(MarkType typeMrk, QString typeStr, QList<Mark*> &marks, int &index)
+void MarksManager::addListItem(MarkType typeMrk, QString typeStr, const QList<Mark*> &marks, int &index)
 {
 	bool noSuchMarks = true;
 	QTreeWidgetItem *listItem = new QTreeWidgetItem(listView);
@@ -93,17 +93,17 @@ void MarksManager::updateListView()
 	listView->clear();
 	if (m_doc == NULL)
 		return;
-	if (m_doc->m_docMarksList.isEmpty())
+	if (m_doc->marksList().isEmpty())
 		UpdateButton->setEnabled(false);
 	else
 	{
 		UpdateButton->setEnabled(true);
 		int index = 0;
-		addListItem(MARKAnchorType, tr("Anchors"), m_doc->m_docMarksList, index);
-		addListItem(MARKVariableTextType, tr("Variable Text"), m_doc->m_docMarksList, index);
-		addListItem(MARK2ItemType, tr("Marks to Items"), m_doc->m_docMarksList, index);
-		addListItem(MARK2MarkType, tr("Marks to Anchors"), m_doc->m_docMarksList, index);
-		addListItem(MARKNoteMasterType, tr("Notes marks"), m_doc->m_docMarksList, index);
+		addListItem(MARKAnchorType, tr("Anchors"), m_doc->marksList(), index);
+		addListItem(MARKVariableTextType, tr("Variable Text"), m_doc->marksList(), index);
+		addListItem(MARK2ItemType, tr("Marks to Items"), m_doc->marksList(), index);
+		addListItem(MARK2MarkType, tr("Marks to Anchors"), m_doc->marksList(), index);
+		addListItem(MARKNoteMasterType, tr("Notes marks"), m_doc->marksList(), index);
 	//	addListItem(MARKIndexType, tr("Index entries");, marks, index);
 		listView->sortByColumn(0);
 	}
@@ -169,9 +169,9 @@ void MarksManager::on_UpdateButton_clicked()
 
 	//update lables for "lost" marks (marks not in any text)
 	QList<Mark*> notUsed;
-	for (int a=0; a < m_doc->m_docMarksList.count(); ++a)
+	for (int a=0; a < m_doc->marksList().count(); ++a)
 	{
-		Mark* mrk = m_doc->m_docMarksList.at(a);
+		Mark* mrk = m_doc->marksList().at(a);
 		if (mrk->isUnique() && !mrk->label.startsWith("UNVISIBLE*") && !m_doc->isMarkUsed(mrk, true))
 			notUsed.append(mrk);
 	}

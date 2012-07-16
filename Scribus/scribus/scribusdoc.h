@@ -1634,10 +1634,15 @@ public:
 	const ScPage* page4EndNotes(NotesSet* NS, PageItem* item);
 
 	//data handling structures
+private:
 	QList<Mark*> m_docMarksList;
-	QList<NotesSet*> m_docNotesSetsList;
 	QList<TextNote*> m_docNotesList;
+public:
+	const QList<Mark*> marksList() { return m_docMarksList; }
+	const QList<TextNote*> notesList() { return m_docNotesList; }
+	QList<NotesSet*> m_docNotesSetsList;
 	QMap<PageItem_NoteFrame*, rangeItem> m_docEndNotesFramesMap;
+	QList<NotesSet*> ns2Update; //list of notessets to update
 
 	//returns list of notesframes for given Notes Set
 	QList<PageItem_NoteFrame*> listNotesFrames(NotesSet* NS);
@@ -1654,7 +1659,8 @@ public:
 
 	//return mark definied with gioven label and given type
 	Mark* getMarkDefinied(QString label, MarkType type); //returns mark with label and type (labels are unique only for same type marks)
-
+	Mark* newMark(Mark* mrk = NULL);
+	TextNote* newNote(NotesSet* NS);
 	
 	bool isMarkUsed(Mark* mrk, bool visible = false);
 	//set cursor in text where given mark will be found

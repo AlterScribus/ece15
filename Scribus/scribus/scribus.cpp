@@ -1654,12 +1654,13 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
+					if (currItem->isAutoFrame())
+						currItem->update();
 					keyrep=kr;
-					if (doc->flag_notesChanged)
-						doc->notesFramesUpdate();
+//					if (doc->flag_notesChanged)
+//						doc->notesFramesUpdate();
 				}
-				else
-					slotDocCh(false);
+				slotDocCh(false);
 			}
 		}
 	}
@@ -3373,9 +3374,16 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		plugin->changedDoc(doc);
 	}
 	static int markersCount; //remember marks count from last call
-	if (markersCount != doc->m_docMarksList.count() || doc->flag_notesChanged || doc->flag_updateEndNotes)
+	while (!doc->ns2Update.isEmpty())
 	{
-		markersCount = doc->m_docMarksList.count();
+		NotesSet* ns = doc->ns2Update.first();
+		doc->updateNotesNums(ns);
+		doc->ns2Update.removeAll(ns);
+	}
+	
+	if (markersCount != doc->marksList().count() || doc->flag_notesChanged || doc->flag_updateEndNotes)
+	{
+		markersCount = doc->marksList().count();
 		doc->updateMarks(doc->flag_notesChanged);
 		emit UpdateRequest(reqMarksUpdate);
 	}
@@ -4196,7 +4204,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 					bookmarkPalette->BView->ChangeItem(ite->BMnr, ite->ItemNr);
 			} */
 		}
-		if (!doc->m_docMarksList.isEmpty())
+		if (!doc->marksList().isEmpty())
 			doc->updateMarks(true);
 		for (QHash<int, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
 		{
@@ -10507,7 +10515,7 @@ void ScribusMainWindow::slotUpdateMarks()
 {
 	if (!HaveDoc)
 		return;
-	if (doc->m_docMarksList.isEmpty())
+	if (doc->marksList().isEmpty())
 		return;
 	if (doc->updateMarks(true))
 	{
@@ -10529,13 +10537,13 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 		insertMDialog = (MarkInsertDlg*) new MarkAnchorDlg(this);
 		break;
 	case MARKVariableTextType:
-		insertMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->m_docMarksList, this);
+			insertMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->marksList(), this);
 		break;
 	case MARK2ItemType:
 		insertMDialog = (MarkInsertDlg*) new Mark2ItemDlg(this);
 		break;
 	case MARK2MarkType:
-		insertMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->m_docMarksList, NULL, this);
+			insertMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->marksList(), NULL, this);
 		break;
 	case MARKNoteMasterType:
 		insertMDialog = (MarkInsertDlg*) new MarkNoteDlg(doc->m_docNotesSetsList, this);
@@ -10606,8 +10614,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			if (NSet == NULL)
 				return false;
 			
-			d.notePtr = new TextNote(NSet);
-			doc->m_docNotesList.append(d.notePtr);
+			d.notePtr = doc->newNote(NSet);
 			label = "NoteMark_" + NSet->name();
 			if (NSet->range() == NSRsection)
 				label += " in section " + doc->getSectionNameForPageIndex(currItem->OwnPage) + " page " + QString::number(currItem->OwnPage +1);
@@ -10637,9 +10644,8 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			}
 			else
 				getUniqueName(label,doc->marksLabelsList(mrkType), "_");
-			mrk = new Mark;
+			mrk = doc->newMark();
 			mrk->setValues(label, currItem->OwnPage, mrkType, d);
-			doc->m_docMarksList.append(mrk);
 		}
 		else
 		{ // that must be variable text mark
@@ -10719,7 +10725,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(mrk, this);
 			else
 				//invoked from mark`s entry in text
-				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->m_docMarksList, this);
+				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->marksList(), this);
 			editMDialog->setValues(mrk->label, mrk->getString());
 			break;
 		case MARK2ItemType:
@@ -10728,7 +10734,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 			break;
 		case MARK2MarkType:
 			{
-				editMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->m_docMarksList, mrk, this);
+			editMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->marksList(), mrk, this);
 				QString l;
 				MarkType t;
 				mrk->getMark(l,t);
@@ -10832,10 +10838,9 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				else
 				{
 					d.strtxt = text;
-					mrk = new Mark;
+					mrk = doc->newMark();
 					getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
 					mrk->setValues(label, currItem->OwnPage, MARKVariableTextType, d);
-					doc->m_docMarksList.append(Mrk);
 					ScText* hl = currItem->itemText.item(currItem->itemText.cursorPosition());
 					hl->mark = mrk;
 					docWasChanged = true;
