@@ -4140,7 +4140,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	}
 }
 
-void PageItem_TextFrame::deleteSelectedTextFromFrame()
+void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 {
 	if (itemText.lengthOfSelection() == 0)
 		itemText.select(itemText.cursorPosition(),1);
@@ -4162,58 +4162,77 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 		}
 		UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
 
-		//delete marks from selected text
-		int selEnd = stop;
-
-		if (!isNoteFrame())
+		QList<QPair<TextNote*, int> > notes2DEL;
+		if (isNoteFrame() && findNotes)
 		{
-			for (int i=start; i < selEnd; ++i)
+			//find notes in selected text
+			for (int i=start; i < stop; ++i)
 			{
+				if (i == itemText.length())
+					break;
 				ScText* hl = itemText.item(i);
-				if (hl->hasMark() && !hl->mark->isType(MARKNoteFrameType))
-				{
-					ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
-					ims->set("label", hl->mark->label);
-					ims->set("type", (int) hl->mark->getType());
-					ims->set("strtxt", hl->mark->getString());
-					if (hl->mark->isType(MARKNoteMasterType))
-					{
-						ims->set("DELETE_NOTE", QString("delete_note"));
-						TextNote* note = hl->mark->getNotePtr();
-						Q_ASSERT(note != NULL);
-						ims->insertItem("inItem", this);
-						ims->set("at", i);
-						ims->set("noteTXT", note->saxedText());
-						ims->insertItem("nset", (void*) note->notesSet());
-						if (note->isEndNote())
-							m_Doc->flag_updateEndNotes = true;
-						m_Doc->ns2Update.append(note->notesSet());
-						PageItem_NoteFrame* nF = itemNoteFrame(note->notesSet());
-						Q_ASSERT(nF);
-						nF->itemText.select(m_Doc->findMarkCPos(note->noteMark()+1, nF), note->textLen);
-						nF->deleteSelectedTextFromFrame();
-						m_Doc->deleteNote(note, true);
-					}
-					else
-					{
-						ims->set("MARK", QString("delete"));
-						ims->insertItem("inItem", (void*) this);
-						ims->set("at", i);
-						if (hl->mark->isType(MARK2MarkType))
-						{
-							QString dName;
-							MarkType dType;
-							hl->mark->getMark(dName, dType);
-							ims->set("dName", dName);
-							ims->set("dType", (int) dType);
-						}
-						if (hl->mark->isType(MARK2ItemType))
-							ims->insertItem("itemPtr", (void*) hl->mark->getItemPtr());
-						m_Doc->eraseMark(hl->mark, true, this);
-					}
-					++marksNum;
-					undoManager->action(m_Doc, ims);
-				}
+				if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
+					notes2DEL.append(QPair<TextNote*, int>(hl->mark->getNotePtr(), i));
+			}
+		}
+		else
+		{
+			//delete marks from selected text
+			marksNum = removeMarksFromText(true);
+//			for (int i=start; i < stop -1; ++i)
+//			{
+//				ScText* hl = itemText.item(i);
+//				if (hl->hasMark() && !hl->mark->isType(MARKNoteFrameType))
+//				{
+//					ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+//					ims->set("label", hl->mark->label);
+//					ims->set("type", (int) hl->mark->getType());
+//					ims->set("strtxt", hl->mark->getString());
+//					if (hl->mark->isType(MARKNoteMasterType))
+//					{
+//						ims->set("DELETE_NOTE", QString("delete_note"));
+//						TextNote* note = hl->mark->getNotePtr();
+//						Q_ASSERT(note != NULL);
+//						ims->insertItem("inItem", this);
+//						ims->set("at", i);
+//						ims->set("noteTXT", note->saxedText());
+//						ims->insertItem("nset", (void*) note->notesSet());
+//						if (note->isEndNote())
+//							m_Doc->flag_updateEndNotes = true;
+//						m_Doc->ns2Update.append(note->notesSet());
+//						PageItem* item = itemNoteFrame(note->notesSet());
+//						Q_ASSERT(item);
+//						item->itemText.select(m_Doc->findMarkCPos(note->noteMark()+1, item), note->textLen);
+//						item->asTextFrame()->deleteSelectedTextFromFrame();
+//						m_Doc->deleteNote(note, true);
+//					}
+//					else
+//					{
+//						ims->set("MARK", QString("delete"));
+//						ims->insertItem("inItem", (void*) this);
+//						ims->set("at", i);
+//						if (hl->mark->isType(MARK2MarkType))
+//						{
+//							QString dName;
+//							MarkType dType;
+//							hl->mark->getMark(dName, dType);
+//							ims->set("dName", dName);
+//							ims->set("dType", (int) dType);
+//						}
+//						if (hl->mark->isType(MARK2ItemType))
+//							ims->insertItem("itemPtr", (void*) hl->mark->getItemPtr());
+//						m_Doc->eraseMark(hl->mark, true, this);
+//					}
+//					++marksNum;
+//					undoManager->action(m_Doc, ims);
+//				}
+//			}
+			if (!findNotes)
+			{
+				itemText.select(start, stop - start - marksNum);
+				itemText.removeSelection();
+				HasSel = false;
+				return;
 			}
 			stop -= marksNum;
 		}
@@ -4248,44 +4267,64 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 				}
 				if(!added)
 				{
-					if (hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
+					is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
+					is->set("DELETE_FRAMETEXT", "delete_frametext");
+					is->set("ETEA", QString("delete_frametext"));
+					is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
+					is->set("START", start);
+					is->setItem(lastParent);
+					//delete selected notes from notes frame
+					if (isNoteFrame())
 					{
-						ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
-						ims->set("DELETE_NOTE", QString("delete_note"));
-						TextNote* note = hl->mark->getNotePtr();
-						Q_ASSERT(note != NULL);
-						PageItem* master = NULL;
-						if (!asNoteFrame()->isEndNotesFrame())
-							master = asNoteFrame()->masterFrame();
-						int Cpos = m_Doc->findMarkCPos(hl->mark, master);
-						Q_ASSERT(master);
-						ims->insertItem("inItem", this->asNoteFrame()->masterFrame());
-						Q_ASSERT(Cpos > -1);
-						ims->set("at", Cpos);
-						ims->set("noteTXT", note->saxedText());
-						ims->insertItem("nset", note->notesSet());
-						if (note->isEndNote())
-							m_Doc->flag_updateEndNotes = true;
-						m_Doc->ns2Update.append(note->notesSet());
-						itemText.select(m_Doc->findMarkCPos(note->noteMark()+1, nF), note->textLen);
-						deleteSelectedTextFromFrame();
-						m_Doc->deleteNote(note, true);
-					}
-					else
-					{
-						is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
-						is->set("DELETE_FRAMETEXT", "delete_frametext");
-						is->set("ETEA", QString("delete_frametext"));
-						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
-						is->set("START", start);
-						is->setItem(lastParent);
+						for (int m = notes2DEL.count() -1; m >= 0; --m)
+						{
+							ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+							TextNote* note = notes2DEL.at(m).first;
+							Q_ASSERT(note != NULL);
+							ims->set("DELETE_NOTE", QString("delete_note"));
+							PageItem* master = NULL;
+							if (!asNoteFrame()->isEndNotesFrame())
+								master = asNoteFrame()->masterFrame();
+							int Cpos = m_Doc->findMarkCPos(note->masterMark(), master);
+							Q_ASSERT(master);
+							ims->insertItem("inItem", this->asNoteFrame()->masterFrame());
+							Q_ASSERT(Cpos > -1);
+							ims->set("at", Cpos);
+							ims->set("noteTXT", note->saxedText());
+							ims->insertItem("nset", note->notesSet());
+							if (note->isEndNote())
+								m_Doc->flag_updateEndNotes = true;
+							m_Doc->ns2Update.append(note->notesSet());
+							if (note->textLen > 0)
+							{
+								itemText.deselectAll();
+								itemText.select(notes2DEL.at(m).second + 1, note->textLen);
+								removeMarksFromText(true);
+							}
+							m_Doc->deleteNote(note, true);
+							undoManager->action(m_Doc, ims);
+						}
 						if(!ts || !lastIsDelete){
 							undoManager->action(this, is);
 							ts = NULL;
-						}
+							}
 						else
 							ts->pushBack(this,is);
+						if (trans)
+						{
+							trans->commit();
+							delete trans;
+							trans = NULL;
+						}
+						return;
 					}
+					
+					if(!ts || !lastIsDelete){
+						undoManager->action(this, is);
+						ts = NULL;
+						}
+					else
+						ts->pushBack(this,is);
 				}
 				lastPos = i;
 				lastParent = curParent;
@@ -4299,7 +4338,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 		}
 	}
 	else
-		marksNum =removeMarksFromText();
+		marksNum =removeMarksFromText(false);
 	itemText.setCursorPosition( start );
 	//for sure text is still selected
 	itemText.select(start, stop - start - marksNum);
@@ -4680,12 +4719,8 @@ bool PageItem_TextFrame::hasMark(NotesSet *NS)
 		if (hl->hasMark())
 		{
 			TextNote* note = hl->mark->getNotePtr();
-			if (note != NULL)
-			{
-				NotesSet* ns = note->notesSet();
-				if (ns == NS)
-					return true;
-			}
+			if (note != NULL && (note->notesSet() == NS))
+				return true;
 		}
 	}
 	return false;
@@ -4919,7 +4954,6 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 		else
 			m_footNotesList.append(nF);
 	}
-
 	//check for endnotes marks change in current frame
 	foreach (PageItem_NoteFrame* nF, m_endNotesList)
 	{
@@ -4937,7 +4971,6 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 			docWasChanged = true;
 		}
 	}
-
 	//check if some footnotes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_footNotesList)
 	{
@@ -4947,7 +4980,6 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 			docWasChanged = true;
 		}
 	}
-
 	//update footnotes
 	foreach (PageItem_NoteFrame* nF, footNotesList)
 	{
@@ -4962,24 +4994,15 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 			docWasChanged = true;
 		}
 	}
-
 	//delete footnotes frames marked as for remove
 	foreach (PageItem_NoteFrame* noteFrame, m_footNotesList)
 	{
 		if (noteFrame->deleteIt)
 		{
-			//delete note frame only if not is edited right now
-			//if (noteFrame->isSelected() || (m_Doc->appMode != modeEdit))
-				m_Doc->delNoteFrame(noteFrame,true);
-//			else
-//			{
-//				m_Doc->view()->Deselect(true);
-//				m_Doc->view()->requestMode(modeNormal);
-//			}
+			m_Doc->delNoteFrame(noteFrame,true);
 			docWasChanged = true;
 		}
 	}
-	
 	if (m_notesFramesMap != notesMap)
 	{
 		docWasChanged = true;
@@ -5008,42 +5031,69 @@ void PageItem_TextFrame::notesFramesLayout(bool force)
 	}
 }
 
-int PageItem_TextFrame::removeMarksFromText()
+int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 {
 	//check if in selected (or whole) text are any marks for removing
 	//if notes are found then ask user if he want to removing notes
 	//returns false if user don`t accept removing notes
 	//in marksDeleted return if any marks was deleted
-
 	int num = 0;
 	bool fromText = true;
-	//but not for notesframe
 	if (!isNoteFrame())
 	{
-		//list of notes sets to update after removing notes
-//		QList<NotesSet*> ns2Update;
-		
 		TextNote* note = selectedNoteMark();
 		while (note != NULL)
 		{
+			if (doUndo && UndoManager::undoEnabled())
+			{
+				ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+				ims->set("DELETE_NOTE", QString("delete_note"));
+				PageItem* master = NULL;
+				int pos = m_Doc->findMarkCPos(note->masterMark(), master);
+				Q_ASSERT(pos > -1);
+				Q_ASSERT(master);
+				ims->insertItem("inItem", master);
+				ims->set("at", pos);
+				ims->set("noteTXT", note->saxedText());
+				ims->insertItem("nset", (void*) note->notesSet());
+				undoManager->action(m_Doc, ims);
+			}
+			if (note->isEndNote())
+				m_Doc->flag_updateEndNotes = true;
 			m_Doc->ns2Update.append(note->notesSet());
 			m_Doc->deleteNote(note, fromText);
 			note = selectedNoteMark();
 			++num;
 		}
 		m_Doc->flag_notesChanged = true;
-
-//		while (!ns2Update.isEmpty())
-//		{
-//			NotesSet* ns = ns2Update.first();
-//			m_Doc->updateNotesNums(ns);
-//			ns2Update.removeAll(ns);
-//		}
 	}
 	
 	Mark* mrk = selectedMark();
 	while (mrk != NULL)
 	{
+		Q_ASSERT(mrk->isNoteType());
+		if (doUndo && UndoManager::undoEnabled())
+		{
+			ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+			ims->set("label", mrk->label);
+			ims->set("type", (int) mrk->getType());
+			ims->set("strtxt", mrk->getString());
+			ims->set("MARK", QString("delete"));
+			PageItem* master = this;
+			ims->insertItem("inItem", (void*) master);
+			ims->set("at", m_Doc->findMarkCPos(mrk, master));
+			if (mrk->isType(MARK2MarkType))
+			{
+				QString dName;
+				MarkType dType;
+				mrk->getMark(dName, dType);
+				ims->set("dName", dName);
+				ims->set("dType", (int) dType);
+			}
+			if (mrk->isType(MARK2ItemType))
+				ims->insertItem("itemPtr", (void*) mrk->getItemPtr());
+			undoManager->action(m_Doc, ims);
+		}
 		m_Doc->eraseMark(mrk, fromText, this);
 		mrk = selectedMark();
 		++num;

@@ -17108,7 +17108,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool force)
 {
 	Q_ASSERT(nF != NULL);
 	if (nF->itemText.length() > 0)
-		nF->removeMarksFromText();
+		nF->removeMarksFromText(false);
 		
 	nF->itemText.clear();
 	if (appMode == modeEdit && nF->isSelected())

@@ -71,7 +71,7 @@ public:
 	* @param keyRepeat a reference to the keyRepeat property
 	*/
 	virtual void handleModeEditKey(QKeyEvent *k, bool& keyRepeat);
-	void deleteSelectedTextFromFrame();
+	void deleteSelectedTextFromFrame(bool findNotes = true);
 	void setNewPos(int oldPos, int len, int dir);
 	void ExpandSel(int dir, int oldPos);
 	void deselectAll();
@@ -148,7 +148,7 @@ public:
 	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
 	void notesFramesLayout(bool force);
 	//removing all marsk from text, returns number of removed marks
-	int removeMarksFromText();
+	int removeMarksFromText(bool doUndo);
 	//return note frame for given notes set if current text frame has notes marks with this notes set
 	PageItem_NoteFrame* itemNoteFrame(NotesSet* nSet);
 	//list all notes frames for current text frame /with endnotes frames if endnotes marks are in that frame/
