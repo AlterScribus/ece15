@@ -1704,7 +1704,7 @@ public:
 	//finds mark position in text
 	//return true if mark was found, CPos is set for mark`s position
 	//if item==NULL then search in all items and if mark is found than item is set
-	bool findMarkCPos(Mark* mrk, PageItem* &item, int &CPos);
+	int findMarkCPos(Mark* mrk, PageItem* &item, int Start = 0);
 
 private:
 	QList<PageItem_NoteFrame*> m_docEndNoteFrameChanged;

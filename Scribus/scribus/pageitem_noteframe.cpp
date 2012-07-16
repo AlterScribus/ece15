@@ -293,7 +293,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 void PageItem_NoteFrame::updateNotesText()
 {
 	//read texts from notes frame and copy it to note`s data
-	if (itemText.length() ==0)
+	if (l_notes.isEmpty() || (itemText.length() == 0))
 		return;
 
 	int oldSelStart = itemText.startOfSelection();
@@ -329,9 +329,12 @@ void PageItem_NoteFrame::updateNotesText()
 		}
 		++pos;
 	}
-	note = prevMrk->getNotePtr();
-	if (startPos != pos && note != NULL)
-		note->setSaxedText(getItemTextSaxed(startPos, pos - startPos));
+	if (prevMrk != NULL)
+	{
+		note = prevMrk->getNotePtr();
+		if (startPos != pos && note != NULL)
+			note->setSaxedText(getItemTextSaxed(startPos, pos - startPos));
+	}
 	itemText.deselectAll();
 	if (oldSelLen > 0)
 		itemText.select(oldSelStart, oldSelLen);

@@ -3528,34 +3528,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	}
 	int oldPos = itemText.cursorPosition(); // 15-mar-2004 jjsa for cursor movement with Shift + Arrow key
 	int kk = k->key();
-
-	//check for deleting marks in selected text
-	bool marksDeleted = false;
-	QList<NotesSet*> ns2Update; //list of sets to do update after notes removing
-
-	//FIX ME - why asking user for deleting marks and notes when it is undeable
-//	if (m_Doc->hasGUI())
-//	{
-//		bool askUser = false;
-//		if ((itemText.lengthOfSelection() > 0) ((kk == Qt::Key_Delete) || (kk == Qt::Key_Backspace) || (k->text().size() == 1)) && selectedNoteMark() != NULL)
-//			askUser = true;
-//		else if ((kk == Qt::Key_Delete) || (kk == Qt::Key_Backspace))
-//		{
-//			ScText* hl = NULL;
-//			//cursor before note number mark
-//			if ((kk == Qt::Key_Delete) && (oldPos < itemText.length()))
-//				hl = itemText.item(itemText.cursorPosition());
-//			else if ((kk == Qt::Key_Backspace) && (oldPos >0)) 
-//				hl = itemText.item(itemText.cursorPosition() -1);
-//			if ((hl != NULL) && hl->hasMark() && (hl->mark->isType(MARKNoteMasterType) || hl->mark->isType(MARKNoteFrameType)))
-//				askUser = true;
-//		}
-//		if (askUser &&
-//				((ScMessageBox::warning( (QWidget*) m_Doc->scMW(), tr("Delete note(s)?"), tr("Do you want to delete whole note(s)?"),
-//				 QMessageBox::Yes, QMessageBox::No | QMessageBox::Default, QMessageBox::NoButton)) != QMessageBox::Yes))
-//			return;
-//	}
-	
 	int as = k->text()[0].unicode();
 	QString uc = k->text();
 	QString cr, Tcha, Twort;
@@ -3641,9 +3613,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				itemText.insertChars(QString(QChar(conv)), true);
 //				Tinput = true;
 				m_Doc->scMW()->setTBvals(this);
-				if (marksDeleted)
-					m_Doc->updateMarks(true);
-				update();
+				if ( asNoteFrame()->masterFrame() && isAutoNoteFrame() && m_Doc->flag_notesChanged )
+					asNoteFrame()->masterFrame()->invalid = true;
+				else
+					update();
 				keyRepeat = false;
 				return;
 			}
@@ -3950,7 +3923,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (itemText.lengthOfSelection() == 0)
 			itemText.select(itemText.cursorPosition(), 1, true);
 		deleteSelectedTextFromFrame();
-		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+		if ( asNoteFrame()->masterFrame() && isAutoNoteFrame() && m_Doc->flag_notesChanged )
 			asNoteFrame()->masterFrame()->invalid = true;
 		else
 			update();
@@ -3970,7 +3943,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+				if ( asNoteFrame()->masterFrame() && isAutoNoteFrame() && m_Doc->flag_notesChanged )
 					asNoteFrame()->masterFrame()->invalid = true;
 				else
 					update();
@@ -3992,7 +3965,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 //			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
 //			Tinput = false;
 		}
-		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+		if ( asNoteFrame()->masterFrame() && isAutoNoteFrame() && m_Doc->flag_notesChanged )
 			asNoteFrame()->masterFrame()->invalid = true;
 		else
 			update();
@@ -4122,7 +4095,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 			// update layout immediately, we need MaxChars to be correct to detect 
 			// if we need to move to next frame or not
-			if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+			if ( asNoteFrame()->masterFrame() && isAutoNoteFrame() && m_Doc->flag_notesChanged )
 				asNoteFrame()->masterFrame()->invalid = true;
 			else
 				update();
@@ -4190,14 +4163,28 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 				ims->set("strtxt", hl->mark->getString());
 				if (hl->mark->isNoteType())
 				{
-					ims->insertItem("master", this);
-					ims->set("at", i);
-					ims->set("noteTXT", hl->mark->getNotePtr()->saxedText());
-					ims->insertItem("nset", (void*) hl->mark->getNotePtr()->notesSet());
-					if (hl->mark->getNotePtr()->isEndNote())
+					TextNote* note = hl->mark->getNotePtr();
+					Q_ASSERT(note != NULL);
+					if (isNoteFrame())
+					{
+						Q_ASSERT(asNoteFrame()->masterFrame());
+						PageItem * master = asNoteFrame()->masterFrame();
+						int Cpos = m_Doc->findMarkCPos(note->masterMark(), master);
+						Q_ASSERT(Cpos != -1);
+						ims->insertItem("inItem", master);
+						ims->set("at", Cpos);
+					}
+					else
+					{
+						ims->insertItem("inItem", this);
+						ims->set("at", i);
+					}
+					ims->set("noteTXT", note->saxedText());
+					ims->insertItem("nset", (void*) note->notesSet());
+					if (note->isEndNote())
 						m_Doc->flag_updateEndNotes = true;
-					ns2Update.append(hl->mark->getNotePtr()->notesSet());
-					m_Doc->deleteNote(hl->mark->getNotePtr(), true);
+					ns2Update.append(note->notesSet());
+					m_Doc->deleteNote(note, true);
 				}
 				else
 				{
@@ -4240,15 +4227,17 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 					{
 						ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
 						ims->set("DELETE_NOTE", QString("delete_note"));
-						int Cpos;
+						int Cpos = -1;
 						PageItem* master = asNoteFrame()->masterFrame();
 						if (asNoteFrame()->isEndNotesFrame())
-						m_Doc->flag_updateEndNotes = true;
-						else
 						{
-							ims->insertItem("inItem", (void*) master);
-							m_Doc->findMarkCPos(hl->mark, master, Cpos);
+							m_Doc->flag_updateEndNotes = true;
+							master = NULL;
 						}
+						Q_ASSERT(master);
+						ims->insertItem("inItem", master);
+						Cpos = m_Doc->findMarkCPos(hl->mark, master);
+						Q_ASSERT(Cpos != -1);
 						ims->set("at", Cpos);
 						ims->set("noteTXT", hl->mark->getNotePtr()->saxedText());
 						ims->insertItem("nset", (void*) asNoteFrame()->notesSet());
@@ -4322,7 +4311,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame()
 			trans = NULL;
 		}
 
-		while (!ns2Update.isEmpty())
+		while (!isAutoNoteFrame() && !ns2Update.isEmpty())
 		{
 			NotesSet* ns = ns2Update.first();
 			m_Doc->updateNotesNums(ns);
