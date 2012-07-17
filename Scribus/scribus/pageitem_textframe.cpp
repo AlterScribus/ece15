@@ -3914,7 +3914,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					asNoteFrame()->masterFrame()->invalid = true;
 				}
 				else
-					update();
+					layout();
 //				view->RefreshItem(this);
 			}
 			keyRepeat = false;
@@ -3932,10 +3932,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
 		{
 			Q_ASSERT(asNoteFrame()->masterFrame());
-			asNoteFrame()->masterFrame()->update();
+			asNoteFrame()->masterFrame()->invalid = true;
 		}
 		else
-			update();
+			layout();
 //		Tinput = false;
 		if ((cr == QChar(13)) && (itemText.length() != 0))
 		{
@@ -3958,7 +3958,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					asNoteFrame()->masterFrame()->invalid = true;
 				}
 				else
-					update();
+					layout();
 			}
 			break;
 		}
@@ -3983,7 +3983,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			asNoteFrame()->masterFrame()->invalid = true;
 		}
 		else
-			update();
+			layout();
 		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 			NextBox->updateLayout();
 		if (itemText.cursorPosition() < firstInFrame())
@@ -4116,7 +4116,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				asNoteFrame()->masterFrame()->invalid = true;
 			}
 			else
-				update();
+				layout();
 			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 				NextBox->updateLayout();
 		}
@@ -4126,7 +4126,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		{
 			view->Deselect(true);
 			view->Deselect(true);
-			NextBox->update();
+			NextBox->layout();
 			m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 		}
 		break;
@@ -4240,30 +4240,29 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 			stop -= marksNum;
 		}
 		//delete text
+		ScItemState<CharStyle>* sch = NULL;
+		if (ts)
+			sch = dynamic_cast<ScItemState<CharStyle>*>(ts->at(0));
 		for (int i=start; i <= stop; ++i)
 		{
 			ScText* hl = NULL;
 			if (i < itemText.length())
 				hl = itemText.item(i);
-			const CharStyle& curParent(itemText.charStyle(i));
-			if (!curParent.equiv(lastParent) || i==stop || (hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType)))
+			if (i==stop || !itemText.charStyle(i).equiv(lastParent) || i==stop || (hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType)))
 			{
 				added = false;
 				lastIsDelete = false;
-				if(is && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext" && lastPos<is->getInt("START"))
+				if (is && sch && sch->get("ETEA") == "delete_frametext" && is->getItem().equiv(lastParent))
 				{
-					if(is->getItem().equiv(lastParent))
+					if  (lastPos < is->getInt("START"))
 					{
 						is->set("START",start);
-						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos) + is->get("TEXT_STR"));
+						is->set("TEXT_STR", itemText.text(lastPos, i - lastPos) + is->get("TEXT_STR"));
 						added = true;
 					}
-					lastIsDelete = true;
-				}
-				else if(is && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext"  && lastPos>=is->getInt("START"))
-				{
-					if(is && is->getItem().equiv(lastParent)){
-						is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos,i - lastPos));
+					else //if (lastPos >= is->getInt("START"))
+					{
+						is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos, i - lastPos));
 						added = true;
 					}
 					lastIsDelete = true;
@@ -4324,7 +4323,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 						ts->pushBack(this,is);
 				}
 				lastPos = i;
-				lastParent = curParent;
+				if (i < itemText.length())
+					lastParent = itemText.charStyle(i);
 			}
 		}
 		if (trans)
@@ -4825,7 +4825,7 @@ TextNote* PageItem_TextFrame::selectedNoteMark(ScText* &hl, bool onlySelection)
 	int stop = itemText.length();
 	if (onlySelection)
 	{
-		if (HasSel)
+		if (itemText.lengthOfSelection() > 0)
 		{
 			//only selection
 			start = itemText.startOfSelection();
@@ -5083,10 +5083,10 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 			if (mrk->isUnique())
 			{
 				ims->set("MARK", QString("delete"));
-				ims->insertItem("mark", mrk);
 			}
 			else
 				ims->set("MARK", QString("eraseFromText"));
+			ims->insertItem("mark", mrk);
 			ims->set("label", mrk->label);
 			ims->set("type", (int) mrk->getType());
 			ims->set("strtxt", mrk->getString());

@@ -1661,14 +1661,15 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 //						doc->notesFramesUpdate();
 				}
 				//slotDocCh(false);
-				doc->regionsChanged()->update(currItem->getBoundingRect());
-				if (currItem->isNoteFrame() && currItem->asNoteFrame()->masterFrame() != NULL)
-					doc->regionsChanged()->update(currItem->asNoteFrame()->masterFrame()->getBoundingRect());
-				else if (!currItem->asTextFrame()->notesFramesList().isEmpty())
-				{
-					foreach (PageItem* nF, currItem->asTextFrame()->notesFramesList())
-						doc->regionsChanged()->update(nF->getBoundingRect());
-				}
+				doc->regionsChanged()->update(QRectF());
+//				doc->regionsChanged()->update(currItem->getBoundingRect());
+//				if (currItem->isNoteFrame() && currItem->asNoteFrame()->masterFrame() != NULL)
+//					doc->regionsChanged()->update(currItem->asNoteFrame()->masterFrame()->getBoundingRect());
+//				else if (!currItem->asTextFrame()->notesFramesList().isEmpty())
+//				{
+//					foreach (PageItem* nF, currItem->asTextFrame()->notesFramesList())
+//						doc->regionsChanged()->update(nF->getBoundingRect());
+//				}
 			}
 		}
 	}
@@ -10487,8 +10488,9 @@ void ScribusMainWindow::insertMark(MarkType mType)
 				currItem->layout();
 			doc->changed();
 			//view->updatesOn(true);
-			doc->regionsChanged()->update(currItem->getBoundingRect());
-			//view->DrawNew();
+			//doc->regionsChanged()->update(currItem->getBoundingRect());
+			doc->regionsChanged()->update(QRectF());
+			view->DrawNew();
 		}
 	}
 }
@@ -10519,6 +10521,7 @@ void ScribusMainWindow::slotEditMark()
 				//doc->updateMarks();
 				doc->changed();
 				doc->regionsChanged()->update(QRectF());
+				view->DrawNew();
 			}
 		}
 	}
@@ -10666,7 +10669,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			mrk->setString(d.strtxt);
 			mrk->label = label;
 			insertExistedMark = true;
-			doc->invalidateVariableTextFrames(mrk, true);
+			doc->flag_updateMarksLabels;
 		}
 
 		currItem->itemText.insertMark(mrk);

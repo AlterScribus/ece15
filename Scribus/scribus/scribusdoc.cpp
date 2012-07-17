@@ -1876,7 +1876,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					{
 						if (mrk->isNoteType())
 						{
-							Q_ASSERT(false);
 							TextNote* note = (TextNote*) is->getItem("notePtr");
 							if (note->isEndNote())
 								flag_updateEndNotes = true;
@@ -1979,7 +1978,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
 						if (mrk->isType(MARKNoteMasterType))
 						{
-							Q_ASSERT(false);
 							NotesSet* nSet = (NotesSet*) is->getItem("nset");
 							TextNote* note = newNote(nSet);
 							mrk->setNotePtr(note);
