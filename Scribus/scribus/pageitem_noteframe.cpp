@@ -5,6 +5,7 @@
 #include "scribus.h"
 #include "scribusdoc.h"
 #include "ui/scmessagebox.h"
+#include "undomanager.h"
 #include "util_text.h"
 
 
@@ -177,6 +178,9 @@ void PageItem_NoteFrame::layout()
 	if ((masterFrame() != NULL) && masterFrame()->invalid)
 		return;
 
+	//while layouting notes frames undo should be disabled
+	UndoManager::instance()->setUndoEnabled(false);
+
 	if (m_nset->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
 		Width = m_masterFrame->width();
@@ -217,6 +221,7 @@ void PageItem_NoteFrame::layout()
 	}
 	m_Doc->regionsChanged()->update(getBoundingRect());
 	invalid = false;
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem_NoteFrame::insertNote(TextNote *note)

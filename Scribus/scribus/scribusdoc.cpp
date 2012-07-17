@@ -270,7 +270,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	m_docUpdater(NULL),
 	flag_notesChanged(false),
 	flag_restartMarksRenumbering(false),
-	flag_updateNotesLabels(false),
+	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true)
 {
@@ -368,7 +368,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	m_docUpdater(NULL),
 	flag_notesChanged(false),
 	flag_restartMarksRenumbering(false),
-	flag_updateNotesLabels(false),
+	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true)
 {
@@ -1859,7 +1859,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						flag_updateEndNotes = true;
 					deleteNote(note, true);
 				}
-				updateNotesNums(nSet);
+				//changed();
 			}
 		}
 		else if (ss->contains("MARK"))
@@ -1867,9 +1867,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
 			if (is)
 			{
-				Mark* mrk = NULL;
-//				if (is->contains("mark"))
-//					mrk = (Mark*) is->getItem("mark");
+				Mark* mrk = (Mark*) is->getItem("mark");
 				PageItem* currItem = (PageItem*) is->getItem("inItem");
 				int pos = is->getInt("at");
 				if (isUndo)
@@ -1920,6 +1918,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setString(is->get("strOLD"));
 							invalidateVariableTextFrames(mrk, false);
 						}
+						if (is->contains("labelOLD"))
+							mrk->label = is->get("labelOLD");
 					}
 					else if (is->get("MARK") == "delete")
 					{
@@ -1984,7 +1984,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							TextNote* note = newNote(nSet);
 							mrk->setNotePtr(note);
 							note->setMasterMark(mrk);
-							is->insertItem("notePtr", (void*) note);
+							is->insertItem("notePtr", note);
 							updateNotesNums(nSet);
 						}
 					}
@@ -2021,6 +2021,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setString(is->get("strNEW"));
 							invalidateVariableTextFrames(mrk, false);
 						}
+						if (is->contains("labelNEW"))
+							mrk->label = is->get("labelNEW");
 					}
 					else if (is->get("MARK") == "eraseFromText") //for non-unique marks
 					{
@@ -2052,7 +2054,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				}
 				if (currItem != NULL)
 					currItem->update();
-				changed();
+				//changed();
+				scMW()->emitUpdateRequest(reqMarksUpdate);
 			}
 		}
 		if (layersUndo)
@@ -16090,22 +16093,22 @@ TextNote *ScribusDoc::newNote(NotesSet* NS)
 	return newNote;
 }
 
-PageItem* ScribusDoc::findMark(Mark* mrk, int &lastItem)
+PageItem* ScribusDoc::findMarkItem(Mark* mrk, int &lastItem)
 {
 	//except marks to items, in itemPtr should be item which holds this mark
 	PageItem* item = NULL;
-	if (!mrk->isType(MARK2ItemType) && (lastItem == -1))
-	{
-		item = getItemFromName(mrk->getItemName());
-		if (item != NULL)
-		{
-			if (findMarkCPos(mrk, item) > -1)
-			{
-				lastItem = DocItems.indexOf(item);
-				return item;
-			}
-		}
-	}
+//	if (!mrk->isType(MARK2ItemType) && (lastItem == -1))
+//	{
+//		item = getItemFromName(mrk->getItemName());
+//		if (item != NULL)
+//		{
+//			if (findMarkCPos(mrk, item) > -1)
+//			{
+//				lastItem = DocItems.indexOf(item);
+//				return item;
+//			}
+//		}
+//	}
 	for (int a = lastItem +1; a < DocItems.count(); ++a)
 	{
 		item = DocItems.at(a);
@@ -16128,14 +16131,14 @@ PageItem* ScribusDoc::findMark(Mark* mrk, int &lastItem)
 
 int ScribusDoc::findMarkCPos(Mark* mrk, PageItem* &currItem, int Start)
 {
-	if (Start < currItem->firstInFrame())
-		Start = currItem->firstInFrame();
 	if (currItem == NULL)
-		currItem = findMark(mrk);
+		currItem = findFirstMarkItem(mrk);
 	if (currItem == NULL)
 		return -1;
 	Q_ASSERT(currItem->isTextFrame());
-	Q_ASSERT(currItem->itemText.length() > 0);
+
+	if (Start < currItem->firstInFrame())
+		Start = currItem->firstInFrame();
 
 	for (int i = Start; i <= currItem->lastInFrame(); ++i)
 	{
@@ -16184,7 +16187,7 @@ void ScribusDoc::setCursor2MarkPos(Mark *mark)
 	if (item == NULL)
 		item = getItemFromName(mark->getItemName());
 	if (item == NULL)
-		item = findMark(mark);
+		item = findFirstMarkItem(mark);
 	if (item == NULL)
 		return;
 
@@ -16216,7 +16219,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 		//find and delete all mark`s apperences in text
 		int MPos = -1;
 		int itemIndex = -1;
-		item = findMark(mrk, itemIndex);
+		item = findMarkItem(mrk, itemIndex);
 		while (item != NULL)
 		{
 			MPos = findMarkCPos(mrk, item);
@@ -16229,7 +16232,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 			}
 			found = true;
 			item->asTextFrame()->invalidateLayout();
-			item = findMark(mrk, itemIndex);
+			item = findMarkItem(mrk, itemIndex);
 		}
 	}
 	//remove mark references
@@ -16265,14 +16268,17 @@ bool ScribusDoc::invalidateVariableTextFrames(Mark* mrk, bool forceUpdate)
 		return false;
 	int itemNo = -1;
 	bool found = false;
-	PageItem* mItem = findMark(mrk, itemNo);
+	PageItem* mItem = findMarkItem(mrk, itemNo);
 	while (mItem != NULL)
 	{
 		found = true;
 		mItem->asTextFrame()->invalidateLayout();
 		if (forceUpdate)
+		{
 			mItem->layout();
-		mItem = findMark(mrk, itemNo);
+			regionsChanged()->update(mItem->getBoundingRect());
+		}
+		mItem = findMarkItem(mrk, itemNo);
 	}
 	return found;
 }
@@ -16283,7 +16289,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 {
 	if (m_docMarksList.isEmpty())
 	{
-		if (updateNotesMarks)
+		if (updateNotesMarks && !isLoading())
 			return notesFramesUpdate();
 		return false;
 	}
@@ -16291,22 +16297,25 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 
 	bool docWasChanged = false;
 
-	//run for variable text (invalidate frames with variable text)
-	foreach (Mark* mrk, m_docMarksList)
+	if (!isLoading())
 	{
-		if (mrk->isType(MARKVariableTextType))
+		//run for variable text (invalidate frames with variable text)
+		foreach (Mark* mrk, m_docMarksList)
 		{
-			if (invalidateVariableTextFrames(mrk, false))
-				docWasChanged = true;
-		}
+			if (mrk->isType(MARKVariableTextType))
+			{
+				if (invalidateVariableTextFrames(mrk, false))
+					docWasChanged = true;
+			}
 			else if (mrk->isUnique())
 			{
-				PageItem* mItem = findMark(mrk);
+				PageItem* mItem = findFirstMarkItem(mrk);
 				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
 				mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
 			}
 		}
-
+	}
+	
 	//update marks for foot/endnotes
 	if (updateNotesMarks)
 	{
@@ -16333,7 +16342,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 	foreach (Mark* mrk, m_docMarksList)
 	{
 		//set mark page number
-		PageItem* mItem = findMark(mrk);
+		PageItem* mItem = findFirstMarkItem(mrk);
 		if (mItem != NULL)
 			mrk->OwnPage = mItem->OwnPage;
 		else
@@ -16364,7 +16373,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 			Mark* destMark = getMarkDefinied(l,t);
 			if (destMark != NULL)
 			{
-				PageItem* dItem = findMark(destMark);
+				PageItem* dItem = findFirstMarkItem(destMark);
 				if (dItem == NULL)
 				{
 					destMark->OwnPage = -1;
@@ -16449,7 +16458,7 @@ void ScribusDoc::deleteNoteSet(QString nsName)
 		while (!toDel.isEmpty())
 			deleteNote(toDel.takeFirst(), true);
 	}
-	flag_updateNotesLabels = true;
+	flag_updateMarksLabels = true;
 	if (NS->isEndNotes())
 		flag_updateEndNotes = true;
 	notesFramesUpdate();
@@ -16476,7 +16485,7 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 		if (note->noteMark()->getItemPtr() != NULL)
 			nF = note->noteMark()->getItemPtr()->asNoteFrame();
 	if (nF == NULL)
-		nF = findMark(note->noteMark())->asNoteFrame();
+		nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
 	Q_ASSERT(nF != NULL);
 	nF->removeNote(note);
 	if (fromText)
@@ -16492,7 +16501,7 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 	flag_notesChanged = true;
 	if (note->isEndNote())
 		flag_updateEndNotes = true;
-	ns2Update.append(note->notesSet());
+	//ns2Update.append(note->notesSet());
 	delete note;
 }
 
@@ -16517,7 +16526,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesSet* nSet, 
 				QString numStr = nSet->prefix() + nSet->numString(noteNum) + nSet->suffix();
 				QString mStr = hl->mark->getString();
 				QString label = hl->mark->label;
-				if ((mStr != numStr) || flag_updateNotesLabels || flag_updateEndNotes)
+				if ((mStr != numStr) || flag_updateMarksLabels || flag_updateEndNotes)
 				{
 					doUpdate = true;
 					hl->mark->setString(numStr);
@@ -16562,7 +16571,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesSet* nSet, 
 		if (nF != NULL)
 		{
 			if (nSet->isEndNotes())
-				m_docEndNoteFrameChanged.append(nF);
+				m_docEndNotesFramesChanged.append(nF);
 			else if (!nF->deleteIt)
 				nF->invalidateLayout(true);
 		}
@@ -17094,10 +17103,10 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF)
 
 void ScribusDoc::updateChangedEndNotesFrames()
 {
-	while (!m_docEndNoteFrameChanged.isEmpty())
+	while (!m_docEndNotesFramesChanged.isEmpty())
 	{
-		PageItem_NoteFrame* nF = m_docEndNoteFrameChanged.first();
-		m_docEndNoteFrameChanged.removeAll(nF);
+		PageItem_NoteFrame* nF = m_docEndNotesFramesChanged.first();
+		m_docEndNotesFramesChanged.removeAll(nF);
 		updateEndNotesFrameContent(nF);
 		if (nF->deleteIt)
 			delNoteFrame(nF);

@@ -4732,8 +4732,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreLineShade(ss, isUndo);
 		else if (ss->contains("DELETE_FRAMETEXT"))
 			restoreDeleteFrameText(ss, isUndo);
-//		else if (ss->contains("DELETE_MARK"))
-//			restoreDeleteMark(ss, isUndo);
 		else if (ss->contains("INSERT_FRAMETEXT"))
 			restoreInsertFrameText(ss,isUndo);
 		else if (ss->contains("LOREM_FRAMETEXT"))
@@ -6199,71 +6197,6 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 		invalidateLayout();
 	} else {
 		itemText.select(start,text.length());
-		asTextFrame()->deleteSelectedTextFromFrame();
-	}
-	update();
-}
-
-void PageItem::restoreDeleteMark(SimpleState *ss, bool isUndo)
-{
-	ScItemsState *its = dynamic_cast<ScItemsState *>(ss);
-
-	if (isUndo){
-		if (isNoteFrame() && ss->contains("isNote"))
-		{
-			NotesSet * NSet = (NotesSet*) its->getItem("nset");
-			TextNote * note = m_Doc->newNote(NSet);
-			note->setSaxedText(its->get("noteTXT"));
-			PageItem* master = (PageItem*) its->getItem("master");
-			Mark* mrk = m_Doc->newMark();
-			mrk->label = "NoteMark_" + NSet->name();
-			mrk->setType(MARKNoteMasterType);
-			mrk->setNotePtr(note);
-			note->setMasterMark(mrk);
-			master->itemText.insertMark(mrk, its->getInt("at"));
-			if (m_Doc->updateNotesNums(NSet))
-			{
-				if (note->isEndNote())
-					m_Doc->flag_updateEndNotes = true;
-				master->asTextFrame()->notesFramesLayout(true);
-				m_Doc->flag_updateEndNotes = false;
-			}
-		}
-		else
-		{
-			Mark* mrk = m_Doc->newMark();
-			mrk->label = its->get("label");
-			mrk->setType((MarkType) its->getInt("type"));
-			int pos = its->getInt("at");
-			if (itemText.text(pos) == SpecialChars::OBJECT)
-				itemText.item(pos)->mark = mrk;
-			else
-				itemText.insertMark(mrk, its->getInt("at"));
-			if (its->contains("strtxt"))
-			{
-				mrk->setString(its->get("strtxt"));
-				m_Doc->invalidateVariableTextFrames(mrk, false);
-			}
-			if (its->contains("dName"))
-				mrk->setMark(its->get("dName"), (MarkType) its->getInt("dType"));
-			mrk->setItemPtr((PageItem*) its->getItem("itemPtrOLD"));
-			if (its->contains("noteTXT")) //is note mark
-			{
-				NotesSet* nSet = (NotesSet*) its->getItem("nset");
-				TextNote* newNote = m_Doc->newNote(nSet);
-				newNote->setSaxedText(its->get("noteTXT"));
-				mrk->setNotePtr(newNote);
-				newNote->setMasterMark(mrk);
-				m_Doc->flag_notesChanged = true;
-			}
-		}
-		invalid = true;
-		//invalidateLayout();
-	}
-	else { //REDO
-		if (its->contains("noteTXT"))
-			m_Doc->flag_notesChanged = true;
-		itemText.select(its->getInt("at"), 1);
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
 	update();
@@ -9998,8 +9931,11 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
 {
+	
 	if ((DX == 0) && (DY == 0))
 		return;
+
+	UndoManager::instance()->setUndoEnabled(false);
 	for (int i = 0 ; i < weldList.count(); i++)
 	{
 		weldingInfo wInf = weldList.at(i);
@@ -10013,10 +9949,12 @@ void PageItem::moveWelded(double DX, double DY, PageItem* except)
 			pIt->moveWelded(DX, DY, this);
 		}
 	}
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem::rotateWelded(double dR, double oldRot)
 {
+	UndoManager::instance()->setUndoEnabled(false);
 	QTransform ma;
 	ma.translate(xPos(), yPos());
 	ma.scale(1, 1);
@@ -10046,6 +9984,7 @@ void PageItem::rotateWelded(double dR, double oldRot)
 		pIt->setXYPos(lin.p2().x(), lin.p2().y());
 		pIt->rotateBy(dR);
 	}
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 QList<PageItem*> PageItem::itemsWeldedTo(PageItem* except)

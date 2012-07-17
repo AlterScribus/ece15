@@ -520,6 +520,7 @@ public slots:
 	 * canvas modes/gestures.
 	 */
 	void updateTableMenuActions();
+	void emitUpdateRequest(int updateFlags) { emit UpdateRequest(updateFlags); }
 
 signals:
 	void AppModeChanged(int oldMode, int newMode);

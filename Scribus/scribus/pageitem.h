@@ -1402,7 +1402,6 @@ protected:
 	void restoreSetParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreLoremIpsum(SimpleState *state, bool isUndo);
 	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
-	void restoreDeleteMark(SimpleState *state, bool isUndo);
 	void restoreInsertFrameText(SimpleState *state, bool isUndo);
 	void restoreCornerRadius(SimpleState *state, bool isUndo);
 	void restoreShowImage(SimpleState *state, bool isUndo);

@@ -1650,7 +1650,7 @@ public:
 	//flags used for indicating needs of updates
 	bool flag_notesChanged;
 	bool flag_restartMarksRenumbering;
-	bool flag_updateNotesLabels;
+	bool flag_updateMarksLabels;
 	bool flag_updateEndNotes;
 	bool flag_layoutNotesFrames;
 
@@ -1704,22 +1704,22 @@ public:
 	//update endnotesframe content
 	void updateEndNotesFrameContent(PageItem_NoteFrame* nF);
 	//insert noteframe into list of changed
-	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNoteFrameChanged.append(nF); }
+	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNotesFramesChanged.append(nF); }
 	//update content for changed endnotesframes
 	void updateChangedEndNotesFrames();
 	//finds mark position in text
 	//return true if mark was found, CPos is set for mark`s position
 	//if item==NULL then search in all items and if mark is found than item is set
 	int findMarkCPos(Mark* mrk, PageItem* &item, int Start = 0);
+	QList<PageItem_NoteFrame*> m_docEndNotesFramesChanged;
 
 private:
-	QList<PageItem_NoteFrame*> m_docEndNoteFrameChanged;
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
 	NotesInFrameMap m_docNotesInFrameMap;
 
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
-	PageItem* findMark(Mark* mrk, int &lastItem);
-	PageItem* findMark(Mark* mrk) { int tmp = -1; return findMark(mrk, tmp); }
+	PageItem* findMarkItem(Mark* mrk, int &lastItem);
+	PageItem* findFirstMarkItem(Mark* mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
 
 	//search for endnotesframe for given notes set and item holding master mark or section number
 	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, void* item = NULL);

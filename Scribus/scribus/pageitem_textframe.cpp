@@ -1361,7 +1361,7 @@ void PageItem_TextFrame::layout()
 */
 	
 	setShadow();
-	uint itLen = itemText.length();
+	int itLen = itemText.length();
 	//fast validate empty frames
 	if (itLen == 0 || firstChar == itLen)
 	{
@@ -3932,7 +3932,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
 		{
 			Q_ASSERT(asNoteFrame()->masterFrame());
-			asNoteFrame()->masterFrame()->invalid = true;
+			asNoteFrame()->masterFrame()->update();
 		}
 		else
 			update();
@@ -4143,7 +4143,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 {
 	if (itemText.lengthOfSelection() == 0)
+	{
 		itemText.select(itemText.cursorPosition(),1);
+		HasSel = true;
+	}
 	int start = itemText.startOfSelection();
 	int stop = itemText.endOfSelection();
 	int marksNum = 0;
@@ -4294,7 +4297,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							ims->insertItem("nset", note->notesSet());
 							if (note->isEndNote())
 								m_Doc->flag_updateEndNotes = true;
-							m_Doc->ns2Update.append(note->notesSet());
+							//m_Doc->ns2Update.append(note->notesSet());
 							if (note->textLen > 0)
 							{
 								itemText.deselectAll();
@@ -4310,13 +4313,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							}
 						else
 							ts->pushBack(this,is);
-						if (trans)
-						{
-							trans->commit();
-							delete trans;
-							trans = NULL;
-						}
-						return;
+						break;
 					}
 					
 					if(!ts || !lastIsDelete){
@@ -4825,14 +4822,21 @@ TextNote* PageItem_TextFrame::selectedNoteMark(ScText* &hl, bool onlySelection)
 {
 	//return pointer to note from first mark found in text
 	int start = 0;
-	int stop = itemText.length() -1;
-	if (HasSel && onlySelection)
+	int stop = itemText.length();
+	if (onlySelection)
 	{
-		//only selection
-		start = itemText.startOfSelection();
-		stop = start + itemText.lengthOfSelection();
+		if (HasSel)
+		{
+			//only selection
+			start = itemText.startOfSelection();
+			stop = start + itemText.lengthOfSelection();
+		}
+		else
+		{
+			start = itemText.cursorPosition();
+			stop = start +1;
+		}
 	}
-	
 	MarkType typ = isNoteFrame()? MARKNoteFrameType : MARKNoteMasterType;
 	for (int pos = start; pos < stop; ++pos)
 	{
@@ -5029,6 +5033,7 @@ void PageItem_TextFrame::notesFramesLayout(bool force)
 			nF->invalid = true;
 		nF->layout();
 	}
+	m_Doc->flag_layoutNotesFrames = false;
 }
 
 int PageItem_TextFrame::removeMarksFromText(bool doUndo)
@@ -5055,12 +5060,12 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 				ims->insertItem("inItem", master);
 				ims->set("at", pos);
 				ims->set("noteTXT", note->saxedText());
-				ims->insertItem("nset", (void*) note->notesSet());
+				ims->insertItem("nset", note->notesSet());
 				undoManager->action(m_Doc, ims);
 			}
 			if (note->isEndNote())
 				m_Doc->flag_updateEndNotes = true;
-			m_Doc->ns2Update.append(note->notesSet());
+			//m_Doc->ns2Update.append(note->notesSet());
 			m_Doc->deleteNote(note, fromText);
 			note = selectedNoteMark();
 			++num;
@@ -5071,16 +5076,22 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	Mark* mrk = selectedMark();
 	while (mrk != NULL)
 	{
-		Q_ASSERT(mrk->isNoteType());
+		Q_ASSERT(!mrk->isNoteType());
 		if (doUndo && UndoManager::undoEnabled())
 		{
 			ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+			if (mrk->isUnique())
+			{
+				ims->set("MARK", QString("delete"));
+				ims->insertItem("mark", mrk);
+			}
+			else
+				ims->set("MARK", QString("eraseFromText"));
 			ims->set("label", mrk->label);
 			ims->set("type", (int) mrk->getType());
 			ims->set("strtxt", mrk->getString());
-			ims->set("MARK", QString("delete"));
 			PageItem* master = this;
-			ims->insertItem("inItem", (void*) master);
+			ims->insertItem("inItem", master);
 			ims->set("at", m_Doc->findMarkCPos(mrk, master));
 			if (mrk->isType(MARK2MarkType))
 			{
@@ -5091,7 +5102,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 				ims->set("dType", (int) dType);
 			}
 			if (mrk->isType(MARK2ItemType))
-				ims->insertItem("itemPtr", (void*) mrk->getItemPtr());
+				ims->insertItem("itemPtr", mrk->getItemPtr());
 			undoManager->action(m_Doc, ims);
 		}
 		m_Doc->eraseMark(mrk, fromText, this);

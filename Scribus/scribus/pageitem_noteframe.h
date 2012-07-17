@@ -39,6 +39,9 @@ public:
 	void setMaster(PageItem* frame) { m_masterFrame = frame->asTextFrame(); }
 	bool isEndNotesFrame() { return m_nset->isEndNotes(); }
 	bool isAutoRemove() { return m_nset->isAutoRemoveEmptyNotesFrames(); }
+	bool isAutoWelded() { return m_nset->isAutoWeldNotesFrames(); }
+	bool isAutoHeight() { return m_nset->isAutoNotesHeight(); }
+	bool isAutoWidth() { return m_nset->isAutoNotesWidth(); }
 
 	//return list of notes in noteframe
 	QList<TextNote*> notesList() { return l_notes; }

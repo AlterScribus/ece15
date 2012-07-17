@@ -108,7 +108,7 @@ void MarksManager::updateListView()
 		listView->sortByColumn(0);
 	}
 	restoreColaption();
-	m_doc->flag_updateNotesLabels = false;
+	m_doc->flag_updateMarksLabels = false;
 	m_doc->flag_updateEndNotes = false;
 }
 
@@ -158,7 +158,7 @@ Mark* MarksManager::getMarkFromListView()
 
 void MarksManager::on_UpdateButton_clicked()
 {
-	m_doc->flag_updateNotesLabels = true;
+	m_doc->flag_updateMarksLabels = true;
 	m_doc->flag_updateEndNotes = true;
 	if (m_doc->updateMarks(true))
 	{

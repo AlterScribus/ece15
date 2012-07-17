@@ -308,7 +308,7 @@ void NotesSetsManager::on_ApplyButton_clicked()
 		if (updateNS)
 		{
 			updateNSList();
-			m_doc->flag_updateNotesLabels = true;
+			m_doc->flag_updateMarksLabels = true;
 			//m_doc->notesFramesUpdate();
 			m_doc->changed();
 			m_doc->regionsChanged()->update(QRectF());
