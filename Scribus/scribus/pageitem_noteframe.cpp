@@ -17,7 +17,8 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 	itemText.clear();
 
 	AnName = generateUniqueCopyName(nSet->isEndNotes() ? tr("Endnote frame ") + m_nset->name() : tr("Footnote frame ") + m_nset->name(), false);
-	AutoName = false; //endnotes frame will saved with name, so it can be stpred and connected with noteset while reading SLA
+	AutoName = false; //endnotes frame will saved with name
+	setUName(AnName);
 	
 	//set default style for note frame
 	ParagraphStyle newStyle;
@@ -74,6 +75,7 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 
 	AnName = generateUniqueCopyName(nSet->isEndNotes() ? tr("Endnote frame ") + m_nset->name() : tr("Footnote frame ") + m_nset->name(), false);
 	AutoName = false;
+	setUName(AnName);
 
 	//set default style for note frame
 	ParagraphStyle newStyle;
@@ -131,6 +133,7 @@ void PageItem_NoteFrame::setNS(NotesSet *nSet, PageItem_TextFrame* master)
 	itemText.clear();
 
 	AnName = generateUniqueCopyName(m_nset->isEndNotes() ? "Endnote frame " + m_nset->name() : "Footnote frame " + m_nset->name(), false);
+	setUName(AnName);
 	
 	//set default style for note frame
 	ParagraphStyle newStyle;
@@ -346,6 +349,16 @@ void PageItem_NoteFrame::updateNotesText()
 	itemText.deselectAll();
 	if (oldSelLen > 0)
 		itemText.select(oldSelStart, oldSelLen);
+}
+
+void PageItem_NoteFrame::restoreDeleteNoteText(SimpleState *state, bool isUndo)
+{
+	PageItem::restoreDeleteFrameText(state, isUndo);
+}
+
+void PageItem_NoteFrame::restoreInsertNoteText(SimpleState *state, bool isUndo)
+{
+	PageItem::restoreInsertFrameText(state, isUndo);
 }
 
 int PageItem_NoteFrame::findNoteCpos(TextNote* note)

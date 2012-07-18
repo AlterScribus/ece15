@@ -55,9 +55,7 @@ void MarksManager::addListItem(MarkType typeMrk, QString typeStr, const QList<Ma
 		delete listItem;
 	}
 	else
-	{
 		listItem->sortChildren(0, Qt::AscendingOrder);
-	}
 }
 
 void MarksManager::storeColaption()
@@ -67,9 +65,7 @@ void MarksManager::storeColaption()
 	{
 		QTreeWidgetItem *item = listView->topLevelItem(i);
 		if (item->isExpanded())
-		{
 			expandedItems.append(item->text(0));
-		}
 	}
 }
 
@@ -143,8 +139,10 @@ void MarksManager::languageChange()
 
 void MarksManager::handleUpdateRequest(int updateFlags)
 {
-	if (updateFlags & reqMarksUpdate)
+	if (updateFlags & reqMarksUpdate) {
 		updateListView();
+	}
+	m_doc->flag_updateMarksLabels = false;
 }
 
 Mark* MarksManager::getMarkFromListView()

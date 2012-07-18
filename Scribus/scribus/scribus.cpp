@@ -1242,7 +1242,13 @@ void ScribusMainWindow::specialActionKeyEvent(const QString& actionName, int uni
 								ss->set("ETEA", QString("insert_frametext"));
 								ss->set("TEXT_STR", QString(QChar(unicodevalue)));
 								ss->set("START", currItem->itemText.cursorPosition());
-								undoManager->action(currItem, ss);
+								UndoObject * undoTarget = currItem;
+								if (currItem->isNoteFrame())
+								{
+									undoTarget = doc;
+									ss->set("noteframeName", currItem->getUName());
+								}
+								undoManager->action(undoTarget, ss);
 							}
 						}
 						currItem->itemText.insertChars(QString(QChar(unicodevalue)), true);
@@ -1275,7 +1281,13 @@ void ScribusMainWindow::specialActionKeyEvent(const QString& actionName, int uni
 									ss->set("ETEA", QString("insert_frametext"));
 									ss->set("TEXT_STR", QString(SpecialChars::SHYPHEN));
 									ss->set("START", currItem->itemText.cursorPosition());
-									undoManager->action(currItem, ss);
+									UndoObject * undoTarget = currItem;
+									if (currItem->isNoteFrame())
+									{
+										undoTarget = doc;
+										ss->set("noteframeName", currItem->getUName());
+									}
+									undoManager->action(undoTarget, ss);
 								}
 							}
 							currItem->itemText.insertChars(QString(SpecialChars::SHYPHEN), true);
@@ -3383,20 +3395,27 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		plugin->changedDoc(doc);
 	}
 	static int markersCount; //remember marks count from last call
-	while (!doc->ns2Update.isEmpty())
-	{
-		NotesSet* ns = doc->ns2Update.first();
-		doc->updateNotesNums(ns);
-		doc->ns2Update.removeAll(ns);
-	}
+//	while (!doc->ns2Update.isEmpty())
+//	{
+//		NotesSet* ns = doc->ns2Update.first();
+//		doc->updateNotesNums(ns);
+//		doc->ns2Update.removeAll(ns);
+//	}
 	
 	if (markersCount != doc->marksList().count() || doc->flag_notesChanged || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
+		bool sendUpdateReqest = false;
+		if (markersCount != doc->marksList().count() || doc->flag_updateMarksLabels)
+			sendUpdateReqest = true;
 		markersCount = doc->marksList().count();
 		doc->updateMarks(doc->flag_notesChanged);
 		if (!doc->m_docEndNotesFramesChanged.isEmpty())
 			doc->updateChangedEndNotesFrames();
-		emit UpdateRequest(reqMarksUpdate);
+		if (sendUpdateReqest)
+			emit UpdateRequest(reqMarksUpdate);
+		doc->flag_notesChanged = false;
+		doc->flag_updateEndNotes = false;
+		doc->flag_updateMarksLabels = false;
 	}
 }
 
@@ -10469,27 +10488,20 @@ void ScribusMainWindow::insertMark(MarkType mType)
 		if (insertMarkDlg(currItem->asTextFrame(), mType))
 		{
 			Mark* mrk = NULL;
-			//view->updatesOn(false);
+			view->updatesOn(false);
 			currItem->invalidateLayout();
+			currItem->layout();
 			if (mType == MARKNoteMasterType)
 			{
 				mrk = currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark;
 				doc->flag_notesChanged = true;
-//				if (doc->updateNotesNums(mrk->getNotePtr()->notesSet()))
-//				{
-					if (mrk->getNotePtr()->isEndNote())
-						doc->flag_updateEndNotes = true;
-					//currItem->asTextFrame()->notesFramesLayout(true);
-					//doc->flag_updateEndNotes = false;
-					doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
-//				}
+				if (mrk->getNotePtr()->isEndNote())
+					doc->flag_updateEndNotes = true;
+				doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
 			}
-			else
-				currItem->layout();
 			doc->changed();
-			//view->updatesOn(true);
-			//doc->regionsChanged()->update(currItem->getBoundingRect());
-			doc->regionsChanged()->update(QRectF());
+			//doc->regionsChanged()->update(QRectF());
+			view->updatesOn(true);
 			view->DrawNew();
 		}
 	}
@@ -10513,8 +10525,8 @@ void ScribusMainWindow::slotEditMark()
 			{
 				if (hl->mark->isType(MARKVariableTextType))
 				{
-					if (doc->invalidateVariableTextFrames(hl->mark, true))
-						doc->flag_updateMarksLabels;
+//					if (doc->invalidateVariableTextFrames(hl->mark, true))
+						doc->flag_updateMarksLabels = true;
 				}
 				else
 					currItem->invalid = true;
@@ -10669,7 +10681,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			mrk->setString(d.strtxt);
 			mrk->label = label;
 			insertExistedMark = true;
-			doc->flag_updateMarksLabels;
+			doc->flag_updateMarksLabels = true;
 		}
 
 		currItem->itemText.insertMark(mrk);
@@ -10684,8 +10696,15 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 
 		if (UndoManager::undoEnabled())
 		{
-			ScItemsState *is = new ScItemsState(UndoManager::EditMark);
+			ScItemsState* is = NULL;
+			if (mrk->isType(MARKNoteMasterType))
+				is = new ScItemsState(UndoManager::InsertNote);
+			else if (insertExistedMark && ((oldMark.label != mrk->label) || (oldMark.getString() != mrk->getString())))
+				is = new ScItemsState(UndoManager::EditMark);
+			else
+				is = new ScItemsState(UndoManager::InsertMark);
 			is->insertItem("mark", mrk);
+			is->set("ETEA", mrk->label);
 			if (insertExistedMark)
 			{
 				is->set("MARK", QString("insert_existing"));
@@ -10849,8 +10868,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					if (text != oldStr)
 					{
 						mrk->setString(text);
-						if (mrk->getString() != oldStr)
-							docWasChanged = doc->invalidateVariableTextFrames(mrk, true);
+						docWasChanged = true;
 					}
 				}
 				else
@@ -10916,8 +10934,13 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 		}
 		if (UndoManager::undoEnabled())
 		{
-			ScItemsState *is = new ScItemsState(UndoManager::EditMark);
+			ScItemsState* is = NULL;
+			if (newMark || replaceMark)
+				is = new ScItemsState(UndoManager::InsertMark);
+			else
+				is = new ScItemsState(UndoManager::EditMark);
 			is->insertItem("mark", mrk);
+			is->set("ETEA", mrk->label);
 			if (newMark)
 			{
 				is->set("MARK", QString("new"));

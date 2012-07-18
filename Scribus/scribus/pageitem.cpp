@@ -2308,9 +2308,7 @@ QString PageItem::ExpandToken(uint base)
 	{
 		ScText* hl = itemText.item(base);
 		if ((hl->mark != NULL) && !hl->mark->isType(MARKAnchorType) && !hl->mark->isType(MARKIndexType))
-		{
 			chstr = hl->mark->getString();
-		}
 	}
 	return chstr;
 }
@@ -4588,14 +4586,20 @@ void PageItem::resizeUndoAction()
 {
 	if (oldHeight == Height && oldWidth == Width)
 		return;
-	if (UndoManager::undoEnabled())
+	bool doUndo = true;
+	if (isNoteFrame()
+		&& ((asNoteFrame()->isAutoHeight() && asNoteFrame()->isAutoWidth())
+			|| ((oldHeight == Height) && asNoteFrame()->isAutoWidth())
+			|| ((oldWidth == Width) && asNoteFrame()->isAutoHeight())))
+		doUndo = false;
+	if (doUndo && UndoManager::undoEnabled())
 	{
 		SimpleState *ss = new SimpleState(Um::Resize,
                            QString(Um::ResizeFromTo).arg(oldWidth).arg(oldHeight).arg(Width).arg(Height),
                                           Um::IResize);
 		ss->set("OLD_WIDTH", oldWidth);
-		ss->set("OLD_HEIGHT", oldHeight);
 		ss->set("NEW_WIDTH", Width);
+		ss->set("OLD_HEIGHT", oldHeight);
 		ss->set("NEW_HEIGHT", Height);
 		ss->set("OLD_RXPOS", oldXpos);
 		ss->set("OLD_RYPOS", oldYpos);

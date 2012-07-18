@@ -48,6 +48,9 @@ public:
 	//remove note from list
 	void removeNote(TextNote* note) { l_notes.removeOne(note); }
 
+	void restoreDeleteNoteText(SimpleState *state, bool isUndo);
+	void restoreInsertNoteText(SimpleState *state, bool isUndo);
+	
 private:
 	QList<TextNote*> l_notes;
 	NotesSet* m_nset;

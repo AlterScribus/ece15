@@ -1830,6 +1830,18 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						ss->get("NEW_PAGE_SIZE"), ss->getInt("NEW_PAGE_MARGINPRESET"), ss->getBool("OLD_PAGE_MOVEOBJECTS"), ss->getInt("PAGE_NUM"), ss->getInt("NEW_PAGE_TYPE"));
 			}
 		}
+		else if (ss->contains("DELETE_FRAMETEXT"))
+		{
+			PageItem * nF = getItemFromName(ss->get("noteframeName"));
+			Q_ASSERT(nF != NULL);
+			nF->asNoteFrame()->restoreDeleteNoteText(ss, isUndo);
+		}
+		else if (ss->contains("INSERT_FRAMETEXT"))
+		{
+			PageItem * nF = getItemFromName(ss->get("noteframeName"));
+			Q_ASSERT(nF != NULL);
+			nF->asNoteFrame()->restoreInsertNoteText(ss,isUndo);
+		}
 		else if (ss->contains("DELETE_NOTE"))
 		{
 			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
@@ -1868,7 +1880,12 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			if (is)
 			{
 				Mark* mrk = (Mark*) is->getItem("mark");
-				PageItem* currItem = (PageItem*) is->getItem("inItem");
+				PageItem* currItem = NULL;
+				if (is->contains("noteframeName"))
+					currItem = getItemFromName(is->get("noteframeName"));
+				else
+					currItem = (PageItem*) is->getItem("inItem");
+				Q_ASSERT(currItem != NULL);
 				int pos = is->getInt("at");
 				if (isUndo)
 				{
@@ -1929,6 +1946,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							return;
 						}
 						mrk = newMark();
+						is->insertItem("mark", mrk);
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
 						currItem->itemText.insertMark(mrk, pos);
@@ -1967,6 +1985,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							return;
 						}
 						mrk = newMark();
+						is->insertItem("mark", mrk);
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
 						currItem->itemText.insertMark(mrk, pos);
@@ -1983,7 +2002,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setNotePtr(note);
 							note->setMasterMark(mrk);
 							is->insertItem("notePtr", note);
-							updateNotesNums(nSet);
+							//updateNotesNums(nSet);
 						}
 					}
 					else if (is->get("MARK") == "replace")
@@ -2052,8 +2071,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				}
 				if (currItem != NULL)
 					currItem->update();
-				//changed();
-				scMW()->emitUpdateRequest(reqMarksUpdate);
 			}
 		}
 		if (layersUndo)
@@ -15986,17 +16003,13 @@ void ScribusDoc::itemSelection_UnlinkTextFrameWithText( Selection *customSelecti
 		for (uint i = 0; i < selectedItemCount; ++i)
 		{
 			PageItem *currItem = itemSelection->itemAt(i);
-			if (currItem!=NULL)
-			{
-				if (currItem->asTextFrame() && (currItem->nextInChain() != NULL || currItem->prevInChain() != NULL))
+			if (currItem != NULL && currItem->asTextFrame() && (currItem->nextInChain() != NULL || currItem->prevInChain() != NULL))
 					currItem->unlinkWithText(cutText);
-			}
 		}
 		regionsChanged()->update(QRectF());
 		changed();
 		itemSelection->itemAt(0)->emitAllToGUI();
 	}
-
 }
 
 void ScribusDoc::itemSelection_UnlinkTextFrameWithTextCut( Selection *customSelection)
@@ -16093,20 +16106,7 @@ TextNote *ScribusDoc::newNote(NotesSet* NS)
 
 PageItem* ScribusDoc::findMarkItem(Mark* mrk, int &lastItem)
 {
-	//except marks to items, in itemPtr should be item which holds this mark
 	PageItem* item = NULL;
-//	if (!mrk->isType(MARK2ItemType) && (lastItem == -1))
-//	{
-//		item = getItemFromName(mrk->getItemName());
-//		if (item != NULL)
-//		{
-//			if (findMarkCPos(mrk, item) > -1)
-//			{
-//				lastItem = DocItems.indexOf(item);
-//				return item;
-//			}
-//		}
-//	}
 	for (int a = lastItem +1; a < DocItems.count(); ++a)
 	{
 		item = DocItems.at(a);
@@ -16272,10 +16272,7 @@ bool ScribusDoc::invalidateVariableTextFrames(Mark* mrk, bool forceUpdate)
 		found = true;
 		mItem->asTextFrame()->invalidateLayout();
 		if (forceUpdate)
-		{
 			mItem->layout();
-			regionsChanged()->update(mItem->getBoundingRect());
-		}
 		mItem = findMarkItem(mrk, itemNo);
 	}
 	return found;
@@ -16287,7 +16284,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 {
 	if (m_docMarksList.isEmpty())
 	{
-		if (updateNotesMarks && !isLoading())
+		if (!isLoading() && !notesList().isEmpty() && updateNotesMarks)
 			return notesFramesUpdate();
 		return false;
 	}
