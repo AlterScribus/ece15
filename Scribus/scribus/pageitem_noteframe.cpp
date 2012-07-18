@@ -194,6 +194,7 @@ void PageItem_NoteFrame::layout()
 		updateNotesText();
 
 	PageItem_TextFrame::layout();
+	int oldH = Height;
 	if (notesSet()->isAutoNotesHeight())
 	{
 		if (frameOverflows())
@@ -222,8 +223,13 @@ void PageItem_NoteFrame::layout()
 		invalid = true;
 		PageItem_TextFrame::layout();
 	}
-	m_Doc->regionsChanged()->update(getBoundingRect());
+	if (oldH != height())
+	{
+		foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
+			nF->invalid = true;
+	}
 	invalid = false;
+	m_Doc->regionsChanged()->update(getBoundingRect());
 	UndoManager::instance()->setUndoEnabled(true);
 }
 

@@ -2905,8 +2905,8 @@ void PageItem_TextFrame::layout()
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
 		if (notesMap != m_notesFramesMap)
 			updateNotesMarks(notesMap);
-		if (!m_notesFramesMap.isEmpty() && m_Doc->flag_layoutNotesFrames)
-			notesFramesLayout(false);
+		if (!m_notesFramesMap.isEmpty())
+			notesFramesLayout(true);
 		UndoManager::instance()->setUndoEnabled(true);
 	}
 	if (NextBox != NULL) 
@@ -2930,8 +2930,8 @@ NoRoom:
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
 		if (notesMap != m_notesFramesMap)
 			updateNotesMarks(notesMap);
-		if (!m_notesFramesMap.isEmpty() && m_Doc->flag_layoutNotesFrames)
-			notesFramesLayout(false);
+		if (!m_notesFramesMap.isEmpty())
+			notesFramesLayout(true);
 		UndoManager::instance()->setUndoEnabled(true);
 	}
 
@@ -4737,7 +4737,7 @@ bool PageItem_TextFrame::hasNoteFrame(NotesSet *NS, bool inChain)
 			++it;
 		}
 		if (!inChain)
-			item = NULL;
+			break;
 		item = item->nextInChain();
 	}
 	return false;

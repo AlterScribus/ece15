@@ -9948,8 +9948,7 @@ void PageItem::moveWelded(double DX, double DY, PageItem* except)
 		{
 			pIt->setXPos(pIt->xPos() + DX);
 			pIt->setYPos(pIt->yPos() + DY);
-			if (!pIt->isAutoNoteFrame())
-				pIt->update();
+			pIt->update();
 			pIt->moveWelded(DX, DY, this);
 		}
 	}
