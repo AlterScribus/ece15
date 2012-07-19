@@ -1879,17 +1879,17 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			if (is)
 			{
 				Mark* mrk = (Mark*) is->getItem("mark");
+				int pos = is->getInt("at");
 				PageItem* currItem = NULL;
 				if (is->contains("noteframeName"))
 					currItem = getItemFromName(is->get("noteframeName"));
 				else
 					currItem = (PageItem*) is->getItem("inItem");
-				Q_ASSERT(currItem != NULL);
-				int pos = is->getInt("at");
 				if (isUndo)
 				{
 					if (is->get("MARK") == "new")
 					{
+						Q_ASSERT(mrk != NULL);
 						if (mrk->isNoteType())
 						{
 							TextNote* note = (TextNote*) is->getItem("notePtr");
@@ -1902,6 +1902,9 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "replace")
 					{
+						Q_ASSERT(pos >= 0);
+						Q_ASSERT(currItem != NULL);
+						Q_ASSERT(mrk != NULL);
 						currItem->itemText.item(pos)->mark = (Mark*) is->getItem("markOLD");
 						if (is->contains("strtxtOLD"))
 						{
@@ -1913,6 +1916,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "edit")
 					{
+						Q_ASSERT(mrk != NULL);
 						if (is->contains("labelOLD"))
 							mrk->label = is->get("labelOLD");
 						if (is->contains("strtxtOLD"))
@@ -1927,6 +1931,9 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "insert_existing")
 					{
+						Q_ASSERT(pos >= 0);
+						Q_ASSERT(currItem != NULL);
+						Q_ASSERT(mrk != NULL);
 						currItem->itemText.removeChars(pos,1);
 						if (is->contains("strOLD"))
 						{
@@ -1938,16 +1945,12 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "delete")
 					{
-						if (currItem == NULL)
-						{
-							Q_ASSERT(false);
-							qDebug() << "Wrong inItem in undo step for mark";
-							return;
-						}
 						mrk = newMark();
 						is->insertItem("mark", mrk);
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
+						Q_ASSERT(pos >= 0);
+						Q_ASSERT(currItem != NULL);
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strtxt"))
 						{
@@ -1961,11 +1964,29 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "eraseFromText") ////for non-unique marks
 					{
+						Q_ASSERT(pos >= 0);
+						Q_ASSERT(mrk != NULL);
+						Q_ASSERT(currItem != NULL);
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strNew"))
 						{
 							mrk->setString(is->get("strNEW"));
 							invalidateVariableTextFrames(mrk, false);
+						}
+					}
+					else if (is->get("MARK") == "delNonUnique")
+					{
+						//used if deleting non-unique marks by MarksManager
+						mrk = newMark();
+						is->insertItem("mark", mrk);
+						mrk->label = is->get("label");
+						mrk->setType((MarkType) is->getInt("type"));
+						mrk->setString(is->get("strtxt"));
+						for (int i=0; i < is->insertItemPos.count(); ++i)
+						{
+							PageItem* item = (PageItem*) is->insertItemPos[i].first;
+							item->itemText.insertMark(mrk, is->insertItemPos[i].second);
+							item->invalid = true;
 						}
 					}
 					else
@@ -1987,6 +2008,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						is->insertItem("mark", mrk);
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
+						Q_ASSERT(currItem != NULL);
+						Q_ASSERT(pos >= 0);
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strtxt"))
 							mrk->setString(is->get("strtxt"));
@@ -2006,6 +2029,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "replace")
 					{
+						Q_ASSERT(currItem != NULL);
+						Q_ASSERT(pos >= 0);
 						currItem->itemText.item(pos)->mark = (Mark*) is->getItem("mark");
 						if (is->contains("strtxtNEW"))
 						{
@@ -2031,6 +2056,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "insert_existing")
 					{
+						Q_ASSERT(currItem != NULL);
+						Q_ASSERT(pos >= 0);
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strNew"))
 						{
@@ -2042,12 +2069,16 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "eraseFromText") //for non-unique marks
 					{
+						Q_ASSERT(currItem != NULL);
+						Q_ASSERT(pos >= 0);
 						currItem->itemText.removeChars(pos,1);
 					}
 					else if (is->get("MARK") == "delete")
 					{
 						if (!mrk->isUnique())
 						{
+							Q_ASSERT(currItem != NULL);
+							Q_ASSERT(pos >= 0);
 							currItem->itemText.removeChars(pos,1);
 						}
 						else
@@ -2063,11 +2094,17 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 								eraseMark(mrk, true);
 						}
 					}
+					else if (is->get("MARK") == "delNonUnique")
+					{
+						//used if deleting non-unique marks by MarksManager
+						eraseMark(mrk, true, NULL, true);
+					}
 					else
 					{
 						qDebug() << "MARK redo - unhandled " << is->get("MARK");
 					}
 				}
+				scMW()->emitUpdateRequest(reqMarksUpdate);
 				if (currItem != NULL)
 					currItem->update();
 			}
@@ -16196,7 +16233,7 @@ void ScribusDoc::setCursor2MarkPos(Mark *mark)
 	}
 }
 
-bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
+bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 {
 	bool found = false;
 	if (item != NULL)
@@ -16251,12 +16288,63 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item)
 		}
 	}
 	//erase mark from marksMap
-	if (mrk->isUnique())
+	if (mrk->isUnique() || force)
 	{
 		m_docMarksList.removeOne(mrk);
 		delete mrk;
 	}
 	return found;
+}
+
+void ScribusDoc::delMarkUndo(Mark *mrk)
+{ //used by MarksManager
+	if (UndoManager::undoEnabled())
+	{
+		ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+		if (mrk->isUnique())
+		{
+			ims->set("MARK", QString("delete"));
+			PageItem* master = findFirstMarkItem(mrk);
+			ims->insertItem("inItem", master);
+			ims->set("at", findMarkCPos(mrk, master));
+			if (mrk->isType(MARK2MarkType))
+			{
+				QString dName;
+				MarkType dType;
+				mrk->getMark(dName, dType);
+				ims->set("dName", dName);
+				ims->set("dType", (int) dType);
+			}
+			if (mrk->isType(MARK2ItemType))
+				ims->insertItem("itemPtr", mrk->getItemPtr());
+		}
+		else
+		{
+			ims->set("MARK", QString("delNonUnique"));
+			int MPos = -1;
+			int itemIndex = -1;
+			//find all mark insertions
+			PageItem* item = findMarkItem(mrk, itemIndex);
+			while (item != NULL)
+			{
+				int num = 0; //shift of insertion position for undo
+				MPos = findMarkCPos(mrk, item);
+				while (MPos > -1)
+				{
+					ims->insertItemPos.append(QPair<void*, int>((void*) item, MPos - num)); //-num as while undo text will be shorter (without marks)
+					//++num;
+					MPos = findMarkCPos(mrk, item, MPos+1);
+				}
+				item = findMarkItem(mrk, itemIndex);
+			}
+		}
+		ims->insertItem("mark", mrk);
+		ims->set("ETEA", mrk->label);
+		ims->set("label", mrk->label);
+		ims->set("type", (int) mrk->getType());
+		ims->set("strtxt", mrk->getString());
+		undoManager->action(this, ims);
+	}
 }
 
 bool ScribusDoc::invalidateVariableTextFrames(Mark* mrk, bool forceUpdate)
@@ -16497,6 +16585,25 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 		flag_updateEndNotes = true;
 	//ns2Update.append(note->notesSet());
 	delete note;
+}
+
+void ScribusDoc::delNoteUndo(TextNote *note)
+{ //used by MarksManager
+	if (UndoManager::undoEnabled())
+	{
+		ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
+		ims->set("DELETE_NOTE", QString("delete_note"));
+		ims->set("ETEA", note->masterMark()->label);
+		PageItem* master = NULL;
+		int pos = findMarkCPos(note->masterMark(), master);
+		Q_ASSERT(pos > -1);
+		Q_ASSERT(master);
+		ims->insertItem("inItem", master);
+		ims->set("at", pos);
+		ims->set("noteTXT", note->saxedText());
+		ims->insertItem("nset", note->notesSet());
+		undoManager->action(this, ims);
+	}
 }
 
 void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesSet* nSet, int &num)

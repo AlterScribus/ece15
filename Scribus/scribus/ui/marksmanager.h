@@ -18,7 +18,7 @@ public:
 	~MarksManager();
 	void updateListView();
 private:
-	ScribusDoc         *m_doc;
+	ScribusDoc         *m_Doc;
 	PrefsContext       *m_prefs;
 	Mark* getMarkFromListView();
 	void addListItem(MarkType typeMrk, QString typeStr, const QList<Mark *> &marks, int &index);

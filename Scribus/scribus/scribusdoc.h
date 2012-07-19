@@ -1670,7 +1670,8 @@ public:
 	//set cursor in text where given mark will be found
 	void setCursor2MarkPos(Mark* mark);
 	//return false if mark was not found
-	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL);
+	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
+	void delMarkUndo(Mark* mrk);
 	//invalidate all text frames where given mark will found
 	//usefull spacially for varaible text marks after changing its text definition
 	//if forceUpdate then found master frames are relayouted
@@ -1684,6 +1685,7 @@ public:
 	NotesSet* getNS(QString nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note, bool fromText = false);
+	void delNoteUndo(TextNote* note);
 	//delete noteframe
 	void delNoteFrame(PageItem_NoteFrame *nF, bool force=false);
 	//renumber notes for given notes set
@@ -1717,12 +1719,13 @@ public:
 	int findMarkCPos(Mark* mrk, PageItem* &item, int Start = 0);
 	QList<PageItem_NoteFrame*> m_docEndNotesFramesChanged;
 
+	//finds item which holds given mark, start searching from next to lastItem index in DocItems
+	PageItem* findMarkItem(Mark* mrk, int &lastItem);
+	
 private:
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
 	NotesInFrameMap m_docNotesInFrameMap;
 
-	//finds item which holds given mark, start searching from next to lastItem index in DocItems
-	PageItem* findMarkItem(Mark* mrk, int &lastItem);
 	PageItem* findFirstMarkItem(Mark* mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
 
 	//search for endnotesframe for given notes set and item holding master mark or section number

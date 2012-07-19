@@ -28,9 +28,10 @@ for which a new license (GPL+exception) is in place.
 #define UNDOSTATE_H
 
 #include <QMap>
+#include <QPair>
 #include <QPixmap>
 #include <QVariant>
-//#include <QList>
+#include <QList>
 
 #include "scribusapi.h"
 #include "undoobject.h"
@@ -308,7 +309,8 @@ public:
 	: SimpleState(name, description, pixmap) {}
 	~ScItemsState() {}
 	void insertItem(QString itemname, void * item) { pointerMap.insert(itemname, item); }
-	void* getItem(QString itemname) const { return pointerMap.value(itemname); }
+	void* getItem(QString itemname) const { if (pointerMap.contains(itemname)) return pointerMap.value(itemname); else return NULL;}
+	QList< QPair<void*, int> > insertItemPos;
 private:
 	QMap<QString,void*> pointerMap;
 };

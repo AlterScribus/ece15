@@ -1669,19 +1669,9 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					if (currItem->isAutoFrame())
 						currItem->asNoteFrame()->masterFrame()->update();
 					keyrep=kr;
-//					if (doc->flag_notesChanged)
-//						doc->notesFramesUpdate();
 				}
 				//slotDocCh(false);
 				doc->regionsChanged()->update(QRectF());
-//				doc->regionsChanged()->update(currItem->getBoundingRect());
-//				if (currItem->isNoteFrame() && currItem->asNoteFrame()->masterFrame() != NULL)
-//					doc->regionsChanged()->update(currItem->asNoteFrame()->masterFrame()->getBoundingRect());
-//				else if (!currItem->asTextFrame()->notesFramesList().isEmpty())
-//				{
-//					foreach (PageItem* nF, currItem->asTextFrame()->notesFramesList())
-//						doc->regionsChanged()->update(nF->getBoundingRect());
-//				}
 			}
 		}
 	}

@@ -1,12 +1,14 @@
 #include "marksmanager.h"
+#include "notesset.h"
 #include "prefsmanager.h"
 #include "prefsfile.h"
 #include "scribus.h"
 #include "scribusdoc.h"
+#include "undomanager.h"
 #include <QStandardItemModel>
 
 MarksManager::MarksManager(QWidget *parent, const char *name)
-	: ScrPaletteBase(parent, name), m_doc(NULL)
+	: ScrPaletteBase(parent, name), m_Doc(NULL)
 {
 	setupUi(this);
 	listView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -87,39 +89,39 @@ void MarksManager::updateListView()
 {
 	storeColaption();
 	listView->clear();
-	if (m_doc == NULL)
+	if (m_Doc == NULL)
 		return;
-	if (m_doc->marksList().isEmpty())
+	if (m_Doc->marksList().isEmpty())
 		UpdateButton->setEnabled(false);
 	else
 	{
 		UpdateButton->setEnabled(true);
 		int index = 0;
-		addListItem(MARKAnchorType, tr("Anchors"), m_doc->marksList(), index);
-		addListItem(MARKVariableTextType, tr("Variable Text"), m_doc->marksList(), index);
-		addListItem(MARK2ItemType, tr("Marks to Items"), m_doc->marksList(), index);
-		addListItem(MARK2MarkType, tr("Marks to Anchors"), m_doc->marksList(), index);
-		addListItem(MARKNoteMasterType, tr("Notes marks"), m_doc->marksList(), index);
+		addListItem(MARKAnchorType, tr("Anchors"), m_Doc->marksList(), index);
+		addListItem(MARKVariableTextType, tr("Variable Text"), m_Doc->marksList(), index);
+		addListItem(MARK2ItemType, tr("Marks to Items"), m_Doc->marksList(), index);
+		addListItem(MARK2MarkType, tr("Marks to Anchors"), m_Doc->marksList(), index);
+		addListItem(MARKNoteMasterType, tr("Notes marks"), m_Doc->marksList(), index);
 	//	addListItem(MARKIndexType, tr("Index entries");, marks, index);
 		listView->sortByColumn(0);
 	}
 	restoreColaption();
-	m_doc->flag_updateMarksLabels = false;
-	m_doc->flag_updateEndNotes = false;
+	m_Doc->flag_updateMarksLabels = false;
+	m_Doc->flag_updateEndNotes = false;
 }
 
 void MarksManager::setDoc(ScribusDoc *doc)
 {
-	if (m_doc != NULL)
-		disconnect(m_doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+	if (m_Doc != NULL)
+		disconnect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
 	bool hasDoc = (doc != NULL);
-	m_doc = doc;
+	m_Doc = doc;
 	if (hasDoc)
 	{
 		UpdateButton->setEnabled(true);
 		listView->setEnabled(true);
 		updateListView();
-		connect(m_doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+		connect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
 	}
 	else
 		listView->clear();
@@ -133,7 +135,7 @@ void MarksManager::languageChange()
 	UpdateButton->setToolTip(tr("Update all refeence texts for all marks"));
 	EditButton->setText(tr("Edit"));
 	EditButton->setToolTip(tr("Edit selected mark"));
-	if (m_doc != NULL)
+	if (m_Doc != NULL)
 		updateListView();
 }
 
@@ -142,7 +144,7 @@ void MarksManager::handleUpdateRequest(int updateFlags)
 	if (updateFlags & reqMarksUpdate) {
 		updateListView();
 	}
-	m_doc->flag_updateMarksLabels = false;
+	m_Doc->flag_updateMarksLabels = false;
 }
 
 Mark* MarksManager::getMarkFromListView()
@@ -156,21 +158,22 @@ Mark* MarksManager::getMarkFromListView()
 
 void MarksManager::on_UpdateButton_clicked()
 {
-	m_doc->flag_updateMarksLabels = true;
-	m_doc->flag_updateEndNotes = true;
-	if (m_doc->updateMarks(true))
+	m_Doc->flag_updateMarksLabels = true;
+	m_Doc->flag_updateEndNotes = true;
+	m_Doc->setNotesChanged(true);
+	if (m_Doc->updateMarks(true))
 	{
-		m_doc->changed();
-		m_doc->regionsChanged()->update(QRectF());
+		m_Doc->changed();
+		m_Doc->regionsChanged()->update(QRectF());
 		updateListView();
 	}
 
 	//update lables for "lost" marks (marks not in any text)
 	QList<Mark*> notUsed;
-	for (int a=0; a < m_doc->marksList().count(); ++a)
+	for (int a=0; a < m_Doc->marksList().count(); ++a)
 	{
-		Mark* mrk = m_doc->marksList().at(a);
-		if (mrk->isUnique() && !mrk->label.startsWith("UNVISIBLE*") && !m_doc->isMarkUsed(mrk, true))
+		Mark* mrk = m_Doc->marksList().at(a);
+		if (mrk->isUnique() && !mrk->label.startsWith("UNVISIBLE*") && !m_Doc->isMarkUsed(mrk, true))
 			notUsed.append(mrk);
 	}
 	if (!notUsed.isEmpty())
@@ -179,7 +182,7 @@ void MarksManager::on_UpdateButton_clicked()
 		{
 			Mark* mrk = notUsed.at(a);
 			QString l = "UNVISIBLE*" + mrk->label;
-			getUniqueName(l,m_doc->marksLabelsList(mrk->getType()),"_");
+			getUniqueName(l,m_Doc->marksLabelsList(mrk->getType()),"_");
 			mrk->label = l;
 		}
 		updateListView();
@@ -191,10 +194,14 @@ void MarksManager::on_EditButton_clicked()
 	Mark* mrk = getMarkFromListView();
 	if (mrk != NULL)
 	{
-		if (m_doc->scMW()->editMarkDlg(mrk))
+		if (m_Doc->scMW()->editMarkDlg(mrk))
 		{
-			m_doc->changed();
-			m_doc->regionsChanged()->update(QRectF());
+			if (mrk->isType(MARKVariableTextType))
+				m_Doc->flag_updateMarksLabels = true;
+//			else
+//				currItem->invalid = true;
+			m_Doc->changed();
+			m_Doc->regionsChanged()->update(QRectF());
 			updateListView();
 		}
 	}
@@ -205,7 +212,13 @@ void MarksManager::on_DeleteButton_clicked()
 	Mark* mrk = getMarkFromListView();
 	if (mrk != NULL)
 	{
-		m_doc->eraseMark(mrk, true);
+		if (mrk->isType(MARKNoteMasterType))
+			m_Doc->delNoteUndo(mrk->getNotePtr());
+		else
+			m_Doc->delMarkUndo(mrk);
+		m_Doc->eraseMark(mrk, true, NULL, true);
+		m_Doc->changed();
+		m_Doc->regionsChanged()->update(QRectF());
 		updateListView();
 	}
 }
@@ -214,7 +227,7 @@ void MarksManager::on_listView_doubleClicked(const QModelIndex &index)
 {
 	Mark* mrk = getMarkFromListView();
 	if (mrk != NULL)
-		m_doc->setCursor2MarkPos(mrk);
+		m_Doc->setCursor2MarkPos(mrk);
 }
 
 void MarksManager::on_listView_itemSelectionChanged()
