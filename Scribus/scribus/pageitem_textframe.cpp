@@ -2899,7 +2899,7 @@ void PageItem_TextFrame::layout()
 	}
 	MaxChars = itemText.length();
 	invalid = false;
-	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->flag_notesChanged))
+	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
 	{ //if notes are used
 		UndoManager::instance()->setUndoEnabled(false);
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
@@ -2924,7 +2924,7 @@ NoRoom:
 
 	adjustParagraphEndings ();
 
-	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->flag_notesChanged))
+	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
 	{
 		UndoManager::instance()->setUndoEnabled(false);
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
@@ -3622,7 +3622,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				itemText.insertChars(QString(QChar(conv)), true);
 //				Tinput = true;
 				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+				if (isAutoNoteFrame() && m_Doc->notesChanged())
 				{
 					Q_ASSERT(asNoteFrame()->masterFrame());
 					asNoteFrame()->masterFrame()->invalid = true;
@@ -3917,7 +3917,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+				if (isAutoNoteFrame() && m_Doc->notesChanged())
 				{
 					Q_ASSERT(asNoteFrame()->masterFrame());
 					asNoteFrame()->masterFrame()->invalid = true;
@@ -3938,7 +3938,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (itemText.lengthOfSelection() == 0)
 			itemText.select(itemText.cursorPosition(), 1, true);
 		deleteSelectedTextFromFrame();
-		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+		if (isAutoNoteFrame() && m_Doc->notesChanged())
 		{
 			Q_ASSERT(asNoteFrame()->masterFrame());
 			asNoteFrame()->masterFrame()->invalid = true;
@@ -3961,7 +3961,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+				if (isAutoNoteFrame() && m_Doc->notesChanged())
 				{
 					Q_ASSERT(asNoteFrame()->masterFrame());
 					asNoteFrame()->masterFrame()->invalid = true;
@@ -3986,7 +3986,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 //			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
 //			Tinput = false;
 		}
-		if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+		if (isAutoNoteFrame() && m_Doc->notesChanged())
 		{
 			Q_ASSERT(asNoteFrame()->masterFrame());
 			asNoteFrame()->masterFrame()->invalid = true;
@@ -4131,7 +4131,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 			// update layout immediately, we need MaxChars to be correct to detect 
 			// if we need to move to next frame or not
-			if (isAutoNoteFrame() && m_Doc->flag_notesChanged)
+			if (isAutoNoteFrame() && m_Doc->notesChanged())
 			{
 				Q_ASSERT(asNoteFrame()->masterFrame());
 				asNoteFrame()->masterFrame()->invalid = true;
@@ -4143,7 +4143,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		//check if cursor need to jump to next linked frame
 		//but not for notes frames can`t be updated as may disapper during update
-		if (!(isAutoNoteFrame() && m_Doc->flag_notesChanged) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
+		if (!(isAutoNoteFrame() && m_Doc->notesChanged()) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 		{
 			view->Deselect(true);
 			view->Deselect(true);
@@ -4766,7 +4766,7 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 		m_Doc->changed();
 		m_Doc->regionsChanged()->update(QRectF());
 	}
-	m_Doc->flag_notesChanged = true;
+	m_Doc->setNotesChanged(true);
 }
 
 Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
@@ -4897,7 +4897,6 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					h = calculateLineSpacing(itemText.defaultStyle(), this);
 					nF = new PageItem_NoteFrame(note->notesSet(), m_Doc, x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
 					m_Doc->DocItems.append(nF);
-					m_Doc->flag_notesChanged = true;
 					switch (NS->range())
 					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
 						case NSRdocument:
@@ -4918,8 +4917,8 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					//create new footnotes frame for that text frame
 					nF = new PageItem_NoteFrame(this, note->notesSet());
 					m_Doc->DocItems.insert(m_Doc->DocItems.indexOf(this), nF);
-					m_Doc->flag_notesChanged = true;
 				}
+				m_Doc->setNotesChanged(true);
 				//insert in map noteframe with empty list of notes
 				m_notesFramesMap.insert(nF, QList<TextNote*>());
 			}
@@ -4994,7 +4993,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 
 		QList<TextNote*> nList = notesMap.value(nF);
 		bool clear = !nF->notesList().isEmpty();
-		if (nList != nF->notesList() || m_Doc->flag_notesChanged)
+		if (nList != nF->notesList() || m_Doc->notesChanged())
 		{
 			nF->updateNotes(nList, clear);
 			docWasChanged = true;
@@ -5017,7 +5016,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	if (docWasChanged)
 	{
 		m_Doc->flag_restartMarksRenumbering = true;
-		m_Doc->flag_notesChanged = true;
+		m_Doc->setNotesChanged(true);
 	}
 }
 
@@ -5035,7 +5034,6 @@ void PageItem_TextFrame::notesFramesLayout(bool force)
 			nF->invalid = true;
 		nF->layout();
 	}
-	m_Doc->flag_layoutNotesFrames = false;
 }
 
 int PageItem_TextFrame::removeMarksFromText(bool doUndo)
@@ -5070,7 +5068,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 			++num;
 		}
 		if (num > 0)
-			m_Doc->flag_notesChanged = true;
+			m_Doc->setNotesChanged(true);
 	}
 	
 	Mark* mrk = selectedMark(true);

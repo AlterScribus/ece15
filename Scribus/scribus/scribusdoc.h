@@ -1637,6 +1637,9 @@ public:
 private:
 	QList<Mark*> m_docMarksList;
 	QList<TextNote*> m_docNotesList;
+	//flags used for indicating needs of updates
+	bool flag_notesChanged;
+
 public:
 	const QList<Mark*> marksList() { return m_docMarksList; }
 	const QList<TextNote*> notesList() { return m_docNotesList; }
@@ -1648,7 +1651,8 @@ public:
 	QList<PageItem_NoteFrame*> listNotesFrames(NotesSet* NS);
 
 	//flags used for indicating needs of updates
-	bool flag_notesChanged;
+	bool notesChanged() { return flag_notesChanged; }
+	void setNotesChanged(bool on) { flag_notesChanged = on; }
 	bool flag_restartMarksRenumbering;
 	bool flag_updateMarksLabels;
 	bool flag_updateEndNotes;

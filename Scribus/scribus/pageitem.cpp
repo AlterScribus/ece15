@@ -4597,22 +4597,36 @@ void PageItem::resizeUndoAction()
 		SimpleState *ss = new SimpleState(Um::Resize,
                            QString(Um::ResizeFromTo).arg(oldWidth).arg(oldHeight).arg(Width).arg(Height),
                                           Um::IResize);
-		ss->set("OLD_WIDTH", oldWidth);
-		ss->set("NEW_WIDTH", Width);
-		ss->set("OLD_HEIGHT", oldHeight);
-		ss->set("NEW_HEIGHT", Height);
-		ss->set("OLD_RXPOS", oldXpos);
-		ss->set("OLD_RYPOS", oldYpos);
-		ss->set("NEW_RXPOS", Xpos);
-		ss->set("NEW_RYPOS", Ypos);
+		if (!isNoteFrame() || !asNoteFrame()->isAutoWidth())
+		{
+			ss->set("OLD_WIDTH", oldWidth);
+			ss->set("NEW_WIDTH", Width);
+		}
+		if (!isNoteFrame() || !asNoteFrame()->isAutoHeight())
+		{
+			ss->set("OLD_HEIGHT", oldHeight);
+			ss->set("NEW_HEIGHT", Height);
+		}
+		if (!isNoteFrame() || !asNoteFrame()->isAutoWelded())
+		{
+			ss->set("OLD_RXPOS", oldXpos);
+			ss->set("OLD_RYPOS", oldYpos);
+			ss->set("NEW_RXPOS", Xpos);
+			ss->set("NEW_RYPOS", Ypos);
+		}
 		ss->set("OLD_RROT", oldRot);
 		ss->set("NEW_RROT", Rot);
 		undoManager->action(this, ss);
 	}
-	oldXpos = Xpos;
-	oldYpos = Ypos;
-	oldHeight = Height;
-	oldWidth = Width;
+	if (!isNoteFrame() || !asNoteFrame()->isAutoWidth())
+		oldWidth = Width;
+	if (!isNoteFrame() || !asNoteFrame()->isAutoHeight())
+		oldHeight = Height;
+	if (!isNoteFrame() || !asNoteFrame()->isAutoWelded())
+	{
+		oldXpos = Xpos;
+		oldYpos = Ypos;
+	}
 	oldOwnPage = OwnPage;
 	oldRot = Rot;
 }
@@ -4628,14 +4642,23 @@ void PageItem::rotateUndoAction()
                                           Um::IRotate);
 		ss->set("OLD_ROT", oldRot);
 		ss->set("NEW_ROT", Rot);
-		ss->set("OLD_RXPOS", oldXpos);
-		ss->set("OLD_RYPOS", oldYpos);
-		ss->set("NEW_RXPOS", Xpos);
-		ss->set("NEW_RYPOS", Ypos);
-		ss->set("OLD_RWIDTH", oldWidth);
-		ss->set("OLD_RHEIGHT", oldHeight);
-		ss->set("NEW_RWIDTH", Width);
-		ss->set("NEW_RHEIGHT", Height);
+		if (!isNoteFrame() || !asNoteFrame()->isAutoWelded())
+		{
+			ss->set("OLD_RXPOS", oldXpos);
+			ss->set("OLD_RYPOS", oldYpos);
+			ss->set("NEW_RXPOS", Xpos);
+			ss->set("NEW_RYPOS", Ypos);
+		}
+		if (!isNoteFrame() || !asNoteFrame()->isAutoHeight())
+		{
+			ss->set("OLD_RHEIGHT", oldHeight);
+			ss->set("NEW_RHEIGHT", Height);
+		}
+		if (!isNoteFrame() || !asNoteFrame()->isAutoWidth())
+		{
+			ss->set("NEW_RWIDTH", Width);
+			ss->set("OLD_RWIDTH", oldWidth);
+		}
 		undoManager->action(this, ss);
 	}
 	oldRot = Rot;
@@ -4716,7 +4739,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreStartArrowScale(ss, isUndo);
 		else if (ss->contains("IMAGE_ROTATION"))
 			restoreImageRotation(ss, isUndo);
-		else if (ss->contains("OLD_HEIGHT"))
+		else if (ss->contains("OLD_HEIGHT") || ss->contains("OLD_WIDTH"))
 			restoreResize(ss, isUndo);
 		else if (ss->contains("OLD_ROT"))
 			restoreRotate(ss, isUndo);
@@ -9935,10 +9958,9 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
 {
-	
 	if ((DX == 0) && (DY == 0))
 		return;
-
+	//do not save undo for auto-welded notes frames
 	UndoManager::instance()->setUndoEnabled(false);
 	for (int i = 0 ; i < weldList.count(); i++)
 	{

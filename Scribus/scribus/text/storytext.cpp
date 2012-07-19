@@ -2184,7 +2184,7 @@ public:
 					if (nIt != attr.end())
 						note->setSaxedText(Xml_data(nIt));
 					mrk->setNotePtr(note);
-					doc->flag_notesChanged = true;
+					doc->setNotesChanged(true);
 				}
 				doc->newMark(mrk);
 			}

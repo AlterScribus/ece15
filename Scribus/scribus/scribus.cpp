@@ -3402,18 +3402,17 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 //		doc->ns2Update.removeAll(ns);
 //	}
 	
-	if (markersCount != doc->marksList().count() || doc->flag_notesChanged || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+	if (markersCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
 		bool sendUpdateReqest = false;
 		if (markersCount != doc->marksList().count() || doc->flag_updateMarksLabels)
 			sendUpdateReqest = true;
 		markersCount = doc->marksList().count();
-		doc->updateMarks(doc->flag_notesChanged);
-		if (!doc->m_docEndNotesFramesChanged.isEmpty())
-			doc->updateChangedEndNotesFrames();
+		doc->updateMarks(doc->notesChanged());
+		doc->updateChangedEndNotesFrames();
 		if (sendUpdateReqest)
 			emit UpdateRequest(reqMarksUpdate);
-		doc->flag_notesChanged = false;
+		doc->setNotesChanged(false);
 		doc->flag_updateEndNotes = false;
 		doc->flag_updateMarksLabels = false;
 	}
@@ -5479,7 +5478,7 @@ void ScribusMainWindow::slotEditPaste()
 			delete activeTransaction;
 			activeTransaction = NULL;
 		}
-		if (doc->flag_notesChanged)
+		if (doc->notesChanged())
 			doc->notesFramesUpdate();
 		slotDocCh(false);
 	}
@@ -10494,7 +10493,7 @@ void ScribusMainWindow::insertMark(MarkType mType)
 			if (mType == MARKNoteMasterType)
 			{
 				mrk = currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark;
-				doc->flag_notesChanged = true;
+				doc->setNotesChanged(true);
 				if (mrk->getNotePtr()->isEndNote())
 					doc->flag_updateEndNotes = true;
 				doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());

@@ -40,7 +40,7 @@ class SCRIBUS_API Mark
 {
 	friend class ScribusDoc;
 	friend class ScribusMainWindow;
-	//only ScribusDoc can create and delete marks
+	//only ScribusDoc && ScribusMainWindow can create and delete marks
 private:
 	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
 	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), typ(other.typ), data(other.data) {}

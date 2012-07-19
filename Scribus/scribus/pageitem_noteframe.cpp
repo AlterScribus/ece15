@@ -97,8 +97,12 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	itemText.blockSignals(false);
 	
 	double frameHeight = calculateLineSpacing(newStyle, this);
-	Height = frameHeight;
-	Ypos = m_masterFrame->yPos() + m_masterFrame->height();
+	Height = oldHeight = frameHeight;
+	oldWidth = Width;
+	oldRot = Rot;
+	oldXpos = Xpos;
+	Ypos = oldYpos =m_masterFrame->yPos() + m_masterFrame->height();
+
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
 
@@ -272,7 +276,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 {
 	if (nList == l_notes && !clear)
 		return;
-	m_Doc->flag_notesChanged = true;
+	m_Doc->setNotesChanged(true);
 	//itemText.blockSignals(true);
 
 	if (clear)

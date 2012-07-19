@@ -1859,7 +1859,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					PageItem* master = (PageItem*) is->getItem("inItem");
 					master->itemText.insertMark(mrk, is->getInt("at"));
 					master->invalid = true;
-					flag_notesChanged = true;
+					setNotesChanged(true);
 					if (note->isEndNote())
 						flag_updateEndNotes = true;
 				}
@@ -8721,7 +8721,7 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 		else
 		{
 			if (currItem->isNoteFrame())
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			else if (currItem->isTextFrame())
 				updateItemNotesFramesStyles(currItem, newStyle);
 			else 
@@ -8818,7 +8818,7 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 			if (currItem->isTextFrame() && !currItem->isNoteFrame())
 				updateItemNotesFramesStyles(currItem, newStyle);
 			else if (currItem->isNoteFrame())
-				flag_notesChanged = true;
+				setNotesChanged(true);
 		}
 		currItem->invalid = true;
 		if (currItem->asPathText())
@@ -8826,7 +8826,7 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 		if (currItem->isNoteFrame())
 			currItem->asNoteFrame()->updateNotesText();
 		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
-			flag_notesChanged = true;
+			setNotesChanged(true);
 	}
 	if (activeTransaction)
 	{
@@ -8865,7 +8865,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			}
 			currItem->itemText.setDefaultStyle(dstyle);
 			if (currItem->isNoteFrame())
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			else if (currItem->isTextFrame())
 				updateItemNotesFramesStyles(currItem, dstyle);
 		}
@@ -8911,7 +8911,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		if (currItem->isNoteFrame())
 			currItem->asNoteFrame()->updateNotesText();
 		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
-			flag_notesChanged = true;
+			setNotesChanged(true);
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)
@@ -9036,7 +9036,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 			currItem->itemText.applyCharStyle(0, currItem->itemText.length(), newStyle);
 			currItem->invalid = true;
 			if (currItem->isNoteFrame())
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			else if (currItem->isTextFrame())
 				updateItemNotesFramesStyles(currItem, dstyle);
 		}
@@ -9124,7 +9124,7 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 //			if (currItem->asPathText())
 			currItem->itemText.setCharStyle(0, currItem->itemText.length(), newStyle);
 			if (currItem->isNoteFrame())
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			else if (currItem->isTextFrame())
 				updateItemNotesFramesStyles(currItem, dstyle);
 		}
@@ -9236,7 +9236,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 			}
 			currItem->itemText.setDefaultStyle(defStyle);
 			if (currItem->isNoteFrame())
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			else if (currItem->isTextFrame())
 				updateItemNotesFramesStyles(currItem, defStyle);
 		}
@@ -16100,7 +16100,7 @@ TextNote *ScribusDoc::newNote(NotesSet* NS)
 //	if (newNote == NULL)
 	TextNote* newNote = new TextNote(NS);
 	m_docNotesList.append(newNote);
-	flag_notesChanged = true;
+	setNotesChanged(true);
 	return newNote;
 }
 
@@ -16493,7 +16493,7 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 	if (note->noteMark() != NULL)
 		eraseMark(note->noteMark(), false);
 	m_docNotesList.removeOne(note);
-	flag_notesChanged = true;
+	setNotesChanged(true);
 	if (note->isEndNote())
 		flag_updateEndNotes = true;
 	//ns2Update.append(note->notesSet());
@@ -16882,7 +16882,7 @@ void ScribusDoc::updateItemNotesFramesStyles(PageItem* item, ParagraphStyle newS
 					nF->itemText.setDefaultStyle(newStyle);
 					//nF->itemText.applyCharStyle(0, nF->itemText.length(), newStyle.charStyle());
 				}
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			}
 			item = item->nextInChain();
 		}
@@ -16928,7 +16928,7 @@ bool ScribusDoc::notesFramesUpdate()
 	bool docWasChanged = false;
 	int end;
 	do {
-		flag_notesChanged = false;
+		setNotesChanged(false);
 		end = Items->count();
 		for (int i = 0; i < end; ++i)
 		{
@@ -16962,13 +16962,13 @@ bool ScribusDoc::notesFramesUpdate()
 			if (end != Items->count())
 			{
 				end = Items->count();
-				flag_notesChanged = true;
+				setNotesChanged(true);
 			}
-			docWasChanged = docWasChanged || flag_notesChanged;
-			if (flag_notesChanged)
+			docWasChanged = docWasChanged || notesChanged();
+			if (notesChanged())
 				break;
 		}
-	} while (flag_notesChanged);
+	} while (notesChanged());
 
 	if (removeEmptyNF)
 	{
@@ -17161,7 +17161,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool force)
 	}
 	if (Items->removeOne(nF))
 	{
-		flag_notesChanged = true;
+		setNotesChanged(true);
 		delete nF;
 	}
 }

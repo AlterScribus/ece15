@@ -284,11 +284,11 @@ void NotesSetsManager::on_ApplyButton_clicked()
 				}
 				//after changing automation features for notes set notes frames must must be updated
 				if (NS->isAutoWeldNotesFrames() != n.isAutoWeldNotesFrames())
-					m_doc->flag_notesChanged = true; //notesframes welding must be updated
+					m_doc->setNotesChanged(true); //notesframes welding must be updated
 				else if (NS->isAutoNotesWidth() != n.isAutoNotesWidth() && n.isAutoNotesWidth())
-					m_doc->flag_notesChanged = true; //notesframes height must be updated
+					m_doc->setNotesChanged(true); //notesframes height must be updated
 				else if (NS->isAutoNotesHeight() != n.isAutoNotesHeight() && n.isAutoNotesHeight())
-					m_doc->flag_notesChanged = true; //notesframes width must be updated
+					m_doc->setNotesChanged(true); //notesframes width must be updated
 				*NS = n; 
 				updateNS = true;
 				//invalidate all text frames with marks from current changed notes set
@@ -301,7 +301,7 @@ void NotesSetsManager::on_ApplyButton_clicked()
 				if (m_doc->flag_updateEndNotes)
 					m_doc->updateEndnotesFrames(NS);
 				m_doc->updateNotesFramesStyles(NS);
-				if (m_doc->flag_notesChanged)
+				if (m_doc->notesChanged())
 					m_doc->updateNotesFramesSettings(NS);
 			}
 		}

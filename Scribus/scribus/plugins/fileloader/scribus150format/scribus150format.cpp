@@ -3799,7 +3799,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 							mark->setNotePtr(note);
 							note->setMasterMark(mark);
 							note->setSaxedText(old->saxedText());
-							m_Doc->flag_notesChanged = true;
+							m_Doc->setNotesChanged(true);
 						}
 					}
 				}

@@ -100,7 +100,7 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 	}
 
 	//update all marks references and check if that changes anything in doc
-	currDoc->flag_notesChanged = currDoc->updateMarks(true);
+	currDoc->setNotesChanged(currDoc->updateMarks(true));
 
 	QList<PageItem*> allItems;
 	uint masterItemsCount = currDoc->MasterItems.count();

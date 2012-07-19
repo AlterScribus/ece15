@@ -315,7 +315,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		 && (doc->masterItemErrors.count() == 0)
 		 && (doc->docLayerErrors.count() == 0)
 	    //this flag is used by documentchecker as indicator for marks change after updating
-		 && !doc->flag_notesChanged)
+		&& !doc->notesChanged())
 	{
 		QTreeWidgetItem * documentItem = new QTreeWidgetItem( reportDisplay );
 		documentItem->setText(COLUMN_ITEM, tr( "Document" ) );
@@ -333,12 +333,12 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 // 		QTreeWidgetItem * pagep = 0;
 
 		// MARKS ***********************************************
-		if (doc->flag_notesChanged)
+		if (doc->notesChanged())
 		{
 			QTreeWidgetItem * marksItem = new QTreeWidgetItem(reportDisplay);
 			marksItem->setText(0, tr("After Marks update document was changed"));
 			marksItem->setIcon(COLUMN_ITEM, onlyWarning );
-			doc->flag_notesChanged = false;
+			doc->setNotesChanged(false);
 		}
 
 		// LAYERS **********************************************8
