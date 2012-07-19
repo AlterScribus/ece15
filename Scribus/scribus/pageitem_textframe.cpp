@@ -4243,21 +4243,26 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 				if(!added)
 				{
 					UndoObject * undoTarget = this;
-					is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
-					is->set("DELETE_FRAMETEXT", "delete_frametext");
-					is->set("ETEA", QString("delete_frametext"));
-					is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
-					is->set("START", start);
-					is->setItem(lastParent);
+					is = NULL;
+					if (i - lastPos > 0)
+					{
+						is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
+						is->set("DELETE_FRAMETEXT", "delete_frametext");
+						is->set("ETEA", QString("delete_frametext"));
+						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
+						is->set("START", start);
+						is->setItem(lastParent);
+					}
 					//delete selected notes from notes frame
 					if (isNoteFrame())
 					{
-						undoTarget = m_Doc;
-						is->set("noteframeName", getUName());
-						for (int m = notes2DEL.count() -1; m >= 0; --m)
+						undoTarget = m_Doc; //undo target is doc for notes as after deleting last note notesframe can be deleted
+						if (is)
+							is->set("noteframeName", getUName());
+						for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
 						{
 							ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
-							TextNote* note = notes2DEL.at(m).first;
+							TextNote* note = notes2DEL.at(ii).first;
 							Q_ASSERT(note != NULL);
 							ims->set("DELETE_NOTE", QString("delete_note"));
 							ims->set("ETEA", note->masterMark()->label);
@@ -4277,27 +4282,32 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							if (note->textLen > 0)
 							{
 								itemText.deselectAll();
-								itemText.select(notes2DEL.at(m).second + 1, note->textLen);
+								itemText.select(notes2DEL.at(ii).second + 1, note->textLen);
 								removeMarksFromText(true);
 							}
 							m_Doc->deleteNote(note, true);
 							undoManager->action(m_Doc, ims);
 						}
+						if(is)
+						{
+							if (!ts || !lastIsDelete){
+								undoManager->action(undoTarget, is);
+								ts = NULL;
+							}
+							else
+								ts->pushBack(undoTarget,is);
+						}
+						break;
+					}
+					if (is)
+					{
 						if(!ts || !lastIsDelete){
 							undoManager->action(undoTarget, is);
 							ts = NULL;
-							}
+						}
 						else
 							ts->pushBack(undoTarget,is);
-						break;
 					}
-					
-					if(!ts || !lastIsDelete){
-						undoManager->action(undoTarget, is);
-						ts = NULL;
-						}
-					else
-						ts->pushBack(undoTarget,is);
 				}
 				lastPos = i;
 				if (i < itemText.length())
@@ -4829,15 +4839,11 @@ TextNote* PageItem_TextFrame::selectedNoteMark(ScText* &hl, bool onlySelection)
 	{
 		if (itemText.lengthOfSelection() > 0)
 		{
-			//only selection
 			start = itemText.startOfSelection();
 			stop = start + itemText.lengthOfSelection();
 		}
 		else
-		{
-			start = itemText.cursorPosition();
-			stop = start +1;
-		}
+			return NULL;
 	}
 	MarkType typ = isNoteFrame()? MARKNoteFrameType : MARKNoteMasterType;
 	for (int pos = start; pos < stop; ++pos)

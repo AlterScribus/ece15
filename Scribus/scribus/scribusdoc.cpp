@@ -1848,6 +1848,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			if (is)
 			{
 				NotesSet* nSet = (NotesSet*) is->getItem("nset");
+				PageItem* master = (PageItem*) is->getItem("inItem");
 				if (isUndo)
 				{
 					TextNote* note = newNote(nSet);
@@ -1856,7 +1857,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					mrk->setNotePtr(note);
 					note->setMasterMark(mrk);
 					note->setSaxedText(is->get("noteTXT"));
-					PageItem* master = (PageItem*) is->getItem("inItem");
 					master->itemText.insertMark(mrk, is->getInt("at"));
 					master->invalid = true;
 					setNotesChanged(true);
@@ -1865,13 +1865,12 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				}
 				else
 				{
-					PageItem* master = (PageItem*) is->getItem("inItem");
 					TextNote* note = master->itemText.item(is->getInt("at"))->mark->getNotePtr();
 					if (note->isEndNote())
 						flag_updateEndNotes = true;
 					deleteNote(note, true);
 				}
-				//changed();
+				master->update();
 			}
 		}
 		else if (ss->contains("MARK"))
