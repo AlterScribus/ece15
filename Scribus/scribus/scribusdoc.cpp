@@ -17109,6 +17109,9 @@ void ScribusDoc::updateNotesFramesSettings(NotesSet *NS)
 			nF->setWeldPoint(0,0, nF->masterFrame());
 			nF->invalidateLayout();
 		}
+		nF->setSizeVLocked(NS->isAutoNotesHeight());
+		nF->setSizeHLocked(NS->isAutoNotesWidth());
+		nF->setSizeLocked(NS->isAutoNotesHeight() && NS->isAutoNotesWidth());
 		if (NS->isAutoNotesHeight() || NS->isAutoNotesWidth())
 			nF->invalidateLayout();
 	}

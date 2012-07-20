@@ -10,7 +10,7 @@
 #include "scmessagebox.h"
 
 NotesSetsManager::NotesSetsManager(QWidget *parent, const char *name)
-	: ScrPaletteBase(parent, name), m_doc(NULL)
+	: ScrPaletteBase(parent, name), m_Doc(NULL)
 {
 	setupUi(this);
 	QString pname(name);
@@ -77,19 +77,19 @@ void NotesSetsManager::setDoc(ScribusDoc *doc)
 {
 	bool wasSignalsBlocked = signalsBlocked();
 	setBlockSignals(true);
-	if (m_doc != NULL)
-		disconnect(m_doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
-	m_doc = doc;
-	paraStyleCombo->setDoc(m_doc);
-	charStyleCombo->setDoc(m_doc);
-	if (m_doc != NULL)
+	if (m_Doc != NULL)
+		disconnect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+	m_Doc = doc;
+	paraStyleCombo->setDoc(m_Doc);
+	charStyleCombo->setDoc(m_Doc);
+	if (m_Doc != NULL)
 	{
 		updateNSList();
 		NSlistBox->setCurrentIndex(0);
 		readNSet(NSlistBox->currentText());
 		setEnabled(true);
 		ApplyButton->setEnabled(false);
-		connect(m_doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+		connect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
 	}
 	else
 	{
@@ -116,16 +116,16 @@ void NotesSetsManager::updateNSList()
 {
 	bool wasSignalsBlocked = signalsBlocked();
 	NSlistBox->blockSignals(true);
-	if (m_doc == NULL)
+	if (m_Doc == NULL)
 		NSlistBox->setEnabled(false);
 	else
 	{
 		NSlistBox->clear();
 		changesMap.clear();
-		for (int a = 0; a < m_doc->m_docNotesSetsList.count(); ++a)
+		for (int a = 0; a < m_Doc->m_docNotesSetsList.count(); ++a)
 		{
-			NSlistBox->addItem(m_doc->m_docNotesSetsList.at(a)->name());
-			changesMap.insert(m_doc->m_docNotesSetsList.at(a)->name(), *(m_doc->m_docNotesSetsList.at(a)));
+			NSlistBox->addItem(m_Doc->m_docNotesSetsList.at(a)->name());
+			changesMap.insert(m_Doc->m_docNotesSetsList.at(a)->name(), *(m_Doc->m_docNotesSetsList.at(a)));
 		}
 		NSlistBox->setEnabled(true);
 		if (NSlistBox->currentText() != tr("default"))
@@ -205,7 +205,7 @@ void NotesSetsManager::setNSet(NotesSet * NS)
 
 void NotesSetsManager::readNSet(QString nsName)
 {
-	NotesSet * NS = m_doc->getNS(nsName);
+	NotesSet * NS = m_Doc->getNS(nsName);
 	setNSet(NS);
 }
 
@@ -224,12 +224,12 @@ void NotesSetsManager::on_ApplyButton_clicked()
 	{
 		QString newName = NSlistBox->currentText();
 		NotesSet newNS = changesMap.value(newName);
-		if (m_doc->validateNSet(newNS))
+		if (m_Doc->validateNSet(newNS))
 		{
 			addNewNsMode = false;
 			OKButton->setText("OK");
 			ApplyButton->setText(tr("Apply"));
-			m_doc->newNotesSet(newNS);
+			m_Doc->newNotesSet(newNS);
 			updateNSList();
 			NSlistBox->setCurrentIndex(NSlistBox->findText(newNS.name()));
 		}
@@ -238,7 +238,6 @@ void NotesSetsManager::on_ApplyButton_clicked()
 	}
 	else
 	{
-		bool updateNS = false;
 		//remeber current NSet
 		QString currNS = NSlistBox->currentText();
 		NotesSet* NS = NULL;
@@ -247,6 +246,13 @@ void NotesSetsManager::on_ApplyButton_clicked()
 		{
 			NotesSet n = changesMap.value(nsName);
 
+			//validate settings
+			if (!m_Doc->validateNSet(n))
+			{
+				NSlistBox->setCurrentIndex(NSlistBox->findText(n.name()));
+				break;
+			}
+			//rename
 			if (nsName != n.name())
 			{
 				//new name for existing set
@@ -257,61 +263,45 @@ void NotesSetsManager::on_ApplyButton_clicked()
 				//current NSet name change
 				if (currNS == nsName)
 					currNS = newName;
-				NS = m_doc->getNS(nsName);
-				m_doc->renameNotesSet(NS, newName);
-				updateNS = true;
+				NS = m_Doc->getNS(nsName);
+				m_Doc->renameNotesSet(NS, newName);
+				m_Doc->setNotesChanged(true);
 			}
-
-			//validate settings
-			if (!m_doc->validateNSet(n))
-			{
-				NSlistBox->setCurrentIndex(NSlistBox->findText(n.name()));
-				break;
-			}
-
 			//change settings and update marks
-			if (NS == NULL)
-				NS = m_doc->getNS(n.name());
+			NS = m_Doc->getNS(n.name());
+			Q_ASSERT(NS != NULL);
 			if (*NS != n)
 			{
 				//converting foot <--> end notes or changing footnotes range
 				if ((NS->isEndNotes() != n.isEndNotes()) || (NS->isEndNotes() && n.isEndNotes() && NS->range() != n.range()))
 				{
-					foreach (PageItem_NoteFrame* nF, m_doc->listNotesFrames(NS))
-						m_doc->delNoteFrame(nF, true);
+					foreach (PageItem_NoteFrame* nF, m_Doc->listNotesFrames(NS))
+						m_Doc->delNoteFrame(nF, true);
 					if (n.isEndNotes())
-						m_doc->flag_updateEndNotes = true;
+						m_Doc->flag_updateEndNotes = true;
 				}
-				//after changing automation features for notes set notes frames must must be updated
-				if (NS->isAutoWeldNotesFrames() != n.isAutoWeldNotesFrames())
-					m_doc->setNotesChanged(true); //notesframes welding must be updated
-				else if (NS->isAutoNotesWidth() != n.isAutoNotesWidth() && n.isAutoNotesWidth())
-					m_doc->setNotesChanged(true); //notesframes height must be updated
-				else if (NS->isAutoNotesHeight() != n.isAutoNotesHeight() && n.isAutoNotesHeight())
-					m_doc->setNotesChanged(true); //notesframes width must be updated
+				m_Doc->setNotesChanged(true); //notesframes width must be updated
 				*NS = n; 
-				updateNS = true;
 				//invalidate all text frames with marks from current changed notes set
-				foreach (PageItem* item, m_doc->DocItems)
+				foreach (PageItem* item, m_Doc->DocItems)
 				{
 					if (item->isTextFrame() && !item->isNoteFrame() && item->asTextFrame()->hasMark(NS))
 						item->invalid = true;
 				}
-				m_doc->updateNotesNums(NS);
-				if (m_doc->flag_updateEndNotes)
-					m_doc->updateEndnotesFrames(NS);
-				m_doc->updateNotesFramesStyles(NS);
-				if (m_doc->notesChanged())
-					m_doc->updateNotesFramesSettings(NS);
+				m_Doc->updateNotesNums(NS);
+				m_Doc->updateNotesFramesSettings(NS);
+				if (m_Doc->flag_updateEndNotes)
+					m_Doc->updateEndnotesFrames(NS);
+				m_Doc->updateNotesFramesStyles(NS);
 			}
 		}
-		if (updateNS)
+		if (m_Doc->notesChanged())
 		{
 			updateNSList();
-			m_doc->flag_updateMarksLabels = true;
+			m_Doc->flag_updateMarksLabels = true;
 			//m_doc->notesFramesUpdate();
-			m_doc->changed();
-			m_doc->regionsChanged()->update(QRectF());
+			m_Doc->changed();
+			m_Doc->regionsChanged()->update(QRectF());
 		}
 		//restore NSet index
 		readNSet(currNS);
@@ -325,14 +315,14 @@ void NotesSetsManager::on_ApplyButton_clicked()
 void NotesSetsManager::on_DeleteButton_clicked()
 {
 	QString nsName = NSlistBox->currentText();
-	int t = ScMessageBox::warning(m_doc->scMW(), QObject::tr("Attention! Deleting Notes Set"), "<qt>" +
+	int t = ScMessageBox::warning(m_Doc->scMW(), QObject::tr("Attention! Deleting Notes Set"), "<qt>" +
 								 QObject::tr("You are going to delete notes set %1, but you must to know, that it deletes all notes inputs in notes frames and notes marks in text with that notes set.").arg(nsName) + "</qt>",
 								 QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
 	if (t == QMessageBox::Ok)
 	{
-		m_doc->deleteNoteSet(nsName);
-		m_doc->changed();
-		setDoc(m_doc);
+		m_Doc->deleteNoteSet(nsName);
+		m_Doc->changed();
+		setDoc(m_Doc);
 	}
 }
 

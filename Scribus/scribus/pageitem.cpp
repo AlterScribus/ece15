@@ -247,6 +247,8 @@ PageItem::PageItem(const PageItem & other)
 	m_ImageIsFlippedV(other.m_ImageIsFlippedV),
 	m_Locked(other.m_Locked),
 	m_SizeLocked(other.m_SizeLocked),
+	m_SizeHLocked(other.m_SizeHLocked),
+	m_SizeVLocked(other.m_SizeVLocked),
 	textFlowModeVal(other.textFlowModeVal),
 	pageItemAttributes(other.pageItemAttributes),
 	m_PrintEnabled(other.m_PrintEnabled),
@@ -385,6 +387,8 @@ PageItem::PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double 
 	m_ImageIsFlippedV(0),
 	m_Locked(false),
 	m_SizeLocked(false),
+	m_SizeHLocked(false),
+	m_SizeVLocked(false),
 	textFlowModeVal(TextFlowDisabled)
 {
 	Parent = NULL;

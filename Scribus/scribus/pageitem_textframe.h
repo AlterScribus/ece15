@@ -166,7 +166,7 @@ private:
 	Mark* selectedMark(bool onlySelection = true);
 	TextNote* selectedNoteMark(ScText* &hl, bool onlySelection = true);
 	TextNote* selectedNoteMark(bool onlySelection = true);
-	
+protected:
 	// set text frame height to last line of text
 	double maxY;
 	void setMaxY(double y);

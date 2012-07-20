@@ -662,7 +662,11 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 					if(currItem->asLine())
 						qApp->changeOverrideCursor(QCursor(Qt::SizeAllCursor));
 					else if(!currItem->locked() && !currItem->sizeLocked())
+					{
+						if ((!currItem->sizeHLocked() && !currItem->sizeVLocked()) || (currItem->sizeHLocked() && (how == 5 || how == 8))
+							|| (currItem->sizeVLocked() && (how == 6 || how == 7)))
 						setResizeCursor(how, currItem->rotation());
+					}
 				}
 				else if (how == 0)
 					qApp->changeOverrideCursor(QCursor(Qt::OpenHandCursor));
@@ -741,8 +745,13 @@ void CanvasMode_Normal::mousePressEvent(QMouseEvent *m)
 				resizeGesture->mousePressEvent(m);
 				if (resizeGesture->frameHandle() > 0)
 				{
-					m_view->startGesture(resizeGesture);
-					return;
+					int how = (int) resizeGesture->frameHandle();
+					if (!(currItem->sizeHLocked() && !(how == 5 || how == 8))
+						&& !(currItem->sizeVLocked() && !(how == 6 || how == 7)))
+					{
+						m_view->startGesture(resizeGesture);
+						return;
+					}
 				}
 			}
 //#7928			else

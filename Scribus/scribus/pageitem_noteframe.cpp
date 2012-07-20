@@ -8,6 +8,7 @@
 #include "undomanager.h"
 #include "util_text.h"
 
+#include <cmath>
 
 PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
     : PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
@@ -43,13 +44,13 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 	setColumns(1);
 
 	if (m_nset->isAutoNotesHeight())
-		m_SizeHLocked = true;
-	else
-		m_SizeLocked = false;
-	if (m_nset->isAutoNotesWidth())
 		m_SizeVLocked = true;
 	else
 		m_SizeVLocked = false;
+	if (m_nset->isAutoNotesWidth())
+		m_SizeHLocked = true;
+	else
+		m_SizeHLocked = false;
 	if (m_nset->isAutoNotesHeight() && m_nset->isAutoNotesWidth())
 		m_SizeLocked = true;
 	else
@@ -97,6 +98,8 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	itemText.blockSignals(false);
 	
 	double frameHeight = calculateLineSpacing(newStyle, this);
+	if (frameHeight == 0.0 && !m_nset->isAutoNotesHeight())
+		frameHeight = newStyle.charStyle().fontSize()/10;
 	Height = oldHeight = frameHeight;
 	oldWidth = Width;
 	oldRot = Rot;
@@ -114,13 +117,13 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 		setWeldPoint(0,0, m_masterFrame);
 	}
 	if (m_nset->isAutoNotesHeight())
-		m_SizeHLocked = true;
-	else
-		m_SizeLocked = false;
-	if (m_nset->isAutoNotesWidth())
 		m_SizeVLocked = true;
 	else
 		m_SizeVLocked = false;
+	if (m_nset->isAutoNotesWidth())
+		m_SizeHLocked = true;
+	else
+		m_SizeHLocked = false;
 	if (m_nset->isAutoNotesHeight() && m_nset->isAutoNotesWidth())
 		m_SizeLocked = true;
 	else
@@ -161,13 +164,13 @@ void PageItem_NoteFrame::setNS(NotesSet *nSet, PageItem_TextFrame* master)
 	itemText.blockSignals(false);
 
 	if (m_nset->isAutoNotesHeight())
-		m_SizeHLocked = true;
-	else
-		m_SizeLocked = false;
-	if (m_nset->isAutoNotesWidth())
 		m_SizeVLocked = true;
 	else
 		m_SizeVLocked = false;
+	if (m_nset->isAutoNotesWidth())
+		m_SizeHLocked = true;
+	else
+		m_SizeHLocked = false;
 	if (m_nset->isAutoNotesHeight() && m_nset->isAutoNotesWidth())
 		m_SizeLocked = true;
 	else
@@ -215,14 +218,8 @@ void PageItem_NoteFrame::layout()
 					break;
 			}
 		}
-		while ((!frameOverflows()))
-		{
-			--Height;
-			updateClip(false);
-			invalid = true;
-			PageItem_TextFrame::layout();
-		}
-		++Height;
+		double hackValue = 0.5;
+		setHeight(ceil(maxY) + BExtra + hackValue);
 		updateClip();
 		invalid = true;
 		PageItem_TextFrame::layout();
@@ -276,12 +273,14 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 {
 	if (nList == l_notes && !clear)
 		return;
+	UndoManager::instance()->setUndoEnabled(false);
 	m_Doc->setNotesChanged(true);
 	//itemText.blockSignals(true);
 
 	if (clear)
 	{
-		clearContents();
+		itemText.selectAll();
+		deleteSelectedTextFromFrame();
 		l_notes = nList;
 		for (int a=0; a < l_notes.count(); ++a)
 			insertNote(l_notes.at(a));
@@ -303,6 +302,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 			}
 		}
 	}
+	UndoManager::instance()->setUndoEnabled(true);
 	//itemText.blockSignals(false);
 	invalid = true;
 }

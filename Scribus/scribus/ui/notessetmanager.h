@@ -17,7 +17,7 @@ public:
 	~NotesSetsManager();
 
 private:
-	ScribusDoc         *m_doc;
+	ScribusDoc         *m_Doc;
 	PrefsContext       *m_prefs;
 	QMap<QString, NotesSet> changesMap; //<NSname to change, NSet new values>
 	void updateNSList();

@@ -1678,7 +1678,7 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	{
 		if (Doc->appMode == modeRotation)
 			qApp->changeOverrideCursor(QCursor(loadIcon("Rotieren2.png")));
-		else
+		else if (!currItem->sizeHLocked() && !currItem->sizeVLocked())
 		{
 			double rr = fabs(currItem->rotation());
 			if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >=315.0) && (rr <= 360.0)))
@@ -1692,9 +1692,9 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	if (mpo.contains(tx) || mpo.contains(tx2))
 	{
 		double rr = fabs(currItem->rotation());
-		if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >= 315.0) && (rr <= 360.0)))
+		if (!currItem->sizeHLocked() && (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >= 315.0) && (rr <= 360.0))))
 			qApp->changeOverrideCursor(QCursor(Qt::SizeHorCursor));
-		if (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0)))
+		if (!currItem->sizeVLocked() && (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0))))
 			qApp->changeOverrideCursor(QCursor(Qt::SizeVerCursor));
 	}
 	tx = ma.map(QPoint(static_cast<int>(currItem->width())/2, 0));
@@ -1702,9 +1702,9 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	if (mpo.contains(tx) || mpo.contains(tx2))
 	{
 		double rr = fabs(currItem->rotation());
-		if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >= 315.0) && (rr <= 360.0)))
+		if (!currItem->sizeVLocked() && (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >= 315.0) && (rr <= 360.0))))
 			qApp->changeOverrideCursor(QCursor(Qt::SizeVerCursor));
-		if (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0)))
+		if (!currItem->sizeHLocked() && (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0))))
 			qApp->changeOverrideCursor(QCursor(Qt::SizeHorCursor));
 	}
 	tx = ma.map(QPoint(static_cast<int>(currItem->width()), static_cast<int>(currItem->height())));
@@ -1713,7 +1713,7 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	{
 		if (Doc->appMode == modeRotation)
 			qApp->changeOverrideCursor(QCursor(loadIcon("Rotieren2.png")));
-		else
+		else if (!currItem->sizeHLocked() && ! currItem->sizeVLocked())
 		{
 			double rr = fabs(currItem->rotation());
 			if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) ||

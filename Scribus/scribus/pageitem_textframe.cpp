@@ -4866,6 +4866,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 	NotesInFrameMap notesMap; //= m_notesFramesMap;
 	QMap<int, Mark*>::Iterator it = noteMarksPosMap.begin();
 	QMap<int, Mark*>::Iterator end = noteMarksPosMap.end();
+	PageItem* lastItem = this;
 	while (it != end)
 	{
 		if (it.key() <= lastInFrame())
@@ -4922,7 +4923,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 				{
 					//create new footnotes frame for that text frame
 					nF = new PageItem_NoteFrame(this, note->notesSet());
-					m_Doc->DocItems.insert(m_Doc->DocItems.indexOf(this), nF);
+					m_Doc->DocItems.insert(m_Doc->DocItems.indexOf(lastItem), nF);
 				}
 				m_Doc->setNotesChanged(true);
 				//insert in map noteframe with empty list of notes
@@ -4935,6 +4936,8 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 				nList.append(note);
 				notesMap.insert(nF, nList);
 			}
+			if (!nF->isEndNotesFrame())
+				lastItem = nF;
 		}
 		else
 			break;
