@@ -1687,7 +1687,7 @@ public:
 	void deleteNote(TextNote* note, bool fromText = false);
 	void delNoteUndo(TextNote* note);
 	//delete noteframe
-	void delNoteFrame(PageItem_NoteFrame *nF, bool force=false);
+	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true);
 	//renumber notes for given notes set
 	//return true if doc needs update after changing numbers of notes
 	bool updateNotesNums(NotesSet* nSet);

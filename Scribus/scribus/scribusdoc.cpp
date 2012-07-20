@@ -16174,7 +16174,7 @@ int ScribusDoc::findMarkCPos(Mark* mrk, PageItem* &currItem, int Start)
 	if (Start < currItem->firstInFrame())
 		Start = currItem->firstInFrame();
 
-	for (int i = Start; i <= currItem->lastInFrame(); ++i)
+	for (int i = Start; i < currItem->itemText.length(); ++i)
 	{
 		ScText* hl = currItem->itemText.item(i);
 		if (hl->hasMark(mrk))
@@ -16236,37 +16236,36 @@ void ScribusDoc::setCursor2MarkPos(Mark *mark)
 bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 {
 	bool found = false;
-	if (item != NULL)
+	if (fromText)
 	{
-		int MPos = findMarkCPos(mrk, item);
-		while (MPos > -1)
+		if (item != NULL)
 		{
-			item->itemText.item(MPos)->mark = NULL;
-			if (fromText)
-				item->itemText.removeChars(MPos,1);
-			found = true;
-			MPos = findMarkCPos(mrk, item);
-		}
-	}
-	else
-	{
-		//find and delete all mark`s apperences in text
-		int MPos = -1;
-		int itemIndex = -1;
-		item = findMarkItem(mrk, itemIndex);
-		while (item != NULL)
-		{
-			MPos = findMarkCPos(mrk, item);
+			int MPos = findMarkCPos(mrk, item);
 			while (MPos > -1)
 			{
-				item->itemText.item(MPos)->mark = NULL;
-				if (fromText)
-					item->itemText.removeChars(MPos,1);
+				item->itemText.removeChars(MPos,1);
+				found = true;
 				MPos = findMarkCPos(mrk, item);
 			}
-			found = true;
-			item->asTextFrame()->invalidateLayout();
+		}
+		else
+		{
+			//find and delete all mark`s apperences in text
+			int MPos = -1;
+			int itemIndex = -1;
 			item = findMarkItem(mrk, itemIndex);
+			while (item != NULL)
+			{
+				MPos = findMarkCPos(mrk, item);
+				while (MPos > -1)
+				{
+					item->itemText.removeChars(MPos,1);
+					MPos = findMarkCPos(mrk, item);
+				}
+				found = true;
+				item->asTextFrame()->invalidateLayout();
+				item = findMarkItem(mrk, itemIndex);
+			}
 		}
 	}
 	//remove mark references
@@ -17199,7 +17198,7 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF)
 		{
 			if ((NS != currNS) && (NS->isEndNotes() && NS->range() == currNS->range()))
 				foreach (PageItem_NoteFrame* NF, listNotesFrames(NS))
-					NF->updateLayout();
+					NF->layout();
 		}
 		m_docNotesInFrameMap.insert(nF, nList);
 	}
@@ -17217,10 +17216,10 @@ void ScribusDoc::updateChangedEndNotesFrames()
 	}
 }
 
-void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool force)
+void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks)
 {
 	Q_ASSERT(nF != NULL);
-	if (nF->itemText.length() > 0)
+	if (nF->itemText.length() > 0 && removeMarks)
 		nF->removeMarksFromText(false);
 		
 	nF->itemText.clear();

@@ -276,7 +276,7 @@ void NotesSetsManager::on_ApplyButton_clicked()
 				if ((NS->isEndNotes() != n.isEndNotes()) || (NS->isEndNotes() && n.isEndNotes() && NS->range() != n.range()))
 				{
 					foreach (PageItem_NoteFrame* nF, m_Doc->listNotesFrames(NS))
-						m_Doc->delNoteFrame(nF, true);
+						m_Doc->delNoteFrame(nF, false);
 					if (n.isEndNotes())
 						m_Doc->flag_updateEndNotes = true;
 				}

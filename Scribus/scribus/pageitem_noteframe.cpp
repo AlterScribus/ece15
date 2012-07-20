@@ -219,15 +219,19 @@ void PageItem_NoteFrame::layout()
 			}
 		}
 		double hackValue = 0.5;
-		setHeight(ceil(maxY) + BExtra + hackValue);
+		Height = ceil(maxY) + BExtra + hackValue;
+		updateConstants();
 		updateClip();
 		invalid = true;
 		PageItem_TextFrame::layout();
 	}
 	if (oldH != height())
 	{
-		foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
-			nF->invalid = true;
+		if (masterFrame() != NULL)
+		{
+			foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
+				nF->invalid = true;
+		}
 	}
 	invalid = false;
 	m_Doc->regionsChanged()->update(getBoundingRect());

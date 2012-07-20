@@ -871,7 +871,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["itemEditWeld"], "Item", false);
 
 	scrMenuMgr->addMenuItem(scrActions["editMark"], "Item", false);
-	scrMenuMgr->addMenuItem(scrActions["itemUpdateMarks"], "Item", false);
+	//scrMenuMgr->addMenuItem(scrActions["itemUpdateMarks"], "Item", false);
 
 	//Insert menu
 	scrMenuMgr->createMenu("Insert", ActionManager::defaultMenuNameEntryTranslated("Insert"));
@@ -2935,7 +2935,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["toolsCopyProperties"]->setEnabled(true);
 		scrActions["toolsEditWithStoryEditor"]->setEnabled(true);
 		scrActions["insertSampleText"]->setEnabled(true);
-		scrActions["itemUpdateMarks"]->setEnabled(currItem->asTextFrame()->hasAnyMark());
+		//scrActions["itemUpdateMarks"]->setEnabled(currItem->asTextFrame()->hasAnyMark());
 		scrMenuMgr->setMenuEnabled("InsertMark",true);
 
 		if ((currItem->nextInChain() != 0) || (currItem->prevInChain() != 0))
