@@ -1107,9 +1107,9 @@ HEADERS += scribus/actionmanager.h \
            scribus/main_win32.cpp \
            scribus/styles/linestyle.attrdefs.cxx \
     scribus/marks.h \
-    scribus/notesset.h \
+    scribus/notesstyles.h \
     scribus/pageitem_noteframe.h \
-    scribus/ui/notessetmanager.h \
+    scribus/ui/notesstyleseditor.h \
     scribus/ui/markvariabletext.h \
     scribus/ui/marksmanager.h \
     scribus/ui/marknote.h \
@@ -1245,7 +1245,7 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
          scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
-    scribus/ui/notessetmanager.ui \
+    scribus/ui/notesstyleseditor.ui \
     scribus/ui/markvariabletext.ui \
     scribus/ui/marksmanager.ui \
     scribus/ui/marknote.ui \
@@ -2146,10 +2146,10 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp \
-    scribus/notesset.cpp \
+    scribus/notesstyles.cpp \
     scribus/pageitem_noteframe.cpp \
     scribus/ui/mark2item.cpp \
-    scribus/ui/notessetmanager.cpp \
+    scribus/ui/notesstyleseditor.cpp \
     scribus/ui/markvariabletext.cpp \
     scribus/ui/marksmanager.cpp \
     scribus/ui/marknote.cpp \

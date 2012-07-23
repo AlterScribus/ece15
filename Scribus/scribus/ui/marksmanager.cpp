@@ -1,5 +1,5 @@
 #include "marksmanager.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "prefsmanager.h"
 #include "prefsfile.h"
 #include "scribus.h"

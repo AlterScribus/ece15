@@ -1,25 +1,25 @@
 #include "marknote.h"
 #include "scribus.h"
 
-MarkNoteDlg::MarkNoteDlg(const QList<NotesSet*>& notessetList, QWidget *parent) :
-	MarkInsertDlg(notessetList, parent)
+MarkNoteDlg::MarkNoteDlg(const QList<NotesStyle*>& notesStylesList, QWidget *parent) :
+	MarkInsertDlg(notesStylesList, parent)
 {
 	setupUi(this);
 
-	for (int i = 0; i < notessetList.count(); i++)
-		ItemList->addItem(notessetList.at(i)->name(), QVariant::fromValue((void*) notessetList.at(i)));
+	for (int i = 0; i < notesStylesList.count(); i++)
+		ItemList->addItem(notesStylesList.at(i)->name(), QVariant::fromValue((void*) notesStylesList.at(i)));
 	setWindowTitle(tr("Insert Foot/Endnote"));
 }
 
-NotesSet* MarkNoteDlg::values()
+NotesStyle* MarkNoteDlg::values()
 {
 	int index = ItemList->currentIndex();
-	return (NotesSet*) ItemList->itemData(index).value<void*>();
+	return (NotesStyle*) ItemList->itemData(index).value<void*>();
 }
 
-void MarkNoteDlg::setValues(NotesSet* defaultSet)
+void MarkNoteDlg::setValues(NotesStyle* defaultStyle)
 {
-	ItemList->setCurrentIndex(ItemList->findText(defaultSet->name()));
+	ItemList->setCurrentIndex(ItemList->findText(defaultStyle->name()));
 }
 
 void MarkNoteDlg::changeEvent(QEvent *e)

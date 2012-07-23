@@ -42,7 +42,7 @@ for which a new license (GPL+exception) is in place.
 #include "colormgmt/sccolormgmtengine.h"
 #include "documentinformation.h"
 #include "marks.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "observable.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
@@ -80,7 +80,7 @@ class UndoTransaction;
 class Serializer;
 class QProgressBar;
 class MarksManager;
-class NotesSet;
+class NotesStyle;
 class TextNote;
 
 struct SCRIBUS_API NodeEditContext : public MassObservable<QPointF>
@@ -1630,8 +1630,8 @@ public:
 	 * master & note mark - master is mark in "master" text, note mark is at begining of note in noteframe
 	 */
 	
-	//return page where endnotesframe should be located depending of notes set range and location of master mark
-	const ScPage* page4EndNotes(NotesSet* NS, PageItem* item);
+	//return page where endnotesframe should be located depending of notes style range and location of master mark
+	const ScPage* page4EndNotes(NotesStyle* NS, PageItem* item);
 
 	//data handling structures
 private:
@@ -1643,12 +1643,12 @@ private:
 public:
 	const QList<Mark*> marksList() { return m_docMarksList; }
 	const QList<TextNote*> notesList() { return m_docNotesList; }
-	QList<NotesSet*> m_docNotesSetsList;
+	QList<NotesStyle*> m_docNotesStylesList;
 	QMap<PageItem_NoteFrame*, rangeItem> m_docEndNotesFramesMap;
-	QList<NotesSet*> ns2Update; //list of notessets to update
+	QList<NotesStyle*> ns2Update; //list of notes styles to update
 
-	//returns list of notesframes for given Notes Set
-	QList<PageItem_NoteFrame*> listNotesFrames(NotesSet* NS);
+	//returns list of notesframes for given Notes Style
+	QList<PageItem_NoteFrame*> listNotesFrames(NotesStyle* NS);
 
 	//flags used for indicating needs of updates
 	bool notesChanged() { return flag_notesChanged; }
@@ -1664,7 +1664,7 @@ public:
 	//return mark definied with gioven label and given type
 	Mark* getMarkDefinied(QString label, MarkType type); //returns mark with label and type (labels are unique only for same type marks)
 	Mark* newMark(Mark* mrk = NULL);
-	TextNote* newNote(NotesSet* NS);
+	TextNote* newNote(NotesStyle* NS);
 	
 	bool isMarkUsed(Mark* mrk, bool visible = false);
 	//set cursor in text where given mark will be found
@@ -1678,35 +1678,35 @@ public:
 	bool invalidateVariableTextFrames(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
 
 	//for foot/endnotes
-	NotesSet* newNotesSet(NotesSet NS);
-	void renameNotesSet(NotesSet* NS, QString newName);
-	//delete whole notes set with its notesframes and notes
-	void deleteNoteSet(QString nsName);
-	NotesSet* getNS(QString nsName);
+	NotesStyle* newNotesStyle(NotesStyle NS);
+	void renameNotesStyle(NotesStyle* NS, QString newName);
+	//delete whole notes style with its notesframes and notes
+	void deleteNotesStyle(QString nsName);
+	NotesStyle* getNS(QString nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note, bool fromText = true);
 	void delNoteUndo(TextNote* note);
 	//delete noteframe
 	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true);
-	//renumber notes for given notes set
+	//renumber notes for given notes style
 	//return true if doc needs update after changing numbers of notes
-	bool updateNotesNums(NotesSet* nSet);
+	bool updateNotesNums(NotesStyle* nStyle);
 	//set new text styles for notes marks
-	void updateNotesFramesStyles(NotesSet* nSet);
-	//check conflicts beetween notesset
-	bool validateNSet(NotesSet NS, QString newName = "");
+	void updateNotesFramesStyles(NotesStyle* nStyle);
+	//check conflicts beetween notes styles
+	bool validateNSet(NotesStyle NS, QString newName = "");
 	//update layout remove empty notesframes
 	bool notesFramesUpdate();
-	//update notesframes after changing automatic features of notesset
-	void updateNotesFramesSettings(NotesSet* NS);
+	//update notesframes after changing automatic features of notes style
+	void updateNotesFramesSettings(NotesStyle* NS);
 
-	//search for endnotesframe for given notes set and item holding master mark
-	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, PageItem_TextFrame* master);
+	//search for endnotesframe for given notes style and item holding master mark
+	PageItem_NoteFrame* endNoteFrame(NotesStyle* nStyle, PageItem_TextFrame* master);
 	//
 	void setEndNoteFrame(PageItem_NoteFrame* nF, void* ptr)   { rangeItem rI={ptr}; m_docEndNotesFramesMap.insert(nF,rI); }
 	void setEndNoteFrame(PageItem_NoteFrame* nF, int section)   { rangeItem rI; rI.sectionIndex = section; m_docEndNotesFramesMap.insert(nF, rI); }
-	//update all endnotesframes content for given notes set
-	void updateEndnotesFrames(NotesSet* nSet = NULL);
+	//update all endnotesframes content for given notes style
+	void updateEndnotesFrames(NotesStyle* nStyle = NULL);
 	//update endnotesframe content
 	void updateEndNotesFrameContent(PageItem_NoteFrame* nF);
 	//insert noteframe into list of changed
@@ -1728,19 +1728,19 @@ private:
 
 	PageItem* findFirstMarkItem(Mark* mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
 
-	//search for endnotesframe for given notes set and item holding master mark or section number
-	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, void* item = NULL);
-	PageItem_NoteFrame* endNoteFrame(NotesSet* nSet, int sectIndex);
+	//search for endnotesframe for given notes style and item holding master mark or section number
+	PageItem_NoteFrame* endNoteFrame(NotesStyle* nStyle, void* item = NULL);
+	PageItem_NoteFrame* endNoteFrame(NotesStyle* nStyle, int sectIndex);
 	//clear list of notes for given notesframe
 	void clearNotesInFrameList(PageItem_NoteFrame* nF) { m_docNotesInFrameMap.insert(nF, QList<TextNote*>()); }
-	//renumber notes with given notes set for given frame starting from number num
-	void updateItemNotesNums(PageItem_TextFrame *frame, NotesSet *nSet, int &num);
+	//renumber notes with given notes style for given frame starting from number num
+	void updateItemNotesNums(PageItem_TextFrame *frame, NotesStyle* nStyle, int &num);
 	//update notesframes text styles
 	void updateItemNotesFramesStyles(PageItem *item, ParagraphStyle newStyle);
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
-	void invalidateNoteFrames(NotesSet* nSet);
+	void invalidateNoteFrames(NotesStyle* nStyle);
 
 public slots:
 	//update strings (page numbers) for marks

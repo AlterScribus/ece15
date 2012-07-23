@@ -11,7 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "ui/missing.h"
 #include "hyphenator.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "pageitem_latexframe.h"
 #include "pageitem_noteframe.h"
 #include "prefsmanager.h"
@@ -384,9 +384,9 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			success = readPattern(m_Doc, reader, fileDir);
 			if (!success) break;
 		}
-		if (tagName == "NotesSets")
+		if (tagName == "NotesStyles")
 		{
-			success = readNotesSets(m_Doc, reader);
+			success = readNotesStyles(m_Doc, reader);
 			if (!success) break;
 		}
 		if (tagName == "NotesFrames")
@@ -878,9 +878,9 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			success = readPattern(m_Doc, reader, fileDir);
 			if (!success) break;
 		}
-		if (tagName == "NotesSets")
+		if (tagName == "NotesStyles")
 		{
-			success = readNotesSets(m_Doc, reader);
+			success = readNotesStyles(m_Doc, reader);
 			if (!success) break;
 		}
 		if (tagName == "NotesFrames")
@@ -1536,9 +1536,9 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			if (!success)
 				break;
 		}
-		if (tagName == "NotesSets")
+		if (tagName == "NotesStyles")
 		{
-			success = readNotesSets(m_Doc, reader);
+			success = readNotesStyles(m_Doc, reader);
 			if (!success) break;
 		}
 		if (tagName == "NotesFrames")
@@ -3140,7 +3140,7 @@ bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 	return !reader.hasError();
 }
 
-bool Scribus150Format::readNotesSets(ScribusDoc* doc, ScXmlStreamReader& reader)
+bool Scribus150Format::readNotesStyles(ScribusDoc* doc, ScXmlStreamReader& reader)
 {
 	QStringRef tagName = reader.name();
 	while(!reader.atEnd() && !reader.hasError())
@@ -3148,12 +3148,12 @@ bool Scribus150Format::readNotesSets(ScribusDoc* doc, ScXmlStreamReader& reader)
 		reader.readNext();
 		if (reader.isEndElement() && reader.name() == tagName)
 			break;
-		//read notes sets
-		if (reader.isStartElement() && reader.name() == "notesSet")
+		//read notes styles
+		if (reader.isStartElement() && reader.name() == "notesStyle")
 		{
 			ScXmlStreamAttributes attrs = reader.scAttributes();
-			NotesSet NS;
-			NS.setName(attrs.valueAsString("Name"));
+			NotesStyle NS;
+			NS.styleName(attrs.valueAsString("Name"));
 			NS.setStart(attrs.valueAsInt("Start"));
 			NS.setEndNotes(attrs.valueAsBool("Endnotes"));
 			QString type = attrs.valueAsString("Type");
@@ -3190,7 +3190,7 @@ bool Scribus150Format::readNotesSets(ScribusDoc* doc, ScXmlStreamReader& reader)
 			if (!name.isEmpty())
 				NS.setNotesParStyle(name);
 
-			m_Doc->newNotesSet(NS);
+			m_Doc->newNotesStyle(NS);
 		}
 	}
 	return !reader.hasError();
@@ -3239,7 +3239,7 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			TextNote* note = m_Doc->newNote(NULL);
 			note->setSaxedText(attrs.valueAsString("Text"));
-			//temporaly insert names of master mark and notesset into maps with note pointer
+			//temporaly insert names of master mark and notes style into maps with note pointer
 			//will be resolved to pointers by updateNames2Ptr() after all will read
 			notesMasterMarks.insert(attrs.valueAsString("Master"), note);
 			notesNSets.insert(note, attrs.valueAsString("NSet"));
@@ -3795,7 +3795,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 						if (t == MARKNoteMasterType)
 						{  //create copy of note
 							TextNote* old = mark->getNotePtr();
-							TextNote* note = m_Doc->newNote(old->notesSet());
+							TextNote* note = m_Doc->newNote(old->notesStyle());
 							mark->setNotePtr(note);
 							note->setMasterMark(mark);
 							note->setSaxedText(old->saxedText());
@@ -6314,7 +6314,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 		for (int i = 0; i < notesFramesData.count(); ++i)
 		{
 			NoteFrameData eF = notesFramesData.at(i);
-			NotesSet* NS = m_Doc->getNS(eF.NSname);
+			NotesStyle* NS = m_Doc->getNS(eF.NSname);
 			if (NS != NULL)
 			{
 				PageItem* item = LinkID.value(eF.myID);
@@ -6388,12 +6388,12 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			TextNote* note = it.key();
 			assert(note != NULL);
 			QString nsLabel = it.value();
-			NotesSet* ns = m_Doc->getNS(nsLabel);
+			NotesStyle* ns = m_Doc->getNS(nsLabel);
 			if (ns != NULL)
-				note->setNotesSet(ns);
-			if (note->notesSet() == NULL)
+				note->setNotesStyle(ns);
+			if (note->notesStyle() == NULL)
 			{
-				qWarning() << "Scribus150Format::updateNames2Ptr()  : cannot find notes set ("<<nsLabel <<") for note - note will be deleted";
+				qWarning() << "Scribus150Format::updateNames2Ptr()  : cannot find notes style ("<<nsLabel <<") for note - note will be deleted";
 				m_Doc->deleteNote(note);
 				continue;
 			}

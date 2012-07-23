@@ -29,8 +29,8 @@ for which a new license (GPL+exception) is in place.
 
 #include "scribusapi.h"
 #include "pageitem.h"
-#include "notesset.h"
 #include "marks.h"
+#include "notesstyles.h"
 
 class PageItem_NoteFrame;
 class ScPainter;
@@ -139,18 +139,17 @@ private slots:
 public:
 	//for footnotes/endnotes
 	bool hasAnyMark() { return ((selectedMark(false) != NULL) || (selectedNoteMark(false) != NULL)); }
-	bool hasMark(NotesSet* NS);
-	bool hasNoteFrame(NotesSet* NS, bool inChain = false);
+	bool hasMark(NotesStyle* NS);
+	bool hasNoteFrame(NotesStyle* NS, bool inChain = false);
 	bool hasNoteFrame(PageItem_NoteFrame* nF) { return m_notesFramesMap.contains(nF); }
-	//PageItem_NoteFrame* itemNoteFrame(NotesSet* NS) const;
 	void delAllNoteFrames(bool doUpdate = false);
 	void delNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
 	void notesFramesLayout(bool force);
 	//removing all marsk from text, returns number of removed marks
 	int removeMarksFromText(bool doUndo);
-	//return note frame for given notes set if current text frame has notes marks with this notes set
-	PageItem_NoteFrame* itemNoteFrame(NotesSet* nSet);
+	//return note frame for given notes style if current text frame has notes marks with this style
+	PageItem_NoteFrame* itemNoteFrame(NotesStyle* nStyle);
 	//list all notes frames for current text frame /with endnotes frames if endnotes marks are in that frame/
 	QList<PageItem_NoteFrame*> notesFramesList() { return m_notesFramesMap.keys(); }
 	//list of notes inserted by current text frame into given noteframe

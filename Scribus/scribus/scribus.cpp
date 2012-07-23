@@ -100,7 +100,7 @@ for which a new license (GPL+exception) is in place.
 #include "hyphenator.h"
 #include "langmgr.h"
 #include "marks.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "pageitem_group.h"
 #include "pageitem_imageframe.h"
 #include "pageitem_latexframe.h"
@@ -184,7 +184,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui_nftdialog.h"
 #include "ui/nftwidget.h"
 #include "ui/nodeeditpalette.h"
-#include "ui/notessetmanager.h"
+#include "ui/notesstyleseditor.h"
 #ifdef HAVE_OSG
 	#include "ui/osgeditor.h"
 #endif
@@ -606,10 +606,10 @@ void ScribusMainWindow::initPalettes()
 	connect( scrActions["editMarks"], SIGNAL(toggled(bool)), marksManager, SLOT(setPaletteShown(bool)) );
 	connect( marksManager, SIGNAL(paletteShown(bool)), scrActions["editMarks"], SLOT(setChecked(bool)));
 	marksManager->installEventFilter(this);
-	// initializing notes set`s manager
-	nsManager = new NotesSetsManager(this, "notessetsManager");
-	connect( scrActions["editNotesSets"], SIGNAL(toggled(bool)), nsManager, SLOT(setPaletteShown(bool)) );
-	connect( nsManager, SIGNAL(paletteShown(bool)), scrActions["editNotesSets"], SLOT(setChecked(bool)));
+	// initializing notes styles manager
+	nsManager = new NotesStylesEditor(this, "notesStylesEditor");
+	connect( scrActions["editNotesStyles"], SIGNAL(toggled(bool)), nsManager, SLOT(setPaletteShown(bool)) );
+	connect( nsManager, SIGNAL(paletteShown(bool)), scrActions["editNotesStyles"], SLOT(setChecked(bool)));
 	nsManager->installEventFilter(this);
 
 //	connect(docCheckerPalette, SIGNAL(selectElement(int, int)), this, SLOT(selectItemsFromOutlines(int, int)));
@@ -750,7 +750,7 @@ void ScribusMainWindow::initMenuBar()
 //	scrMenuMgr->addMenuItem(scrActions["editPatterns"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editStyles"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editMarks"], "Edit", false);
-	scrMenuMgr->addMenuItem(scrActions["editNotesSets"], "Edit", false);
+	scrMenuMgr->addMenuItem(scrActions["editNotesStyles"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editMasterPages"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editJavascripts"], "Edit", false);
 	scrMenuMgr->setMenuEnabled("EditPasteRecent", false);
@@ -1196,7 +1196,7 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 			{
 				scrActions["editMark"]->setEnabled(true);
 				if ((hl->mark->isType(MARKNoteMasterType) || hl->mark->isType(MARKNoteFrameType)) && (hl->mark->getNotePtr() != NULL))
-					nsManager->setNSet(hl->mark->getNotePtr()->notesSet());
+					nsManager->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
 			}
 			else
 				scrActions["editMark"]->setEnabled(false);
@@ -2508,7 +2508,7 @@ void ScribusMainWindow::HaveNewDoc()
 //	scrActions["editGradients"]->setEnabled(true);
  	scrActions["editStyles"]->setEnabled(true);
 	scrActions["editMarks"]->setEnabled(true);
-	scrActions["editNotesSets"]->setEnabled(true);
+	scrActions["editNotesStyles"]->setEnabled(true);
 	scrActions["editMasterPages"]->setEnabled(true);
 	scrActions["editJavascripts"]->setEnabled(true);
 
@@ -3385,13 +3385,6 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		plugin->changedDoc(doc);
 	}
 	static int markersCount; //remember marks count from last call
-//	while (!doc->ns2Update.isEmpty())
-//	{
-//		NotesSet* ns = doc->ns2Update.first();
-//		doc->updateNotesNums(ns);
-//		doc->ns2Update.removeAll(ns);
-//	}
-	
 	if (markersCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
 		bool sendUpdateReqest = false;
@@ -4291,7 +4284,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 	undoManager->setUndoEnabled(true);
 	doc->setModified(false);
-	foreach (NotesSet* NS, doc->m_docNotesSetsList)
+	foreach (NotesStyle* NS, doc->m_docNotesStylesList)
 		doc->updateNotesFramesStyles(NS);
 #ifdef DEBUG_LOAD_TIMES
 	times(&tms2);
@@ -4789,7 +4782,7 @@ bool ScribusMainWindow::DoFileClose()
 //		scrActions["editGradients"]->setEnabled(false);
 		scrActions["editStyles"]->setEnabled(false);
 		scrActions["editMarks"]->setEnabled(false);
-		scrActions["editNotesSets"]->setEnabled(false);
+		scrActions["editNotesStyles"]->setEnabled(false);
 		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["editMasterPages"]->setEnabled(false);
 		scrActions["editJavascripts"]->setEnabled(false);
@@ -10463,16 +10456,16 @@ void ScribusMainWindow::insertMark(MarkType mType)
 		return;
 	if  (doc->appMode != modeEdit)
 		return;
+	UndoTransaction* trans = NULL;
 	PageItem* currItem = doc->m_Selection->itemAt(0);
 	if (currItem->isTextFrame())
 	{
 		if (currItem->HasSel)
 		{
+			if (UndoManager::instance()->undoEnabled())
+				trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
 			//inserting mark replace some selected text
-			//remove from selected text all marks
-			//ask user if any notes will be removed
-//			if (!currItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
-//				return;
+			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 		}
 		if (insertMarkDlg(currItem->asTextFrame(), mType))
 		{
@@ -10492,6 +10485,12 @@ void ScribusMainWindow::insertMark(MarkType mType)
 			//doc->regionsChanged()->update(QRectF());
 			view->updatesOn(true);
 			view->DrawNew();
+		}
+		if (trans)
+		{
+			trans->commit();
+			delete trans;
+			trans = NULL;
 		}
 	}
 }
@@ -10541,6 +10540,75 @@ void ScribusMainWindow::slotUpdateMarks()
 	}
 }
 
+void ScribusMainWindow::slotInsertMarkNote()
+{
+	if (doc->m_docNotesStylesList.count() == 1)
+	{ //fast insert note with the only default notes style avaiable
+		PageItem* currItem = doc->m_Selection->itemAt(0);
+		Q_ASSERT(currItem->isTextFrame() && !currItem->isNoteFrame());
+		UndoTransaction* trans = NULL;
+		if (currItem->HasSel)
+		{
+			if (UndoManager::instance()->undoEnabled())
+				trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
+			//inserting mark replace some selected text
+			currItem->asTextFrame()->deleteSelectedTextFromFrame();
+		}
+		NotesStyle* NStyle = doc->m_docNotesStylesList.at(0);
+		QString label = "NoteMark_" + NStyle->name();
+		if (NStyle->range() == NSRsection)
+			label += " in section " + doc->getSectionNameForPageIndex(currItem->OwnPage) + " page " + QString::number(currItem->OwnPage +1);
+		else if (NStyle->range() == NSRpage)
+			label += " on page " + QString::number(currItem->OwnPage +1);
+		else if (NStyle->range() == NSRstory)
+			label += " in " + currItem->firstInChain()->itemName();
+		else if (NStyle->range() == NSRframe)
+			label += " in frame" + currItem->itemName();
+		if (doc->getMarkDefinied(label + "_1", MARKNoteMasterType) != NULL)
+			getUniqueName(label,doc->marksLabelsList(MARKNoteMasterType), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
+		else
+			label = label + "_1";
+		Mark* mrk = doc->newMark();
+		mrk->label = label;
+		mrk->setType(MARKNoteMasterType);
+		mrk->setNotePtr(doc->newNote(NStyle));
+		mrk->getNotePtr()->setMasterMark(mrk);
+		mrk->setString("");
+		mrk->OwnPage = currItem->OwnPage;
+		currItem->itemText.insertMark(mrk);
+		if (UndoManager::undoEnabled())
+		{
+			ScItemsState* is = new ScItemsState(UndoManager::InsertNote);
+			is->insertItem("mark", mrk);
+			is->set("ETEA", mrk->label);
+			is->set("MARK", QString("new"));
+			is->set("label", mrk->label);
+			is->set("type", (int) mrk->getType());
+			is->set("strtxt", mrk->getString());
+			is->insertItem("notePtr", mrk->getNotePtr());
+			is->insertItem("nset", mrk->getNotePtr()->notesStyle());
+			is->set("at", currItem->itemText.cursorPosition() -1);
+			is->insertItem("inItem", currItem);
+			undoManager->action(doc, is);
+		}
+		currItem->invalidateLayout();
+		currItem->layout();
+		doc->setNotesChanged(true);
+		if (mrk->getNotePtr()->isEndNote())
+			doc->flag_updateEndNotes = true;
+		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
+		doc->changed();
+		if (trans)
+		{
+			trans->commit();
+			delete trans;
+			trans = NULL;
+		}
+	}
+	else
+		insertMark(MARKNoteMasterType);
+}
+
 bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrkType)
 {
 	if (doc->masterPageMode() && (mrkType != MARKVariableTextType))
@@ -10563,7 +10631,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			insertMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->marksList(), NULL, this);
 		break;
 	case MARKNoteMasterType:
-		insertMDialog = (MarkInsertDlg*) new MarkNoteDlg(doc->m_docNotesSetsList, this);
+		insertMDialog = (MarkInsertDlg*) new MarkNoteDlg(doc->m_docNotesStylesList, this);
 		break;
 	case MARKIndexType:
 		break;
@@ -10586,7 +10654,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 		if (currItem != NULL)
 			d.itemName = currItem->itemName();
 		QString label = "", text = "";
-		NotesSet* NSet = NULL;
+		NotesStyle* NStyle = NULL;
 		bool insertExistedMark = false;
 		switch (mrkType)
 		{
@@ -10626,20 +10694,20 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			d.destmarkType = mrkPtr->getType();
 			break;
 		case MARKNoteMasterType:
-			//gets pointer to choosed notes set
-			NSet = insertMDialog->values();
-			if (NSet == NULL)
+			//gets pointer to choosed notes style
+			NStyle = insertMDialog->values();
+			if (NStyle == NULL)
 				return false;
 			
-			d.notePtr = doc->newNote(NSet);
-			label = "NoteMark_" + NSet->name();
-			if (NSet->range() == NSRsection)
+			d.notePtr = doc->newNote(NStyle);
+			label = "NoteMark_" + NStyle->name();
+			if (NStyle->range() == NSRsection)
 				label += " in section " + doc->getSectionNameForPageIndex(currItem->OwnPage) + " page " + QString::number(currItem->OwnPage +1);
-			else if (NSet->range() == NSRpage)
+			else if (NStyle->range() == NSRpage)
 				label += " on page " + QString::number(currItem->OwnPage +1);
-			else if (NSet->range() == NSRstory)
+			else if (NStyle->range() == NSRstory)
 				label += " in " + currItem->firstInChain()->itemName();
-			else if (NSet->range() == NSRframe)
+			else if (NStyle->range() == NSRframe)
 				label += " in frame" + currItem->itemName();
 			break;
 		case MARKIndexType:
@@ -10724,7 +10792,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 				if (mrk->isType(MARKNoteMasterType))
 				{
 					is->insertItem("notePtr", mrk->getNotePtr());
-					is->insertItem("nset", mrk->getNotePtr()->notesSet());
+					is->insertItem("nset", mrk->getNotePtr()->notesStyle());
 				}
 			}
 			is->set("at", currItem->itemText.cursorPosition() -1);

@@ -9674,9 +9674,9 @@ void PageItem::updateClip(bool updateWelded)
 						if (wInf.weldItem->isNoteFrame())
 						{
 							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-							if (noteFrame->notesSet()->isAutoWeldNotesFrames())
+							if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
 							{
-								if (noteFrame->notesSet()->isAutoNotesWidth())
+								if (noteFrame->notesStyle()->isAutoNotesWidth())
 								{
 									if (noteFrame->width() != width())
 									{
@@ -9809,9 +9809,9 @@ void PageItem::updateClip(bool updateWelded)
 					if (wInf.weldItem->isNoteFrame())
 					{
 						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-						if (noteFrame->notesSet()->isAutoWeldNotesFrames())
+						if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
 						{
-							if (noteFrame->notesSet()->isAutoNotesWidth())
+							if (noteFrame->notesStyle()->isAutoNotesWidth())
 							{
 								if (noteFrame->width() != width())
 								{

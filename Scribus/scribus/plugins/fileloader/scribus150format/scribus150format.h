@@ -9,7 +9,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "pluginapi.h"
 #include "loadsaveplugin.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "scfonts.h"
 #include "scribusstructs.h"
 #include "styles/styleset.h"
@@ -127,7 +127,7 @@ class PLUGIN_API Scribus150Format : public LoadSavePlugin
 		bool readSections(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readNotes(ScribusDoc* doc, ScXmlStreamReader& reader);
-		bool readNotesSets(ScribusDoc* doc, ScXmlStreamReader& reader);
+		bool readNotesStyles(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readNotesFrames(ScXmlStreamReader &reader);
 		bool readMarks(ScribusDoc* doc, ScXmlStreamReader& reader);
 
@@ -174,7 +174,7 @@ class PLUGIN_API Scribus150Format : public LoadSavePlugin
 		void writeDocItemAttributes(ScXmlStreamWriter& docu);
 		void writeTOC(ScXmlStreamWriter& docu);
 		void writeMarks(ScXmlStreamWriter & docu);
-		void writeNotesSets(ScXmlStreamWriter & docu);
+		void writeNotesStyles(ScXmlStreamWriter & docu);
 		void writeNotesFrames(ScXmlStreamWriter & docu);
 		void writeNotes(ScXmlStreamWriter & docu);
 		void writePageSets(ScXmlStreamWriter& docu);

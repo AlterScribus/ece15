@@ -96,7 +96,7 @@ ui/marksmanager.ui
   ui/multiprogressdialog.ui
   ui/nftdialog.ui
   ui/nftwidget.ui
-ui/notessetmanager.ui
+ui/notesstyleseditor.ui
   ui/pageitemattributes.ui
   ui/pagepalette_pagesbase.ui
   ui/pagepalette_masterpagesbase.ui
@@ -218,7 +218,7 @@ SET(SCRIBUS_MOC_CLASSES
   menumanager.h
 marks.h
   navigator.h
-notesset.h
+notesstyles.h
   observable.h
   pageitem.h
   pageitem_arc.h
@@ -348,7 +348,7 @@ ui/marksmanager.h
   ui/nftdialog.h
   ui/nftwidget.h
   ui/nodeeditpalette.h
-ui/notessetmanager.h
+ui/notesstyleseditor.h
   ui/oneclick.h
   ui/outlinepalette.h
   ui/pageitemattributes.h
@@ -580,7 +580,7 @@ SET(SCRIBUS_SOURCES
   nftrcreader.cpp
   nftsettings.cpp
   nfttemplate.cpp
-notesset.cpp
+notesstyles.cpp
   pageitem.cpp
   pageitem_arc.cpp
   pageitem_group.cpp
@@ -788,7 +788,7 @@ ui/marksmanager.cpp
   ui/nftdialog.cpp
   ui/nftwidget.cpp
   ui/nodeeditpalette.cpp
-ui/notessetmanager.cpp
+ui/notesstyleseditor.cpp
   ui/oneclick.cpp
   ui/outlinepalette.cpp
   ui/pageitemattributes.cpp

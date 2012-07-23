@@ -1,28 +1,28 @@
-#ifndef NOTESSETMANAGER_H
-#define NOTESSETMANAGER_H
+#ifndef NOTESSTYLESEDITOR_H
+#define NOTESSTYLESEDITOR_H
 
-#include "notesset.h"
+#include "notesstyles.h"
 #include "ui/scrpalettebase.h"
 #include "ui/spalette.h"
-#include "ui_notessetmanager.h"
+#include "ui_notesstyleseditor.h"
 class ScribusDoc;
 class ScribusMainWindow;
 
-class SCRIBUS_API NotesSetsManager : public ScrPaletteBase, private Ui::NotesSetManager
+class SCRIBUS_API NotesStylesEditor : public ScrPaletteBase, private Ui::NotesStylesEditor
 {
 	Q_OBJECT
 
 public:
-	explicit NotesSetsManager(QWidget *parent = 0, const char *name = "notessetsManager");
-	~NotesSetsManager();
+	explicit NotesStylesEditor(QWidget *parent = 0, const char *name = "notesStylesEditor");
+	~NotesStylesEditor();
 
 private:
 	ScribusDoc         *m_Doc;
 	PrefsContext       *m_prefs;
-	QMap<QString, NotesSet> changesMap; //<NSname to change, NSet new values>
+	QMap<QString, NotesStyle> changesMap; //<NSname to change, NSet new values>
 	void updateNSList();
-	void readNSet(QString nsName);
-	void changeNSet();
+	void readNotesStyle(QString nsName);
+	void changeNotesStyle();
 	void setBlockSignals(bool block);
 	bool addNewNsMode;
 
@@ -30,7 +30,7 @@ public slots:
 	void setDoc(ScribusDoc *doc);
 	void handleUpdateRequest(int updateFlags);
 	void languageChange();
-	void setNSet(NotesSet* NS);
+	void setNotesStyle(NotesStyle* NS);
 
 private slots:
 	void on_NSlistBox_currentIndexChanged(const QString &arg1);
@@ -55,4 +55,4 @@ private slots:
 	void on_paraStyleCombo_currentIndexChanged(const int &arg1);
 	void on_charStyleCombo_currentIndexChanged(const int &arg1);
 };
-#endif // NOTESSETMANAGER_H
+#endif // NOTESSTYLESEDITOR_H

@@ -2,7 +2,7 @@
 #define PAGEITEM_NOTEFRAME_H
 
 #include "pageitem_textframe.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "undostate.h"
 
 class PageItem_NoteFrame : public PageItem_TextFrame
@@ -10,14 +10,14 @@ class PageItem_NoteFrame : public PageItem_TextFrame
 		Q_OBJECT
 
 public:
-	PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
+	PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
-	PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nSet);
+	PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle);
 	~PageItem_NoteFrame() { }
 
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }
-	virtual bool isAutoNoteFrame() const { return m_nset->isAutoRemoveEmptyNotesFrames(); }
+	virtual bool isAutoNoteFrame() const { return m_nstyle->isAutoRemoveEmptyNotesFrames(); }
 
 	//overloaded text frame layouting
 	void layout();
@@ -26,9 +26,9 @@ public:
 	bool deleteIt;
 
 	//used while reading SLA file
-	void setNS(NotesSet* nSet, PageItem_TextFrame* master = NULL);
-	//return Notes Set
-	NotesSet* notesSet() { return m_nset; }
+	void setNS(NotesStyle* nStyle, PageItem_TextFrame* master = NULL);
+	//returns Notes Style
+	NotesStyle* notesStyle() { return m_nstyle; }
 
 	//insert notes content into notesframe
 	void updateNotes(QList<TextNote*> nList, bool clear = true);
@@ -37,11 +37,11 @@ public:
 
 	PageItem_TextFrame* masterFrame() { return m_masterFrame; }
 	void setMaster(PageItem* frame) { m_masterFrame = frame->asTextFrame(); }
-	bool isEndNotesFrame() { return m_nset->isEndNotes(); }
-	bool isAutoRemove() { return m_nset->isAutoRemoveEmptyNotesFrames(); }
-	bool isAutoWelded() { return m_nset->isAutoWeldNotesFrames(); }
-	bool isAutoHeight() { return m_nset->isAutoNotesHeight(); }
-	bool isAutoWidth() { return m_nset->isAutoNotesWidth(); }
+	bool isEndNotesFrame() { return m_nstyle->isEndNotes(); }
+	bool isAutoRemove() { return m_nstyle->isAutoRemoveEmptyNotesFrames(); }
+	bool isAutoWelded() { return m_nstyle->isAutoWeldNotesFrames(); }
+	bool isAutoHeight() { return m_nstyle->isAutoNotesHeight(); }
+	bool isAutoWidth() { return m_nstyle->isAutoNotesWidth(); }
 
 	//return list of notes in noteframe
 	QList<TextNote*> notesList() { return l_notes; }
@@ -53,7 +53,7 @@ public:
 	
 private:
 	QList<TextNote*> l_notes;
-	NotesSet* m_nset;
+	NotesStyle* m_nstyle;
 	PageItem_TextFrame *m_masterFrame;
 
 	//insert note at end of text in noteframe

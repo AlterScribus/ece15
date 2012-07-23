@@ -1,5 +1,5 @@
-#ifndef NOTESSET_H
-#define NOTESSET_H
+#ifndef NOTESSTYLES_H
+#define NOTESSTYLES_H
 
 #include <QDebug>
 #include <QObject>
@@ -44,17 +44,15 @@ typedef union
 	PageItem_TextFrame* firstStoryFrame;
 } rangeItem;
 
-class SCRIBUS_API NotesSet
+class SCRIBUS_API NotesStyle
 {
 public:
-	//NotesSet(QString nameStr, NumerationType numType, int start, NumerationRange limit, void *itemPtr, bool setendnote = false);
-	NotesSet();
-	//NotesSet& operator=(const NotesSet& other);
-	~NotesSet();
-	bool operator!=(const NotesSet& n2);
+	NotesStyle();
+	~NotesStyle();
+	bool operator!=(const NotesStyle& n2);
 
 	const QString name() { return nameStr; }
-	void setName(const QString s) { nameStr = s; }
+	void styleName(const QString s) { nameStr = s; }
 	const int start() { return startNum; }
 	void setStart(const int i) { startNum = i; }
 	void setRange(NumerationRange ns) { numRange = ns; }
@@ -68,7 +66,7 @@ public:
 	void setType(const NumerationType type) { numeration.setType(type); }
 	const NumerationType getType() { return numeration.type(); }
 
-	bool isEndNotes() { return m_endNotesSet; }
+	bool isEndNotes() { return m_endNotesStyle; }
 	bool isAutoNotesHeight() { return autoNotesHeight; }
 	void setAutoNotesHeight(const bool set) { autoNotesHeight = set; }
 	bool isAutoNotesWidth() { return autoNotesWidth; }
@@ -83,17 +81,17 @@ public:
 	void setSuperscriptInMaster(const bool set) { superscriptInMaster = set; }
 	const QString marksChStyle() { return marksCharStyle; }
 	void setMarksCharStyle(const QString styleName) { marksCharStyle = styleName; }
-	const QString notesParStyle() { return notesStyle; }
-	void setNotesParStyle(const QString styleName) { notesStyle = styleName; }
+	const QString notesParStyle() { return notesParaStyle; }
+	void setNotesParStyle(const QString styleName) { notesParaStyle = styleName; }
 	
 	void deleteAll();
 	void setEndNotes(bool);
 
 private:
-	QString nameStr;		//unique name of notes set
+	QString nameStr;		//unique name of notes style
 	int startNum;			//numeration starts with that number
 
-	bool m_endNotesSet;		//if not true this is set of footnotes
+	bool m_endNotesStyle;		//if not true this is set of footnotes
 	Numeration numeration;
 	NumerationRange numRange;	//range of numeration for current set
 	QString prefixStr;
@@ -105,7 +103,7 @@ private:
 	bool superscriptInNote;
 	bool superscriptInMaster;
 	QString marksCharStyle;
-	QString notesStyle;
+	QString notesParaStyle;
 };
 
 class SCRIBUS_API TextNote : public QObject
@@ -114,29 +112,29 @@ class SCRIBUS_API TextNote : public QObject
 	friend class ScribusDoc;
 private:
 	//only ScribusDoc can create and delete notes
-	TextNote(NotesSet *nSet) : notesset(nSet), noteSaxedText(""), noteMasterMark(NULL), noteFrameMark(NULL), number(0) { }
+	TextNote(NotesStyle *nSet) : _notesStyle(nSet), _noteSaxedText(""), _noteMasterMark(NULL), _noteFrameMark(NULL), _number(0) { }
 	~TextNote();
 public:
-	void setNotesSet (NotesSet* NS) { notesset = NS; }
-	NotesSet* notesSet() { return notesset; }
-	const int num() { return number; }
-	void setNum(const int x) { number = x; }
-	const QString numString() { return notesSet()->numString(number); }
-	Mark* masterMark() { return noteMasterMark; }
-	void setMasterMark(Mark* MRK) { noteMasterMark = MRK; }
-	Mark* noteMark() { return noteFrameMark; }
-	void setNoteMark(Mark* MRK) { noteFrameMark = MRK; }
-	const QString saxedText() { return noteSaxedText; }
-	void setSaxedText(const QString string) { noteSaxedText = string; }
-	bool isEndNote() { return notesset->isEndNotes(); }
+	void setNotesStyle (NotesStyle* NS) { _notesStyle = NS; }
+	NotesStyle* notesStyle() { return _notesStyle; }
+	const int num() { return _number; }
+	void setNum(const int x) { _number = x; }
+	const QString numString() { return notesStyle()->numString(_number); }
+	Mark* masterMark() { return _noteMasterMark; }
+	void setMasterMark(Mark* MRK) { _noteMasterMark = MRK; }
+	Mark* noteMark() { return _noteFrameMark; }
+	void setNoteMark(Mark* MRK) { _noteFrameMark = MRK; }
+	const QString saxedText() { return _noteSaxedText; }
+	void setSaxedText(const QString string) { _noteSaxedText = string; }
+	bool isEndNote() { return _notesStyle->isEndNotes(); }
 	int textLen;
 
 protected:
-	NotesSet *notesset;
-	QString noteSaxedText;
-	Mark *noteMasterMark;
-	Mark *noteFrameMark;
-	int number;
+	NotesStyle *_notesStyle;
+	QString _noteSaxedText;
+	Mark *_noteMasterMark;
+	Mark *_noteFrameMark;
+	int _number;
 };
 
-#endif // NOTESSET_H
+#endif // NOTESSTYLES_H

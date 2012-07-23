@@ -1,5 +1,5 @@
 #include "mark2item.h"
-#include "notesset.h"
+//#include "notesstyles.h"
 #include "pageitem_noteframe.h"
 #include "scribus.h"
 

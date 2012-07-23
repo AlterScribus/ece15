@@ -243,7 +243,7 @@ void CanvasMode_Normal::mouseDoubleClickEvent(QMouseEvent *m)
 			{
 				m_view->requestMode(modeEdit);
 				m_view->slotSetCurs(m->globalPos().x(), m->globalPos().y());
-				//used for updating Notessets Manager and menu actions for marks
+				//used for updating Notes Styles Editor and menu actions for marks
 				//if cursor is in mark`s place
 				m_ScMW->setTBvals(currItem);
 				//CB ignore the double click and go with a single one

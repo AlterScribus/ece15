@@ -40,7 +40,6 @@ for which a new license (GPL+exception) is in place.
 #include "annotation.h"
 #include "colormgmt/sccolormgmtstructs.h"
 #include "desaxe/saxio.h"
-//#include "notesset.h"
 #include "observable.h"
 #include "pagestructs.h"
 #include "scimage.h"

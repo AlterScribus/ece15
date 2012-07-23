@@ -20,7 +20,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusdoc.h"
 #include "scribusview.h"
 #include "hyphenator.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "pageitem_latexframe.h"
 #ifdef HAVE_OSG
 	#include "pageitem_osgframe.h"
@@ -395,7 +395,7 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	writeDocItemAttributes(docu);
 	writeTOC(docu);
 	writeMarks(docu);
-	writeNotesSets(docu);
+	writeNotesStyles(docu);
 	writeNotesFrames(docu);
 	writeNotes(docu);
 	writePageSets(docu);
@@ -1250,16 +1250,16 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 	docu.writeEndElement();
 }
 
-void Scribus150Format::writeNotesSets(ScXmlStreamWriter & docu)
+void Scribus150Format::writeNotesStyles(ScXmlStreamWriter & docu)
 {
-	//write notes sets
-	docu.writeStartElement("NotesSets");
-	QList<NotesSet*>::Iterator itNS;
-	QList<NotesSet*>::Iterator end = m_Doc->m_docNotesSetsList.end();
-	for (itNS = m_Doc->m_docNotesSetsList.begin(); itNS != end; ++itNS)
+	//write notes styles
+	docu.writeStartElement("NotesStyles");
+	QList<NotesStyle*>::Iterator itNS;
+	QList<NotesStyle*>::Iterator end = m_Doc->m_docNotesStylesList.end();
+	for (itNS = m_Doc->m_docNotesStylesList.begin(); itNS != end; ++itNS)
 	{
-		NotesSet* NS = (*itNS);
-		docu.writeEmptyElement("notesSet");
+		NotesStyle* NS = (*itNS);
+		docu.writeEmptyElement("notesStyle");
 		docu.writeAttribute("Name", NS->name());
 		docu.writeAttribute("Start", NS->start());
 		docu.writeAttribute("Endnotes", NS->isEndNotes());
@@ -1307,13 +1307,13 @@ void Scribus150Format::writeNotesFrames(ScXmlStreamWriter &docu)
 	docu.writeStartElement("NotesFrames");
 
 	QList<PageItem_NoteFrame*> NFList;
-	foreach (NotesSet* NS, m_Doc->m_docNotesSetsList)
+	foreach (NotesStyle* NS, m_Doc->m_docNotesStylesList)
 		NFList.append(m_Doc->listNotesFrames(NS));
 
 	for (int it = 0; it < NFList.count(); ++it)
 	{
 		PageItem_NoteFrame* nF = NFList.at(it);
-		NotesSet* NS = nF->notesSet();
+		NotesStyle* NS = nF->notesStyle();
 		if (NS->isEndNotes())
 		{
 			docu.writeEmptyElement("ENDNOTEFRAME");
@@ -1359,7 +1359,7 @@ void Scribus150Format::writeNotes(ScXmlStreamWriter & docu)
 			continue;
 		docu.writeEmptyElement("Note");
 		docu.writeAttribute("Master", TN->masterMark()->label);
-		docu.writeAttribute("NSet", TN->notesSet()->name());
+		docu.writeAttribute("NSet", TN->notesStyle()->name());
 		docu.writeAttribute("Text", TN->saxedText());
 	}
 	docu.writeEndElement();

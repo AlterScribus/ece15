@@ -36,7 +36,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "hyphenator.h"
 #include "marks.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
 #include "pageitem_textframe.h"
@@ -1363,7 +1363,7 @@ void PageItem_TextFrame::layout()
 	setShadow();
 	int itLen = itemText.length();
 	//fast validate empty frames
-	if (itLen == 0 || firstChar == itLen)
+	if (itLen == 0 || firstInFrame() == itLen)
 	{
 		PageItem* next = this;
 		while (next != NULL)
@@ -1489,9 +1489,9 @@ void PageItem_TextFrame::layout()
 					if (note == NULL)
 						continue;
 					hl->mark->setItemPtr(this);
-					NotesSet* nSet = note->notesSet();
-						Q_ASSERT(nSet != NULL);
-					QString chsName = nSet->marksChStyle();
+					NotesStyle* nStyle = note->notesStyle();
+						Q_ASSERT(nStyle != NULL);
+					QString chsName = nStyle->marksChStyle();
 					CharStyle newStyle(itemText.charStyle(a));
 					if ((chsName != "") && (chsName != tr("No Style")))
 					{
@@ -1506,14 +1506,14 @@ void PageItem_TextFrame::layout()
 						itemText.eraseCharStyle(a, 1, newStyle);
 					if (hl->mark->isType(MARKNoteMasterType))
 					{
-						if (nSet->isSuperscriptInMaster())
+						if (nStyle->isSuperscriptInMaster())
 							hl->setEffects(hl->effects() | ScStyle_Superscript);
 						else
 							hl->setEffects(hl->effects() & ~ScStyle_Superscript);
 					}
 					else
 					{
-						if (nSet->isSuperscriptInNote())
+						if (nStyle->isSuperscriptInNote())
 							hl->setEffects(hl->effects() | ScStyle_Superscript);
 						else
 							hl->setEffects(hl->effects() & ~ScStyle_Superscript);
@@ -4275,10 +4275,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							Q_ASSERT(Cpos > -1);
 							ims->set("at", Cpos);
 							ims->set("noteTXT", note->saxedText());
-							ims->insertItem("nset", note->notesSet());
+							ims->insertItem("nset", note->notesStyle());
 							if (note->isEndNote())
 								m_Doc->flag_updateEndNotes = true;
-							//m_Doc->ns2Update.append(note->notesSet());
 							if (note->textLen > 0)
 							{
 								itemText.deselectAll();
@@ -4691,7 +4690,7 @@ QString PageItem_TextFrame::infoDescription()
 	return QString();
 }
 
-bool PageItem_TextFrame::hasMark(NotesSet *NS)
+bool PageItem_TextFrame::hasMark(NotesStyle *NS)
 {
 	if (isNoteFrame())
 		return false;
@@ -4703,14 +4702,14 @@ bool PageItem_TextFrame::hasMark(NotesSet *NS)
 		if (hl->hasMark())
 		{
 			TextNote* note = hl->mark->getNotePtr();
-			if (note != NULL && (note->notesSet() == NS))
+			if (note != NULL && (note->notesStyle() == NS))
 				return true;
 		}
 	}
 	return false;
 }
 
-bool PageItem_TextFrame::hasNoteFrame(NotesSet *NS, bool inChain)
+bool PageItem_TextFrame::hasNoteFrame(NotesStyle *NS, bool inChain)
 {
 	if (isNoteFrame())
 		return false;
@@ -4742,7 +4741,7 @@ bool PageItem_TextFrame::hasNoteFrame(NotesSet *NS, bool inChain)
 		QMap<PageItem_NoteFrame*, QList<TextNote*> >::iterator end = m_notesFramesMap.end();
 		while (it != end)
 		{
-			if (it.key()->notesSet() == NS)
+			if (it.key()->notesStyle() == NS)
 				return true;
 			++it;
 		}
@@ -4880,11 +4879,11 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 			if (note == NULL)
 			{
 				qWarning() << "note mark without valid note pointer";
-				note = m_Doc->newNote(m_Doc->m_docNotesSetsList.at(0));
+				note = m_Doc->newNote(m_Doc->m_docNotesStylesList.at(0));
 				note->setMasterMark(mark);
 				mark->setNotePtr(note);
 			}
-			NotesSet* NS = note->notesSet();
+			NotesStyle* NS = note->notesStyle();
 			PageItem_NoteFrame* nF = NULL;
 			if (NS->isEndNotes())
 				nF = m_Doc->endNoteFrame(NS, this);
@@ -4902,7 +4901,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
 					w = scP->width() - scP->Margins.Left - scP->Margins.Right;
 					h = calculateLineSpacing(itemText.defaultStyle(), this);
-					nF = new PageItem_NoteFrame(note->notesSet(), m_Doc, x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
+					nF = new PageItem_NoteFrame(note->notesStyle(), m_Doc, x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
 					m_Doc->DocItems.append(nF);
 					switch (NS->range())
 					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
@@ -4917,12 +4916,16 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 						case NSRpage:
 							m_Doc->setEndNoteFrame(nF, (void*) m_Doc->DocPages.at(OwnPage));
 							break;
+						case NSRframe:
+							qDebug() << "Frame range is prohibited for end-notes";
+							Q_ASSERT(false);
+							break;
 					}
 				}
 				else
 				{
 					//create new footnotes frame for that text frame
-					nF = new PageItem_NoteFrame(this, note->notesSet());
+					nF = new PageItem_NoteFrame(this, note->notesStyle());
 					m_Doc->DocItems.insert(m_Doc->DocItems.indexOf(lastItem), nF);
 				}
 				m_Doc->setNotesChanged(true);
@@ -5066,12 +5069,11 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 				ims->insertItem("inItem", master);
 				ims->set("at", pos);
 				ims->set("noteTXT", note->saxedText());
-				ims->insertItem("nset", note->notesSet());
+				ims->insertItem("nset", note->notesStyle());
 				undoManager->action(m_Doc, ims);
 			}
 			if (note->isEndNote())
 				m_Doc->flag_updateEndNotes = true;
-			//m_Doc->ns2Update.append(note->notesSet());
 			m_Doc->deleteNote(note, fromText);
 			note = selectedNoteMark(true);
 			++num;
@@ -5120,10 +5122,10 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	return num;
 }
 
-PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(NotesSet *nSet)
+PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(NotesStyle *nStyle)
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-		if (nF->notesSet() == nSet)
+		if (nF->notesStyle() == nStyle)
 			return nF;
 	return NULL;
 }

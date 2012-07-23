@@ -10,22 +10,22 @@
 
 #include <cmath>
 
-PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
+PageItem_NoteFrame::PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
     : PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
 {
-	m_nset = nSet;
+	m_nstyle = nStyle;
 	m_masterFrame = NULL;
 	itemText.clear();
 
-	AnName = generateUniqueCopyName(nSet->isEndNotes() ? tr("Endnote frame ") + m_nset->name() : tr("Footnote frame ") + m_nset->name(), false);
+	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
 	AutoName = false; //endnotes frame will saved with name
 	setUName(AnName);
 	
 	//set default style for note frame
 	ParagraphStyle newStyle;
-	if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+	if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
 	{
-		if (nSet->isEndNotes())
+		if (nStyle->isEndNotes())
 			//set default doc style
 			newStyle.setParent(m_Doc->paragraphStyles()[0].name());
 		else
@@ -35,7 +35,7 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 		}
 	}
 	else
-		newStyle.setParent(nSet->notesParStyle());
+		newStyle.setParent(nStyle->notesParStyle());
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
@@ -43,15 +43,15 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
 
-	if (m_nset->isAutoNotesHeight())
+	if (m_nstyle->isAutoNotesHeight())
 		m_SizeVLocked = true;
 	else
 		m_SizeVLocked = false;
-	if (m_nset->isAutoNotesWidth())
+	if (m_nstyle->isAutoNotesWidth())
 		m_SizeHLocked = true;
 	else
 		m_SizeHLocked = false;
-	if (m_nset->isAutoNotesHeight() && m_nset->isAutoNotesWidth())
+	if (m_nstyle->isAutoNotesHeight() && m_nstyle->isAutoNotesWidth())
 		m_SizeLocked = true;
 	else
 		m_SizeLocked = false;
@@ -62,27 +62,27 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesSet *nSet, ScribusDoc *doc, double x
 PageItem_NoteFrame::PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
     : PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
 {
-	m_nset = NULL;
+	m_nstyle = NULL;
 	m_masterFrame = NULL;
 	textFlowModeVal = TextFlowUsesFrameShape;
 	deleteIt = false;
 	l_notes.empty();
 }
 
-PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nSet) : PageItem_TextFrame(inFrame->doc(),inFrame->xPos(), inFrame->yPos(),inFrame->width(), inFrame->height(),inFrame->lineWidth(), inFrame->fillColor(), inFrame->lineColor())
+PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle) : PageItem_TextFrame(inFrame->doc(),inFrame->xPos(), inFrame->yPos(),inFrame->width(), inFrame->height(),inFrame->lineWidth(), inFrame->fillColor(), inFrame->lineColor())
 {
-	m_nset = nSet;
+	m_nstyle = nStyle;
 	m_masterFrame = inFrame;
 
-	AnName = generateUniqueCopyName(nSet->isEndNotes() ? tr("Endnote frame ") + m_nset->name() : tr("Footnote frame ") + m_nset->name(), false);
+	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
 	AutoName = false;
 	setUName(AnName);
 
 	//set default style for note frame
 	ParagraphStyle newStyle;
-	if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+	if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
 	{
-		if (nSet->isEndNotes())
+		if (nStyle->isEndNotes())
 			//set default doc style
 			newStyle.setParent(m_Doc->paragraphStyles()[0].name());
 		else
@@ -92,13 +92,13 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 		}
 	}
 	else
-		newStyle.setParent(nSet->notesParStyle());
+		newStyle.setParent(nStyle->notesParStyle());
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
 	
 	double frameHeight = calculateLineSpacing(newStyle, this);
-	if (frameHeight == 0.0 && !m_nset->isAutoNotesHeight())
+	if (frameHeight == 0.0 && !m_nstyle->isAutoNotesHeight())
 		frameHeight = newStyle.charStyle().fontSize()/10;
 	Height = oldHeight = frameHeight;
 	oldWidth = Width;
@@ -109,22 +109,22 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
 
-	if (m_nset->isAutoWeldNotesFrames() && (m_masterFrame != NULL))
+	if (m_nstyle->isAutoWeldNotesFrames() && (m_masterFrame != NULL))
 	{
 		addWelded(m_masterFrame);
 		m_masterFrame->addWelded(this);
 		m_masterFrame->setWeldPoint(0, m_masterFrame->height(), this);
 		setWeldPoint(0,0, m_masterFrame);
 	}
-	if (m_nset->isAutoNotesHeight())
+	if (m_nstyle->isAutoNotesHeight())
 		m_SizeVLocked = true;
 	else
 		m_SizeVLocked = false;
-	if (m_nset->isAutoNotesWidth())
+	if (m_nstyle->isAutoNotesWidth())
 		m_SizeHLocked = true;
 	else
 		m_SizeHLocked = false;
-	if (m_nset->isAutoNotesHeight() && m_nset->isAutoNotesWidth())
+	if (m_nstyle->isAutoNotesHeight() && m_nstyle->isAutoNotesWidth())
 		m_SizeLocked = true;
 	else
 		m_SizeLocked = false;
@@ -132,21 +132,21 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesSet *nS
 	l_notes.empty();
 }
 
-void PageItem_NoteFrame::setNS(NotesSet *nSet, PageItem_TextFrame* master)
+void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
 {
-	m_nset = nSet;
+	m_nstyle = nStyle;
 	if (master != NULL)
 		m_masterFrame = master;
 	itemText.clear();
 
-	AnName = generateUniqueCopyName(m_nset->isEndNotes() ? "Endnote frame " + m_nset->name() : "Footnote frame " + m_nset->name(), false);
+	AnName = generateUniqueCopyName(m_nstyle->isEndNotes() ? "Endnote frame " + m_nstyle->name() : "Footnote frame " + m_nstyle->name(), false);
 	setUName(AnName);
 	
 	//set default style for note frame
 	ParagraphStyle newStyle;
-	if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+	if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
 	{
-		if (nSet->isEndNotes() || (m_masterFrame == NULL))
+		if (nStyle->isEndNotes() || (m_masterFrame == NULL))
 		{
 			//set default doc style
 			newStyle.setParent(m_Doc->paragraphStyles()[0].name());
@@ -158,20 +158,20 @@ void PageItem_NoteFrame::setNS(NotesSet *nSet, PageItem_TextFrame* master)
 		}
 	}
 	else
-		newStyle.setParent(nSet->notesParStyle());
+		newStyle.setParent(nStyle->notesParStyle());
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
 
-	if (m_nset->isAutoNotesHeight())
+	if (m_nstyle->isAutoNotesHeight())
 		m_SizeVLocked = true;
 	else
 		m_SizeVLocked = false;
-	if (m_nset->isAutoNotesWidth())
+	if (m_nstyle->isAutoNotesWidth())
 		m_SizeHLocked = true;
 	else
 		m_SizeHLocked = false;
-	if (m_nset->isAutoNotesHeight() && m_nset->isAutoNotesWidth())
+	if (m_nstyle->isAutoNotesHeight() && m_nstyle->isAutoNotesWidth())
 		m_SizeLocked = true;
 	else
 		m_SizeLocked = false;
@@ -191,7 +191,7 @@ void PageItem_NoteFrame::layout()
 	//while layouting notes frames undo should be disabled
 	UndoManager::instance()->setUndoEnabled(false);
 
-	if (m_nset->isAutoNotesWidth() && (Width != m_masterFrame->width()))
+	if (m_nstyle->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
 		Width = m_masterFrame->width();
 		updateClip();
@@ -202,7 +202,7 @@ void PageItem_NoteFrame::layout()
 
 	PageItem_TextFrame::layout();
 	int oldH = Height;
-	if (notesSet()->isAutoNotesHeight())
+	if (notesStyle()->isAutoNotesHeight())
 	{
 		if (frameOverflows())
 		{
@@ -245,14 +245,14 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 	{
 		mrk = m_Doc->newMark();
 		mrk->setType(MARKNoteFrameType);
-		QString label = "NoteFrameMark_" + notesSet()->name();
-		if (notesSet()->range() == NSRsection)
+		QString label = "NoteFrameMark_" + notesStyle()->name();
+		if (notesStyle()->range() == NSRsection)
 			label += " in section " + m_Doc->getSectionNameForPageIndex(note->masterMark()->OwnPage) + " page " + QString::number(note->masterMark()->OwnPage +1);
-		else if (notesSet()->range() == NSRpage)
+		else if (notesStyle()->range() == NSRpage)
 			label += " on page " + QString::number(note->masterMark()->OwnPage +1);
-		else if (notesSet()->range() == NSRstory)
+		else if (notesStyle()->range() == NSRstory)
 			label += " in " + note->masterMark()->getItemPtr()->firstInChain()->itemName();
-		else if (notesSet()->range() == NSRframe)
+		else if (notesStyle()->range() == NSRframe)
 			label += " in frame " + note->masterMark()->getItemName();
 		mrk->label = label + "_" + note->numString();
 		mrk->setNotePtr(note);
@@ -260,7 +260,7 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 		note->setNoteMark(mrk);
 	}
 	mrk->setItemPtr(this);
-	mrk->setString(notesSet()->prefix() + note->numString() + note->notesSet()->suffix());
+	mrk->setString(notesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
 
 	StoryText story;
 	if (!note->saxedText().isEmpty())

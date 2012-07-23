@@ -242,12 +242,12 @@ void ActionManager::initEditMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="editMarks";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-	name="editNotesSets";
+	name="editNotesStyles";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 
 	(*scrActions)["editStyles"]->setToggleAction(true);
 	(*scrActions)["editMarks"]->setToggleAction(true);
-	(*scrActions)["editNotesSets"]->setToggleAction(true);
+	(*scrActions)["editNotesStyles"]->setToggleAction(true);
 
 	connect( (*scrActions)["editUndoAction"], SIGNAL(triggeredData(int)) , undoManager, SLOT(undo(int)) );
 	connect( (*scrActions)["editRedoAction"], SIGNAL(triggeredData(int)) , undoManager, SLOT(redo(int)) );
@@ -1451,7 +1451,7 @@ void ActionManager::languageChange()
 //	(*scrActions)["editGradients"]->setTexts( tr("Gradients..."));
 	(*scrActions)["editStyles"]->setTexts( tr("S&tyles..."));
 	(*scrActions)["editMarks"]->setTexts( tr("Marks..."));
-	(*scrActions)["editNotesSets"]->setTexts( tr("Notes Sets..."));
+	(*scrActions)["editNotesStyles"]->setTexts( tr("Notes Styles..."));
 	(*scrActions)["editMasterPages"]->setTexts( tr("&Master Pages..."));
 	(*scrActions)["editJavascripts"]->setTexts( tr("&JavaScripts..."));
 
@@ -1947,7 +1947,7 @@ void ActionManager::createDefaultMenus()
 //		<< "editPatterns"
 		<< "editStyles"
 		<< "editMarks"
-		<< "editNotesSets"
+		<< "editNotesStyles"
 		<< "editMasterPages"
 		<< "editJavascripts";
 	//Style

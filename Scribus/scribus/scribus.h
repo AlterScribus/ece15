@@ -80,7 +80,7 @@ class Measurements;
 class ScMWMenuManager;
 class ModeToolBar;
 class NodePalette;
-class NotesSetsManager;
+class NotesStylesEditor;
 class OutlinePalette;
 class PDFToolBar;
 class PSLib;
@@ -212,7 +212,7 @@ public:
 	CharSelect *charPalette;
 	PropertiesPalette *propertiesPalette;
 	MarksManager *marksManager;
-	NotesSetsManager *nsManager;
+	NotesStylesEditor *nsManager;
 	NodePalette *nodePalette;
 	OutlinePalette *outlinePalette;
 	Biblio *scrapbookPalette;
@@ -620,7 +620,7 @@ public slots:
 	void slotInsertMarkAnchor() { insertMark(MARKAnchorType); }
 	void slotInsertMarkVariableText() { insertMark(MARKVariableTextType); }
 	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
-	void slotInsertMarkNote() { insertMark(MARKNoteMasterType); }
+	void slotInsertMarkNote();
 	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
 	void slotEditMark();
 	//connected to signal emited by actions when "Update Marks" menu item is triggered

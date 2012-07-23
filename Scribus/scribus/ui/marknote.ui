@@ -62,7 +62,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Numeration Set:</string>
+        <string>Notes Style:</string>
        </property>
       </widget>
      </item>

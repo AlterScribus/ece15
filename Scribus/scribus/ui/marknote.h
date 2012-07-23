@@ -2,7 +2,7 @@
 #define MARKNOTE_H
 
 #include "MarkInsertDlg.h"
-#include "notesset.h"
+#include "notesstyles.h"
 #include "ui_marknote.h"
 
 class SCRIBUS_API MarkNoteDlg : public MarkInsertDlg, private Ui::MarkNoteDlg
@@ -10,9 +10,9 @@ class SCRIBUS_API MarkNoteDlg : public MarkInsertDlg, private Ui::MarkNoteDlg
 	Q_OBJECT
 	
 public:
-	explicit MarkNoteDlg(const QList<NotesSet*>& notessetList, QWidget *parent = NULL);
-	virtual NotesSet* values();
-	virtual void setValues(NotesSet* defaultSet);
+	explicit MarkNoteDlg(const QList<NotesStyle*>& notesStylesList, QWidget *parent = NULL);
+	virtual NotesStyle* values();
+	virtual void setValues(NotesStyle* defaultStyle);
 protected:
 	void changeEvent(QEvent *e);
 private slots:
