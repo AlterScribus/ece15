@@ -1,6 +1,8 @@
 #include "marknote.h"
 #include "scribus.h"
 
+static int lastNotesStyleIndex = 0;  //remember last selected notes style
+
 MarkNoteDlg::MarkNoteDlg(const QList<NotesStyle*>& notesStylesList, QWidget *parent) :
 	MarkInsertDlg(notesStylesList, parent)
 {
@@ -9,6 +11,7 @@ MarkNoteDlg::MarkNoteDlg(const QList<NotesStyle*>& notesStylesList, QWidget *par
 	for (int i = 0; i < notesStylesList.count(); i++)
 		ItemList->addItem(notesStylesList.at(i)->name(), QVariant::fromValue((void*) notesStylesList.at(i)));
 	setWindowTitle(tr("Insert Foot/Endnote"));
+	ItemList->setCurrentIndex(lastNotesStyleIndex);
 }
 
 NotesStyle* MarkNoteDlg::values()
@@ -36,5 +39,5 @@ void MarkNoteDlg::changeEvent(QEvent *e)
 
 void MarkNoteDlg::on_buttonBox_accepted()
 {
-    
+	lastNotesStyleIndex = ItemList->currentIndex();
 }

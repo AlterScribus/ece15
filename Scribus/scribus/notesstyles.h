@@ -52,7 +52,7 @@ public:
 	bool operator!=(const NotesStyle& n2);
 
 	const QString name() { return nameStr; }
-	void styleName(const QString s) { nameStr = s; }
+	void setName(const QString s) { nameStr = s; }
 	const int start() { return startNum; }
 	void setStart(const int i) { startNum = i; }
 	void setRange(NumerationRange ns) { numRange = ns; }

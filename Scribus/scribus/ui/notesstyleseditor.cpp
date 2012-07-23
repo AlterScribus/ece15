@@ -8,6 +8,7 @@
 #include "scribusview.h"
 #include "scribus.h"
 #include "scmessagebox.h"
+#include "undomanager.h"
 
 NotesStylesEditor::NotesStylesEditor(QWidget *parent, const char *name)
 	: ScrPaletteBase(parent, name), m_Doc(NULL)
@@ -205,7 +206,7 @@ void NotesStylesEditor::setNotesStyle(NotesStyle * NS)
 
 void NotesStylesEditor::readNotesStyle(QString nsName)
 {
-	NotesStyle * NS = m_Doc->getNS(nsName);
+	NotesStyle * NS = m_Doc->getNotesStyle(nsName);
 	setNotesStyle(NS);
 }
 
@@ -258,20 +259,27 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 				//new name for existing set
 				QString newName = n.name();
 				getUniqueName(newName, changesMap.keys(),"=");
-				n.styleName(newName);
+				n.setName(newName);
 				NewNameEdit->setText(newName);
 				//current NSet name change
 				if (currNS == nsName)
 					currNS = newName;
-				NS = m_Doc->getNS(nsName);
+				NS = m_Doc->getNotesStyle(nsName);
 				m_Doc->renameNotesStyle(NS, newName);
 				m_Doc->setNotesChanged(true);
 			}
 			//change settings and update marks
-			NS = m_Doc->getNS(n.name());
+			NS = m_Doc->getNotesStyle(n.name());
 			Q_ASSERT(NS != NULL);
 			if (*NS != n)
 			{
+				SimpleState* ss = NULL;
+				if (UndoManager::instance()->undoEnabled())
+				{
+					ss = new SimpleState(UndoManager::EditNotesStyle);
+					ss->set("NSTYLE", QString("edit"));
+					m_Doc->undoSetNotesStyle(ss, NS);
+				}
 				//converting foot <--> end notes or changing footnotes range
 				if ((NS->isEndNotes() != n.isEndNotes()) || (NS->isEndNotes() && n.isEndNotes() && NS->range() != n.range()))
 				{
@@ -281,7 +289,26 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 						m_Doc->flag_updateEndNotes = true;
 				}
 				m_Doc->setNotesChanged(true); //notesframes width must be updated
-				*NS = n; 
+				*NS = n;
+				if (ss)
+				{
+					ss->set("NEWname", NS->name());
+					ss->set("NEWstart", NS->start());
+					ss->set("NEWendNotes", NS->isEndNotes());
+					ss->set("NEWnumStyle", (int) NS->getType());
+					ss->set("NEWrange", (int) NS->range());
+					ss->set("NEWprefix", NS->prefix());
+					ss->set("NEWsuffix", NS->suffix());
+					ss->set("NEWautoH", NS->isAutoNotesHeight());
+					ss->set("NEWautoW", NS->isAutoNotesWidth());
+					ss->set("NEWautoWeld", NS->isAutoWeldNotesFrames());
+					ss->set("NEWautoRemove", NS->isAutoRemoveEmptyNotesFrames());
+					ss->set("NEWsuperMaster", NS->isSuperscriptInMaster());
+					ss->set("NEWsuperNote", NS->isSuperscriptInNote());
+					ss->set("NEWmarksChStyle", NS->marksChStyle());
+					ss->set("NEWnotesParStyle", NS->notesParStyle());
+					UndoManager::instance()->action(m_Doc, ss);
+				}
 				//invalidate all text frames with marks from current changed notes style
 				foreach (PageItem* item, m_Doc->DocItems)
 				{
@@ -322,6 +349,7 @@ void NotesStylesEditor::on_DeleteButton_clicked()
 	{
 		m_Doc->deleteNotesStyle(nsName);
 		m_Doc->changed();
+		m_Doc->regionsChanged()->update(QRectF());
 		setDoc(m_Doc);
 	}
 }
@@ -332,7 +360,7 @@ void NotesStylesEditor::on_NewButton_clicked()
 	NotesStyle newNS = changesMap.value(oldName);
 	QString newName = oldName;
 	getUniqueName(newName, changesMap.keys(), "_");
-	newNS.styleName(newName);
+	newNS.setName(newName);
 	changesMap.insert(newName, newNS);
 	setNotesStyle(&newNS);
 	
@@ -378,7 +406,7 @@ void NotesStylesEditor::on_OKButton_clicked()
 void NotesStylesEditor::on_NewNameEdit_textChanged(const QString &arg1)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
-	ns.styleName(arg1);
+	ns.setName(arg1);
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }

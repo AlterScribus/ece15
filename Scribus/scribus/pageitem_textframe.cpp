@@ -4275,7 +4275,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							Q_ASSERT(Cpos > -1);
 							ims->set("at", Cpos);
 							ims->set("noteTXT", note->saxedText());
-							ims->insertItem("nset", note->notesStyle());
+							ims->set("nStyle", note->notesStyle()->name());
 							if (note->isEndNote())
 								m_Doc->flag_updateEndNotes = true;
 							if (note->textLen > 0)
@@ -5069,7 +5069,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 				ims->insertItem("inItem", master);
 				ims->set("at", pos);
 				ims->set("noteTXT", note->saxedText());
-				ims->insertItem("nset", note->notesStyle());
+				ims->set("nStyle", note->notesStyle()->name());
 				undoManager->action(m_Doc, ims);
 			}
 			if (note->isEndNote())

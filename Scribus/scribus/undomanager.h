@@ -587,6 +587,9 @@ public:
 	static QString InsertNote;
 	static QString EditMark;
 	static QString DeleteMark;
+	static QString NewNotesStyle;
+	static QString EditNotesStyle;
+	static QString DeleteNotesStyle;
 	static QString DeleteNote;
 	static QString DeletePage;
 	static QString DeletePages;

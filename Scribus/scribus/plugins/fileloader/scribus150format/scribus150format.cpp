@@ -3153,7 +3153,7 @@ bool Scribus150Format::readNotesStyles(ScribusDoc* doc, ScXmlStreamReader& reade
 		{
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			NotesStyle NS;
-			NS.styleName(attrs.valueAsString("Name"));
+			NS.setName(attrs.valueAsString("Name"));
 			NS.setStart(attrs.valueAsInt("Start"));
 			NS.setEndNotes(attrs.valueAsBool("Endnotes"));
 			QString type = attrs.valueAsString("Type");
@@ -3242,7 +3242,7 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 			//temporaly insert names of master mark and notes style into maps with note pointer
 			//will be resolved to pointers by updateNames2Ptr() after all will read
 			notesMasterMarks.insert(attrs.valueAsString("Master"), note);
-			notesNSets.insert(note, attrs.valueAsString("NSet"));
+			notesNSets.insert(note, attrs.valueAsString("NStyle"));
 		}
 	}
 	return !reader.hasError();
@@ -6314,7 +6314,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 		for (int i = 0; i < notesFramesData.count(); ++i)
 		{
 			NoteFrameData eF = notesFramesData.at(i);
-			NotesStyle* NS = m_Doc->getNS(eF.NSname);
+			NotesStyle* NS = m_Doc->getNotesStyle(eF.NSname);
 			if (NS != NULL)
 			{
 				PageItem* item = LinkID.value(eF.myID);
@@ -6388,7 +6388,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			TextNote* note = it.key();
 			assert(note != NULL);
 			QString nsLabel = it.value();
-			NotesStyle* ns = m_Doc->getNS(nsLabel);
+			NotesStyle* ns = m_Doc->getNotesStyle(nsLabel);
 			if (ns != NULL)
 				note->setNotesStyle(ns);
 			if (note->notesStyle() == NULL)

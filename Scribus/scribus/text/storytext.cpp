@@ -1952,7 +1952,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			}
 			else if (mrk->isType(MARKNoteMasterType))
 			{
-				mark_attr.insert("nset", mrk->getNotePtr()->notesStyle()->name());
+				mark_attr.insert("nStyle", mrk->getNotePtr()->notesStyle()->name());
 				mark_attr.insert("note",mrk->getNotePtr()->saxedText());
 			}
 			handler.beginEnd("mark", mark_attr);
@@ -2173,12 +2173,12 @@ public:
 				if (mrk->isType(MARKNoteMasterType))
 				{
 					Xml_attr::iterator nIt = attr.find("note");
-					Xml_attr::iterator nsIt = attr.find("nset");
+					Xml_attr::iterator nsIt = attr.find("nStyle");
 					NotesStyle* NS;
 					if (nsIt == attr.end())
 						NS = doc->m_docNotesStylesList.at(0);
 					else
-						NS = doc->getNS(Xml_data(nsIt));
+						NS = doc->getNotesStyle(Xml_data(nsIt));
 					TextNote* note = doc->newNote(NS);
 					note->setMasterMark(mrk);
 					if (nIt != attr.end())

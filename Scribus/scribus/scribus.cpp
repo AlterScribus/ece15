@@ -10554,15 +10554,15 @@ void ScribusMainWindow::slotInsertMarkNote()
 			//inserting mark replace some selected text
 			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 		}
-		NotesStyle* NStyle = doc->m_docNotesStylesList.at(0);
-		QString label = "NoteMark_" + NStyle->name();
-		if (NStyle->range() == NSRsection)
+		NotesStyle* nStyle = doc->m_docNotesStylesList.at(0);
+		QString label = "NoteMark_" + nStyle->name();
+		if (nStyle->range() == NSRsection)
 			label += " in section " + doc->getSectionNameForPageIndex(currItem->OwnPage) + " page " + QString::number(currItem->OwnPage +1);
-		else if (NStyle->range() == NSRpage)
+		else if (nStyle->range() == NSRpage)
 			label += " on page " + QString::number(currItem->OwnPage +1);
-		else if (NStyle->range() == NSRstory)
+		else if (nStyle->range() == NSRstory)
 			label += " in " + currItem->firstInChain()->itemName();
-		else if (NStyle->range() == NSRframe)
+		else if (nStyle->range() == NSRframe)
 			label += " in frame" + currItem->itemName();
 		if (doc->getMarkDefinied(label + "_1", MARKNoteMasterType) != NULL)
 			getUniqueName(label,doc->marksLabelsList(MARKNoteMasterType), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
@@ -10571,7 +10571,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 		Mark* mrk = doc->newMark();
 		mrk->label = label;
 		mrk->setType(MARKNoteMasterType);
-		mrk->setNotePtr(doc->newNote(NStyle));
+		mrk->setNotePtr(doc->newNote(nStyle));
 		mrk->getNotePtr()->setMasterMark(mrk);
 		mrk->setString("");
 		mrk->OwnPage = currItem->OwnPage;
@@ -10583,10 +10583,10 @@ void ScribusMainWindow::slotInsertMarkNote()
 			is->set("ETEA", mrk->label);
 			is->set("MARK", QString("new"));
 			is->set("label", mrk->label);
-			is->set("type", (int) mrk->getType());
-			is->set("strtxt", mrk->getString());
+			is->set("type", (int) MARKNoteMasterType);
+			is->set("strtxt", QString(""));
 			is->insertItem("notePtr", mrk->getNotePtr());
-			is->insertItem("nset", mrk->getNotePtr()->notesStyle());
+			is->set("nStyle", nStyle->name());
 			is->set("at", currItem->itemText.cursorPosition() -1);
 			is->insertItem("inItem", currItem);
 			undoManager->action(doc, is);
@@ -10596,8 +10596,9 @@ void ScribusMainWindow::slotInsertMarkNote()
 		doc->setNotesChanged(true);
 		if (mrk->getNotePtr()->isEndNote())
 			doc->flag_updateEndNotes = true;
-		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
+		doc->regionsChanged()->update(QRectF());
 		doc->changed();
+		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
 		if (trans)
 		{
 			trans->commit();
@@ -10792,7 +10793,7 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 				if (mrk->isType(MARKNoteMasterType))
 				{
 					is->insertItem("notePtr", mrk->getNotePtr());
-					is->insertItem("nset", mrk->getNotePtr()->notesStyle());
+					is->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
 				}
 			}
 			is->set("at", currItem->itemText.cursorPosition() -1);

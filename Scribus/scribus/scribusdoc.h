@@ -1682,7 +1682,8 @@ public:
 	void renameNotesStyle(NotesStyle* NS, QString newName);
 	//delete whole notes style with its notesframes and notes
 	void deleteNotesStyle(QString nsName);
-	NotesStyle* getNS(QString nsName);
+	void undoSetNotesStyle(SimpleState* ss, NotesStyle* ns);
+	NotesStyle* getNotesStyle(QString nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note, bool fromText = true);
 	void delNoteUndo(TextNote* note);

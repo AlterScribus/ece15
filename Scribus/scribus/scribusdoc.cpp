@@ -1842,12 +1842,90 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			Q_ASSERT(nF != NULL);
 			nF->asNoteFrame()->restoreInsertNoteText(ss,isUndo);
 		}
+		else if (ss->contains("NSTYLE"))
+		{
+			if ((ss->get("NSTYLE") == "new" && isUndo) || (ss->get("NSTYLE") == "delete" && !isUndo))
+				deleteNotesStyle(ss->get("name"));
+			else if ((ss->get("NSTYLE") == "new" && !isUndo) || (ss->get("NSTYLE") == "delete" && isUndo))
+			{
+				NotesStyle* NS = new NotesStyle();
+				NS->setName(ss->get("name"));
+				NS->setStart(ss->getInt("start"));
+				NS->setEndNotes(ss->getBool("endNotes"));
+				NS->setType((NumerationType) ss->getInt("numStyle"));
+				NS->setRange((NumerationRange) ss->getInt("range"));
+				NS->setPrefix(ss->get("prefix"));
+				NS->setSuffix(ss->get("suffix"));
+				NS->setAutoNotesHeight(ss->getBool("autoH"));
+				NS->setAutoNotesWidth(ss->getBool("autoW"));
+				NS->setAutoWeldNotesFrames(ss->getBool("autoWeld"));
+				NS->setAutoRemoveEmptyNotesFrames(ss->getBool("autoRemove"));
+				NS->setSuperscriptInMaster(ss->getBool("superMaster"));
+				NS->setSuperscriptInNote(ss->getBool("superNote"));
+				NS->setMarksCharStyle(ss->get("marksChStyle"));
+				NS->setNotesParStyle(ss->get("notesParStyle"));
+				m_docNotesStylesList.append(NS);
+				scMW()->emitUpdateRequest(reqMarksUpdate);
+			}
+			else if (ss->get("NSTYLE") == "edit")
+			{
+				NotesStyle* NS = NULL;
+				if (isUndo)
+				{
+					NS = getNotesStyle(ss->get("NEWname"));
+					NS->setName(ss->get("name"));
+					NS->setStart(ss->getInt("start"));
+					NS->setEndNotes(ss->getBool("endNotes"));
+					NS->setType((NumerationType) ss->getInt("numStyle"));
+					NS->setRange((NumerationRange) ss->getInt("range"));
+					NS->setPrefix(ss->get("prefix"));
+					NS->setSuffix(ss->get("suffix"));
+					NS->setAutoNotesHeight(ss->getBool("autoH"));
+					NS->setAutoNotesWidth(ss->getBool("autoW"));
+					NS->setAutoWeldNotesFrames(ss->getBool("autoWeld"));
+					NS->setAutoRemoveEmptyNotesFrames(ss->getBool("autoRemove"));
+					NS->setSuperscriptInMaster(ss->getBool("superMaster"));
+					NS->setSuperscriptInNote(ss->getBool("superNote"));
+					NS->setMarksCharStyle(ss->get("marksChStyle"));
+					NS->setNotesParStyle(ss->get("notesParStyle"));
+				}
+				else
+				{
+					NS = getNotesStyle(ss->get("name"));
+					NS->setName(ss->get("NEWname"));
+					NS->setStart(ss->getInt("NEWstart"));
+					NS->setEndNotes(ss->getBool("NEWendNotes"));
+					NS->setType((NumerationType) ss->getInt("NEWnumStyle"));
+					NS->setRange((NumerationRange) ss->getInt("NEWrange"));
+					NS->setPrefix(ss->get("NEWprefix"));
+					NS->setSuffix(ss->get("NEWsuffix"));
+					NS->setAutoNotesHeight(ss->getBool("NEWautoH"));
+					NS->setAutoNotesWidth(ss->getBool("NEWautoW"));
+					NS->setAutoWeldNotesFrames(ss->getBool("NEWautoWeld"));
+					NS->setAutoRemoveEmptyNotesFrames(ss->getBool("NEWautoRemove"));
+					NS->setSuperscriptInMaster(ss->getBool("NEWsuperMaster"));
+					NS->setSuperscriptInNote(ss->getBool("NEWsuperNote"));
+					NS->setMarksCharStyle(ss->get("NEWmarksChStyle"));
+					NS->setNotesParStyle(ss->get("NEWnotesParStyle"));
+				}
+				updateNotesNums(NS);
+				updateNotesFramesSettings(NS);
+				updateEndnotesFrames(NS);
+				updateNotesFramesStyles(NS);
+				if (notesChanged())
+				{
+					flag_updateMarksLabels = true;
+					changed();
+					regionsChanged()->update(QRectF());
+				}
+			}
+		}
 		else if (ss->contains("DELETE_NOTE"))
 		{
 			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
 			if (is)
 			{
-				NotesStyle* nStyle = (NotesStyle*) is->getItem("nset");
+				NotesStyle* nStyle = getNotesStyle(is->get("nStyle"));
 				PageItem* master = (PageItem*) is->getItem("inItem");
 				if (isUndo)
 				{
@@ -1878,7 +1956,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
 			if (is)
 			{
-				Mark* mrk = (Mark*) is->getItem("mark");
+				Mark* mrk = getMarkDefinied(is->get("label"), (MarkType) is->getInt("type"));;
 				int pos = is->getInt("at");
 				PageItem* currItem = NULL;
 				if (is->contains("noteframeName"))
@@ -2019,7 +2097,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
 						if (mrk->isType(MARKNoteMasterType))
 						{
-							NotesStyle* nStyle = (NotesStyle*) is->getItem("nset");
+							NotesStyle* nStyle = getNotesStyle(is->get("nStyle"));;
 							TextNote* note = newNote(nStyle);
 							mrk->setNotePtr(note);
 							note->setMasterMark(mrk);
@@ -16488,7 +16566,7 @@ NotesStyle* ScribusDoc::newNotesStyle(NotesStyle NS)
 	QString nsName = NS.name();
 
 	//if doc is loading overwrite current set
-	NotesStyle* newNS = getNS(nsName);
+	NotesStyle* newNS = getNotesStyle(nsName);
 	if (isLoading() && (newNS != NULL))
 		*newNS = NS;
 	else
@@ -16502,8 +16580,15 @@ NotesStyle* ScribusDoc::newNotesStyle(NotesStyle NS)
 		for (int a = 0; a< m_docNotesStylesList.count(); ++a)
 			nsNames.append(m_docNotesStylesList.at(a)->name());
 		getUniqueName(nsName, nsNames, "_");
-		newNS->styleName(nsName);
+		newNS->setName(nsName);
 		m_docNotesStylesList.append(newNS);
+		if (undoManager->undoEnabled())
+		{
+			SimpleState* ss = new SimpleState(UndoManager::NewNotesStyle);
+			ss->set("NSTYLE", QString("new"));
+			undoSetNotesStyle(ss, newNS);
+			undoManager->action(this, ss);
+		}
 	}
 	return newNS;
 }
@@ -16512,17 +16597,19 @@ void ScribusDoc::renameNotesStyle(NotesStyle* NS, QString newName)
 {
 	foreach (Mark* mrk, m_docMarksList)
 		mrk->label.replace("_" + NS->name()+ "_", "_" + newName + "_");
-	NS->styleName(newName);
+	NS->setName(newName);
 }
 
 void ScribusDoc::deleteNotesStyle(QString nsName)
 {
-	NotesStyle* NS = getNS(nsName);
+	NotesStyle* NS = getNotesStyle(nsName);
 	assert(NS != NULL);
 	//do not delete default notes style
 	if (NS == m_docNotesStylesList.at(0))
 		return;
-	
+	UndoTransaction* activeTransaction = NULL;
+	if (UndoManager::instance()->undoEnabled())
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::DeleteNotesStyle,Um::IDelete,Um::Delete,"",Um::IDelete));
 	QList<TextNote*> toDel;
 	//search for notes to deleting
 	foreach (TextNote* note, m_docNotesList)
@@ -16531,20 +16618,60 @@ void ScribusDoc::deleteNotesStyle(QString nsName)
 			toDel.append(note);
 	}
 	//deleting notes
+	QList<PageItem*> master2Update;
 	if (!toDel.isEmpty())
 	{
 		while (!toDel.isEmpty())
-			deleteNote(toDel.takeFirst());
+		{
+			TextNote* note = toDel.takeFirst();
+			master2Update.append(findFirstMarkItem(note->masterMark()));
+			delNoteUndo(note);
+			deleteNote(note);
+		}
+		while (!master2Update.isEmpty())
+			master2Update.takeFirst()->layout();
+	}
+	if (activeTransaction)
+	{
+		//undo is enabled
+		SimpleState* ss = new SimpleState(UndoManager::DeleteNotesStyle);
+		ss->set("NSTYLE", QString("delete"));
+		undoSetNotesStyle(ss, NS);
+		undoManager->action(this, ss);
+		
+		activeTransaction->commit();
+		delete activeTransaction;
+		activeTransaction = NULL;
 	}
 	flag_updateMarksLabels = true;
 	if (NS->isEndNotes())
 		flag_updateEndNotes = true;
 	notesFramesUpdate();
 	m_docNotesStylesList.removeOne(NS);
+	scMW()->emitUpdateRequest(reqMarksUpdate);
 	delete NS;
 }
 
-NotesStyle* ScribusDoc::getNS(QString nsName)
+void ScribusDoc::undoSetNotesStyle(SimpleState* ss, NotesStyle *NS)
+{
+		ss->set("name", NS->name());
+		ss->set("start", NS->start());
+		ss->set("endNotes", NS->isEndNotes());
+		ss->set("numStyle", (int) NS->getType());
+		ss->set("range", (int) NS->range());
+		ss->set("prefix", NS->prefix());
+		ss->set("suffix", NS->suffix());
+		ss->set("autoH", NS->isAutoNotesHeight());
+		ss->set("autoW", NS->isAutoNotesWidth());
+		ss->set("autoWeld", NS->isAutoWeldNotesFrames());
+		ss->set("autoRemove", NS->isAutoRemoveEmptyNotesFrames());
+		ss->set("superMaster", NS->isSuperscriptInMaster());
+		ss->set("superNote", NS->isSuperscriptInNote());
+		ss->set("marksChStyle", NS->marksChStyle());
+		ss->set("notesParStyle", NS->notesParStyle());
+}
+
+NotesStyle* ScribusDoc::getNotesStyle(QString nsName)
 {
 	for (int a=0; a < m_docNotesStylesList.count(); ++a)
 	{
@@ -16596,7 +16723,7 @@ void ScribusDoc::delNoteUndo(TextNote *note)
 		ims->insertItem("inItem", master);
 		ims->set("at", pos);
 		ims->set("noteTXT", note->saxedText());
-		ims->insertItem("nset", note->notesStyle());
+		ims->set("nStyle", note->notesStyle()->name());
 		undoManager->action(this, ims);
 	}
 }
@@ -17038,8 +17165,6 @@ bool ScribusDoc::notesFramesUpdate()
 				continue;
 			if (item->isNoteFrame())
 			{
-				if (item->asNoteFrame()->masterFrame() != NULL)
-					item->asNoteFrame()->masterFrame()->layout();
 				if (item->asNoteFrame()->isEndNotesFrame())
 					//update content and move endnotes if pages were removed
 					updateEndNotesFrameContent(item->asNoteFrame());
