@@ -6370,7 +6370,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			if (mrk == NULL)
 			{
 				qWarning() << "Scribus150Format::updateNames2Ptr() : cannot find master mark ("<<mrkLabel <<") for note - note will be deleted";
-				m_Doc->deleteNote(note, true);
+				m_Doc->deleteNote(note);
 				continue;
 			}
 			note->setMasterMark(mrk);
@@ -6394,7 +6394,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			if (note->notesSet() == NULL)
 			{
 				qWarning() << "Scribus150Format::updateNames2Ptr()  : cannot find notes set ("<<nsLabel <<") for note - note will be deleted";
-				m_Doc->deleteNote(note, true);
+				m_Doc->deleteNote(note);
 				continue;
 			}
 		}

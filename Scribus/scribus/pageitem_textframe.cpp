@@ -4285,7 +4285,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 								itemText.select(notes2DEL.at(ii).second + 1, note->textLen);
 								removeMarksFromText(true);
 							}
-							m_Doc->deleteNote(note, true);
+							m_Doc->deleteNote(note);
 							undoManager->action(m_Doc, ims);
 						}
 						if(is)

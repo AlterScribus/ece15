@@ -1684,7 +1684,7 @@ public:
 	void deleteNoteSet(QString nsName);
 	NotesSet* getNS(QString nsName);
 	//delete note, if fromText than marks for given note will be removed
-	void deleteNote(TextNote* note, bool fromText = false);
+	void deleteNote(TextNote* note, bool fromText = true);
 	void delNoteUndo(TextNote* note);
 	//delete noteframe
 	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true);

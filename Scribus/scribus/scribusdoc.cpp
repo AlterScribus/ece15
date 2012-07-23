@@ -1868,7 +1868,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					TextNote* note = master->itemText.item(is->getInt("at"))->mark->getNotePtr();
 					if (note->isEndNote())
 						flag_updateEndNotes = true;
-					deleteNote(note, true);
+					deleteNote(note);
 				}
 				master->update();
 			}
@@ -1895,7 +1895,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							TextNote* note = (TextNote*) is->getItem("notePtr");
 							if (note->isEndNote())
 								flag_updateEndNotes = true;
-							deleteNote(note , true);
+							deleteNote(note);
 						}
 						else
 							eraseMark(mrk, true);
@@ -2087,7 +2087,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							{
 								TextNote* note = (TextNote*) is->getItem("notePtr");
 								NotesSet* nSet = note->notesSet();
-								deleteNote(note , true);
+								deleteNote(note);
 								updateNotesNums(nSet);
 							}
 							else
@@ -16534,7 +16534,7 @@ void ScribusDoc::deleteNoteSet(QString nsName)
 	if (!toDel.isEmpty())
 	{
 		while (!toDel.isEmpty())
-			deleteNote(toDel.takeFirst(), true);
+			deleteNote(toDel.takeFirst());
 	}
 	flag_updateMarksLabels = true;
 	if (NS->isEndNotes())
@@ -16574,7 +16574,7 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), fromText);
 	if (note->noteMark() != NULL)
-		eraseMark(note->noteMark(), false);
+		eraseMark(note->noteMark(), fromText);
 	m_docNotesList.removeOne(note);
 	setNotesChanged(true);
 	if (note->isEndNote())
