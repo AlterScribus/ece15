@@ -47,8 +47,10 @@ typedef union
 class SCRIBUS_API NotesStyle
 {
 public:
-	NotesStyle();
-	~NotesStyle();
+	NotesStyle() : nameStr ("default"), startNum(1), m_endNotesStyle(false), numeration(), numRange(NSRdocument), prefixStr(""), suffixStr(")"),
+		autoNotesHeight(true), autoNotesWidth(true), autoRemoveEmptyNotesFrames(true), autoWeldNotesFrames(true),
+		superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle("") {}
+	~NotesStyle() {}
 	bool operator!=(const NotesStyle& n2);
 
 	const QString name() { return nameStr; }
@@ -83,8 +85,7 @@ public:
 	void setMarksCharStyle(const QString styleName) { marksCharStyle = styleName; }
 	const QString notesParStyle() { return notesParaStyle; }
 	void setNotesParStyle(const QString styleName) { notesParaStyle = styleName; }
-	
-	void deleteAll();
+
 	void setEndNotes(bool);
 
 private:
@@ -112,8 +113,8 @@ class SCRIBUS_API TextNote : public QObject
 	friend class ScribusDoc;
 private:
 	//only ScribusDoc can create and delete notes
-	TextNote(NotesStyle *nSet) : _notesStyle(nSet), _noteSaxedText(""), _noteMasterMark(NULL), _noteFrameMark(NULL), _number(0) { }
-	~TextNote();
+	TextNote(NotesStyle *nStyle) : _notesStyle(nStyle), _noteSaxedText(""), _noteMasterMark(NULL), _noteFrameMark(NULL), _number(0) { }
+	~TextNote() {}
 public:
 	void setNotesStyle (NotesStyle* NS) { _notesStyle = NS; }
 	NotesStyle* notesStyle() { return _notesStyle; }

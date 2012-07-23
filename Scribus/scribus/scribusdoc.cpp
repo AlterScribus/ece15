@@ -1956,7 +1956,9 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
 			if (is)
 			{
-				Mark* mrk = getMarkDefinied(is->get("label"), (MarkType) is->getInt("type"));;
+				Mark* mrk = getMarkDefinied(is->get("label"), (MarkType) is->getInt("type"));
+				if (mrk == NULL)
+					mrk = (Mark*) is->getItem("mark");
 				int pos = is->getInt("at");
 				PageItem* currItem = NULL;
 				if (is->contains("noteframeName"))
@@ -2102,7 +2104,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setNotePtr(note);
 							note->setMasterMark(mrk);
 							is->insertItem("notePtr", note);
-							//updateNotesNums(nSet);
 						}
 					}
 					else if (is->get("MARK") == "replace")
