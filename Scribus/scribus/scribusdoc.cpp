@@ -11212,7 +11212,12 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 				eraseMark(m, true);
 		}
 		if (currItem->isNoteFrame())
+		{
+			currItem->itemText.selectAll();
+			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 			delNoteFrame(currItem->asNoteFrame());
+			continue;
+		}
 		else
 		{
 			if (currItem->asTextFrame())
