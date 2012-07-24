@@ -1671,7 +1671,7 @@ public:
 	void setCursor2MarkPos(Mark* mark);
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
-	void delMarkUndo(Mark* mrk);
+	void setUndoDelMark(Mark* mrk);
 	//invalidate all text frames where given mark will found
 	//usefull spacially for varaible text marks after changing its text definition
 	//if forceUpdate then found master frames are relayouted
@@ -1686,7 +1686,7 @@ public:
 	NotesStyle* getNotesStyle(QString nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note, bool fromText = true);
-	void delNoteUndo(TextNote* note);
+	void setUndoDelNote(TextNote* note);
 	//delete noteframe
 	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true);
 	//renumber notes for given notes style

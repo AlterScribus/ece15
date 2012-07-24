@@ -1368,7 +1368,6 @@ void PageItem_TextFrame::layout()
 		PageItem* next = this;
 		while (next != NULL)
 		{
-			next->asTextFrame()->delAllNoteFrames();
 			next->invalid = false;
 			next = next->nextInChain();
 		}
@@ -3992,7 +3991,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			asNoteFrame()->masterFrame()->invalid = true;
 		}
 		else
-			update();
+			layout();
 		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 			NextBox->updateLayout();
 		if (itemText.cursorPosition() < firstInFrame())
@@ -4259,33 +4258,27 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 						undoTarget = m_Doc; //undo target is doc for notes as after deleting last note notesframe can be deleted
 						if (is)
 							is->set("noteframeName", getUName());
+						//remove marks from notes
 						for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
 						{
-							ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
 							TextNote* note = notes2DEL.at(ii).first;
 							Q_ASSERT(note != NULL);
-							ims->set("DELETE_NOTE", QString("delete_note"));
-							ims->set("ETEA", note->masterMark()->label);
-							PageItem* master = NULL;
-							if (!asNoteFrame()->isEndNotesFrame())
-								master = asNoteFrame()->masterFrame();
-							int Cpos = m_Doc->findMarkCPos(note->masterMark(), master);
-							Q_ASSERT(master);
-							ims->insertItem("inItem", this->asNoteFrame()->masterFrame());
-							Q_ASSERT(Cpos > -1);
-							ims->set("at", Cpos);
-							ims->set("noteTXT", note->saxedText());
-							ims->set("nStyle", note->notesStyle()->name());
-							if (note->isEndNote())
-								m_Doc->flag_updateEndNotes = true;
 							if (note->textLen > 0)
 							{
 								itemText.deselectAll();
 								itemText.select(notes2DEL.at(ii).second + 1, note->textLen);
 								removeMarksFromText(true);
 							}
+						}
+						asNoteFrame()->updateNotesText();
+						for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
+						{
+							TextNote* note = notes2DEL.at(ii).first;
+							Q_ASSERT(note != NULL);
+							m_Doc->setUndoDelNote(note);
+							if (note->isEndNote())
+								m_Doc->flag_updateEndNotes = true;
 							m_Doc->deleteNote(note);
-							undoManager->action(m_Doc, ims);
 						}
 						if(is)
 						{
@@ -4974,15 +4967,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	//check for endnotes marks change in current frame
 	foreach (PageItem_NoteFrame* nF, m_endNotesList)
 	{
-		if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
-		{
-			m_Doc->endNoteFrameChanged(nF);
-			docWasChanged = true;
-		}
-	}
-	foreach (PageItem_NoteFrame* nF, endNotesList)
-	{
-		if (!m_notesFramesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
+		if (!notesMap.contains(nF) || !m_notesFramesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
 		{
 			m_Doc->endNoteFrameChanged(nF);
 			docWasChanged = true;
@@ -4991,9 +4976,9 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	//check if some footnotes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_footNotesList)
 	{
-		if (nF->isAutoRemove() && (!notesMap.contains(nF) || notesMap.value(nF).isEmpty()))
+		if (nF->deleteIt || (nF->isAutoRemove() && (!notesMap.contains(nF) || notesMap.value(nF).isEmpty())))
 		{
-			nF->deleteIt = true;
+			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
 		}
 	}
@@ -5001,23 +4986,19 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	foreach (PageItem_NoteFrame* nF, footNotesList)
 	{
 		if (nF->deleteIt)
-			continue;
-
-		QList<TextNote*> nList = notesMap.value(nF);
-		bool clear = !nF->notesList().isEmpty();
-		if (nList != nF->notesList() || m_Doc->notesChanged())
 		{
-			nF->updateNotes(nList, clear);
+			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
 		}
-	}
-	//delete footnotes frames marked as for remove
-	foreach (PageItem_NoteFrame* noteFrame, m_footNotesList)
-	{
-		if (noteFrame->deleteIt)
+		else
 		{
-			m_Doc->delNoteFrame(noteFrame,true);
-			docWasChanged = true;
+			QList<TextNote*> nList = notesMap.value(nF);
+			bool clear = !nF->notesList().isEmpty();
+			if (nList != nF->notesList() || m_Doc->notesChanged())
+			{
+				nF->updateNotes(nList, clear);
+				docWasChanged = true;
+			}
 		}
 	}
 	if (m_notesFramesMap != notesMap)
@@ -5058,28 +5039,13 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		while (note != NULL)
 		{
 			if (doUndo && UndoManager::undoEnabled())
-			{
-				ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
-				ims->set("DELETE_NOTE", QString("delete_note"));
-				ims->set("ETEA", note->masterMark()->label);
-				PageItem* master = NULL;
-				int pos = m_Doc->findMarkCPos(note->masterMark(), master);
-				Q_ASSERT(pos > -1);
-				Q_ASSERT(master);
-				ims->insertItem("inItem", master);
-				ims->set("at", pos);
-				ims->set("noteTXT", note->saxedText());
-				ims->set("nStyle", note->notesStyle()->name());
-				undoManager->action(m_Doc, ims);
-			}
+				m_Doc->setUndoDelNote(note);
 			if (note->isEndNote())
 				m_Doc->flag_updateEndNotes = true;
 			m_Doc->deleteNote(note, fromText);
 			note = selectedNoteMark(true);
 			++num;
 		}
-		if (num > 0)
-			m_Doc->setNotesChanged(true);
 	}
 	
 	Mark* mrk = selectedMark(true);
@@ -5090,18 +5056,18 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		{
 			ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
 			if (mrk->isUnique())
-			{
 				ims->set("MARK", QString("delete"));
-			}
 			else
 				ims->set("MARK", QString("eraseFromText"));
-			ims->insertItem("mark", mrk);
 			ims->set("ETEA", mrk->label);
 			ims->set("label", mrk->label);
 			ims->set("type", (int) mrk->getType());
 			ims->set("strtxt", mrk->getString());
 			PageItem* master = this;
-			ims->insertItem("inItem", master);
+			if (master->isNoteFrame())
+				ims->set("noteframeName", master->getUName());
+			else
+				ims->insertItem("inItem", master);
 			ims->set("at", m_Doc->findMarkCPos(mrk, master));
 			if (mrk->isType(MARK2MarkType))
 			{

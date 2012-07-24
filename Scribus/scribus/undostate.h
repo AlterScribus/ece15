@@ -294,11 +294,8 @@ public:
 	~ScItemState() {}
 	void setItem(const C &c) { item_ = c; }
 	C getItem() const { return item_; }
-	void insertPtr(QString itemname, void * item) { pointerMap.insert(itemname, item); }
-	void* getPtr(QString itemname) const { return pointerMap.value(itemname); }
 private:
 	C item_;
-	QMap<QString,void*> pointerMap;
 };
 /**** ItemsState for list of pointers to items *****/
 //template<class C>

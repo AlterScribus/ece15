@@ -340,7 +340,7 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 	PrefsContext *undoPrefs = prefsManager->prefsFile->getContext("undo");
 	undoManager->setUndoEnabled(undoPrefs->getBool("enabled", true));
 	tocGenerator = new TOCGenerator();
-
+	m_marksCount = 0;
 
 	initDefaultValues();
 
@@ -1666,11 +1666,24 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
-					if (currItem->isAutoFrame())
-						currItem->asNoteFrame()->masterFrame()->update();
+					if (currItem->isAutoFrame() && doc->notesChanged())
+					{
+						if (currItem->asNoteFrame()->isEndNotesFrame())
+							doc->updateEndnotesFrames(currItem->asNoteFrame()->notesStyle());
+						else
+						{
+							currItem->asNoteFrame()->masterFrame()->invalidateLayout();
+							currItem->asNoteFrame()->masterFrame()->updateLayout();
+						}
+					}
+//					else
+//					{
+//						currItem->invalidateLayout();
+//						currItem->updateLayout();
+//					}
 					keyrep=kr;
 				}
-				//slotDocCh(false);
+				slotDocCh(false);
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -3384,13 +3397,12 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
-	static int markersCount; //remember marks count from last call
-	if (markersCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+	if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
 		bool sendUpdateReqest = false;
-		if (markersCount != doc->marksList().count() || doc->flag_updateMarksLabels)
+		if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
 			sendUpdateReqest = true;
-		markersCount = doc->marksList().count();
+		m_marksCount = doc->marksList().count();
 		doc->updateMarks(doc->notesChanged());
 		doc->updateChangedEndNotesFrames();
 		if (sendUpdateReqest)
@@ -10579,21 +10591,21 @@ void ScribusMainWindow::slotInsertMarkNote()
 		if (UndoManager::undoEnabled())
 		{
 			ScItemsState* is = new ScItemsState(UndoManager::InsertNote);
-			is->insertItem("mark", mrk);
 			is->set("ETEA", mrk->label);
 			is->set("MARK", QString("new"));
 			is->set("label", mrk->label);
 			is->set("type", (int) MARKNoteMasterType);
 			is->set("strtxt", QString(""));
-			is->insertItem("notePtr", mrk->getNotePtr());
 			is->set("nStyle", nStyle->name());
 			is->set("at", currItem->itemText.cursorPosition() -1);
-			is->insertItem("inItem", currItem);
+			if (currItem->isNoteFrame())
+				is->set("noteframeName", currItem->getUName());
+			else
+				is->insertItem("inItem", currItem);
 			undoManager->action(doc, is);
 		}
 		currItem->invalidateLayout();
 		currItem->layout();
-		doc->setNotesChanged(true);
 		if (mrk->getNotePtr()->isEndNote())
 			doc->flag_updateEndNotes = true;
 		doc->regionsChanged()->update(QRectF());
@@ -10761,13 +10773,18 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 				is = new ScItemsState(UndoManager::EditMark);
 			else
 				is = new ScItemsState(UndoManager::InsertMark);
-			is->insertItem("mark", mrk);
 			is->set("ETEA", mrk->label);
+			is->set("label", mrk->label);
+			is->set("type", (int) mrk->getType());
 			if (insertExistedMark)
 			{
 				is->set("MARK", QString("insert_existing"));
-				if (oldMark.label != mrk->label)
-					is->set("label", mrk->label);
+				if (mrk->label != oldMark.label)
+				{
+					is->set("labelOLD", oldMark.label);
+					is->set("labelNEW", mrk->label);
+					doc->flag_updateMarksLabels = true;
+				}
 				if (oldMark.getString() != mrk->getString())
 				{
 					is->set("strOLD", oldMark.getString());
@@ -10777,8 +10794,6 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			else
 			{
 				is->set("MARK", QString("new"));
-				is->set("label", mrk->label);
-				is->set("type", (int) mrk->getType());
 				is->set("strtxt", mrk->getString());
 				if (mrk->isType(MARK2MarkType))
 				{
@@ -10791,13 +10806,13 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 				if (mrk->isType(MARK2ItemType))
 					is->insertItem("itemPtr", mrk->getItemPtr());
 				if (mrk->isType(MARKNoteMasterType))
-				{
-					is->insertItem("notePtr", mrk->getNotePtr());
 					is->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
-				}
 			}
 			is->set("at", currItem->itemText.cursorPosition() -1);
-			is->insertItem("inItem", currItem);
+			if (currItem->isNoteFrame())
+				is->set("noteframeName", currItem->getUName());
+			else
+				is->insertItem("inItem", currItem);
 			undoManager->action(doc, is);
 			docWasChanged = true;
 		}
@@ -10997,16 +11012,21 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				is = new ScItemsState(UndoManager::InsertMark);
 			else
 				is = new ScItemsState(UndoManager::EditMark);
-			is->insertItem("mark", mrk);
 			is->set("ETEA", mrk->label);
+			if (currItem != NULL)
+			{
+				is->set("at", currItem->itemText.cursorPosition()-1);
+				if (currItem->isNoteFrame())
+					is->set("noteframeName", currItem->getUName());
+				else
+					is->insertItem("inItem", currItem);
+			}
+			is->set("label", mrk->label);
+			is->set("type", (int) mrk->getType());
+			is->set("strtxt", mrk->getString());
 			if (newMark)
 			{
 				is->set("MARK", QString("new"));
-				is->set("at", currItem->itemText.cursorPosition()-1);
-				is->insertItem("inItem", currItem);
-				is->set("label", mrk->label);
-				is->set("type", (int) mrk->getType());
-				is->set("strtxt", mrk->getString());
 				if (mrk->isType(MARK2MarkType))
 				{
 					QString dName;
@@ -11018,18 +11038,13 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				if (mrk->isType(MARK2ItemType))
 					is->insertItem("itemPtr", mrk->getItemPtr());
 				if (mrk->isType(MARKNoteMasterType))
-					is->insertItem("notePtr", mrk->getNotePtr());
+					is->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
 				doc->flag_updateMarksLabels = true;
 			}
 			else
 			{
 				if (replaceMark)
-				{
 					is->set("MARK", QString("replace"));
-					is->set("at", currItem->itemText.cursorPosition());
-					is->insertItem("inItem", currItem);
-					is->insertItem("markOLD", oldMarkPtr);
-				}
 				else
 					is->set("MARK", QString("edit"));
 				if (mrk->label != oldMark.label)

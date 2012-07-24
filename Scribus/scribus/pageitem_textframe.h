@@ -143,7 +143,7 @@ public:
 	bool hasNoteFrame(NotesStyle* NS, bool inChain = false);
 	bool hasNoteFrame(PageItem_NoteFrame* nF) { return m_notesFramesMap.contains(nF); }
 	void delAllNoteFrames(bool doUpdate = false);
-	void delNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
+	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
 	void notesFramesLayout(bool force);
 	//removing all marsk from text, returns number of removed marks

@@ -354,10 +354,16 @@ void PageItem_NoteFrame::updateNotesText()
 	if (prevMrk != NULL)
 	{
 		note = prevMrk->getNotePtr();
-		if (startPos != pos && note != NULL)
+		Q_ASSERT(note != NULL);
+		if (startPos != pos)
 		{
 			note->setSaxedText(getItemTextSaxed(startPos, pos - startPos));
 			note->textLen = pos - startPos;
+		}
+		else //empty note text (only note marker)
+		{
+			note->setSaxedText("");
+			note->textLen = 0;
 		}
 	}
 	itemText.deselectAll();

@@ -629,6 +629,7 @@ public slots:
 private:
 	void insertMark(MarkType);
 	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT);
+	int m_marksCount; //remember marks count from last call
 };
 
 #endif

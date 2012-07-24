@@ -213,9 +213,9 @@ void MarksManager::on_DeleteButton_clicked()
 	if (mrk != NULL)
 	{
 		if (mrk->isType(MARKNoteMasterType))
-			m_Doc->delNoteUndo(mrk->getNotePtr());
+			m_Doc->setUndoDelNote(mrk->getNotePtr());
 		else
-			m_Doc->delMarkUndo(mrk);
+			m_Doc->setUndoDelMark(mrk);
 		m_Doc->eraseMark(mrk, true, NULL, true);
 		m_Doc->changed();
 		m_Doc->regionsChanged()->update(QRectF());
