@@ -1055,6 +1055,8 @@ public:
 	void itemSelection_SetEffects(int s, Selection* customSelection=0);
 	void itemSelection_SetOpticalMargins(int i, Selection* customSelection=0);
 	void itemSelection_resetOpticalMargins(Selection* customSelection=0);
+	void itemSelection_SetIndentsMargins(double first, double left, double right, double above, double below, Selection* customSelection=0);
+	void itemSelection_resetIndentsMargins(Selection* customSelection=0);
 	void itemSelection_SetColorProfile(const QString& profileName, Selection* customSelection=0);
 	void itemSelection_SetRenderIntent(int intentIndex, Selection* customSelection=0);
 	void itemSelection_SetCompressionMethod(int cmIndex, Selection* customSelection=0);

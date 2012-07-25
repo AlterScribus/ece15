@@ -199,6 +199,7 @@ void PropertyWidget_OptMargins::resetOpticalMargins()
 		Selection tempSelection(this, false);
 		tempSelection.addItem(item, true);
 		m_doc->itemSelection_resetOpticalMargins(&tempSelection);
+		setCurrentItem(item);
 	}
 }
 

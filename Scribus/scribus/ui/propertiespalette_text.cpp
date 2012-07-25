@@ -21,6 +21,7 @@ for which a new license (GPL+exception) is in place.
 #include "propertywidget_advanced.h"
 #include "propertywidget_distance.h"
 #include "propertywidget_dropcap.h"
+#include "propertywidget_textmargins.h"
 #include "propertywidget_flop.h"
 #include "propertywidget_optmargins.h"
 #include "propertywidget_orphans.h"
@@ -80,6 +81,9 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	dropcapsBox = new PropertyWidget_DropCap(textTree);
 	dropcapsItem = textTree->addWidget( tr("Drop Cap"), dropcapsBox);
 
+	marginsBox = new PropertyWidget_TextMargins(textTree);
+	marginsItem = textTree->addWidget( tr("Text Margins"), marginsBox);
+
 	distanceWidgets = new PropertyWidget_Distance(textTree);
 	distanceItem = textTree->addWidget( tr("Columns && Text Distances"), distanceWidgets);
 
@@ -121,6 +125,7 @@ void PropertiesPalette_Text::setMainWindow(ScribusMainWindow* mw)
 	colorWidgets->setMainWindow(mw);
 	distanceWidgets->setMainWindow(mw);
 	dropcapsBox->setMainWindow(mw);
+	marginsBox->setMainWindow(mw);
 	optMargins->setMainWindow(mw);
 	pathTextWidgets->setMainWindow(mw);
 
@@ -159,6 +164,7 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 	dropcapsBox->setDoc(m_doc);
 	flopBox->setDoc(m_doc);
 	optMargins->setDoc(m_doc);
+	marginsBox->setDoc(m_doc);
 	orphanBox->setDoc(m_doc);
 	pathTextWidgets->setDoc(m_doc);
 
@@ -191,6 +197,7 @@ void PropertiesPalette_Text::unsetDoc()
 	distanceWidgets->setDoc(0);
 	flopBox->setDoc(0);
 	optMargins->setDoc(0);
+	marginsBox->setDoc(0);
 	orphanBox->setDoc(0);
 	dropcapsBox->setDoc(0);
 	pathTextWidgets->setDoc(0);
@@ -373,6 +380,7 @@ void PropertiesPalette_Text::unitChange()
 	distanceWidgets->unitChange();
 	flopBox->unitChange();
 	optMargins->unitChange();
+	marginsBox->unitChange();
 	pathTextWidgets->unitChange();
 	dropcapsBox->unitChange();
 
@@ -493,6 +501,7 @@ void PropertiesPalette_Text::updateStyle(const ParagraphStyle& newCurrent)
 	advancedWidgets->updateStyle(newCurrent);
 	colorWidgets->updateStyle(newCurrent);
 	optMargins->updateStyle(newCurrent);
+	marginsBox->updateStyle(newCurrent);
 	orphanBox->updateStyle (newCurrent);
 	dropcapsBox->updateStyle(newCurrent);
 
@@ -676,6 +685,7 @@ void PropertiesPalette_Text::languageChange()
 	flopItem->setText(0, tr("First Line Offset"));
 	distanceItem->setText(0, tr("Columns && Text Distances"));
 	optMarginsItem->setText(0, tr("Optical Margins"));
+	marginsItem->setText(0, tr("Text Margins"));
 	orphanItem->setText(0, tr("Orphans and Widows"));
 	pathTextItem->setText(0, tr("Path Text Properties"));
 
@@ -695,6 +705,7 @@ void PropertiesPalette_Text::languageChange()
 	distanceWidgets->languageChange();
 	flopBox->languageChange();
 	optMargins->languageChange();
+	marginsBox->languageChange();
 	orphanBox->languageChange();
 	pathTextWidgets->languageChange();
 

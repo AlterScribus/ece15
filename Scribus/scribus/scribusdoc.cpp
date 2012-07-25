@@ -8331,16 +8331,64 @@ void ScribusDoc::itemSelection_SetOpticalMargins(int i, Selection* customSelecti
 {
 	ParagraphStyle newStyle;
 	newStyle.setOpticalMargins(i);
-	itemSelection_ApplyParagraphStyle(newStyle, customSelection);
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	assert(itemSelection!=0);
+	uint selectedItemCount=itemSelection->count();
+	if (selectedItemCount == 0)
+		return;
+	for (uint aa = 0; aa < selectedItemCount; ++aa)
+		itemSelection_ApplyParagraphStyle(newStyle, customSelection);
 }
-
 
 void ScribusDoc::itemSelection_resetOpticalMargins(Selection* customSelection)
 {
-	//TODO
-//	ParagraphStyle newStyle;
-//	newStyle.setOpticalMargins(i);
-//	itemSelection_ApplyParagraphStyle(newStyle, customSelection);
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	assert(itemSelection!=0);
+	uint selectedItemCount=itemSelection->count();
+	if (selectedItemCount == 0)
+		return;
+	for (uint aa = 0; aa < selectedItemCount; ++aa)
+	{
+		PageItem *currItem = itemSelection->itemAt(aa);
+		ParagraphStyle pStyle =  currItem->itemText.defaultStyle();
+		Selection tempSelection(this, false);
+		tempSelection.addItem(currItem, true);
+		itemSelection_SetOpticalMargins(pStyle.opticalMargins(), &tempSelection);
+	}
+}
+
+void ScribusDoc::itemSelection_SetIndentsMargins(double first, double left, double right, double above, double below, Selection* customSelection)
+{
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	assert(itemSelection!=0);
+	uint selectedItemCount=itemSelection->count();
+	if (selectedItemCount == 0)
+		return;
+	ParagraphStyle newStyle;
+	newStyle.setFirstIndent(first);
+	newStyle.setLeftMargin(left);
+	newStyle.setRightMargin(right);
+	newStyle.setGapBefore(above);
+	newStyle.setGapAfter(below);
+	for (uint aa = 0; aa < selectedItemCount; ++aa)
+		itemSelection_ApplyParagraphStyle(newStyle, customSelection);
+}
+
+void ScribusDoc::itemSelection_resetIndentsMargins(Selection* customSelection)
+{
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	assert(itemSelection!=0);
+	uint selectedItemCount=itemSelection->count();
+	if (selectedItemCount == 0)
+		return;
+	for (uint aa = 0; aa < selectedItemCount; ++aa)
+	{
+		PageItem *currItem = itemSelection->itemAt(aa);
+		ParagraphStyle pStyle =  currItem->itemText.defaultStyle();
+		Selection tempSelection(this, false);
+		tempSelection.addItem(currItem, true);
+		itemSelection_SetIndentsMargins(pStyle.firstIndent(), pStyle.leftMargin(), pStyle.rightMargin(), pStyle.gapBefore(), pStyle.gapAfter(), &tempSelection);
+	}
 }
 
 void ScribusDoc::itemSelection_SetTracking(int kern, Selection* customSelection)
