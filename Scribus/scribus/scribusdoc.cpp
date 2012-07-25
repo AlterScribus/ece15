@@ -16820,11 +16820,11 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesStyle* nSty
 	if (doUpdate)
 	{
 		frame->invalidateLayout();
-		if (nF != NULL)
+		if ((nF != NULL) && !nF->deleteIt)
 		{
 			if (nStyle->isEndNotes())
 				m_docEndNotesFramesChanged.append(nF);
-			else if (!nF->deleteIt)
+			else
 				nF->invalidateLayout(true);
 		}
 	}
@@ -17183,7 +17183,7 @@ bool ScribusDoc::notesFramesUpdate()
 {
 	bool removeEmptyNF = false;
 	bool docWasChanged = false;
-	int end;
+	int end = 0;
 	do {
 		setNotesChanged(false);
 		end = Items->count();
@@ -17194,15 +17194,19 @@ bool ScribusDoc::notesFramesUpdate()
 				continue;
 			if (item->isNoteFrame())
 			{
-				if (item->asNoteFrame()->isEndNotesFrame())
-					//update content and move endnotes if pages were removed
-					updateEndNotesFrameContent(item->asNoteFrame());
-				if (!item->asNoteFrame()->deleteIt)
+				if (item->asNoteFrame()->notesList().isEmpty())
+					item->asNoteFrame()->deleteIt = true;
+				else
 				{
-					if (item->itemText.length() == 0 && !item->asNoteFrame()->notesList().isEmpty())
-						item->asNoteFrame()->updateNotes(item->asNoteFrame()->notesList(), true);
-					item->invalid = true;
-					item->layout();
+					if (item->asNoteFrame()->isEndNotesFrame())
+						updateEndNotesFrameContent(item->asNoteFrame());
+					else
+					{
+						if (item->itemText.length() == 0 && !item->asNoteFrame()->notesList().isEmpty())
+							item->asNoteFrame()->updateNotes(item->asNoteFrame()->notesList(), true);
+						item->invalid = true;
+						item->layout();
+					}
 				}
 				if (item->asNoteFrame()->deleteIt)
 					removeEmptyNF = true;
@@ -17275,8 +17279,6 @@ void ScribusDoc::updateEndnotesFrames(NotesStyle* nStyle)
 	}
 	else if (nStyle->isEndNotes())
 	{
-		if (!nStyle->isEndNotes())
-			return;
 		foreach (PageItem_NoteFrame* nF, listNotesFrames(nStyle))
 			updateEndNotesFrameContent(nF);
 	}
@@ -17302,42 +17304,19 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF)
 	if (nList.isEmpty())
 	{
 		nF->deleteIt = true;
-		if (nF->itemText.length() > 0)
-			nF->itemText.clear();
-		m_docNotesInFrameMap.insert(nF, nList);
-		nF->updateNotes(nList);
+		m_docNotesInFrameMap.remove(nF);
+		delNoteFrame(nF);
 	}
 	else
-		nF->deleteIt = false;
-	PageItem* master = NULL;
-	if (!nList.isEmpty())
-		master = nList.at(0)->masterMark()->getItemPtr();
-	const ScPage* scP = page4EndNotes(nF->notesStyle(), master);
-	if (scP != NULL) //move endnotes frame to its proper page
 	{
-		double x,y;
-		x = scP->Margins.Left + rulerXoffset + scP->xOffset();
-		y = scP->Margins.Top + rulerYoffset + scP->yOffset();
-		if ((scP->pageNr() != nF->OwnPage) || (nF->xPos() > (x + scP->width())) || nF->yPos() > (y + scP->height()))
-			nF->setXYPos(x,y);
-	}
+		NotesStyle* currNS = nF->notesStyle();
+		if (currNS->isAutoNotesHeight() || currNS->isAutoNotesWidth())
+			nF->invalidateLayout();
+		qSort(nList.begin(), nList.end(), ascendingSort);
+		if (nList == m_docNotesInFrameMap.value(nF))
+			return;
 
-	NotesStyle* currNS = nF->notesStyle();
-	if (!nF->deleteIt && (currNS->isAutoNotesHeight() || currNS->isAutoNotesWidth()))
-		nF->invalidateLayout();
-
-	if (nList == m_docNotesInFrameMap.value(nF))
-		return;
-
-	QList<TextNote*> oldList = nF->notesList();
-	nF->updateNotes(m_docNotesInFrameMap.value(nF), !oldList.isEmpty());
-	qSort(nList.begin(), nList.end(), ascendingSort);
-	if (nList != oldList)
-	{
 		nF->updateNotes(nList);
-//		nF->itemText.clear();
-//		while (!nList.isEmpty())
-//			nF->insertNote(tempList.takeLast());
 		nF->invalid = true;
 		nF->layout();
 		//layout all endnotes frames with same range
@@ -17373,11 +17352,13 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks)
 	if (appMode == modeEdit && nF->isSelected())
 	{
 		view()->Deselect(true);
-		view()->SelectItem(nF->masterFrame());
+		if (!nF->isEndNotesFrame())
+			view()->SelectItem(nF->masterFrame());
 	}
 	if (nF->isEndNotesFrame())
 	{
 		m_docEndNotesFramesMap.remove(nF);
+		m_docEndNotesFramesChanged.removeAll(nF);
 		foreach (PageItem* item, DocItems)
 		{
 			if (item->isTextFrame() && !item->isNoteFrame())
@@ -17385,7 +17366,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks)
 		}
 	}
 	else if (nF->masterFrame() != NULL)
-			nF->masterFrame()->removeNoteFrame(nF);
+		nF->masterFrame()->removeNoteFrame(nF);
 	m_docNotesInFrameMap.remove(nF);
 
 	nF->dropLinks();

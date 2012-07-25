@@ -10121,7 +10121,7 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 
 	if (selLength == 0)
 		selLength = 1;
-	itemText.select(selStart, selLength);
+	itemText.select(selStart, selLength, false);
 	it.insert(0, itemText, true);
 	itemText.deselectAll();
 

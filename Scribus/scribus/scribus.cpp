@@ -1671,9 +1671,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 					{
-						if (currItem->asNoteFrame()->isEndNotesFrame())
-							doc->updateEndnotesFrames(currItem->asNoteFrame()->notesStyle());
-						else
+						if (!currItem->asNoteFrame()->isEndNotesFrame())
 						{
 							currItem->asNoteFrame()->masterFrame()->invalidateLayout();
 							currItem->asNoteFrame()->masterFrame()->updateLayout();
@@ -10473,21 +10471,23 @@ void ScribusMainWindow::insertMark(MarkType mType)
 			//inserting mark replace some selected text
 			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 		}
-		if (insertMarkDlg(currItem->asTextFrame(), mType))
+		ScItemsState* is = NULL;
+		if (insertMarkDlg(currItem->asTextFrame(), mType, is))
 		{
-			Mark* mrk = NULL;
+			Mark* mrk = currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark;
 			view->updatesOn(false);
 			currItem->invalidateLayout();
 			currItem->layout();
 			if (mType == MARKNoteMasterType)
 			{
-				mrk = currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark;
 				doc->setNotesChanged(true);
 				if (mrk->getNotePtr()->isEndNote())
 					doc->flag_updateEndNotes = true;
 				doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
 			}
 			doc->changed();
+			if (is != NULL)
+				is->set("label", mrk->label);
 			view->updatesOn(true);
 			view->DrawNew();
 		}
@@ -10578,6 +10578,13 @@ void ScribusMainWindow::slotInsertMarkNote()
 		mrk->setString("");
 		mrk->OwnPage = currItem->OwnPage;
 		currItem->itemText.insertMark(mrk);
+		currItem->invalidateLayout();
+		currItem->layout();
+		if (mrk->getNotePtr()->isEndNote())
+			doc->flag_updateEndNotes = true;
+		doc->regionsChanged()->update(QRectF());
+		doc->changed();
+		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
 		if (UndoManager::undoEnabled())
 		{
 			ScItemsState* is = new ScItemsState(UndoManager::InsertNote);
@@ -10591,13 +10598,6 @@ void ScribusMainWindow::slotInsertMarkNote()
 			is->insertItem("inItem", currItem);
 			undoManager->action(doc, is);
 		}
-		currItem->invalidateLayout();
-		currItem->layout();
-		if (mrk->getNotePtr()->isEndNote())
-			doc->flag_updateEndNotes = true;
-		doc->regionsChanged()->update(QRectF());
-		doc->changed();
-		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
 		if (trans)
 		{
 			trans->commit();
@@ -10609,7 +10609,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 		insertMark(MARKNoteMasterType);
 }
 
-bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrkType)
+bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrkType, ScItemsState* &is)
 {
 	if (doc->masterPageMode() && (mrkType != MARKVariableTextType))
 		//avoid inserting in master pages other marks than Variable Text
@@ -10753,7 +10753,6 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 
 		if (UndoManager::undoEnabled())
 		{
-			ScItemsState* is = NULL;
 			if (mrk->isType(MARKNoteMasterType))
 				is = new ScItemsState(UndoManager::InsertNote);
 			else if (insertExistedMark && ((oldMark.label != mrk->label) || (oldMark.getString() != mrk->getString())))

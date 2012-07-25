@@ -628,7 +628,7 @@ public slots:
 	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
 private:
 	void insertMark(MarkType);
-	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT);
+	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT, ScItemsState* &is);
 	int m_marksCount; //remember marks count from last call
 };
 
