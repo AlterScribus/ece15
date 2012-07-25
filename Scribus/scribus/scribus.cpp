@@ -1679,11 +1679,6 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 							currItem->asNoteFrame()->masterFrame()->updateLayout();
 						}
 					}
-//					else
-//					{
-//						currItem->invalidateLayout();
-//						currItem->updateLayout();
-//					}
 					keyrep=kr;
 				}
 				slotDocCh(false);
@@ -10493,7 +10488,6 @@ void ScribusMainWindow::insertMark(MarkType mType)
 				doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
 			}
 			doc->changed();
-			//doc->regionsChanged()->update(QRectF());
 			view->updatesOn(true);
 			view->DrawNew();
 		}
@@ -10523,10 +10517,7 @@ void ScribusMainWindow::slotEditMark()
 			if (editMarkDlg(hl->mark, currItem->asTextFrame()))
 			{
 				if (hl->mark->isType(MARKVariableTextType))
-				{
-//					if (doc->invalidateVariableTextFrames(hl->mark, true))
-						doc->flag_updateMarksLabels = true;
-				}
+					doc->flag_updateMarksLabels = true;
 				else
 					currItem->invalid = true;
 				//doc->updateMarks();
@@ -10597,10 +10588,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 			is->set("strtxt", QString(""));
 			is->set("nStyle", nStyle->name());
 			is->set("at", currItem->itemText.cursorPosition() -1);
-			if (currItem->isNoteFrame())
-				is->set("noteframeName", currItem->getUName());
-			else
-				is->insertItem("inItem", currItem);
+			is->insertItem("inItem", currItem);
 			undoManager->action(doc, is);
 		}
 		currItem->invalidateLayout();
