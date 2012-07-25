@@ -1371,6 +1371,19 @@ void PageItem_TextFrame::layout()
 			next->invalid = false;
 			next = next->nextInChain();
 		}
+		if (!isNoteFrame() && m_Doc->notesChanged() && !m_notesFramesMap.isEmpty())
+		{ //if notes are used
+			UndoManager::instance()->setUndoEnabled(false);
+			QList<PageItem_NoteFrame*> delList;
+			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+			{
+				if ((nF != NULL) && !nF->isEndNotesFrame())
+					delList.append(nF);
+			}
+			while (!delList.isEmpty())
+				m_Doc->delNoteFrame(delList.takeFirst(), false);
+			UndoManager::instance()->setUndoEnabled(true);
+		}
 		return;
 	}
 
@@ -3916,7 +3929,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && m_Doc->notesChanged())
+				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 				{
 					Q_ASSERT(asNoteFrame()->masterFrame());
 					asNoteFrame()->masterFrame()->invalid = true;
@@ -3937,13 +3950,13 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (itemText.lengthOfSelection() == 0)
 			itemText.select(itemText.cursorPosition(), 1, true);
 		deleteSelectedTextFromFrame();
-		if (isAutoNoteFrame() && m_Doc->notesChanged())
+		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
 			Q_ASSERT(asNoteFrame()->masterFrame());
 			asNoteFrame()->masterFrame()->invalid = true;
 		}
 		else
-			update();
+			layout();
 //		Tinput = false;
 		if ((cr == QChar(13)) && (itemText.length() != 0))
 		{
@@ -3960,7 +3973,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			{
 				deleteSelectedTextFromFrame();
 				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && m_Doc->notesChanged())
+				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 				{
 					Q_ASSERT(asNoteFrame()->masterFrame());
 					asNoteFrame()->masterFrame()->invalid = true;
@@ -3985,15 +3998,17 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 //			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
 //			Tinput = false;
 		}
-		if (isAutoNoteFrame() && m_Doc->notesChanged())
+		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
 			Q_ASSERT(asNoteFrame()->masterFrame());
 			asNoteFrame()->masterFrame()->invalid = true;
 		}
 		else
+		{
 			layout();
-		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-			NextBox->updateLayout();
+			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+				NextBox->updateLayout();
+		}
 		if (itemText.cursorPosition() < firstInFrame())
 		{
 			itemText.setCursorPosition( firstInFrame() );
@@ -4130,7 +4145,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 			// update layout immediately, we need MaxChars to be correct to detect 
 			// if we need to move to next frame or not
-			if (isAutoNoteFrame() && m_Doc->notesChanged())
+			if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 			{
 				Q_ASSERT(asNoteFrame()->masterFrame());
 				asNoteFrame()->masterFrame()->invalid = true;
@@ -4142,7 +4157,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		//check if cursor need to jump to next linked frame
 		//but not for notes frames can`t be updated as may disapper during update
-		if (!(isAutoNoteFrame() && m_Doc->notesChanged()) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
+		if (!(isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty()) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 		{
 			view->Deselect(true);
 			view->Deselect(true);
@@ -4749,9 +4764,8 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 {
 	int oldItemsCount = m_Doc->Items->count();
 
-	QList<PageItem_NoteFrame*> tempList = m_notesFramesMap.keys();
 	QList<PageItem_NoteFrame*> delList;
-	foreach (PageItem_NoteFrame* nF, tempList)
+	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
 		if ((nF != NULL) && !nF->isEndNotesFrame())
 			delList.append(nF);
@@ -4946,26 +4960,27 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 {
 	bool docWasChanged = false;
 
-	QList<PageItem_NoteFrame*> footNotesList;
-	QList<PageItem_NoteFrame*> m_footNotesList;
-	QList<PageItem_NoteFrame*> endNotesList;
-	QList<PageItem_NoteFrame*> m_endNotesList;
+	QList<PageItem_NoteFrame*> curr_footNotesList;
+	QList<PageItem_NoteFrame*> old_footNotesList;
+	QList<PageItem_NoteFrame*> curr_endNotesList;
+	QList<PageItem_NoteFrame*> old_endNotesList;
+
 	foreach(PageItem_NoteFrame* nF, notesMap.keys())
 	{
 		if (nF->isEndNotesFrame())
-			endNotesList.append(nF);
-		else
-			footNotesList.append(nF);
+			curr_endNotesList.append(nF);
+		else if (!notesMap.value(nF).isEmpty())
+			curr_footNotesList.append(nF);
 	}
 	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
 		if (nF->isEndNotesFrame())
-			m_endNotesList.append(nF);
+			old_endNotesList.append(nF);
 		else
-			m_footNotesList.append(nF);
+			old_footNotesList.append(nF);
 	}
 	//check for endnotes marks change in current frame
-	foreach (PageItem_NoteFrame* nF, m_endNotesList)
+	foreach (PageItem_NoteFrame* nF, old_endNotesList)
 	{
 		if (!notesMap.contains(nF) || !m_notesFramesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
 		{
@@ -4974,16 +4989,16 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 		}
 	}
 	//check if some footnotes frames are not used anymore
-	foreach (PageItem_NoteFrame* nF, m_footNotesList)
+	foreach (PageItem_NoteFrame* nF, old_footNotesList)
 	{
-		if (nF->deleteIt || (nF->isAutoRemove() && (!notesMap.contains(nF) || notesMap.value(nF).isEmpty())))
+		if (nF->deleteIt || (nF->isAutoRemove() && !curr_footNotesList.contains(nF)))
 		{
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
 		}
 	}
 	//update footnotes
-	foreach (PageItem_NoteFrame* nF, footNotesList)
+	foreach (PageItem_NoteFrame* nF, curr_footNotesList)
 	{
 		if (nF->deleteIt)
 		{

@@ -1669,7 +1669,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
-					if (currItem->isAutoFrame() && doc->notesChanged())
+					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 					{
 						if (currItem->asNoteFrame()->isEndNotesFrame())
 							doc->updateEndnotesFrames(currItem->asNoteFrame()->notesStyle());
