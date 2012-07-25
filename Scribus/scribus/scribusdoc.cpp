@@ -17409,6 +17409,16 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks)
 				m->setItemPtr(NULL);
 		}
 	}
+	m_Selection->delaySignalsOn();
+	if (m_Selection->findItem(nF)!=-1)
+	{
+		if (appMode == modeEdit)
+			view()->requestMode(modeNormal);
+		m_Selection->removeItem(nF);
+	}
+	view()->Deselect(true);
+	m_Selection->delaySignalsOff();
+
 	if (Items->removeOne(nF))
 	{
 		setNotesChanged(true);
