@@ -16725,7 +16725,7 @@ void ScribusDoc::deleteNote(TextNote* note, bool fromText)
 	if (fromText)
 	{
 		nF->invalid = true;
-		nF->masterFrame()->invalid = true;
+		note->masterMark()->getItemPtr()->invalid = true;
 	}
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), fromText, note->masterMark()->getItemPtr());
