@@ -17205,14 +17205,7 @@ bool ScribusDoc::notesFramesUpdate()
 					item->layout();
 				}
 				if (item->asNoteFrame()->deleteIt)
-				{
 					removeEmptyNF = true;
-					if (item->isSelected())
-					{
-						view()->Deselect(true);
-						view()->SelectItem(item->asNoteFrame()->masterFrame());
-					}
-				}
 			}
 			if (end != Items->count())
 			{
