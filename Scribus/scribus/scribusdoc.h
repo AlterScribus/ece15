@@ -1690,7 +1690,7 @@ public:
 	PageItem_NoteFrame* createNoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle, int index = -1);
 	PageItem_NoteFrame* createNoteFrame(NotesStyle *nStyle, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	//delete noteframe
-	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true);
+	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true, bool forceDeletion = true);
 	//renumber notes for given notes style
 	//return true if doc needs update after changing numbers of notes
 	bool updateNotesNums(NotesStyle* nStyle);
@@ -1744,6 +1744,7 @@ private:
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
 	void invalidateNoteFrames(NotesStyle* nStyle);
+	void invalidateMasterFrames(NotesStyle* nStyle);
 
 public slots:
 	//update strings (page numbers) for marks

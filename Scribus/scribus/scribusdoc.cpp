@@ -1926,6 +1926,9 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					NS->setNotesParStyle(ss->get("NEWnotesParStyle"));
 				}
 				setNotesChanged(true);
+				if ((ss->get("marksChStyle") != ss->get("NEWmarksChStyle"))
+					|| (ss->getBool("superMaster") != ss->getBool("NEWsuperMaster")))
+					invalidateMasterFrames(NS);
 				updateNotesNums(NS);
 				updateNotesFramesSettings(NS);
 				if (flag_updateEndNotes)
@@ -1964,6 +1967,12 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					note->setSaxedText(is->get("noteTXT"));
 					master->itemText.insertMark(mrk, is->getInt("at"));
 					master->invalid = true;
+					if (!nStyle->isAutoRemoveEmptyNotesFrames())
+					{
+						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) is->getItem("noteframe");
+						Q_ASSERT(nF != NULL);
+						master->asTextFrame()->setNoteFrame(nF);
+					}
 					setNotesChanged(true);
 					if (note->isEndNote())
 						flag_updateEndNotes = true;
@@ -11233,7 +11242,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 	selectedItemCount = delItems.count();
 
 	UndoTransaction* activeTransaction = NULL;
-	if ((selectedItemCount > 1) && UndoManager::undoEnabled())
+	if ((selectedItemCount > 1 || currItem->isNoteFrame()) && UndoManager::undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Group + "/" + Um::Selection, Um::IGroup,
 																			  Um::Delete, tooltip, Um::IDelete));
 
@@ -11246,10 +11255,9 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		for (int a=0; a < m_docMarksList.count(); a++)
 		{
 			Mark* m = m_docMarksList.at(a);
-			if (m == NULL)
-				continue;
+			Q_ASSERT(m != NULL);
 			if (m->isType(MARK2ItemType) && (m->getItemPtr() == currItem))
-				eraseMark(m, true);
+				m->setItemPtr(NULL);
 		}
 		if (currItem->isNoteFrame())
 		{
@@ -11257,8 +11265,12 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 			if (currItem->asNoteFrame()->masterFrame())
 				currItem->asNoteFrame()->masterFrame()->invalid = true;
-			delNoteFrame(currItem->asNoteFrame());
-			continue;
+			if (!UndoManager::undoEnabled() || forceDeletion || currItem->isAutoNoteFrame())
+			{
+				itemList->removeAll(currItem);
+				delNoteFrame(currItem->asNoteFrame(), false, false);
+				continue;
+			}
 		}
 		else
 		{
@@ -16361,7 +16373,10 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 			int MPos = findMarkCPos(mrk, item);
 			while (MPos > -1)
 			{
-				item->itemText.removeChars(MPos,1);
+				if (mrk->isType(MARKNoteFrameType) && MPos > 1 && item->itemText.text(MPos -1) == SpecialChars::PARSEP)
+					item->itemText.removeChars(MPos-1,2);
+				else
+					item->itemText.removeChars(MPos,1);
 				found = true;
 				MPos = findMarkCPos(mrk, item);
 			}
@@ -16774,6 +16789,8 @@ void ScribusDoc::setUndoDelNote(TextNote *note)
 		ims->set("at", pos);
 		ims->set("noteTXT", note->saxedText());
 		ims->set("nStyle", note->notesStyle()->name());
+		if (!note->notesStyle()->isAutoRemoveEmptyNotesFrames())
+			ims->insertItem("noteframe", note->noteMark()->getItemPtr());
 		undoManager->action(this, ims);
 	}
 }
@@ -16850,7 +16867,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesStyle* nSty
 		}
 	}
 	num = noteNum;
-	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL))
+	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL) && nF->isAutoNoteFrame())
 		nF->deleteIt = true;
 }
 
@@ -16912,7 +16929,7 @@ bool ScribusDoc::updateNotesNums(NotesStyle *nStyle)
 		if ((num == nStyle->start()) && nStyle->isEndNotes())
 		{
 			PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-			if (nF != NULL)
+			if (nF != NULL && nF->isAutoNoteFrame())
 				nF->deleteIt = true;
 		}
 	}
@@ -16968,7 +16985,7 @@ bool ScribusDoc::updateNotesNums(NotesStyle *nStyle)
 				if ((i != -1) && (num == nStyle->start()) && nStyle->isEndNotes())
 				{
 					PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-					if (nF != NULL)
+					if (nF != NULL && nF->isAutoNoteFrame())
 						nF->deleteIt = true;
 				}
 			}
@@ -17086,7 +17103,7 @@ bool ScribusDoc::updateNotesNums(NotesStyle *nStyle)
 			if ((i != -1) && (num == nStyle->start()) && nStyle->isEndNotes())
 			{
 				PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-				if (nF != NULL)
+				if (nF != NULL && nF->isAutoNoteFrame())
 					nF->deleteIt = true;
 			}
 		}
@@ -17216,7 +17233,10 @@ bool ScribusDoc::notesFramesUpdate()
 			if (item->isNoteFrame())
 			{
 				if (item->asNoteFrame()->notesList().isEmpty())
-					item->asNoteFrame()->deleteIt = true;
+				{
+					if (item->isAutoNoteFrame())
+						item->asNoteFrame()->deleteIt = true;
+				}
 				else
 				{
 					if (item->asNoteFrame()->isEndNotesFrame())
@@ -17267,10 +17287,7 @@ bool ScribusDoc::notesFramesUpdate()
 void ScribusDoc::updateNotesFramesSettings(NotesStyle *NS)
 {
 	foreach (PageItem_NoteFrame* nF, listNotesFrames(NS))
-	{	if (nF->isEndNotesFrame())
-		{
-			
-		}
+	{	
 		if (nF->isWelded() && !NS->isAutoWeldNotesFrames())
 			nF->unWeld();
 		if (!nF->isWelded() && NS->isAutoWeldNotesFrames())
@@ -17394,7 +17411,7 @@ PageItem_NoteFrame *ScribusDoc::createNoteFrame(NotesStyle *nStyle, double x, do
 	return nF;
 }
 
-void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks)
+void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool forceDeletion)
 {
 	Q_ASSERT(nF != NULL);
 	//check if note frame is listed in text frames m_notesFramesMap
@@ -17447,7 +17464,8 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks)
 
 	Items->removeOne(nF);
 	setNotesChanged(true);
-	delete nF;
+	if (forceDeletion)
+		delete nF;
 }
 
 bool ScribusDoc::validateNSet(NotesStyle NS, QString newName)
@@ -17480,6 +17498,18 @@ void ScribusDoc::invalidateNoteFrames(NotesStyle *nStyle)
 {
 	foreach (PageItem_NoteFrame* nF, listNotesFrames(nStyle))
 		nF->invalid = true;
+}
+
+void ScribusDoc::invalidateMasterFrames(NotesStyle *nStyle)
+{
+	QList<PageItem*> toInvalidate;
+	foreach (TextNote* note, m_docNotesList)
+	{
+		if (note->notesStyle() == nStyle)
+			toInvalidate.append(note->masterMark()->getItemPtr());
+	}
+	while (!toInvalidate.isEmpty())
+		toInvalidate.takeFirst()->invalid = true;
 }
 
 PageItem_NoteFrame *ScribusDoc::endNoteFrame(NotesStyle *nStyle, PageItem_TextFrame *master)
