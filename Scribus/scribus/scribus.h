@@ -212,7 +212,7 @@ public:
 	CharSelect *charPalette;
 	PropertiesPalette *propertiesPalette;
 	MarksManager *marksManager;
-	NotesStylesEditor *nsManager;
+	NotesStylesEditor *nsEditor;
 	NodePalette *nodePalette;
 	OutlinePalette *outlinePalette;
 	Biblio *scrapbookPalette;

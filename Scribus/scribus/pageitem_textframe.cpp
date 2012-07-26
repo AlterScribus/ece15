@@ -1383,6 +1383,7 @@ void PageItem_TextFrame::layout()
 			while (!delList.isEmpty())
 				m_Doc->delNoteFrame(delList.takeFirst(), false);
 			UndoManager::instance()->setUndoEnabled(true);
+			m_notesFramesMap.clear();
 		}
 		return;
 	}
@@ -4923,8 +4924,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
 					w = scP->width() - scP->Margins.Left - scP->Margins.Right;
 					h = calculateLineSpacing(itemText.defaultStyle(), this);
-					nF = new PageItem_NoteFrame(note->notesStyle(), m_Doc, x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
-					m_Doc->DocItems.append(nF);
+					nF = m_Doc->createNoteFrame(note->notesStyle(), x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
 					switch (NS->range())
 					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
 						case NSRdocument:
@@ -4945,14 +4945,11 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					}
 				}
 				else
-				{
 					//create new footnotes frame for that text frame
-					nF = new PageItem_NoteFrame(this, note->notesStyle());
-					m_Doc->DocItems.insert(m_Doc->DocItems.indexOf(lastItem), nF);
-				}
-				m_Doc->setNotesChanged(true);
+					nF = m_Doc->createNoteFrame(this, note->notesStyle(), m_Doc->DocItems.indexOf(lastItem));
 				//insert in map noteframe with empty list of notes
 				m_notesFramesMap.insert(nF, QList<TextNote*>());
+				m_Doc->setNotesChanged(true);
 			}
 			else if (NS->isEndNotes())
 			{//check endnotes frame proper page
@@ -5025,7 +5022,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 //			docWasChanged = true;
 //		}
 //	}
-	//check if some footnotes frames are not used anymore
+	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
 		if (nF->deleteIt || (nF->isAutoRemove() && !notesMap.keys().contains(nF)))
@@ -5074,7 +5071,6 @@ void PageItem_TextFrame::notesFramesLayout(bool force)
 int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 {
 	int num = 0;
-	bool fromText = true;
 	if (!isNoteFrame())
 	{
 		TextNote* note = selectedNoteMark(true);
@@ -5084,7 +5080,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 				m_Doc->setUndoDelNote(note);
 			if (note->isEndNote())
 				m_Doc->flag_updateEndNotes = true;
-			m_Doc->deleteNote(note, fromText);
+			m_Doc->deleteNote(note);
 			note = selectedNoteMark(true);
 			++num;
 		}
@@ -5123,7 +5119,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 				ims->insertItem("itemPtr", mrk->getItemPtr());
 			undoManager->action(m_Doc, ims);
 		}
-		m_Doc->eraseMark(mrk, fromText, this);
+		m_Doc->eraseMark(mrk, true, this);
 		mrk = selectedMark(true);
 		++num;
 	}
@@ -5136,6 +5132,11 @@ PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(NotesStyle *nStyle)
 		if (nF->notesStyle() == nStyle)
 			return nF;
 	return NULL;
+}
+
+void PageItem_TextFrame::setNoteFrame(PageItem_NoteFrame *nF)
+{
+	 m_notesFramesMap.insert(nF, nF->notesList());
 }
 
 void PageItem_TextFrame::setMaxY(double y)

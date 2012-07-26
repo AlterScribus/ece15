@@ -173,7 +173,7 @@ void ScripterCore::FinishScriptRun()
 	{
 		ScMW->propertiesPalette->setDoc(ScMW->doc);
 		ScMW->marksManager->setDoc(ScMW->doc);
-		ScMW->nsManager->setDoc(ScMW->doc);
+		ScMW->nsEditor->setDoc(ScMW->doc);
 		ScMW->layerPalette->setDoc(ScMW->doc);
 		ScMW->outlinePalette->setDoc(ScMW->doc);
 		ScMW->outlinePalette->BuildTree();

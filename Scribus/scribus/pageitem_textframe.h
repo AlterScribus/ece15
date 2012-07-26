@@ -155,7 +155,7 @@ public:
 	//list of notes inserted by current text frame into given noteframe
 	QList<TextNote*> notesList(PageItem_NoteFrame* nF) { return m_notesFramesMap.value(nF); }
 	//insert note frame to list with empty notes list
-	void setNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.insert(nF, QList<TextNote*>()); }
+	void setNoteFrame(PageItem_NoteFrame* nF);
 	void invalidateNotesFrames();
 
 private:

@@ -8,13 +8,13 @@
 class PageItem_NoteFrame : public PageItem_TextFrame
 {
 		Q_OBJECT
-
-public:
+friend class ScribusDoc;
+private:
 	PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle);
 	~PageItem_NoteFrame() { }
-
+public:
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }
 	virtual bool isAutoNoteFrame() const { return m_nstyle->isAutoRemoveEmptyNotesFrames(); }

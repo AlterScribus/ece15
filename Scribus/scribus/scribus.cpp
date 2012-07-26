@@ -609,10 +609,10 @@ void ScribusMainWindow::initPalettes()
 	connect( marksManager, SIGNAL(paletteShown(bool)), scrActions["editMarks"], SLOT(setChecked(bool)));
 	marksManager->installEventFilter(this);
 	// initializing notes styles manager
-	nsManager = new NotesStylesEditor(this, "notesStylesEditor");
-	connect( scrActions["editNotesStyles"], SIGNAL(toggled(bool)), nsManager, SLOT(setPaletteShown(bool)) );
-	connect( nsManager, SIGNAL(paletteShown(bool)), scrActions["editNotesStyles"], SLOT(setChecked(bool)));
-	nsManager->installEventFilter(this);
+	nsEditor = new NotesStylesEditor(this, "notesStylesEditor");
+	connect( scrActions["editNotesStyles"], SIGNAL(toggled(bool)), nsEditor, SLOT(setPaletteShown(bool)) );
+	connect( nsEditor, SIGNAL(paletteShown(bool)), scrActions["editNotesStyles"], SLOT(setChecked(bool)));
+	nsEditor->installEventFilter(this);
 
 //	connect(docCheckerPalette, SIGNAL(selectElement(int, int)), this, SLOT(selectItemsFromOutlines(int, int)));
 	connect(docCheckerPalette, SIGNAL(selectElementByItem(PageItem *, bool)), this, SLOT(selectItemsFromOutlines(PageItem *, bool)));
@@ -1198,7 +1198,7 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 			{
 				scrActions["editMark"]->setEnabled(true);
 				if ((hl->mark->isType(MARKNoteMasterType) || hl->mark->isType(MARKNoteFrameType)) && (hl->mark->getNotePtr() != NULL))
-					nsManager->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
+					nsEditor->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
 			}
 			else
 				scrActions["editMark"]->setEnabled(false);
@@ -2113,7 +2113,7 @@ ScribusDoc *ScribusMainWindow::doFileNew(double width, double height, double top
 		undoManager->switchStack(tempDoc->DocName);
 		styleManager->setDoc(tempDoc);
 		marksManager->setDoc(tempDoc);
-		nsManager->setDoc(tempDoc);
+		nsEditor->setDoc(tempDoc);
 		tocGenerator->setDoc(tempDoc);
 	}
 	undoManager->setUndoEnabled(true);
@@ -2341,7 +2341,7 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	tocGenerator->setDoc(doc);
 	styleManager->setDoc(doc);
 	marksManager->setDoc(doc);
-	nsManager->setDoc(doc);
+	nsEditor->setDoc(doc);
 	symbolPalette->setDoc(doc);
 	inlinePalette->setDoc(doc);
 	modeToolBar->Angle->setValue(doc->itemToolPrefs().calligrapicPenAngle);
@@ -2375,7 +2375,7 @@ void ScribusMainWindow::SwitchWin()
 // 	scrActions["shade100"]->setChecked(true);
 	propertiesPalette->setDoc(doc);
 	marksManager->setDoc(doc);
-	nsManager->setDoc(doc);
+	nsEditor->setDoc(doc);
 	//propertiesPalette->Cpal->displayGradient(0);
 	pagePalette->setView(view);
 	layerPalette->setDoc(doc);
@@ -2583,7 +2583,7 @@ void ScribusMainWindow::HaveNewDoc()
 	updateActiveWindowCaption(doc->DocName);
 // 	scrActions["shade100"]->setChecked(true);
 	propertiesPalette->setDoc(doc);
-	nsManager->setDoc(doc);
+	nsEditor->setDoc(doc);
 	marksManager->setDoc(doc);
 	symbolPalette->setDoc(doc);
 	inlinePalette->setDoc(doc);
@@ -4373,7 +4373,7 @@ void ScribusMainWindow::slotGetContent()
 			slotDocCh();
 			styleManager->setDoc(doc);
 			marksManager->setDoc(doc);
-			nsManager->setDoc(doc);
+			nsEditor->setDoc(doc);
 		}
 	}
 }
@@ -4894,7 +4894,7 @@ bool ScribusMainWindow::DoFileClose()
 	tocGenerator->setDoc(0);
 	styleManager->setDoc(0);
 	marksManager->setDoc(0);
-	nsManager->setDoc(0);
+	nsEditor->setDoc(0);
 	layerPalette->ClearInhalt();
 	docCheckerPalette->buildErrorList(0);
 	HaveDoc--;
@@ -5330,7 +5330,7 @@ void ScribusMainWindow::slotEditPaste()
 				propertiesPalette->unsetDoc();
 				propertiesPalette->setDoc(doc);
 				marksManager->setDoc(doc);
-				nsManager->setDoc(doc);
+				nsEditor->setDoc(doc);
 				symbolPalette->unsetDoc();
 				symbolPalette->setDoc(doc);
 
@@ -5423,7 +5423,7 @@ void ScribusMainWindow::slotEditPaste()
 				propertiesPalette->unsetDoc();
 				propertiesPalette->setDoc(doc);
 				marksManager->setDoc(doc);
-				nsManager->setDoc(doc);
+				nsEditor->setDoc(doc);
 				symbolPalette->unsetDoc();
 				symbolPalette->setDoc(doc);
 				inlinePalette->unsetDoc();
@@ -8029,7 +8029,7 @@ int ScribusMainWindow::ShowSubs()
 	charPalette->startup();
 	styleManager->startup();
 	marksManager->startup();
-	nsManager->startup();
+	nsEditor->startup();
 	symbolPalette->startup();
 
 	// init the toolbars
@@ -10484,6 +10484,7 @@ void ScribusMainWindow::insertMark(MarkType mType)
 				if (mrk->getNotePtr()->isEndNote())
 					doc->flag_updateEndNotes = true;
 				doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
+				nsEditor->setNotesStyle(mrk->getNotePtr()->notesStyle());
 			}
 			doc->changed();
 			if (is != NULL)
@@ -10525,6 +10526,8 @@ void ScribusMainWindow::slotEditMark()
 				doc->regionsChanged()->update(QRectF());
 				view->DrawNew();
 			}
+			if (hl->mark->isNoteType())
+				nsEditor->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
 		}
 	}
 }
@@ -10879,7 +10882,6 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 	editMDialog->setWindowTitle(tr("Edit ") + editMDialog->windowTitle());
 	if (editMDialog->exec())
 	{
-		Mark* oldMarkPtr = mrk;
 		Mark oldMark = *mrk;
 		Mark* Mrk = NULL;
 		MarkData d;

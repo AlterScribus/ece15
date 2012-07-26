@@ -15,12 +15,12 @@ class SCRIBUS_API NotesStylesEditor : public ScrPaletteBase, private Ui::NotesSt
 public:
 	explicit NotesStylesEditor(QWidget *parent = 0, const char *name = "notesStylesEditor");
 	~NotesStylesEditor();
+	void updateNSList();
 
 private:
 	ScribusDoc         *m_Doc;
 	PrefsContext       *m_prefs;
 	QMap<QString, NotesStyle> changesMap; //<NSname to change, NSet new values>
-	void updateNSList();
 	void readNotesStyle(QString nsName);
 	void changeNotesStyle();
 	void setBlockSignals(bool block);

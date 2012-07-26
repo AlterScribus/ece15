@@ -1685,8 +1685,10 @@ public:
 	void undoSetNotesStyle(SimpleState* ss, NotesStyle* ns);
 	NotesStyle* getNotesStyle(QString nsName);
 	//delete note, if fromText than marks for given note will be removed
-	void deleteNote(TextNote* note, bool fromText = true);
+	void deleteNote(TextNote* note);
 	void setUndoDelNote(TextNote* note);
+	PageItem_NoteFrame* createNoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle, int index = -1);
+	PageItem_NoteFrame* createNoteFrame(NotesStyle *nStyle, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	//delete noteframe
 	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true);
 	//renumber notes for given notes style
@@ -1707,9 +1709,9 @@ public:
 	void setEndNoteFrame(PageItem_NoteFrame* nF, void* ptr)   { rangeItem rI={ptr}; m_docEndNotesFramesMap.insert(nF,rI); }
 	void setEndNoteFrame(PageItem_NoteFrame* nF, int section)   { rangeItem rI; rI.sectionIndex = section; m_docEndNotesFramesMap.insert(nF, rI); }
 	//update all endnotesframes content for given notes style
-	void updateEndnotesFrames(NotesStyle* nStyle = NULL);
+	void updateEndnotesFrames(NotesStyle* nStyle = NULL, bool invalidate = false);
 	//update endnotesframe content
-	void updateEndNotesFrameContent(PageItem_NoteFrame* nF);
+	void updateEndNotesFrameContent(PageItem_NoteFrame* nF, bool invalidate = false);
 	//insert noteframe into list of changed
 	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNotesFramesChanged.append(nF); }
 	//update content for changed endnotesframes

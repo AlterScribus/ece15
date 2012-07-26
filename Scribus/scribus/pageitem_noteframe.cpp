@@ -319,7 +319,6 @@ void PageItem_NoteFrame::updateNotesText()
 
 	int oldSelStart = itemText.startOfSelection();
 	int oldSelLen = itemText.lengthOfSelection();
-
 	int pos = 0;
 	int startPos = 0;
 	TextNote *note = NULL;
@@ -366,7 +365,6 @@ void PageItem_NoteFrame::updateNotesText()
 			note->textLen = 0;
 		}
 	}
-	itemText.deselectAll();
 	if (oldSelLen > 0)
 		itemText.select(oldSelStart, oldSelLen);
 }
