@@ -193,7 +193,7 @@ void PageItem_NoteFrame::layout()
 
 	if (m_nstyle->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
-		Width = m_masterFrame->width();
+		oldWidth = Width = m_masterFrame->width();
 		updateClip();
 	}
 
@@ -210,7 +210,7 @@ void PageItem_NoteFrame::layout()
 			double maxH = m_Doc->currentPage()->height() - Xpos;
 			while (frameOverflows())
 			{
-				Height += 8;
+				oldHeight = Height += 8;
 				updateClip(false);
 				invalid = true;
 				PageItem_TextFrame::layout();
@@ -219,7 +219,7 @@ void PageItem_NoteFrame::layout()
 			}
 		}
 		double hackValue = 0.5;
-		Height = ceil(maxY) + BExtra + hackValue;
+		oldHeight = Height = ceil(maxY) + BExtra + hackValue;
 		updateConstants();
 		updateClip();
 		invalid = true;
