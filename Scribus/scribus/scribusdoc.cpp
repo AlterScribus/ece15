@@ -200,6 +200,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	m_View(0),
 	m_guardedObject(this),
 	m_serializer(NULL),
+	m_tserializer(NULL),
 	is12doc(false),
 	NrItems(0),
 	First(1), Last(0),
@@ -293,6 +294,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	m_View(0),
 	m_guardedObject(this),
 	m_serializer(NULL),
+	m_tserializer(NULL),
 	is12doc(false),
 	NrItems(0),
 	First(1), Last(0),
@@ -681,6 +683,8 @@ ScribusDoc::~ScribusDoc()
 		delete docHyphenator;
 	if (m_serializer)
 		delete m_serializer;
+	if (m_tserializer)
+		delete m_tserializer;
 	ScCore->fileWatcher->start();
 }
 
@@ -15032,6 +15036,17 @@ Serializer *ScribusDoc::serializer()
 		m_serializer = new Serializer (*this);
 	Q_ASSERT(m_serializer);
 	return m_serializer;
+}
+
+Serializer *ScribusDoc::textSerializer()
+{
+	if (!m_tserializer) {
+		m_tserializer = new Serializer (*this);
+		StoryText::desaxeRules("/", *m_tserializer, "SCRIBUSTEXT");
+		m_tserializer->addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());
+	}
+	Q_ASSERT(m_tserializer);
+	return m_tserializer;
 }
 
 
