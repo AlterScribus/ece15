@@ -16764,8 +16764,8 @@ void ScribusDoc::deleteNote(TextNote* note)
 		nF->deleteIt = true;
 		master->asTextFrame()->removeNoteFrame(nF);
 	}
-	else
-		master->asTextFrame()->setNoteFrame(nF);
+//	else
+//		master->asTextFrame()->setNoteFrame(nF);
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), true, master);
 	if (note->noteMark() != NULL)

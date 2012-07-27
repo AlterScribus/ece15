@@ -1377,13 +1377,12 @@ void PageItem_TextFrame::layout()
 			QList<PageItem_NoteFrame*> delList;
 			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-				if ((nF != NULL) && !nF->isEndNotesFrame())
+				if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
 					delList.append(nF);
 			}
 			while (!delList.isEmpty())
 				m_Doc->delNoteFrame(delList.takeFirst(), false);
 			UndoManager::instance()->setUndoEnabled(true);
-			m_notesFramesMap.clear();
 		}
 		return;
 	}
@@ -2917,9 +2916,10 @@ void PageItem_TextFrame::layout()
 		UndoManager::instance()->setUndoEnabled(false);
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
 		if (notesMap != m_notesFramesMap)
+		{
 			updateNotesMarks(notesMap);
-		if (!m_notesFramesMap.isEmpty())
-			notesFramesLayout(true);
+			notesFramesLayout();
+		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
 	if (NextBox != NULL) 
@@ -2942,9 +2942,10 @@ NoRoom:
 		UndoManager::instance()->setUndoEnabled(false);
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
 		if (notesMap != m_notesFramesMap)
+		{
 			updateNotesMarks(notesMap);
-		if (!m_notesFramesMap.isEmpty())
-			notesFramesLayout(true);
+			notesFramesLayout();
+		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
 
@@ -4785,7 +4786,7 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if ((nF != NULL) && !nF->isEndNotesFrame())
+		if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
 			delList.append(nF);
 	}
 	while (!delList.isEmpty())
@@ -5045,7 +5046,17 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	if (m_notesFramesMap != notesMap)
 	{
 		docWasChanged = true;
-		m_notesFramesMap = notesMap;
+		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+		{
+			if (notesMap.contains(nF))
+			{
+				m_notesFramesMap.insert(nF, notesMap.value(nF));
+				notesMap.remove(nF);
+			}
+			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
+				m_notesFramesMap.remove(nF);
+		}
+		m_notesFramesMap.unite(notesMap);
 	}
 	if (docWasChanged)
 	{
@@ -5054,7 +5065,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	}
 }
 
-void PageItem_TextFrame::notesFramesLayout(bool force)
+void PageItem_TextFrame::notesFramesLayout()
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
@@ -5064,8 +5075,7 @@ void PageItem_TextFrame::notesFramesLayout(bool force)
 			continue;
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
-		if (force)
-			nF->invalid = true;
+		nF->invalid = true;
 		nF->layout();
 	}
 }

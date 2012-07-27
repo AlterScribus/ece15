@@ -1954,6 +1954,9 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			{
 				mark_attr.insert("nStyle", mrk->getNotePtr()->notesStyle()->name());
 				mark_attr.insert("note",mrk->getNotePtr()->saxedText());
+				//store noteframe name for inserting into note if it is non-auto-removable
+				if (!mrk->getNotePtr()->noteMark()->getItemPtr()->isAutoNoteFrame())
+					mark_attr.insert("noteframe", mrk->getNotePtr()->noteMark()->getItemPtr()->getUName());
 			}
 			handler.beginEnd("mark", mark_attr);
 		}
@@ -2136,6 +2139,7 @@ public:
 			Xml_attr::iterator iIt = attr.find("item");
 			Xml_attr::iterator m_lIt = attr.find("mark_l");
 			Xml_attr::iterator m_tIt = attr.find("mark_t");
+			Xml_attr::iterator nf_It = attr.find("noteframe");
 			if (lIt != attr.end())
 				l = Xml_data(lIt);
 			if (tIt != attr.end())
@@ -2183,6 +2187,12 @@ public:
 					note->setMasterMark(mrk);
 					if (nIt != attr.end())
 						note->setSaxedText(Xml_data(nIt));
+//					if (!NS->isAutoRemoveEmptyNotesFrames() && (nf_It != attr.end()))
+//					{
+//						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) doc->getItemFromName(Xml_data(nf_It));
+//						if (nF != NULL)
+//							doc->m_Selection->itemAt(0)->asTextFrame()->setNoteFrame(nF);
+//					}
 					mrk->setNotePtr(note);
 					doc->setNotesChanged(true);
 				}

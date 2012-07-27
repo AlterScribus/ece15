@@ -5118,9 +5118,6 @@ void ScribusMainWindow::slotEditCut()
 			{
 				if ((cItem->itemText.length() == 0) || (!cItem->HasSel))
 					return;
-				//removing marks and notes from selected text
-//				if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!ScCore->usingGUI()))
-//					return;
 				StoryText itemText(doc);
 				itemText.setDefaultStyle(cItem->itemText.defaultStyle());
 				itemText.insert(0, cItem->itemText, true);

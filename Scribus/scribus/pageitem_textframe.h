@@ -145,7 +145,7 @@ public:
 	void delAllNoteFrames(bool doUpdate = false);
 	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
-	void notesFramesLayout(bool force);
+	void notesFramesLayout();
 	//removing all marsk from text, returns number of removed marks
 	int removeMarksFromText(bool doUndo);
 	//return note frame for given notes style if current text frame has notes marks with this style

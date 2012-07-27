@@ -372,11 +372,13 @@ void PageItem_NoteFrame::updateNotesText()
 void PageItem_NoteFrame::restoreDeleteNoteText(SimpleState *state, bool isUndo)
 {
 	PageItem::restoreDeleteFrameText(state, isUndo);
+	updateNotesText();
 }
 
 void PageItem_NoteFrame::restoreInsertNoteText(SimpleState *state, bool isUndo)
 {
 	PageItem::restoreInsertFrameText(state, isUndo);
+	updateNotesText();
 }
 
 int PageItem_NoteFrame::findNoteCpos(TextNote* note)
