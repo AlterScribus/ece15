@@ -16759,7 +16759,7 @@ void ScribusDoc::deleteNote(TextNote* note)
 	PageItem* master = note->masterMark()->getItemPtr();
 	nF->invalid = true;
 	master->invalid = true;
-	if (nF->notesList().isEmpty() && nF->isAutoRemove())
+	if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
 	{
 		nF->deleteIt = true;
 		master->asTextFrame()->removeNoteFrame(nF);
@@ -17273,7 +17273,7 @@ bool ScribusDoc::notesFramesUpdate()
 		for (int i = 0; i < end; ++i)
 		{
 			PageItem* item = Items->at(i);
-			if (item->isNoteFrame() && item->asNoteFrame()->deleteIt)
+			if (item->isAutoNoteFrame() && item->asNoteFrame()->deleteIt)
 				tmplist.append(item);
 		}
 		foreach (PageItem* item, tmplist)
@@ -17349,7 +17349,7 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF, bool invalid
 
 	if (nList.isEmpty())
 	{
-		if (nF->notesStyle()->isAutoRemoveEmptyNotesFrames())
+		if (nF->isAutoNoteFrame())
 		{
 			nF->deleteIt = true;
 			m_docNotesInFrameMap.remove(nF);
@@ -17386,7 +17386,7 @@ void ScribusDoc::updateChangedEndNotesFrames()
 		PageItem_NoteFrame* nF = m_docEndNotesFramesChanged.first();
 		m_docEndNotesFramesChanged.removeAll(nF);
 		updateEndNotesFrameContent(nF);
-		if (nF->deleteIt)
+		if (nF->deleteIt && nF->isAutoNoteFrame())
 			delNoteFrame(nF);
 	}
 }

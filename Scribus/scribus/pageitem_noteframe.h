@@ -38,7 +38,6 @@ public:
 	PageItem_TextFrame* masterFrame() { return m_masterFrame; }
 	void setMaster(PageItem* frame) { m_masterFrame = frame->asTextFrame(); }
 	bool isEndNotesFrame() { return m_nstyle->isEndNotes(); }
-	bool isAutoRemove() { return m_nstyle->isAutoRemoveEmptyNotesFrames(); }
 	bool isAutoWelded() { return m_nstyle->isAutoWeldNotesFrames(); }
 	bool isAutoHeight() { return m_nstyle->isAutoNotesHeight(); }
 	bool isAutoWidth() { return m_nstyle->isAutoNotesWidth(); }

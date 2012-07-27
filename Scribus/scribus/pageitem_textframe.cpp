@@ -5027,7 +5027,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->deleteIt || (nF->isAutoRemove() && !notesMap.keys().contains(nF)))
+		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
 		{
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;

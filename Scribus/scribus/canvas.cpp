@@ -1452,8 +1452,6 @@ void Canvas::DrawMasterItems(ScPainter *painter, ScPage *page, ScLayer& layer, Q
  */
 void Canvas::DrawPageItems(ScPainter *painter, ScLayer& layer, QRect clip, bool notesFramesPass)
 {
-	if (notesFramesPass && m_doc->notesList().isEmpty())
-		return;
 	if ((m_viewMode.previewMode) && (!layer.isPrintable))
 		return;
 	if ((m_viewMode.viewAsPreview) && (!layer.isPrintable))
