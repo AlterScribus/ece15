@@ -53,6 +53,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_math.h"
 
+#include "ui/checkDocument.h"
 #include "ui/guidemanager.h"
 
 #include <cairo.h>
@@ -3031,7 +3032,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 					}
 				}
 				bool warnedText = isWarnedText(as);
-				if(warnedText)
+				if(warnedText && m_Doc->scMW()->docCheckerPalette->isVisible())
 				{
 					const CharStyle& charStyleS(itemText.charStyle(as));
 					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
