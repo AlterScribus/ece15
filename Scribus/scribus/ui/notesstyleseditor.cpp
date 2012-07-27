@@ -57,20 +57,38 @@ void NotesStylesEditor::languageChange()
 {
 	bool wasSignalsBlocked = signalsBlocked();
 	setBlockSignals(true);
-	
+
 	if (addNewNsMode)
 	{
 		OKButton->setText(tr("Cancel"));
 		OKButton->setToolTip(tr("Dialog is in adding new notes style mode. After pressing Cancel button dialog will be switched into normal notes styles edit mode."));
+		ApplyButton->setText(tr("Add Style"));
 	}
 	else
 	{
 		OKButton->setText("OK");
 		OKButton->setToolTip("");
+		ApplyButton->setText(tr("Apply"));
 	}
-	NewButton->setText(tr("Add New Set"));
-	NewButton->setToolTip(tr("New notes style will be add to document only after wpressing Apply butoton.\nYou cannot switch to different notes style before you apply that new one or press Cancel button and exit from adding mode."));
-
+	NewButton->setText(tr("Add New Style"));
+	NewButton->setToolTip(tr("New notes style will be add to document only after pressing Apply butoton.\nYou cannot switch to different notes style before you apply that new one or press Cancel button and exit from adding mode."));
+	NewNameLabel->setText(tr("New Style Name"));
+	FootRadio->setText(tr("Footnotes"));
+	EndRadio->setText(tr("Endnotes"));
+	NumberingLabel->setText("Numbering");
+	RangeLabel->setText(tr("Range"));
+	StartLabel->setText(tr("Start Number"));
+	PrefixLabel->setText(tr("Prefix"));
+	SuffixLabel->setText(tr("Suffix"));
+	SuperMasterLabel->setText(tr("Superscript in text"));
+	SuperNoteLabel->setText(tr("Superscript in notes"));
+	charStyleComboLabel->setText(tr("Mark`s Character Style"));
+	paraStyleComboLabel->setText(tr("Note`s Paragraph Style"));
+	AutoHLabel->setText(tr("Auto Height"));
+	AutoWLabel->setText(tr("Auto Width"));
+	AutoWeldLabel->setText(tr("Auto Welding"));
+	AutoRemoveLabel->setText(tr("Remove if empty"));
+	DeleteButton->setText(tr("Delete"));
 	setBlockSignals(wasSignalsBlocked);
 }
 
@@ -128,7 +146,8 @@ void NotesStylesEditor::updateNSList()
 			NSlistBox->addItem(m_Doc->m_docNotesStylesList.at(a)->name());
 			changesMap.insert(m_Doc->m_docNotesStylesList.at(a)->name(), *(m_Doc->m_docNotesStylesList.at(a)));
 		}
-		NSlistBox->setEnabled(true);
+		if (!m_Doc->m_docNotesStylesList.isEmpty())
+			NSlistBox->setEnabled(true);
 		if (NSlistBox->currentText() != tr("default"))
 			DeleteButton->setEnabled(true);
 		else
@@ -228,7 +247,8 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 		if (m_Doc->validateNSet(newNS))
 		{
 			addNewNsMode = false;
-			OKButton->setText("OK");
+			OKButton->setText(tr("OK"));
+			OKButton->setToolTip("");
 			ApplyButton->setText(tr("Apply"));
 			m_Doc->newNotesStyle(newNS);
 			updateNSList();
@@ -326,7 +346,6 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 		{
 			updateNSList();
 			m_Doc->flag_updateMarksLabels = true;
-			//m_doc->notesFramesUpdate();
 			m_Doc->changed();
 			m_Doc->regionsChanged()->update(QRectF());
 		}
@@ -379,10 +398,10 @@ void NotesStylesEditor::on_NewButton_clicked()
 
 void NotesStylesEditor::on_OKButton_clicked()
 {
-	if (OKButton->text() != "OK")
+	if (OKButton->text() != tr("OK"))
 	{
 		//in adding new style mode go back to normal editing mode
-		OKButton->setText("OK");
+		OKButton->setText(tr("OK"));
 		NewButton->setEnabled(true);
 		addNewNsMode = false;
 		QString newName = NSlistBox->currentText();

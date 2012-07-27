@@ -62,7 +62,7 @@
        <item>
         <widget class="QPushButton" name="NewButton">
          <property name="text">
-          <string>Add New</string>
+          <string>Add New Style</string>
          </property>
         </widget>
        </item>
@@ -82,7 +82,7 @@
        <item row="0" column="0">
         <widget class="QLabel" name="NewNameLabel">
          <property name="text">
-          <string>New Name</string>
+          <string>New Style Name</string>
          </property>
         </widget>
        </item>
@@ -116,7 +116,7 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="NumberinLabel">
+        <widget class="QLabel" name="NumberingLabel">
          <property name="text">
           <string>Numbering</string>
          </property>
@@ -220,7 +220,7 @@
           <number>2</number>
          </property>
          <property name="text">
-          <string>Mark`s Character style</string>
+          <string>Mark`s Character Style</string>
          </property>
          <property name="textFormat">
           <enum>Qt::RichText</enum>
@@ -240,7 +240,7 @@
        <item row="10" column="0">
         <widget class="QLabel" name="paraStyleComboLabel">
          <property name="text">
-          <string>Note`s paragraph style</string>
+          <string>Note`s Paragraph Style</string>
          </property>
         </widget>
        </item>
