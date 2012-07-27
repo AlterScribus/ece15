@@ -4040,6 +4040,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 //		view->RefreshItem(this);
 		break;
 	default:
+		if (isNoteFrame() && itemText.cursorPosition() == 0)
+			break; //avoid inserting chars before first note mark
 		bool doUpdate = false;
 		UndoTransaction* activeTransaction = NULL;
 		if (itemText.lengthOfSelection() > 0) //(kk < 0x1000)

@@ -11261,10 +11261,13 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		}
 		if (currItem->isNoteFrame())
 		{
-			currItem->itemText.selectAll();
-			currItem->asTextFrame()->deleteSelectedTextFromFrame();
-			if (currItem->asNoteFrame()->masterFrame())
-				currItem->asNoteFrame()->masterFrame()->invalid = true;
+			if (currItem->itemText.length() >0)
+			{
+				currItem->itemText.selectAll();
+				currItem->asTextFrame()->deleteSelectedTextFromFrame();
+				if (currItem->asNoteFrame()->masterFrame())
+					currItem->asNoteFrame()->masterFrame()->invalid = true;
+			}
 			if (!UndoManager::undoEnabled() || forceDeletion || currItem->isAutoNoteFrame())
 			{
 				itemList->removeAll(currItem);

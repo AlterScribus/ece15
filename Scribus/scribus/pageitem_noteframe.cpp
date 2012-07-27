@@ -179,7 +179,7 @@ void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
 
 void PageItem_NoteFrame::layout()
 {
-	if (!invalid || deleteIt)
+	if (!invalid || l_notes.isEmpty())
 		return;
 	if (!m_Doc->flag_layoutNotesFrames)
 		return;
