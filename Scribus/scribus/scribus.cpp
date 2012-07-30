@@ -4210,16 +4210,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			PageItem *ite = doc->Items->at(azz);
 			if((ite->nextInChain() == NULL) && !ite->isNoteFrame())  //do not layout notes frames
 				ite->layout();
-/*			if (doc->OldBM)
-			{
-				if ((ite->itemType() == PageItem::TextFrame) && (ite->isBookmark))
-					bookmarkPalette->BView->AddPageItem(ite);
-			}
-			else
-			{
-				if ((ite->itemType() == PageItem::TextFrame) && (ite->isBookmark))
-					bookmarkPalette->BView->ChangeItem(ite->BMnr, ite->ItemNr);
-			} */
 		}
 		doc->setLoading(true);
 		if (!doc->marksList().isEmpty())
@@ -4232,8 +4222,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			if(ite->nextInChain() == NULL)
 				ite->layout();
 		}
-//		if (doc->OldBM)
-//			StoreBookmarks();
 		doc->RePos = false;
 		doc->setModified(false);
 		updateRecent(FName);
