@@ -1112,7 +1112,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/plugins/scripter/api_printer.h \
     scribus/plugins/scripter/api_layer.h \
     scribus/plugins/scripter/api_imageitem.h \
-    scribus/plugins/scripter/api_imageexport.h
+    scribus/plugins/scripter/api_imageexport.h \
+    scribus/ui/propertywidget_textmargins.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1240,7 +1241,8 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/tools/spellcheck/aspellpluginbase.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
-         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui
+         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
+    scribus/ui/propertywidget_textmarginsbase.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2140,7 +2142,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/plugins/scripter/api_printer.cpp \
     scribus/plugins/scripter/api_layer.cpp \
     scribus/plugins/scripter/api_imageitem.cpp \
-    scribus/plugins/scripter/api_imageexport.cpp
+    scribus/plugins/scripter/api_imageexport.cpp \
+    scribus/ui/propertywidget_textmargins.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \

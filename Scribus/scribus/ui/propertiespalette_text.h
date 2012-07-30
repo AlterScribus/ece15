@@ -26,6 +26,7 @@ class PageItem;
 class PropertyWidget_Advanced;
 class PropertyWidget_Distance;
 class PropertyWidget_DropCap;
+class PropertyWidget_TextMargins;
 class PropertyWidget_Flop;
 class PropertyWidget_OptMargins;
 class PropertyWidget_Orphans;
@@ -136,6 +137,9 @@ protected:
 
 	PropertyWidget_DropCap* dropcapsBox;
 	QTreeWidgetItem* dropcapsItem;
+
+	PropertyWidget_TextMargins* marginsBox;
+	QTreeWidgetItem* marginsItem;
 
 	PropertyWidget_PathText* pathTextWidgets;
 	QTreeWidgetItem* pathTextItem;

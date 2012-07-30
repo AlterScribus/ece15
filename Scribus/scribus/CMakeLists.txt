@@ -142,6 +142,7 @@ SET(SCRIBUS_UI_SRC
   ui/propertywidget_orphansbase.ui
   ui/propertywidget_pathtextbase.ui
   ui/propertywidget_textcolorbase.ui
+  ui/propertywidget_textmarginsbase.ui
   ui/replacecolors.ui
   ui/replaceonecolor.ui
   ui/selectobjects.ui
@@ -397,6 +398,7 @@ SET(SCRIBUS_MOC_CLASSES
   ui/propertywidget_orphans.h
   ui/propertywidget_pathtext.h
   ui/propertywidget_textcolor.h
+  ui/propertywidget_textmargins.h
   ui/query.h
   ui/replacecolors.h
   ui/replaceonecolor.h
@@ -828,6 +830,7 @@ SET(SCRIBUS_SOURCES
   ui/propertywidget_orphans.cpp
   ui/propertywidget_pathtext.cpp
   ui/propertywidget_textcolor.cpp
+  ui/propertywidget_textmargins.cpp
   ui/propertywidgetbase.cpp
   ui/query.cpp
   ui/replacecolors.cpp
