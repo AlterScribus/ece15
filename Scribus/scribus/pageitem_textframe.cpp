@@ -3058,9 +3058,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 {
 	if (invalid)
 	{
-		if (isNoteFrame() && asNoteFrame()->deleteIt)
+		if (!isNoteFrame() || !asNoteFrame()->deleteIt)
 		//do not layout notes frames which should be deleted
-			return;
 		layout();
 	}
 	if (invalid)
@@ -4937,13 +4936,6 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 
 			TextNote* note = mark->getNotePtr();
 			Q_ASSERT(note != NULL);
-			if (note == NULL)
-			{
-				qWarning() << "note mark without valid note pointer";
-				note = m_Doc->newNote(m_Doc->m_docNotesStylesList.at(0));
-				note->setMasterMark(mark);
-				mark->setNotePtr(note);
-			}
 			NotesStyle* NS = note->notesStyle();
 			PageItem_NoteFrame* nF = NULL;
 			if (NS->isEndNotes())
@@ -5026,40 +5018,6 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 {
 	bool docWasChanged = false;
 
-//	QList<PageItem_NoteFrame*> curr_footNotesList;
-//	QList<PageItem_NoteFrame*> old_footNotesList;
-//	QList<PageItem_NoteFrame*> curr_endNotesList;
-//	QList<PageItem_NoteFrame*> old_endNotesList;
-
-	
-//	foreach(PageItem_NoteFrame* nF, notesMap.keys())
-//	{
-//		if (nF->isEndNotesFrame())
-//			curr_endNotesList.append(nF);
-//		else if (!notesMap.value(nF).isEmpty())
-//			curr_footNotesList.append(nF);
-//	}
-//	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-//	{
-//		if (nF->isEndNotesFrame())
-//			old_endNotesList.append(nF);
-//		else
-//			old_footNotesList.append(nF);
-//	}
-//	//check for endnotes marks change in current frame
-//	foreach (PageItem_NoteFrame* nF, old_endNotesList)
-//	{
-//		if (nF->deleteIt)
-//		{
-//			m_Doc->delNoteFrame(nF,true);
-//			docWasChanged = true;
-//		}
-//		else if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
-//		{
-//			m_Doc->endNoteFrameChanged(nF);
-//			docWasChanged = true;
-//		}
-//	}
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{

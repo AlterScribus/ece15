@@ -191,6 +191,7 @@ void PageItem_NoteFrame::layout()
 	//while layouting notes frames undo should be disabled
 	UndoManager::instance()->setUndoEnabled(false);
 
+	int oldW = Width;
 	if (m_nstyle->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
 		oldWidth = Width = m_masterFrame->width();
@@ -225,16 +226,17 @@ void PageItem_NoteFrame::layout()
 		invalid = true;
 		PageItem_TextFrame::layout();
 	}
-	if (oldH != height())
-	{
+	if (oldH != height() || oldW != Width)
+	{ //invalidate other notesframes as that noteframe was changed
 		if (masterFrame() != NULL)
 		{
 			foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
 				nF->invalid = true;
 		}
+		checkChanges();
+		m_Doc->regionsChanged()->update(QRect());
 	}
 	invalid = false;
-	m_Doc->regionsChanged()->update(getBoundingRect());
 	UndoManager::instance()->setUndoEnabled(true);
 }
 

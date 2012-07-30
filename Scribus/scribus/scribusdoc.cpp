@@ -2009,7 +2009,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					currItem = (PageItem*) is->getItem("inItem");
 				if (isUndo)
 				{
-					if (is->get("MARK") == "new")
+					if (is->get("MARK") == "new" || is->get("MARK") == "paste")
 					{
 						Q_ASSERT(mrk != NULL);
 						if (mrk->isNoteType())
@@ -2120,19 +2120,17 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				}
 				else  //REDO
 				{
-					if (is->get("MARK") == "new")
+					if (is->get("MARK") == "new" || is->get("MARK") == "paste")
 					{
-						if (currItem == NULL)
-						{
-							qDebug() << "Wrong inItem in undo step for mark";
-							return;
-						}
-						mrk = newMark();
-						mrk->label = is->get("label");
-						mrk->setType((MarkType) is->getInt("type"));
 						Q_ASSERT(currItem != NULL);
 						Q_ASSERT(pos >= 0);
-						currItem->itemText.insertMark(mrk, pos);
+						mrk = newMark();
+						if (is->get("MARK") == "new")
+							currItem->itemText.insertMark(mrk, pos);
+						else //if (is->get("MARK") == "paste"
+							currItem->itemText.item(pos)->mark = mrk;
+						mrk->label = is->get("label");
+						mrk->setType((MarkType) is->getInt("type"));
 						if (is->contains("strtxt"))
 							mrk->setString(is->get("strtxt"));
 						if (is->contains("dName"))
@@ -2145,6 +2143,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							TextNote* note = newNote(nStyle);
 							mrk->setNotePtr(note);
 							note->setMasterMark(mrk);
+							if (is->get("MARK") == "paste")
+								note->setSaxedText(is->get("noteTXT"));
 							if (nStyle->isEndNotes())
 								flag_updateEndNotes = true;
 							updateNotesNums(nStyle);

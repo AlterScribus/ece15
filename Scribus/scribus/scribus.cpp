@@ -1679,8 +1679,8 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					}
 					keyrep=kr;
 				}
-				slotDocCh(false);
-				doc->regionsChanged()->update(QRectF());
+				//slotDocCh(false);
+				//doc->regionsChanged()->update(QRectF());
 			}
 		}
 	}
@@ -3393,7 +3393,9 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
-	if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+	if (doc->isLoading())
+		m_marksCount = doc->marksList().count();
+	else if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
 		bool sendUpdateReqest = false;
 		if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
@@ -5282,16 +5284,63 @@ void ScribusMainWindow::slotEditPaste()
 							story->removeChars(pos,1);
 					}
 				}
+				int atPos = currItem->itemText.cursorPosition();
 				if (UndoManager::undoEnabled())
 				{
 					ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
 					is->set("PASTE_TEXT", "paste_text");
-					is->set("START",currItem->itemText.cursorPosition());
+					is->set("START",atPos);
 					is->setItem(*story);
 					undoManager->action(currItem, is);
 				}
 				currItem->itemText.insert(*story);
-
+				//check if new marks are created
+				//and set undo steps for them
+				if (doc->flag_updateMarksLabels)
+				{
+					doc->updateMarks(doc->notesChanged());
+					if (UndoManager::undoEnabled())
+					{
+						for(int i = 0; i< story->length(); ++i)
+						{
+							if (story->item(i)->hasMark())
+							{
+								ScItemsState* iss = NULL;
+								Mark* mrk = story->item(i)->mark;
+								if (mrk->isType(MARKNoteMasterType))
+									iss = new ScItemsState(UndoManager::InsertNote);
+								else
+									iss = new ScItemsState(UndoManager::InsertMark);
+								iss->set("ETEA", mrk->label);
+								iss->set("label", mrk->label);
+								iss->set("type", (int) mrk->getType());
+								iss->set("MARK", QString("paste"));
+								iss->set("strtxt", mrk->getString());
+								iss->set("at", atPos + i);
+								if (currItem->isNoteFrame())
+									iss->set("noteframeName", currItem->getUName());
+								else
+									iss->insertItem("inItem", currItem);
+								if (mrk->isType(MARK2MarkType))
+								{
+									QString dName;
+									MarkType dType;
+									mrk->getMark(dName, dType);
+									iss->set("dName", dName);
+									iss->set("dType", (int) dType);
+								}
+								if (mrk->isType(MARK2ItemType))
+									iss->insertItem("itemPtr", mrk->getItemPtr());
+								if (mrk->isType(MARKNoteMasterType))
+								{
+									iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
+									iss->set("noteTXT", mrk->getNotePtr()->saxedText());
+								}
+								undoManager->action(doc, iss);
+							}
+						}
+					}
+				}
 				delete story;
 			}
 			else if (ScMimeData::clipboardHasScribusElem() || ScMimeData::clipboardHasScribusFragment())
@@ -5452,7 +5501,7 @@ void ScribusMainWindow::slotEditPaste()
 		}
 		if (doc->notesChanged())
 			doc->notesFramesUpdate();
-		slotDocCh(false);
+		//slotDocCh(false);
 	}
 }
 
