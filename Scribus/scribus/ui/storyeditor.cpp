@@ -2894,7 +2894,7 @@ void StoryEditor::updateTextFrame()
 		}
 	}
 #endif
-	currItem->invalidateLayout();
+	currItem->asTextFrame()->invalidateLayout(true);
 	PageItem* nb2 = nextItem;
 	nb2->itemText.clear();
 #if 0
@@ -2942,7 +2942,7 @@ void StoryEditor::updateTextFrame()
 	Editor->saveItemText(nextItem);
 	// #9180 : force relayout here, it appears that relayout is sometime disabled
 	// to speed up selection, but re layout() cannot be avoided here
-	nextItem->invalidateLayout();
+	nextItem->asTextFrame()->invalidateLayout(true);
 	nextItem->layout();
 #if 0
 	QList<PageItem*> FrameItemsDel;

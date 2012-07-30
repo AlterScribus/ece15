@@ -28,6 +28,7 @@ for which a new license (GPL+exception) is in place.
 #include "styles/paragraphstyle.h"
 
 class PageItem;
+class Mark;
 class ScribusDoc;
 
 /* Struktur fuer Pageitem Text */
@@ -110,16 +111,17 @@ public:
 	float PRot;
 	float PDx;
 	int embedded;
+	Mark* mark;
 	QChar ch;
 	ScText() : 
 		CharStyle(),
 		parstyle(NULL), glyph(), 
-		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), ch() {}
+		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), mark(NULL), ch() {}
 	ScText(const ScText& other) : 
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), ch(other.ch)
+		embedded(other.embedded), mark(other.mark), ch(other.ch)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;
@@ -136,6 +138,8 @@ public:
 	~ScText();
 
 	bool hasObject(ScribusDoc *doc) const;
+	//returns true if given MRK is found, if MRK is NULL then any mark returns true
+	bool hasMark(Mark * MRK = NULL) const;
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
 };

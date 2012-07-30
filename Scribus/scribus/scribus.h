@@ -75,10 +75,12 @@ class GuideManager;
 class HelpBrowser;
 class InlinePalette;
 class LayerPalette;
+class MarksManager;
 class Measurements;
 class ScMWMenuManager;
 class ModeToolBar;
 class NodePalette;
+class NotesStylesEditor;
 class OutlinePalette;
 class PDFToolBar;
 class PSLib;
@@ -209,6 +211,8 @@ public:
 	GuideManager *guidePalette;
 	CharSelect *charPalette;
 	PropertiesPalette *propertiesPalette;
+	MarksManager *marksManager;
+	NotesStylesEditor *nsEditor;
 	NodePalette *nodePalette;
 	OutlinePalette *outlinePalette;
 	Biblio *scrapbookPalette;
@@ -516,6 +520,7 @@ public slots:
 	 * canvas modes/gestures.
 	 */
 	void updateTableMenuActions();
+	void emitUpdateRequest(int updateFlags) { emit UpdateRequest(updateFlags); }
 
 signals:
 	void AppModeChanged(int oldMode, int newMode);
@@ -608,6 +613,23 @@ private:
 	FormatsManager *formatsManager;
 
 	QPointer<HelpBrowser> helpBrowser;
+
+public slots:
+	//inserting marks
+	void slotInsertMark2Mark() { insertMark(MARK2MarkType); }
+	void slotInsertMarkAnchor() { insertMark(MARKAnchorType); }
+	void slotInsertMarkVariableText() { insertMark(MARKVariableTextType); }
+	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
+	void slotInsertMarkNote();
+	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
+	void slotEditMark();
+	//connected to signal emited by actions when "Update Marks" menu item is triggered
+	void slotUpdateMarks();
+	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
+private:
+	void insertMark(MarkType);
+	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT, ScItemsState* &is);
+	int m_marksCount; //remember marks count from last call
 };
 
 #endif

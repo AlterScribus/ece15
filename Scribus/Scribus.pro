@@ -1114,6 +1114,17 @@ HEADERS += scribus/actionmanager.h \
     scribus/plugins/scripter/api_imageitem.h \
     scribus/plugins/scripter/api_imageexport.h \
     scribus/ui/propertywidget_textmargins.h
+    scribus/marks.h \
+    scribus/notesstyles.h \
+    scribus/pageitem_noteframe.h \
+    scribus/ui/notesstyleseditor.h \
+    scribus/ui/markvariabletext.h \
+    scribus/ui/marksmanager.h \
+    scribus/ui/marknote.h \
+    scribus/ui/MarkInsertDlg.h \
+    scribus/ui/markanchor.h \
+    scribus/ui/mark2mark.h \
+    scribus/ui/mark2item.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1243,6 +1254,13 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
          scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
     scribus/ui/propertywidget_textmarginsbase.ui
+    scribus/ui/notesstyleseditor.ui \
+    scribus/ui/markvariabletext.ui \
+    scribus/ui/marksmanager.ui \
+    scribus/ui/marknote.ui \
+    scribus/ui/markanchor.ui \
+    scribus/ui/mark2mark.ui \
+    scribus/ui/mark2item.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2144,6 +2162,15 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/plugins/scripter/api_imageitem.cpp \
     scribus/plugins/scripter/api_imageexport.cpp \
     scribus/ui/propertywidget_textmargins.cpp
+    scribus/notesstyles.cpp \
+    scribus/pageitem_noteframe.cpp \
+    scribus/ui/mark2item.cpp \
+    scribus/ui/notesstyleseditor.cpp \
+    scribus/ui/markvariabletext.cpp \
+    scribus/ui/marksmanager.cpp \
+    scribus/ui/marknote.cpp \
+    scribus/ui/markanchor.cpp \
+    scribus/ui/mark2mark.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
@@ -2189,17 +2216,3 @@ TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.uk.ts \
                 resources/translations/po/scribus.zh_CN.ts \
                 resources/translations/po/scribus.zh_TW.ts
-
-OTHER_FILES += \
-    scribus/plugins/scripter/README.txt \
-    scribus/plugins/scripter/dynapidocs.spy \
-    scribus/plugins/scripter/CMakeLists.txt \
-    scribus/plugins/scripter/apidocs.py \
-    scribus/plugins/scripter/api_Scripter.dialogs.scrapbook.api \
-    scribus/plugins/scripter/api_Scripter.dialogs.properties.api \
-    scribus/plugins/scripter/api_Scripter.dialogs.pages.api \
-    scribus/plugins/scripter/api_Scripter.dialogs.outline.api \
-    scribus/plugins/scripter/api_Scripter.dialogs.nodes.api \
-    scribus/plugins/scripter/api_Scripter.dialogs.mainWindow.api \
-    scribus/plugins/scripter/api_Scripter.dialogs.layers.api \
-    scribus/plugins/scripter/api_Scripter.activeDocument.activePage.items.api
