@@ -21,13 +21,14 @@ class QIntValidator;
 #include "styleoptions.h"
 
 class ScComboBox;
+class ScribusDoc;
 
 class SCRIBUS_API PageSelector : public QWidget
 {
 	Q_OBJECT
 
 public:
-	PageSelector( QWidget* parent, int maxPg );
+	PageSelector( QWidget* parent, ScribusDoc* doc );
 	~PageSelector() {};
 	
 	virtual void changeEvent(QEvent *e);
@@ -52,7 +53,8 @@ public:
 	QIntValidator *m_validator;
 	int LastPG;
 	int APage;
-
+	ScribusDoc* m_Doc;
+	
 public slots:
 	virtual void GotoPg(int);
 	virtual void setMaximum(int);
@@ -71,10 +73,13 @@ protected:
 	QHBoxLayout* PageSelectorLayout;
 	QLabel *PageCount;
 	QString PageCountString;
-
+	
 signals:
 	void GotoPage(int);
 
+private:
+	//returns string with "virtual" page number if it is different than "normal" page number
+	QString virtualPN(int page);
 };
 
 #endif // PAGESELECTOR_H

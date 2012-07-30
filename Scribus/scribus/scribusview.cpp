@@ -275,7 +275,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	zoomDefaultToolbarButton->setIcon(QIcon(loadIcon("16/zoom-original.png")));
 	zoomOutToolbarButton->setIcon(QIcon(loadIcon("16/zoom-out.png")));
 	zoomInToolbarButton->setIcon(QIcon(loadIcon("16/zoom-in.png")));
-	pageSelector = new PageSelector(this, Doc->Pages->count());
+	pageSelector = new PageSelector(this, Doc);
 	pageSelector->setFont(fo);
 	pageSelector->setFocusPolicy(Qt::ClickFocus);
 	layerMenu = new QComboBox( this );
