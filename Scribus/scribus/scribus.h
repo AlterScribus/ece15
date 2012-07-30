@@ -630,6 +630,9 @@ private:
 	void insertMark(MarkType);
 	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT, ScItemsState* &is);
 	int m_marksCount; //remember marks count from last call
+//for styles shortcuts
+public:
+	bool stylesShortcutKeyEvent(const QKeyEvent*);
 };
 
 #endif
