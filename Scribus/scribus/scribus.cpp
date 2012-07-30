@@ -1394,8 +1394,6 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 				case modeCopyProperties:
 				case modeEditGradientVectors:
 				case modeEditMeshGradient:
-				case modeLinkFrames:
-				case modeUnlinkFrames:
 				case modeRotation:
 					view->Deselect(false);
 				case modeLinkFrames:
