@@ -56,6 +56,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_math.h"
 
+#include "ui/checkDocument.h"
 #include "ui/guidemanager.h"
 //don`t worry - message boxes are called only if GUI is enabled
 #include "ui/scmessagebox.h"
@@ -1257,11 +1258,13 @@ bool PageItem_TextFrame::moveLinesFromPreviousFrame ()
 }
 
 // called at the end of a frame or column
-void PageItem_TextFrame::adjustParagraphEndings ()
+bool PageItem_TextFrame::adjustParagraphEndings (int &a, bool EndOfFrame)
 {
 	// More text to go - let's apply paragraph flowing options - orphans/widows, etc
-	int pos = itemText.lastInFrame();
-	if (pos >= itemText.length() - 1) return;
+	int pos = a;
+	if (EndOfFrame)
+		pos = itemText.lastInFrame();
+	if (pos >= itemText.length() - 1) return false;
 
 	ParagraphStyle style = itemText.paragraphStyle (pos);
 	int paragraphStart = itemText.prevParagraph (pos) + 1;
@@ -1290,11 +1293,21 @@ void PageItem_TextFrame::adjustParagraphEndings ()
 			// push this paragraph to the next frame
 			for (int i = 0; i < pull; ++i)
 				itemText.removeLastLine();
-			MaxChars = itemText.lastInFrame() + 1;
 			incompleteLines = 0;
 			incompletePositions.clear();
+			PageItem_TextFrame* frame = this;
+			if (EndOfFrame)
+			{
+				MaxChars = itemText.lastInFrame() + 1;
+				if (nextInChain())
+					frame = nextInChain()->asTextFrame();
+			}
+			a = itemText.lastInFrame();
+			frame->warnedList.append(QPair<int, int>(itemText.startOfParagraph(itemText.nrOfParagraph(a)), itemText.endOfParagraph(itemText.nrOfParagraph(a +1))));
+			return true;
 		}
 	}
+	return false;
 }
 
 void PageItem_TextFrame::layout() 
@@ -1324,7 +1337,10 @@ void PageItem_TextFrame::layout()
 		return;
 	}
 	if (invalid && BackBox == NULL)
+	{
 		firstChar = 0;
+		warnedList.clear();
+	}
 	
 //	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
 	QPoint pt1, pt2;
@@ -2127,6 +2143,8 @@ void PageItem_TextFrame::layout()
 					a--;
 					current.recalculateY = true;
 					current.addLeftIndent = true;
+					if (adjustParagraphEndings (a, false))
+						current.startLine(a + 1);
 					continue;
 				}
 				current.line.x = current.restartX = current.xPos;
@@ -2460,7 +2478,7 @@ void PageItem_TextFrame::layout()
 					//check if after overflow text can be placed
 					overflowWidth = realEnd - (current.xPos - current.maxShrink);
 					double newXAdd = overflowWidth - style.rightMargin() + style.minGlyphExtension() * wide + hyphWidth;
-					if (current.isEndOfLine(newXAdd) || current.xPos + newXAdd >= current.colRight || realEnd >= current.mustLineEnd)
+					if (current.isEndOfLine(newXAdd) || (current.xPos + newXAdd >= current.colRight) || (realEnd >= current.mustLineEnd))
 					{
 						if (!current.afterOverflow)
 						{
@@ -2826,6 +2844,7 @@ void PageItem_TextFrame::layout()
 					current.column++;
 					if (current.column < Cols)
 					{
+						adjustParagraphEndings (a, false);
 						if (firstLineOffset() == FLOPRealGlyphHeight)
 							asce = 0;
 						current.nextColumn();
@@ -2880,7 +2899,8 @@ void PageItem_TextFrame::layout()
 				if (DropCmode)
 					addAsce = qMax(realAsce, asce + offset);
 				else
-					addAsce = asce + offset;				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+					addAsce = asce + offset;
+				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;
@@ -2953,6 +2973,9 @@ void PageItem_TextFrame::layout()
 		{
 			updateNotesMarks(notesMap);
 			notesFramesLayout();
+			nextFrame->invalid = true;
+			nextFrame->firstChar = MaxChars;
+			nextFrame->warnedList.clear();
 		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
@@ -2969,8 +2992,11 @@ void PageItem_TextFrame::layout()
 
 NoRoom:     
 	invalid = false;
+	if (nextInChain())
+		nextInChain()->asTextFrame()->warnedList.clear();
 
-	adjustParagraphEndings ();
+	int temp;
+	adjustParagraphEndings (temp, true);
 
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
 	{
@@ -3173,6 +3199,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			// Draw text selection rectangles
 			QRectF selectedFrame;
 			QList<QRectF> sFList;
+			QRectF warnnedFrame;
+			QList<QRectF> wFList;
 			bool previousWasObject(false);
 			double selX = ls.x;
 			ScText *hls = 0;
@@ -3228,6 +3256,47 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						}
 					}
 				}
+				bool warnedText = isWarnedText(as);
+				if(warnedText && m_Doc->scMW()->docCheckerPalette->isVisible())
+				{
+					const CharStyle& charStyleS(itemText.charStyle(as));
+					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
+						|| ((!warnnedFrame.isNull()) && (hls->ch == SpecialChars::OBJECT))
+					    || previousWasObject)
+					{
+						wFList << warnnedFrame;
+						warnnedFrame = QRectF();
+						previousWasObject = false;
+					}
+					if (!m_Doc->RePos)
+					{
+						double xcoZli = selX + hls->glyph.xoffset;
+						// ugly hack to make selection correct, as xoffset is used to
+						// remove left-half of CJK lparen , which is blank.
+						if(hls->glyph.xoffset)
+						{
+							int attr = SpecialChars::getCJKAttr(hls->ch) & SpecialChars::CJK_CHAR_MASK;
+							if( attr == SpecialChars::CJK_FENCE_BEGIN)
+							{
+								xcoZli -= hls->glyph.xoffset;
+							}
+						}
+						desc = - charStyleS.font().descent(charStyleS.fontSize() / 10.0);
+						asce = charStyleS.font().ascent(charStyleS.fontSize() / 10.0);
+						wide = hls->glyph.wide();
+						QRectF scr;
+						if ((hls->ch == SpecialChars::OBJECT)  && (hls->hasObject(m_Doc)))
+						{
+							double ww = (hls->getItem(m_Doc)->width() + hls->getItem(m_Doc)->lineWidth()) * hls->glyph.scaleH;
+							double hh = (hls->getItem(m_Doc)->height() + hls->getItem(m_Doc)->lineWidth()) * hls->glyph.scaleV;
+							scr = QRectF(xcoZli, ls.y - hh, ww , hh);
+							previousWasObject = true;
+						}
+						else
+							scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, wide , (asce+desc) * (hls->glyph.scaleV));
+						warnnedFrame |=  scr;
+					}
+				}
 				// Unneeded now that glyph xadvance is set appropriately for inline objects by layout() - JG
 				/*if ((hls->ch == SpecialChars::OBJECT) && (hls->embedded.hasItem()))
 					selX += (hls->embedded.getItem()->gWidth + hls->embedded.getItem()->lineWidth()) * hls->glyph.scaleH;
@@ -3240,14 +3309,28 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->setFillMode(1);
 			p->setBrush(qApp->palette().color(QPalette::Active, QPalette::Highlight));
 			p->setLineWidth(0);
-			// TODO - I dunno why but scpainter does not accept
-			// to actually set the pen to 0? As a wa,
-			// we set its color same as brush: "à malin, malin et demi!".
 			p->setPen(qApp->palette().color(QPalette::Active, QPalette::Highlight));
 			for(int sfc(0);sfc < sFList.count();++sfc)
 				p->drawRect(sFList[sfc].x(), sFList[sfc].y(), sFList[sfc].width(), sFList[sfc].height());
 			p->restore();//RE3
 			//	End of selection
+
+			//Spreflight warnings
+			if(!warnnedFrame.isNull())
+				wFList << warnnedFrame;
+			p->save();//SA3
+			p->setFillMode(1);
+			p->setBrush(QColor("red"));
+			p->setBrushOpacity(0.1);
+			p->setPen(QColor("red"));
+			p->setPenOpacity(0.1);
+			p->setLineWidth(0);
+			for(int sfc(0);sfc < wFList.count();++sfc)
+				p->drawRect(wFList[sfc].x(), wFList[sfc].y(), wFList[sfc].width(), wFList[sfc].height());
+			p->setBrushOpacity(1.0);
+			p->setPenOpacity(1.0);
+			p->restore();//RE3
+			//	End of preflight warnings
 
 			QColor tmp;
 			ScText *hl = 0;
@@ -5162,4 +5245,19 @@ void PageItem_TextFrame::setTextFrameHeight()
 	invalid = true;
 	m_Doc->changed();
 	m_Doc->regionsChanged()->update(QRect());
+}
+
+bool PageItem_TextFrame::isWarnedText(int pos)
+{
+	if (warnedList.isEmpty())
+		return false;
+	
+	QPair<int, int> range;
+	for (int i=0; i < warnedList.count(); ++i)
+	{
+		range = warnedList[i];
+		if (pos >= range.first && pos <= range.second)
+			return true;
+	}
+	return false;
 }
