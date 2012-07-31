@@ -15959,7 +15959,7 @@ QMap<PageItem*, QString> ScribusDoc::getDocItemNames(PageItem::ItemType itemType
 Serializer *ScribusDoc::serializer()
 {
 	if (!m_serializer) 
-		m_serializer = new Serializer (this);
+		m_serializer = new Serializer (*this);
 	Q_ASSERT(m_serializer);
 	return m_serializer;
 }

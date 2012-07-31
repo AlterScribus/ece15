@@ -10097,6 +10097,8 @@ void PageItem::unWeld()
 	{
 		weldingInfo wInf = weldList.at(a);
 		PageItem *pIt = wInf.weldItem;
+		if (pIt == NULL)
+			continue;
 		for (int b = 0 ; b < pIt->weldList.count(); b++)
 		{
 			weldingInfo wInf2 = pIt->weldList.at(b);

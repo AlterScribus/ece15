@@ -56,7 +56,7 @@ StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 {
 	assert(!saxedString.isEmpty());
 
-	Serializer dig(doc);
+	Serializer dig(*doc);
 	dig.store<ScribusDoc>("<scribusdoc>", doc);
 	StoryText::desaxeRules("/", dig, "SCRIBUSTEXT");
 	dig.addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());

@@ -5308,10 +5308,9 @@ void ScribusMainWindow::slotEditPaste()
 									iss = new ScItemsState(UndoManager::InsertNote);
 								else
 									iss = new ScItemsState(UndoManager::InsertMark);
-								iss->set("ETEA", mrk->label);
+								iss->set("MARK", QString("paste"));
 								iss->set("label", mrk->label);
 								iss->set("type", (int) mrk->getType());
-								iss->set("MARK", QString("paste"));
 								iss->set("strtxt", mrk->getString());
 								iss->set("at", atPos + i);
 								if (currItem->isNoteFrame())

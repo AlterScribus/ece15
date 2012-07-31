@@ -1567,9 +1567,29 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		else if (ch == SpecialChars::OBJECT && item->itemText.item(k)->mark != NULL)
 		{
 			Mark* mark = item->itemText.item(k)->mark;
+			if (mark->isType(MARKNoteFrameType))
+				continue;
 			docu.writeEmptyElement("MARK");
 			docu.writeAttribute("label", mark->label);
 			docu.writeAttribute("type", mark->getType());
+			docu.writeAttribute("strtxt", mark->getString());
+			if (mark->isType(MARKNoteMasterType))
+			{
+				docu.writeAttribute("nStyle", mark->getNotePtr()->notesStyle()->name());
+				docu.writeAttribute("noteTXT", mark->getNotePtr()->saxedText());
+			}
+			else if (mark->isType(MARK2MarkType))
+			{
+				QString l;
+				MarkType t;
+				mark->getMark(l, t);
+				docu.writeAttribute("dest_l", l);
+				docu.writeAttribute("dest_t", t);
+			}
+			else if (mark->isType(MARK2ItemType))
+				docu.writeAttribute("item", mark->getItemName());
+			else
+				continue;
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
 			putPStyle(docu, item->itemText.paragraphStyle(k), "para");

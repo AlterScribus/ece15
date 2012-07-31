@@ -138,7 +138,7 @@ class MergeColors_body : public Action_body
 class MergeColors : public MakeAction<MergeColors_body>
 {};
 
-Serializer::Serializer(ScribusDoc* doc) : Digester(), m_Doc(doc)
+Serializer::Serializer(ScribusDoc& doc) : Digester(), m_Doc(doc)
 {
 	// register desaxe rules for styles, colors and elems
 	addRule("/SCRIBUSFRAGMENT", Factory<Collection>());

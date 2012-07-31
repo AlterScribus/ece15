@@ -1536,7 +1536,7 @@ void PageItem_TextFrame::layout()
 						continue;
 					hl->mark->setItemPtr(this);
 					NotesStyle* nStyle = note->notesStyle();
-						Q_ASSERT(nStyle != NULL);
+					Q_ASSERT(nStyle != NULL);
 					QString chsName = nStyle->marksChStyle();
 					CharStyle newStyle(itemText.charStyle(a));
 					if ((chsName != "") && (chsName != tr("No Style")))
@@ -4819,10 +4819,7 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-	{
-		if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
-			delList.append(nF);
-	}
+		delList.append(nF);
 	while (!delList.isEmpty())
 	{
 		PageItem_NoteFrame* nF = delList.takeFirst();
@@ -4830,12 +4827,12 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 	}
 
 	//check if doc need update
+	m_Doc->setNotesChanged(true);
 	if (doUpdate && (oldItemsCount != m_Doc->Items->count()))
 	{
 		m_Doc->changed();
 		m_Doc->regionsChanged()->update(QRectF());
 	}
-	m_Doc->setNotesChanged(true);
 }
 
 Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
