@@ -5261,17 +5261,14 @@ void ScribusMainWindow::slotEditPaste()
 
 			if (ScMimeData::clipboardHasScribusText())
 			{
-				// TODO: do we really need a new serializer here?
-				//cezaryece - now yes, we do for marks
-				Serializer dig(doc);
-				dig.store<ScribusDoc>("<scribusdoc>", doc);
-				StoryText::desaxeRules("/", dig, "SCRIBUSTEXT");
-				dig.addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());
+				Serializer *textSerializer = doc->textSerializer();
+				textSerializer->reset();
+				textSerializer->store<ScribusDoc>("<scribusdoc>", doc);
 
 				QByteArray xml = ScMimeData::clipboardScribusText();
-				dig.parseMemory(xml, xml.length());
+				textSerializer->parseMemory(xml, xml.length());
 
-				StoryText* story = dig.result<StoryText>();
+				StoryText* story = textSerializer->result<StoryText>();
 
 				//avoid pasting notes marks into notes frames
 				if (currItem->isNoteFrame())
