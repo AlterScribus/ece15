@@ -2129,10 +2129,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						Q_ASSERT(currItem != NULL);
 						Q_ASSERT(pos >= 0);
 						mrk = newMark();
-						if (is->get("MARK") == "new")
-							currItem->itemText.insertMark(mrk, pos);
-						else //if (is->get("MARK") == "paste"
-							currItem->itemText.item(pos)->mark = mrk;
+						currItem->itemText.insertMark(mrk, pos);
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
 						if (is->contains("strtxt"))
@@ -2152,6 +2149,11 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							if (nStyle->isEndNotes())
 								flag_updateEndNotes = true;
 							updateNotesNums(nStyle);
+						}
+						if (mrk->isUnique())
+						{
+							mrk->setItemPtr(currItem);
+							mrk->setItemName(currItem->getUName());
 						}
 					}
 					else if (is->get("MARK") == "replace")
@@ -16764,8 +16766,10 @@ void ScribusDoc::deleteNote(TextNote* note)
 		return;
 	PageItem_NoteFrame* nF = NULL;
 	if (note->noteMark() != NULL)
+	{
 		if (note->noteMark()->getItemPtr() != NULL)
 			nF = note->noteMark()->getItemPtr()->asNoteFrame();
+	}
 	if (nF == NULL)
 		nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
 	Q_ASSERT(nF != NULL);

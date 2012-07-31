@@ -5305,7 +5305,10 @@ void ScribusMainWindow::slotEditPaste()
 								ScItemsState* iss = NULL;
 								Mark* mrk = story->item(i)->mark;
 								if (mrk->isType(MARKNoteMasterType))
+								{
 									iss = new ScItemsState(UndoManager::InsertNote);
+									doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
+								}
 								else
 									iss = new ScItemsState(UndoManager::InsertMark);
 								iss->set("MARK", QString("paste"));
