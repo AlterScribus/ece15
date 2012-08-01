@@ -54,18 +54,11 @@ int findParagraphStyle(ScribusDoc* doc, const QString &name)
 
 StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 {
-	assert(!saxedString.isEmpty());
-
-	Serializer dig(doc);
-	dig.store<ScribusDoc>("<scribusdoc>", doc);
-	StoryText::desaxeRules("/", dig, "SCRIBUSTEXT");
-	dig.addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());
-	dig.parseMemory(saxedString.toStdString().c_str(), saxedString.length());
-
-	StoryText* story = dig.result<StoryText>();
-	assert (story != NULL);
-
-	StoryText res = *story;
-	delete story;
-	return res;
+	if (saxedString.isEmpty())
+		return StoryText();
+	Serializer *textSerializer = doc->textSerializer();
+	textSerializer->reset();
+	textSerializer->store<ScribusDoc>("<scribusdoc>", doc);
+	textSerializer->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
+	return *(textSerializer->result<StoryText>());
 }

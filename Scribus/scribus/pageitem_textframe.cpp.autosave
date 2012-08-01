@@ -2989,7 +2989,6 @@ void PageItem_TextFrame::layout()
 		}
 	}
 	itemText.blockSignals(false);
-//	qDebug("textframe: len=%d, done relayout", itemText.length());
 	return;
 
 NoRoom:     
@@ -3021,29 +3020,20 @@ NoRoom:
 		if (itemText.cursorPosition() > signed(MaxChars))
 		{
 			int nCP = itemText.cursorPosition();
-//			CPos = MaxChars;
 			if (m_Doc->appMode == modeEdit)
 			{
-				//							OwnPage->Deselect(true);
 				nextFrame->itemText.setCursorPosition( qMax(nCP, signed(MaxChars)) );
-				//							Doc->currentPage = NextBox->OwnPage;
-				//							NextBox->OwnPage->SelectItemNr(NextBox->ItemNr);
-//				qDebug("textframe: len=%d, leaving relayout in editmode && Tinput", itemText.length());
 				itemText.blockSignals(false);
 				return;
 			}
 		}
-		// relayout next frame
-//		qDebug("textframe: len=%d, going to next", itemText.length());
 		nextFrame->layout();
 	}
-//	qDebug("textframe: len=%d, done relayout (no room %d)", itemText.length(), MaxChars);
 	itemText.blockSignals(false);
 }
 
 void PageItem_TextFrame::invalidateLayout(bool wholeChain)
 {
-	//const bool wholeChain = true;
 	invalid = true;
 	if (wholeChain)
 	{
@@ -3089,11 +3079,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	if (invalid)
 	{
 		if (!isNoteFrame() || !asNoteFrame()->deleteIt)
-		//do not layout notes frames which should be deleted
-		layout();
+			//do not layout notes frames which should be deleted
+			layout();
 	}
-	if (invalid)
-		return;
 	QTransform pf2;
 	QPoint pt1, pt2;
 	double wide;
@@ -3260,8 +3248,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						}
 					}
 				}
-				bool warnedText = isWarnedText(as);
-				if(warnedText && m_Doc->scMW()->docCheckerPalette->isVisible())
+				if (isWarnedText(as))
 				{
 					const CharStyle& charStyleS(itemText.charStyle(as));
 					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))

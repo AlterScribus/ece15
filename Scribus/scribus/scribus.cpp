@@ -988,6 +988,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuSeparator("Page");
 	scrMenuMgr->addMenuItem(scrActions["viewSnapToGrid"], "Page", true);
 	scrMenuMgr->addMenuItem(scrActions["viewSnapToGuides"], "Page", true);
+	scrMenuMgr->addMenuItem(scrActions["viewSnapToElements"], "Page", true);
 
 	//View menu
 	scrMenuMgr->createMenu("View", ActionManager::defaultMenuNameEntryTranslated("View"));
@@ -1410,8 +1411,6 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 	QList<QMdiSubWindow *> windows;
 	QMdiSubWindow* w = NULL;
 	int kk = k->key();
-	QString uc = k->text();
-// 	QString cr, Tcha, Twort;
 	if (HaveDoc)
 	{
 		if ((doc->appMode == modeMagnifier) && (kk == Qt::Key_Shift))
@@ -1662,9 +1661,10 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 				if (currItem->asImageFrame() && !currItem->locked())
 				{
 					currItem->handleModeEditKey(k, keyrep);
+					slotDocCh(false);
 				}
 //FIXME:av		view->oldCp = currItem->CPos;
-				if (currItem->itemType() == PageItem::TextFrame)
+				else if (currItem->itemType() == PageItem::TextFrame)
 				{
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
@@ -1679,8 +1679,6 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					}
 					keyrep=kr;
 				}
-				//slotDocCh(false);
-				//doc->regionsChanged()->update(QRectF());
 			}
 		}
 	}
@@ -2532,6 +2530,7 @@ void ScribusMainWindow::HaveNewDoc()
 
 	scrActions["viewSnapToGrid"]->setChecked(doc->useRaster);
 	scrActions["viewSnapToGuides"]->setChecked(doc->SnapGuides);
+	scrActions["viewSnapToElements"]->setChecked(doc->SnapElement);
 	scrActions["viewShowRulers"]->setEnabled(true);
 
 	scrMenuMgr->setMenuEnabled("Insert", true);
@@ -3556,14 +3555,17 @@ void ScribusMainWindow::doPasteRecent(QString data)
 			uint ac = doc->Items->count();
 			bool savedAlignGrid = doc->useRaster;
 			bool savedAlignGuides = doc->SnapGuides;
+			bool savedAlignElement = doc->SnapElement;
 			doc->useRaster = false;
 			doc->SnapGuides = false;
+			doc->SnapElement = false;
 			if ((view->dragX == 0) && (view->dragY == 0))
 				slotElemRead(data, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), true, false, doc, view);
 			else
 				slotElemRead(data, view->dragX, view->dragY, true, false, doc, view);
 			doc->useRaster = savedAlignGrid;
 			doc->SnapGuides = savedAlignGuides;
+			doc->SnapElement = savedAlignElement;
 			Selection tmpSelection(this, false);
 			tmpSelection.copy(*doc->m_Selection, true);
 			for (int as = ac; as < doc->Items->count(); ++as)
@@ -4532,6 +4534,7 @@ void ScribusMainWindow::slotFileRevert()
 		slotFileClose();
 		qApp->processEvents();
 		loadDoc(fn);
+		undoManager->clearStack();
 	}
 }
 
@@ -4795,6 +4798,7 @@ bool ScribusMainWindow::DoFileClose()
 		scrActions["viewFit400"]->setEnabled(false);
 		//scrMenuMgr->setMenuEnabled("Windows", false);
 		scrActions["viewSnapToGuides"]->setChecked(false);
+		scrActions["viewSnapToElements"]->setChecked(false);
 		scrActions["viewSnapToGrid"]->setChecked(false);
 		scrActions["viewShowRulers"]->setEnabled(false);
 
@@ -5261,18 +5265,14 @@ void ScribusMainWindow::slotEditPaste()
 
 			if (ScMimeData::clipboardHasScribusText())
 			{
-				// TODO: do we really need a new serializer here?
-				//cezaryece - now yes, we do for marks
-				Serializer dig(doc);
-				dig.store<ScribusDoc>("<scribusdoc>", doc);
-				StoryText::desaxeRules("/", dig, "SCRIBUSTEXT");
-				dig.addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());
+				Serializer *textSerializer = doc->textSerializer();
+				textSerializer->reset();
+				textSerializer->store<ScribusDoc>("<scribusdoc>", doc);
 
 				QByteArray xml = ScMimeData::clipboardScribusText();
-				dig.parseMemory(xml, xml.length());
+				textSerializer->parseMemory(xml, xml.length());
 
-				StoryText* story = dig.result<StoryText>();
-
+				StoryText* story = textSerializer->result<StoryText>();
 				//avoid pasting notes marks into notes frames
 				if (currItem->isNoteFrame())
 				{
@@ -5347,6 +5347,7 @@ void ScribusMainWindow::slotEditPaste()
 			{
 				bool savedAlignGrid = doc->useRaster;
 				bool savedAlignGuides = doc->SnapGuides;
+				bool savedAlignElement = doc->SnapElement;
 				int ac = doc->Items->count();
 				bool isGroup = false;
 				double gx, gy, gh, gw;
@@ -5354,6 +5355,7 @@ void ScribusMainWindow::slotEditPaste()
 				FPoint maxSize = doc->maxCanvasCoordinate;
 				doc->useRaster = false;
 				doc->SnapGuides = false;
+				doc->SnapElement = false;
 				// HACK #6541 : undo does not handle text modification => do not record embedded item creation
 				// if embedded item is deleted, undo system will not be aware of its deletion => crash - JG
 				undoManager->setUndoEnabled(false);
@@ -5370,6 +5372,7 @@ void ScribusMainWindow::slotEditPaste()
 
 				doc->useRaster = savedAlignGrid;
 				doc->SnapGuides = savedAlignGuides;
+				doc->SnapElement = savedAlignElement;
 				//int tempList=doc->m_Selection->backupToTempList(0);
 				Selection tempSelection(*doc->m_Selection);
 				doc->m_Selection->clear();
@@ -5443,8 +5446,10 @@ void ScribusMainWindow::slotEditPaste()
 				uint ac = doc->Items->count();
 				bool savedAlignGrid = doc->useRaster;
 				bool savedAlignGuides = doc->SnapGuides;
+				bool savedAlignElement = doc->SnapElement;
 				doc->useRaster = false;
 				doc->SnapGuides = false;
+				doc->SnapElement = false;
 				if (internalCopy)
 					slotElemRead(internalCopyBuffer, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), false, true, doc, view);
 				else
@@ -5465,6 +5470,7 @@ void ScribusMainWindow::slotEditPaste()
 
 				doc->useRaster = savedAlignGrid;
 				doc->SnapGuides = savedAlignGuides;
+				doc->SnapElement = savedAlignElement;
 				doc->m_Selection->delaySignalsOn();
 				for (int as = ac; as < doc->Items->count(); ++as)
 				{
@@ -6382,6 +6388,15 @@ void ScribusMainWindow::ToggleUGuides()
 	if (doc)
 	{
 		doc->SnapGuides = !doc->SnapGuides;
+		slotDocCh();
+	}
+}
+
+void ScribusMainWindow::ToggleUElements()
+{
+	if (doc)
+	{
+		doc->SnapElement = !doc->SnapElement;
 		slotDocCh();
 	}
 }
@@ -7689,9 +7704,11 @@ void ScribusMainWindow::duplicateItem()
 	slotSelect();
 	bool savedAlignGrid = doc->useRaster;
 	bool savedAlignGuides = doc->SnapGuides;
+	bool savedAlignElement = doc->SnapElement;
 	internalCopy = true;
 	doc->useRaster = false;
 	doc->SnapGuides = false;
+	doc->SnapElement = false;
 	slotEditCopy();
 	view->Deselect(true);
 	UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Duplicate,"",Um::IMultipleDuplicate));
@@ -7704,6 +7721,7 @@ void ScribusMainWindow::duplicateItem()
 	trans.commit();
 	doc->useRaster = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
 	internalCopy = false;
 	internalCopyBuffer = "";
 	view->DrawNew();
@@ -9062,7 +9080,7 @@ void ScribusMainWindow::GroupObj(bool showLockDia)
 				QMessageBox msgBox;
 				QPushButton *abortButton = msgBox.addButton(QMessageBox::Cancel);
 				QPushButton *lockButton = msgBox.addButton(tr("&Lock All"), QMessageBox::AcceptRole);
-				QPushButton *unlockButton = msgBox.addButton(tr("&Unlock All"), QMessageBox::AcceptRole);
+				msgBox.addButton(tr("&Unlock All"), QMessageBox::AcceptRole);
 				msgBox.setIcon(QMessageBox::Warning);
 				msgBox.setWindowTitle(CommonStrings::trWarning);
 				msgBox.setText( tr("Some objects are locked."));
@@ -9072,7 +9090,6 @@ void ScribusMainWindow::GroupObj(bool showLockDia)
 				else if (msgBox.clickedButton() == lockButton)
 					lockObject = true;
 				modifyLock = true;
-				unlockButton = NULL;	// just to silence the compiler
 			}
 		}
 		doc->itemSelection_GroupObjects(modifyLock, lockObject);
