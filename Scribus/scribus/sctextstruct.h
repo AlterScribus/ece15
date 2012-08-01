@@ -142,6 +142,7 @@ public:
 	bool hasMark(Mark * MRK = NULL) const;
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
+	bool isVisible(ScribusDoc *doc);
 };
 #endif
 

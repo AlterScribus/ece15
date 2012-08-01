@@ -803,6 +803,7 @@ bool Scribus12Format::loadFile(const QString & fileName, const FileFormat & /* f
 		m_Doc->guidesPrefs().linkShown = prefsManager->appPrefs.guidesPrefs.linkShown;
 		m_Doc->guidesPrefs().showPic = true;
 		m_Doc->guidesPrefs().showControls = false;
+		m_Doc->guidesPrefs().showPreflight = false;
 		m_Doc->guidesPrefs().renderStackOrder.clear();
 		m_Doc->guidesPrefs().renderStackOrder << 0 << 1 << 2 << 3 << 4;
 		m_Doc->guidesPrefs().gridType = 0;

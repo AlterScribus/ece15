@@ -664,6 +664,8 @@ void ActionManager::initViewMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewShowTextControls";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="viewShowTextPreflight";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewShowRulers";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewRulerMode";
@@ -692,6 +694,7 @@ void ActionManager::initViewMenuActions()
 	(*scrActions)["viewShowBaseline"]->setToggleAction(true);
 	(*scrActions)["viewShowTextChain"]->setToggleAction(true);
 	(*scrActions)["viewShowTextControls"]->setToggleAction(true);
+	(*scrActions)["viewShowTextPreflight"]->setToggleAction(true);
 	(*scrActions)["viewShowRulers"]->setToggleAction(true);
 	(*scrActions)["viewRulerMode"]->setToggleAction(true);
 	(*scrActions)["viewSnapToGrid"]->setToggleAction(true);
@@ -729,6 +732,7 @@ void ActionManager::initViewMenuActions()
 	connect( (*scrActions)["viewShowBaseline"], SIGNAL(triggered()), mainWindow, SLOT(ToggleBase()) );
 	connect( (*scrActions)["viewShowTextChain"], SIGNAL(triggered()), mainWindow, SLOT(ToggleTextLinks()) );
 	connect( (*scrActions)["viewShowTextControls"], SIGNAL(triggered()), mainWindow, SLOT(ToggleTextControls()) );
+	connect( (*scrActions)["viewShowTextPreflight"], SIGNAL(triggered()), mainWindow, SLOT(ToggleTextPreflight()) );
 	connect( (*scrActions)["viewShowRulers"], SIGNAL(triggered()), mainWindow, SLOT(ToggleRulers()) );
 	connect( (*scrActions)["viewRulerMode"], SIGNAL(triggered()), mainWindow, SLOT(ToggleRulerMode()) );
 	connect( (*scrActions)["viewSnapToGrid"], SIGNAL(triggered()), mainWindow, SLOT(ToggleURaster()) );
@@ -1591,6 +1595,7 @@ void ActionManager::languageChange()
 	(*scrActions)["viewShowBaseline"]->setTexts( tr("Show &Baseline Grid"));
 	(*scrActions)["viewShowTextChain"]->setTexts( tr("Show &Text Chain"));
 	(*scrActions)["viewShowTextControls"]->setTexts( tr("Show Control Characters"));
+	(*scrActions)["viewShowTextPreflight"]->setTexts( tr("Show Text Preflight Warnings"));
 	(*scrActions)["viewShowRulers"]->setTexts( tr("Show Rulers"));
 	(*scrActions)["viewRulerMode"]->setTexts( tr("Rulers Relative to Page"));
 	(*scrActions)["viewSnapToGrid"]->setTexts( tr("Sn&ap to Grid"));
@@ -2177,6 +2182,7 @@ void ActionManager::createDefaultMenus()
 		<< "viewShowBaseline"
 		<< "viewShowTextChain"
 		<< "viewShowTextControls"
+		<< "viewShowTextPreflight"
 		<< "viewShowRulers"
 		<< "viewRulerMode"
 		<< "showMouseCoordinates";

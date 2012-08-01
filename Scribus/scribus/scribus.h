@@ -401,6 +401,7 @@ public slots:
 	void ToggleLayerMarkers();
 	void ToggleTextLinks();
 	void ToggleTextControls();
+	void ToggleTextPreflight();
 	void ToggleColumnBorders();
 	void ToggleRulers();
 	void ToggleRulerMode();

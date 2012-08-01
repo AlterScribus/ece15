@@ -1306,7 +1306,6 @@ bool PageItem_TextFrame::adjustParagraphEndings (int &a, bool EndOfFrame)
 					frame = nextInChain()->asTextFrame();
 			}
 			a = itemText.lastInFrame();
-			frame->warnedList.append(QPair<int, int>(itemText.startOfParagraph(itemText.nrOfParagraph(a)), itemText.endOfParagraph(itemText.nrOfParagraph(a +1))));
 			return true;
 		}
 	}
@@ -1340,10 +1339,7 @@ void PageItem_TextFrame::layout()
 		return;
 	}
 	if (invalid && BackBox == NULL)
-	{
 		firstChar = 0;
-		warnedList.clear();
-	}
 	
 //	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
 	QPoint pt1, pt2;
@@ -1413,8 +1409,12 @@ void PageItem_TextFrame::layout()
 */
 	
 	setShadow();
+	SEColumnsMap.clear();
+	int startColumn = 0;
 	int itLen = itemText.length();
 	//fast validate empty frames
+	warnedList.clear();
+
 	if (itLen == 0 || firstInFrame() == itLen)
 	{
 		PageItem* next = this;
@@ -1522,6 +1522,8 @@ void PageItem_TextFrame::layout()
 
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
+			if (startColumn == 0)  //for widows/orphans checking
+				startColumn = a;
 			hl = itemText.item(a);
 			bool HasObject = hl->hasObject(m_Doc);
 			bool HasMark = hl->hasMark();
@@ -2122,6 +2124,8 @@ void PageItem_TextFrame::layout()
 					}
 					if (current.isEndOfCol(realDesc))
 					{
+						setColumnSE(current.column,startColumn,a); //for widows/orphans checking
+						startColumn = 0;
 						current.column++;
 						if (current.column < Cols)
 						{
@@ -2843,6 +2847,8 @@ void PageItem_TextFrame::layout()
 				if (goNextColumn)
 				{
 					goNextColumn = false;
+					setColumnSE(current.column,startColumn,a); //for widows/orphans checking
+					startColumn = 0;
 					current.column++;
 					if (current.column < Cols)
 					{
@@ -2966,84 +2972,129 @@ void PageItem_TextFrame::layout()
 		}
 	}
 	MaxChars = itemText.length();
-	invalid = false;
-	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-	{ //if notes are used
-		UndoManager::instance()->setUndoEnabled(false);
-		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
-		if (notesMap != m_notesFramesMap)
-		{
-			updateNotesMarks(notesMap);
-			notesFramesLayout();
-		}
-		UndoManager::instance()->setUndoEnabled(true);
-	}
+
+	if (itemText.length() == 0)
 	{
-		PageItem_TextFrame* nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
-		while (nextFrame != NULL)
-		{
-			nextFrame->invalid   = true;
-			nextFrame->firstChar = MaxChars;
-			nextFrame->warnedList.clear();
-			nextFrame = dynamic_cast<PageItem_TextFrame*>(nextFrame->NextBox);
-		}
+		itemText.blockSignals(false);
+		return;
 	}
-	itemText.blockSignals(false);
-//	qDebug("textframe: len=%d, done relayout", itemText.length());
-	return;
 
-NoRoom:     
+NoRoom:
 	invalid = false;
-	if (nextInChain())
-		nextInChain()->asTextFrame()->warnedList.clear();
+	int pos = itemText.lastInFrame();
+	if (pos < itemText.length());
+		adjustParagraphEndings (pos, true);
 
-	int temp;
-	adjustParagraphEndings (temp, true);
-
-	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
+	setColumnSE(Cols-1, startColumn, MaxChars -1);
+	if (itemText.length() == 0)
 	{
-		UndoManager::instance()->setUndoEnabled(false);
-		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
-		if (notesMap != m_notesFramesMap)
+			itemText.blockSignals(false);
+			return;
+	}
+	//Prefligth warnings
+	if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
+	{
+		uint nrPar;
+		int pos;
+		for (int i = 0; i < Cols; i++)
 		{
-			updateNotesMarks(notesMap);
-			notesFramesLayout();
+			//get start of column for orphans check
+			pos = getColumnSE(i, true);
+			if ( pos < 0 ) //probably empty column
+				break;
+			nrPar = itemText.nrOfParagraph(pos);
+			if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
+				 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
+				 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
+				warnedList.append(QPair<int, int>(itemText.startOfLine(pos), itemText.endOfLine(pos)));
+			//get end of column for widows check
+			pos = getColumnSE(i, false)-1;
+			nrPar = itemText.nrOfParagraph(pos);
+			if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
+				 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
+				 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
+				warnedList.append(QPair<int, int>(itemText.startOfLine(pos), itemText.endOfLine(pos)));
 		}
-		UndoManager::instance()->setUndoEnabled(true);
 	}
 
+	//check for RGB text
+	int startRGB = -1;
+	int endRGB = -1;
+	for (int e = firstInFrame(); e <= lastInFrame(); e++)
+	{
+		if (!itemText.paragraphStyle(e).isDefaultStyle())
+		{
+			ScColor col = m_Doc->PageColors.value(itemText.charStyle(e).fillColor());
+			if (col.getColorModel() == colorModelRGB || col.isRegistrationColor())
+			{
+				if (startRGB == -1)
+					startRGB = e;
+			}
+			else if (startRGB > -1)
+				endRGB = e;
+		}
+		if (startRGB < endRGB)
+		{
+			warnedList.append(QPair<int, int>(startRGB, endRGB -1));
+			startRGB = -1;
+			endRGB = -1;
+		}
+	}
 	PageItem_TextFrame* nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	while (nextFrame != NULL)
 	{
 		nextFrame->invalid   = true;
 		nextFrame->firstChar = MaxChars;
-		nextFrame->warnedList.clear();
+		nextFrame = dynamic_cast<PageItem_TextFrame*>(nextFrame->NextBox);
+	}
+
+	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
+		if (notesMap != m_notesFramesMap)
+		{
+			updateNotesMarks(notesMap);
+			notesFramesLayout();
+		}
+		UndoManager::instance()->setUndoEnabled(true);
+	}
+	if (nextInChain() != NULL)
+	{
+		nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
+		//check if last visible glyph in frame change
+		//if not then do not force invalidation of next frame
+		ScText * lastGlyph = NULL;
+		if (MaxChars>0)
+		{
+			uint pos = MaxChars-1;
+			lastGlyph = itemText.item(pos);
+			while (!lastGlyph->isVisible(m_Doc))
+				lastGlyph = itemText.item(--pos);
+		}
+		if (lastGlyph != lastVisibleGlyph)
+		{
+			//force invalidating next frame
+			nextFrame->invalid = true;
+			nextFrame->firstChar = MaxChars;
+			lastVisibleGlyph = lastGlyph;
+			nextFrame->lastVisibleGlyph = NULL;
+			nextFrame->layout();
+		}
+		else if (nextFrame->firstChar != MaxChars)
+			nextFrame->invalid = true;
 		if (itemText.cursorPosition() > signed(MaxChars))
 		{
 			int nCP = itemText.cursorPosition();
-//			CPos = MaxChars;
 			if (m_Doc->appMode == modeEdit)
-			{
-				//							OwnPage->Deselect(true);
 				nextFrame->itemText.setCursorPosition( qMax(nCP, signed(MaxChars)) );
-				//							Doc->currentPage = NextBox->OwnPage;
-				//							NextBox->OwnPage->SelectItemNr(NextBox->ItemNr);
-//				qDebug("textframe: len=%d, leaving relayout in editmode && Tinput", itemText.length());
-				itemText.blockSignals(false);
-				return;
-			}
 		}
-		// relayout next frame
-//		qDebug("textframe: len=%d, going to next", itemText.length());
-		nextFrame->layout();
 	}
-//	qDebug("textframe: len=%d, done relayout (no room %d)", itemText.length(), MaxChars);
 	itemText.blockSignals(false);
 }
 
 void PageItem_TextFrame::invalidateLayout(bool wholeChain)
 {
-	//const bool wholeChain = true;
 	invalid = true;
 	if (wholeChain)
 	{
@@ -3089,11 +3140,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	if (invalid)
 	{
 		if (!isNoteFrame() || !asNoteFrame()->deleteIt)
-		//do not layout notes frames which should be deleted
-		layout();
+			//do not layout notes frames which should be deleted
+			layout();
 	}
-	if (invalid)
-		return;
 	QTransform pf2;
 	QPoint pt1, pt2;
 	double wide;
@@ -3260,8 +3309,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						}
 					}
 				}
-				bool warnedText = isWarnedText(as);
-				if(warnedText && m_Doc->scMW()->docCheckerPalette->isVisible())
+				if (m_Doc->guidesPrefs().showPreflight && isWarnedText(as))
 				{
 					const CharStyle& charStyleS(itemText.charStyle(as));
 					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
@@ -3324,9 +3372,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				wFList << warnnedFrame;
 			p->save();//SA3
 			p->setFillMode(1);
-			p->setBrush(QColor("red"));
-			p->setBrushOpacity(0.1);
-			p->setPen(QColor("red"));
+			p->setBrush(m_Doc->guidesPrefs().preflightColor);
+			p->setBrushOpacity(m_Doc->guidesPrefs().preflightColor.alphaF());
+			p->setPen(m_Doc->guidesPrefs().preflightColor);
 			p->setPenOpacity(0.1);
 			p->setLineWidth(0);
 			for(int sfc(0);sfc < wFList.count();++sfc)
@@ -5279,4 +5327,31 @@ bool PageItem_TextFrame::isWarnedText(int pos)
 			return true;
 	}
 	return false;
+}
+
+int PageItem_TextFrame::getColumnSE(int col, bool start=true)
+{
+	if (col > this->Cols)
+	{
+		return -2;
+	}
+	if (SEColumnsMap.contains(col))
+	{
+		if (start)
+			return SEColumnsMap.value(col).start;
+		else
+			return SEColumnsMap.value(col).end;
+	}
+	return -1;
+}
+
+bool PageItem_TextFrame::setColumnSE(int col, int Cstart, int Cend)
+{
+	SEColumn seCol;
+	seCol.start = Cstart;
+	seCol.end = Cend;
+	if (SEColumnsMap.contains(col))
+		return false;
+	SEColumnsMap.insert(col,seCol);
+	return true;
 }

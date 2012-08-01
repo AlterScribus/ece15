@@ -305,6 +305,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	Doc->SubMode = -1;
 	storedFramesShown = Doc->guidesPrefs().framesShown;
 	storedShowControls = Doc->guidesPrefs().showControls;
+	storedShowPreflight = Doc->guidesPrefs().showPreflight;
 	setRulersShown(Doc->guidesPrefs().rulersShown);
 	m_canvas->m_viewMode.viewAsPreview = false;
 	m_canvas->setPreviewVisual(-1);
@@ -432,6 +433,8 @@ void ScribusView::togglePreview()
 		Doc->guidesPrefs().framesShown = false;
 		storedShowControls = Doc->guidesPrefs().showControls;
 		Doc->guidesPrefs().showControls = false;
+		storedShowPreflight = Doc->guidesPrefs().showPreflight;
+		Doc->guidesPrefs().showPreflight = false;
 		// warning popping up in case colour management and out-of-gamut-display are active
 		// as from #4346: Add a preview for daltonian - PV
 		if (Doc->HasCMS && Doc->Gamut)
@@ -443,6 +446,7 @@ void ScribusView::togglePreview()
 	{
 		Doc->guidesPrefs().framesShown = storedFramesShown;
 		Doc->guidesPrefs().showControls = storedShowControls;
+		Doc->guidesPrefs().showPreflight = storedShowPreflight;
 		disconnect(visualMenu, SIGNAL(activated(int)), this, SLOT(switchPreviewVisual(int)));
 		m_canvas->m_viewMode.previewVisual = 0;
 		Doc->previewVisual = 0;
@@ -459,6 +463,7 @@ void ScribusView::togglePreview()
 	m_ScMW->scrActions["viewShowBaseline"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowTextChain"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowTextControls"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
+	m_ScMW->scrActions["viewShowTextPreflight"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 #if OPTION_USE_QTOOLBUTTON
 	previewToolbarButton->setChecked(m_canvas->m_viewMode.viewAsPreview);
 #endif
@@ -2741,6 +2746,8 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 		Doc->setCurrentPage(Doc->MasterPages.at(Nr));
 		bool ctrls = Doc->guidesPrefs().showControls;
 		Doc->guidesPrefs().showControls = false;
+		bool prefl = Doc->guidesPrefs().showPreflight;
+		Doc->guidesPrefs().showControls = false;
 		Doc->guidesPrefs().framesShown = false;
 		setScale(1.0);
 		m_canvas->m_viewMode.previewMode = true;
@@ -2780,6 +2787,7 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 		m_canvas->m_viewMode.forceRedraw = false;
 		Doc->guidesPrefs().framesShown = frs;
 		Doc->guidesPrefs().showControls = ctrls;
+		Doc->guidesPrefs().showPreflight = prefl;
 		setScale(sca);
 		Doc->setMasterPageMode(mMode);
 		Doc->setCurrentPage(act);
@@ -2809,8 +2817,10 @@ QImage ScribusView::PageToPixmap(int Nr, int maxGr, bool drawFrame)
 			Doc->minCanvasCoordinate = FPoint(0, 0);
 			bool oldFramesShown  = Doc->guidesPrefs().framesShown;
 			bool oldShowControls = Doc->guidesPrefs().showControls;
+			bool oldShowPreflight = Doc->guidesPrefs().showPreflight;
 			Doc->guidesPrefs().framesShown = false;
 			Doc->guidesPrefs().showControls = false;
+			Doc->guidesPrefs().showPreflight = false;
 			m_canvas->setScale(sc);
 			m_canvas->m_viewMode.previewMode = true;
 			m_canvas->m_viewMode.forceRedraw = true;
@@ -2923,6 +2933,7 @@ QImage ScribusView::PageToPixmap(int Nr, int maxGr, bool drawFrame)
 
 			Doc->guidesPrefs().framesShown  = oldFramesShown;
 			Doc->guidesPrefs().showControls = oldShowControls;
+			Doc->guidesPrefs().showPreflight = oldShowPreflight;
 			m_canvas->setScale(oldScale);
 			Doc->setMasterPageMode(mMode);
 			Doc->setCurrentPage(act);

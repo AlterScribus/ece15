@@ -38,6 +38,7 @@ Prefs_Display::Prefs_Display(QWidget* parent, ScribusDoc* doc) : Prefs_Pane(pare
 		connect(frameAnnotationColorButton, SIGNAL(clicked()), this, SLOT(changeAnnotFrameColor()));
 		connect(selectedPageBorderButton, SIGNAL(clicked()), this, SLOT(changePageBorderColor()));
 		connect(textControlCharsButton, SIGNAL(clicked()), this, SLOT(changeControlCharsColor()));
+		connect(preflightButton, SIGNAL(clicked()), this, SLOT(changePreflightColor()));
 		connect(buttonRestoreDPI, SIGNAL(clicked()), this, SLOT(restoreDisScale()));
 		connect(adjustDisplaySlider, SIGNAL(valueChanged(int)), this, SLOT(setDisScale()));
 		connect(rulerUnitComboBox, SIGNAL(activated(int)), this, SLOT(drawRuler()));
@@ -53,6 +54,7 @@ Prefs_Display::Prefs_Display(QWidget* parent, ScribusDoc* doc) : Prefs_Pane(pare
 		frameAnnotationColorButton->setEnabled(false);
 		selectedPageBorderButton->setEnabled(false);
 		textControlCharsButton->setEnabled(false);
+		preflightButton->setEnabled(false);
 		buttonRestoreDPI->setEnabled(false);
 		adjustDisplaySlider->setEnabled(false);
 		rulerUnitComboBox->setEnabled(false);
@@ -92,6 +94,7 @@ void Prefs_Display::restoreDefaults(struct ApplicationPrefs *prefsData)
 
 	showImagesCheckBox->setChecked(prefsData->guidesPrefs.showPic);
 	showControlCharsCheckBox->setChecked(prefsData->guidesPrefs.showControls);
+	showPreflightCheckBox->setChecked(prefsData->guidesPrefs.showPreflight);
 	showRulersCheckBox->setChecked(prefsData->guidesPrefs.rulersShown);
 	showRulersRelativeToPageCheckBox->setChecked(prefsData->guidesPrefs.rulerMode);
 	showTextChainsCheckBox->setChecked(prefsData->guidesPrefs.linkShown);
@@ -173,6 +176,11 @@ void Prefs_Display::restoreDefaults(struct ApplicationPrefs *prefsData)
 	colorControlChars = prefsData->displayPrefs.controlCharColor;
 	textControlCharsButton->setText( QString::null );
 	textControlCharsButton->setIcon(pm);
+
+	pm.fill(prefsData->displayPrefs.preflightColor);
+	colorPreflight = prefsData->displayPrefs.preflightColor;
+	preflightButton->setText( QString::null );
+	preflightButton->setIcon(pm);
 
 	displayScale=prefsData->displayPrefs.displayScale;
 
@@ -393,10 +401,23 @@ void Prefs_Display::changeControlCharsColor()
 	}
 }
 
+void Prefs_Display::changePreflightColor()
+{
+	QColor newColor(QColorDialog::getColor(colorPreflight, this, tr("Text Preflight Warnings Color"), QColorDialog::ShowAlphaChannel));
+	if (newColor.isValid())
+	{
+		QPixmap pm(100, 30);
+		pm.fill(newColor);
+		colorPreflight = newColor;
+		preflightButton->setIcon(pm);
+	}
+}
+
 void Prefs_Display::saveGuiToPrefs(struct ApplicationPrefs *prefsData) const
 {
 	prefsData->guidesPrefs.showPic=showImagesCheckBox->isChecked();
 	prefsData->guidesPrefs.showControls=showControlCharsCheckBox->isChecked();
+	prefsData->guidesPrefs.showPreflight=showPreflightCheckBox->isChecked();
 	prefsData->guidesPrefs.rulersShown=showRulersCheckBox->isChecked();
 	prefsData->guidesPrefs.rulerMode=showRulersRelativeToPageCheckBox->isChecked();
 	prefsData->guidesPrefs.linkShown=showTextChainsCheckBox->isChecked();
@@ -424,5 +445,6 @@ void Prefs_Display::saveGuiToPrefs(struct ApplicationPrefs *prefsData) const
 	prefsData->displayPrefs.frameAnnotationColor=colorFrameAnnotation;
 	prefsData->displayPrefs.pageBorderColor=colorPageBorder;
 	prefsData->displayPrefs.controlCharColor=colorControlChars;
+	prefsData->displayPrefs.preflightColor=colorPreflight;
 	prefsData->displayPrefs.displayScale=displayScale;
 }

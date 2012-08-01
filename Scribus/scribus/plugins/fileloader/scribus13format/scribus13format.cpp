@@ -347,6 +347,7 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 		m_Doc->guidesPrefs().showPic = static_cast<bool>(dc.attribute("SHOWPICT", "1").toInt());
 		m_Doc->guidesPrefs().linkShown = static_cast<bool>(dc.attribute("SHOWLINK", "0").toInt());
 		m_Doc->guidesPrefs().showControls = static_cast<bool>(dc.attribute("SHOWControl", "0").toInt());
+		m_Doc->guidesPrefs().showPreflight = static_cast<bool>(dc.attribute("SHOWPreflight", "0").toInt());
 		m_Doc->guidesPrefs().rulerMode = static_cast<bool>(dc.attribute("rulerMode", "1").toInt());
 		m_Doc->guidesPrefs().rulersShown = static_cast<bool>(dc.attribute("showrulers", "1").toInt());
 		m_Doc->rulerXoffset = ScCLocale::toDoubleC(dc.attribute("rulerXoffset"), 0.0);

@@ -171,6 +171,7 @@ void PrefsManager::initDefaults()
 	appPrefs.guidesPrefs.baselineGridShown = false;
 	appPrefs.guidesPrefs.showPic = true;
 	appPrefs.guidesPrefs.showControls = false;
+	appPrefs.guidesPrefs.showPreflight = false;
 	appPrefs.guidesPrefs.linkShown = false;
 	appPrefs.guidesPrefs.rulersShown = true;
 	appPrefs.guidesPrefs.showBleed = true;
@@ -184,6 +185,7 @@ void PrefsManager::initDefaults()
 	appPrefs.guidesPrefs.marginColor = QColor(Qt::blue);
 	appPrefs.guidesPrefs.guideColor = QColor(Qt::darkBlue);
 	appPrefs.guidesPrefs.baselineGridColor = QColor(Qt::lightGray);
+	appPrefs.guidesPrefs.preflightColor = QColor(255,44,44,22);
 	appPrefs.guidesPrefs.renderStackOrder << 0 << 1 << 2 << 3 << 4;
 	appPrefs.guidesPrefs.gridType = 0;
 	appPrefs.typoPrefs.valueSuperScript = 33;
@@ -1344,6 +1346,7 @@ bool PrefsManager::WritePref(QString ho)
 	deGuides.setAttribute("ShowLinks", static_cast<int>(appPrefs.guidesPrefs.linkShown));
 	deGuides.setAttribute("ShowImages", static_cast<int>(appPrefs.guidesPrefs.showPic));
 	deGuides.setAttribute("ShowControls", static_cast<int>(appPrefs.guidesPrefs.showControls));
+	deGuides.setAttribute("ShowPreflight", static_cast<int>(appPrefs.guidesPrefs.showPreflight));
 	deGuides.setAttribute("ShowRulers", static_cast<int>(appPrefs.guidesPrefs.rulersShown));
 	deGuides.setAttribute("ShowBleed", static_cast<int>(appPrefs.guidesPrefs.showBleed));
 	deGuides.setAttribute("RulerMode", static_cast<int>(appPrefs.guidesPrefs.rulerMode));
@@ -1353,6 +1356,8 @@ bool PrefsManager::WritePref(QString ho)
 	deGuides.setAttribute("MajorGridColor",appPrefs.guidesPrefs.majorGridColor.name());
 	deGuides.setAttribute("GuidesColor", appPrefs.guidesPrefs.guideColor.name());
 	deGuides.setAttribute("MarginColor",appPrefs.guidesPrefs.marginColor.name());
+	deGuides.setAttribute("PreflightColor",appPrefs.guidesPrefs.preflightColor.name());
+	deGuides.setAttribute("PreflightAlpha",ScCLocale::toQStringC(appPrefs.guidesPrefs.preflightColor.alphaF()));
 	deGuides.setAttribute("BaselineGridColor", appPrefs.guidesPrefs.baselineGridColor.name());
 	deGuides.setAttribute("ObjectToGuideSnapRadius", ScCLocale::toQStringC(appPrefs.guidesPrefs.guideRad));
 	QString renderStack = "";
@@ -1986,6 +1991,9 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.guidesPrefs.linkShown = static_cast<bool>(dc.attribute("ShowLinks", "0").toInt());
 			appPrefs.guidesPrefs.showPic = static_cast<bool>(dc.attribute("ShowImages", "1").toInt());
 			appPrefs.guidesPrefs.showControls = static_cast<bool>(dc.attribute("ShowControls", "0").toInt());
+			appPrefs.guidesPrefs.showPreflight = static_cast<bool>(dc.attribute("ShowPreflight", "0").toInt());
+			appPrefs.guidesPrefs.preflightColor = QColor(dc.attribute("PreflightColor","#800000"));
+			appPrefs.guidesPrefs.preflightColor.setAlphaF(ScCLocale::toDoubleC(dc.attribute("PreflightAlpha"), 0.1));
 			appPrefs.guidesPrefs.rulersShown = static_cast<bool>(dc.attribute("ShowRulers", "1").toInt());
 			appPrefs.guidesPrefs.showBleed = static_cast<bool>(dc.attribute("ShowBleed", "1").toInt());
 			appPrefs.guidesPrefs.rulerMode = static_cast<bool>(dc.attribute("RulerMode", "1").toInt());

@@ -166,6 +166,7 @@ public:
 	bool Magnify;
 	bool storedFramesShown;
 	bool storedShowControls;
+	bool storedShowPreflight;
 	int editStrokeGradient;
 	int redrawMode;
 	int redrawCount;

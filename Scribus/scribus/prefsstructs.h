@@ -174,6 +174,7 @@ struct GuidesPrefs
 
 	bool showPic;
 	bool showControls;
+	bool showPreflight;
 	bool showBleed;
 	bool rulerMode;
 
@@ -184,6 +185,7 @@ struct GuidesPrefs
 	QColor majorGridColor; //! Color of major grid
 	QColor minorGridColor; //! Color of minor grid
 	QColor baselineGridColor; //! Color of baseline grid
+	QColor preflightColor;  //! Color if preflight warnings
 };
 
 struct ItemToolPrefs
@@ -340,6 +342,7 @@ struct DisplayPrefs
 	QColor frameAnnotationColor; //! Color of annotation frames border (onscreen only)
 	QColor pageBorderColor; //! Color of page border (onscreen only)
 	QColor controlCharColor; //! Color of control characters in text frames if they are shown (onscreen only)
+	QColor preflightColor; //! Color of preflight warnings in text frames if they are shown (onscreen only)
 	bool showToolTips; //! Show tool tips in the GUI or not.
 	bool showMouseCoordinates; //! Show mouse coordinates when interaction with frames
 	MarginStruct scratch; //! Scratch space distances

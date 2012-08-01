@@ -166,6 +166,7 @@ bool Scribus134Format::saveFile(const QString & fileName, const FileFormat & /* 
 	docu.writeAttribute("SHOWBASE", static_cast<int>(m_Doc->guidesPrefs().baselineGridShown));
 	docu.writeAttribute("SHOWPICT", static_cast<int>(m_Doc->guidesPrefs().showPic));
 	docu.writeAttribute("SHOWControl", static_cast<int>(m_Doc->guidesPrefs().showControls));
+	docu.writeAttribute("SHOWPreflight", static_cast<int>(m_Doc->guidesPrefs().showPreflight));
 	docu.writeAttribute("SHOWLINK", static_cast<int>(m_Doc->guidesPrefs().linkShown));
 	docu.writeAttribute("rulerMode", static_cast<int>(m_Doc->guidesPrefs().rulerMode));
 	docu.writeAttribute("showrulers", static_cast<int>(m_Doc->guidesPrefs().rulersShown));

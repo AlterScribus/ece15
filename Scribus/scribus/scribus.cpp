@@ -1013,6 +1013,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["viewShowBaseline"], "View", true);
 	scrMenuMgr->addMenuItem(scrActions["viewShowTextChain"], "View", true);
 	scrMenuMgr->addMenuItem(scrActions["viewShowTextControls"], "View", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowTextPreflight"], "View", true);
 	scrMenuMgr->addMenuItem(scrActions["viewShowRulers"], "View", false);
 	scrMenuMgr->addMenuItem(scrActions["viewRulerMode"], "View", true);
 	scrMenuMgr->addMenuItem(scrActions["showMouseCoordinates"], "View", true);
@@ -2313,6 +2314,7 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	scrActions["viewShowImages"]->setChecked(doc->guidesPrefs().showPic);
 	scrActions["viewShowTextChain"]->setChecked(doc->guidesPrefs().linkShown);
 	scrActions["viewShowTextControls"]->setChecked(doc->guidesPrefs().showControls);
+	scrActions["viewShowTextPreflight"]->setChecked(doc->guidesPrefs().showPreflight);
 	scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 	scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 	scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());
@@ -6180,6 +6182,7 @@ void ScribusMainWindow::ToggleAllGuides()
 		doc->guidesPrefs().colBordersShown = guidesStatus[10];
 		doc->guidesPrefs().layerMarkersShown = guidesStatus[11] ;
 		doc->guidesPrefs().showBleed = guidesStatus[12] ;
+		doc->guidesPrefs().showPreflight = guidesStatus[13];
 		ToggleMarks();
 		ToggleFrames();
 		ToggleLayerMarkers();
@@ -6189,6 +6192,7 @@ void ScribusMainWindow::ToggleAllGuides()
 		ToggleBase();
 		ToggleTextLinks();
 		ToggleTextControls();
+		ToggleTextPreflight();
 		ToggleRulerMode();
 		ToggleRulers();
 		ToggleBleeds();
@@ -6208,6 +6212,7 @@ void ScribusMainWindow::ToggleAllGuides()
 		guidesStatus[10] = !doc->guidesPrefs().colBordersShown;
 		guidesStatus[11] = !doc->guidesPrefs().layerMarkersShown;
 		guidesStatus[12] = !doc->guidesPrefs().showBleed;
+		guidesStatus[13] = !doc->guidesPrefs().showPreflight;
 		doc->guidesPrefs().marginsShown = false;
 		doc->guidesPrefs().framesShown = false;
 		doc->guidesPrefs().gridShown = false;
@@ -6215,6 +6220,7 @@ void ScribusMainWindow::ToggleAllGuides()
 		doc->guidesPrefs().baselineGridShown = false;
 		doc->guidesPrefs().linkShown = false;
 		doc->guidesPrefs().showControls = false;
+		doc->guidesPrefs().showPreflight = false;
 		doc->guidesPrefs().rulerMode = false;
 		doc->guidesPrefs().rulersShown = false;
 		doc->guidesPrefs().colBordersShown = false;
@@ -6232,6 +6238,7 @@ void ScribusMainWindow::ToggleAllGuides()
 	scrActions["viewShowBaseline"]->setChecked(doc->guidesPrefs().baselineGridShown);
 	scrActions["viewShowTextChain"]->setChecked(doc->guidesPrefs().linkShown);
 	scrActions["viewShowTextControls"]->setChecked(doc->guidesPrefs().showControls);
+	scrActions["viewShowTextPreflight"]->setChecked(doc->guidesPrefs().showPreflight);
 	scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 	scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 	view->DrawNew();
@@ -6333,6 +6340,16 @@ void ScribusMainWindow::ToggleTextControls()
 	{
 		guidesStatus[0] = false;
 		doc->guidesPrefs().showControls = !doc->guidesPrefs().showControls;
+		view->DrawNew();
+	}
+}
+
+void ScribusMainWindow::ToggleTextPreflight()
+{
+	if (doc)
+	{
+		guidesStatus[0] = false;
+		doc->guidesPrefs().showPreflight = !doc->guidesPrefs().showPreflight;
 		view->DrawNew();
 	}
 }
@@ -8023,6 +8040,7 @@ void ScribusMainWindow::slotDocSetup()
 		scrActions["viewShowImages"]->setChecked(doc->guidesPrefs().showPic);
 		scrActions["viewShowTextChain"]->setChecked(doc->guidesPrefs().linkShown);
 		scrActions["viewShowTextControls"]->setChecked(doc->guidesPrefs().showControls);
+		scrActions["viewShowTextPreflight"]->setChecked(doc->guidesPrefs().showPreflight);
 		scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 		scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 		scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());

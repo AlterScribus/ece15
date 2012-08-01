@@ -1113,7 +1113,7 @@ HEADERS += scribus/actionmanager.h \
     scribus/plugins/scripter/api_layer.h \
     scribus/plugins/scripter/api_imageitem.h \
     scribus/plugins/scripter/api_imageexport.h \
-    scribus/ui/propertywidget_textmargins.h
+    scribus/ui/propertywidget_textmargins.h \
     scribus/marks.h \
     scribus/notesstyles.h \
     scribus/pageitem_noteframe.h \
@@ -1253,7 +1253,7 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
          scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
-    scribus/ui/propertywidget_textmarginsbase.ui
+    scribus/ui/propertywidget_textmarginsbase.ui \
     scribus/ui/notesstyleseditor.ui \
     scribus/ui/markvariabletext.ui \
     scribus/ui/marksmanager.ui \
@@ -2161,7 +2161,7 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/plugins/scripter/api_layer.cpp \
     scribus/plugins/scripter/api_imageitem.cpp \
     scribus/plugins/scripter/api_imageexport.cpp \
-    scribus/ui/propertywidget_textmargins.cpp
+    scribus/ui/propertywidget_textmargins.cpp \
     scribus/notesstyles.cpp \
     scribus/pageitem_noteframe.cpp \
     scribus/ui/mark2item.cpp \

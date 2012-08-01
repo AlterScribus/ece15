@@ -190,7 +190,7 @@ void ContextMenu::createMenuItems_Selection()
 					addAction(m_AP->scrActions["editMark"]);
 			}
 		}
-		if (currItem->asTextFrame()->hasAnyMark())
+		if (currItem->isTextFrame() && currItem->asTextFrame()->hasAnyMark())
 		{
 			if (m_doc->appMode != modeEdit)
 				addSeparator();

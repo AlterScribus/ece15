@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>521</width>
-    <height>406</height>
+    <height>423</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,6 +86,13 @@
           <widget class="QCheckBox" name="showControlCharsCheckBox">
            <property name="text">
             <string>Show Text Control Characters</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="showPreflightCheckBox">
+           <property name="text">
+            <string>Show Preflight Warnings</string>
            </property>
           </widget>
          </item>
@@ -372,8 +379,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>432</width>
-            <height>350</height>
+            <width>462</width>
+            <height>342</height>
            </rect>
           </property>
           <layout class="QFormLayout" name="formLayout_2">
@@ -512,6 +519,20 @@
            </item>
            <item row="9" column="1">
             <widget class="QPushButton" name="textControlCharsButton">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Preflight Warnings</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
+            <widget class="QPushButton" name="preflightButton">
              <property name="text">
               <string/>
              </property>

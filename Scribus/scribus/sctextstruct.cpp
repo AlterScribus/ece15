@@ -73,3 +73,18 @@ PageItem* ScText::getItem(ScribusDoc *doc)
 		return doc->FrameItems[embedded];
 	return NULL;
 }
+
+// used for check of last visible glyph in text frame
+bool ScText::isVisible(ScribusDoc *doc)
+{
+	if (ch.isPrint() && !ch.isSpace())
+		return true;
+	if (hasMark() && !(mark->isType(MARKAnchorType) || mark->isType(MARKIndexType)))
+		return true;
+	if (hasObject(doc))
+		return true;
+	if ((ch == SpecialChars::PAGENUMBER) || (ch == SpecialChars::PAGECOUNT))
+		return true;
+
+	return false;
+}

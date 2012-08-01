@@ -946,6 +946,7 @@ void Scribus134Format::readGuideSettings(ScribusDoc* doc, ScXmlStreamAttributes&
 	doc->guidesPrefs().showPic      = attrs.valueAsBool("SHOWPICT", true);
 	doc->guidesPrefs().linkShown    = attrs.valueAsBool("SHOWLINK", false);
 	doc->guidesPrefs().showControls = attrs.valueAsBool("SHOWControl", false);
+	doc->guidesPrefs().showPreflight = attrs.valueAsBool("SHOWPreflight", false);
 	doc->guidesPrefs().rulerMode    = attrs.valueAsBool("rulerMode", true);
 	doc->guidesPrefs().rulersShown  = attrs.valueAsBool("showrulers", true);
 	doc->guidesPrefs().showBleed    = attrs.valueAsBool("showBleed", true);

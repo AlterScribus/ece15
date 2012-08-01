@@ -132,11 +132,27 @@ private:
 	QString currentShadow;
 	QMap<QString,StoryText> shadows;
 	bool checkKeyIsShortcut(QKeyEvent *k);
+	ScText * lastVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
+	//saving columns Start/End char positions for validate orphan/widow
+	//next this positions will be compared with start/end of paragraphs
+	struct SEColumn
+	{
+		int start;
+		int end;
+	};
+	QMap<int,SEColumn> SEColumnsMap; //contains start/end data for columns in frame
+	bool setColumnSE(int col, int Cstart, int Cend); // sets start/end positions for column col in QMap startendColumn field
+	bool isWarnedText(int pos);
 
 private slots:
 	void slotInvalidateLayout();
 
 public:
+	int getColumnSE(int col, bool start); // return start or end position for column col from QMap startendColumn field, start default value is true
+	void setTextFrameHeight();
+	//preflight warnings
+	QList< QPair<int, int> > warnedList; //pairs of start-end for text indicated by Selection2
+
 	//for footnotes/endnotes
 	bool hasAnyMark() { return ((selectedMark(false) != NULL) || (selectedNoteMark(false) != NULL)); }
 	bool hasMark(NotesStyle* NS);
@@ -165,17 +181,11 @@ private:
 	Mark* selectedMark(bool onlySelection = true);
 	TextNote* selectedNoteMark(ScText* &hl, bool onlySelection = true);
 	TextNote* selectedNoteMark(bool onlySelection = true);
+
 protected:
 	// set text frame height to last line of text
 	double maxY;
 	void setMaxY(double y);
-
-public:
-	void setTextFrameHeight();
-	//preflight warnings
-	QList< QPair<int, int> > warnedList; //pairs of start-end for text indicated by Selection2
-private:
-	bool isWarnedText(int pos);
 };
 
 #endif
