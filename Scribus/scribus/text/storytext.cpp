@@ -1475,8 +1475,8 @@ int StoryText::nextLine(int pos)
 					return j;
 				}
 			}
-			m_lastMagicPos = ls2.lastItem + 1;
-			return ls2.lastItem + 1;
+			m_lastMagicPos = ls2.lastItem;
+			return ls2.lastItem;
 		}
 	}
 	return lastFrameItem;

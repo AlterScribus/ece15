@@ -3956,7 +3956,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		{
 			if (itemText.cursorPosition() > firstInFrame())
 			{
-				if (itemText.cursorPosition() > lastInFrame() || itemText.cursorPosition() >= itemText.length())
+				if (itemText.cursorPosition() > lastInFrame() || itemText.cursorPosition() > itemText.length())
 					itemText.setCursorPosition(lastInFrame());
 				itemText.setCursorPosition( itemText.prevLine(itemText.cursorPosition()) );
 				if ( buttonModifiers & Qt::ShiftModifier )
