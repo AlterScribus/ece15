@@ -1141,10 +1141,12 @@ public:
 	bool hasTOCSetup() { return !docPrefsData.tocPrefs.defaultToCSetups.empty(); }
 	//! \brief Get the closest guide to the given point
 	void getClosestGuides(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
+	//! \brief Get the closest border of another element to the given point
+	void getClosestElementBorder(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
 	//! \brief Snap an item to the guides
 	void SnapToGuides(PageItem *currItem);
-	bool ApplyGuides(double *x, double *y);
-	bool ApplyGuides(FPoint* point);
+	bool ApplyGuides(double *x, double *y, bool elementSnap = false);
+	bool ApplyGuides(FPoint* point, bool elementSnap = false);
 	bool MoveItem(double newX, double newY, PageItem* ite, bool fromMP = false);
 	void RotateItem(double win, PageItem *currItem);
 	void MoveRotated(PageItem *currItem, FPoint npv, bool fromMP = false);
@@ -1209,6 +1211,7 @@ public: // Public attributes
 	int viewCount;
 	int viewID;
 	bool SnapGuides;
+	bool SnapElement;
 	bool GuideLock;
 	bool dontResize;
 	/** \brief Minimum and Maximum Points of Document */
