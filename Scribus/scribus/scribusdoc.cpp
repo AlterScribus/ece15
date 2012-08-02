@@ -1893,7 +1893,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				{
 					foreach (PageItem_NoteFrame* nF, listNotesFrames(NS))
 						delNoteFrame(nF, false);
-					flag_updateEndNotes = NS->isEndNotes();
 				}
 				if (isUndo)
 				{
@@ -1980,14 +1979,10 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						master->asTextFrame()->setNoteFrame(nF);
 					}
 					setNotesChanged(true);
-					if (note->isEndNote())
-						flag_updateEndNotes = true;
 				}
 				else
 				{
 					TextNote* note = master->itemText.item(is->getInt("at"))->mark->getNotePtr();
-					if (note->isEndNote())
-						flag_updateEndNotes = true;
 					deleteNote(note);
 				}
 				master->invalidateLayout();
@@ -2022,8 +2017,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						{
 							TextNote* note = mrk->getNotePtr();
 							NotesStyle* nStyle = note->notesStyle();
-							if (note->isEndNote())
-								flag_updateEndNotes = true;
 							deleteNote(note);
 							updateNotesNums(nStyle);
 						}
@@ -2131,10 +2124,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						Q_ASSERT(currItem != NULL);
 						Q_ASSERT(pos >= 0);
 						mrk = newMark();
-						if (is->get("MARK") == "new")
-							currItem->itemText.insertMark(mrk, pos);
-						else //if (is->get("MARK") == "paste"
-							currItem->itemText.item(pos)->mark = mrk;
+						currItem->itemText.insertMark(mrk, pos);
 						mrk->label = is->get("label");
 						mrk->setType((MarkType) is->getInt("type"));
 						if (is->contains("strtxt"))
@@ -2143,6 +2133,11 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setMark(is->get("dName"), (MarkType) is->getInt("dType"));
 						if (is->getItem("itemPtr") != NULL)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
+						else if (mrk->isUnique())
+						{
+							mrk->setItemPtr(currItem);
+							mrk->setItemName(currItem->getUName());
+						}
 						if (mrk->isType(MARKNoteMasterType))
 						{
 							NotesStyle* nStyle = getNotesStyle(is->get("nStyle"));;
@@ -2151,9 +2146,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							note->setMasterMark(mrk);
 							if (is->get("MARK") == "paste")
 								note->setSaxedText(is->get("noteTXT"));
-							if (nStyle->isEndNotes())
-								flag_updateEndNotes = true;
-							updateNotesNums(nStyle);
+							//updateNotesNums(nStyle);
 						}
 					}
 					else if (is->get("MARK") == "replace")
@@ -2216,8 +2209,6 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							{
 								TextNote* note = mrk->getNotePtr();
 								NotesStyle* nStyle = note->notesStyle();
-								if (note->isEndNote())
-									flag_updateEndNotes = true;
 								deleteNote(note);
 								updateNotesNums(nStyle);
 							}
@@ -2236,11 +2227,11 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 				}
 				scMW()->emitUpdateRequest(reqMarksUpdate);
-				if (currItem != NULL && !isAutoNoteFrame)
-				{
-					currItem->invalidateLayout();
-					currItem->updateLayout();
-				}
+//				if (currItem != NULL && !isAutoNoteFrame)
+//				{
+//					currItem->invalidateLayout();
+//					currItem->updateLayout();
+//				}
 			}
 		}
 		if (layersUndo)
@@ -9230,7 +9221,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 							ss = dynamic_cast<SimpleState*>(ts->at(0));
 						if(ss && ss->get("ETEA") == ETEA)
 						{
-							for(uint i=0;i<ts->sizet();i++){
+							for(int i=0;i < (int) ts->sizet();i++){
 								is = dynamic_cast<ScItemState<QPair<CharStyle,CharStyle> > *>(ts->at(i));
 								is->setItem(qMakePair(newStyle, is->getItem().second));
 							}
@@ -16453,6 +16444,7 @@ Mark *ScribusDoc::newMark(Mark* mrk)
 	if (mrk != NULL)
 		*newMrk = *mrk;
 	m_docMarksList.append(newMrk);
+	flag_updateMarksLabels = true;
 	return newMrk;
 }
 
@@ -16462,6 +16454,8 @@ TextNote *ScribusDoc::newNote(NotesStyle* NS)
 	TextNote* newNote = new TextNote(NS);
 	m_docNotesList.append(newNote);
 	setNotesChanged(true);
+	if (NS != NULL && NS->isEndNotes())
+		flag_updateEndNotes = true;
 	return newNote;
 }
 
@@ -16619,6 +16613,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 	{
 		m_docMarksList.removeOne(mrk);
 		delete mrk;
+		flag_updateMarksLabels = true;
 	}
 	return found;
 }
@@ -16899,8 +16894,6 @@ void ScribusDoc::deleteNotesStyle(QString nsName)
 		activeTransaction = NULL;
 	}
 	flag_updateMarksLabels = true;
-	if (NS->isEndNotes())
-		flag_updateEndNotes = true;
 	notesFramesUpdate();
 	m_docNotesStylesList.removeOne(NS);
 	scMW()->emitUpdateRequest(reqMarksUpdate);
@@ -16942,8 +16935,10 @@ void ScribusDoc::deleteNote(TextNote* note)
 		return;
 	PageItem_NoteFrame* nF = NULL;
 	if (note->noteMark() != NULL)
+	{
 		if (note->noteMark()->getItemPtr() != NULL)
 			nF = note->noteMark()->getItemPtr()->asNoteFrame();
+	}
 	if (nF == NULL)
 		nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
 	Q_ASSERT(nF != NULL);

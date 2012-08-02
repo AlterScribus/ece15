@@ -1680,6 +1680,8 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					}
 					keyrep=kr;
 				}
+				//slotDocCh(false);
+				doc->regionsChanged()->update(QRectF());
 			}
 		}
 	}
@@ -3552,7 +3554,9 @@ void ScribusMainWindow::doPasteRecent(QString data)
 		}
 		else
 		{
-			UndoTransaction pasteAction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Create,"",Um::ICreate));
+			UndoTransaction *pasteAction = NULL;
+			if(UndoManager::undoEnabled())
+				pasteAction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Create,"",Um::ICreate));
 			view->Deselect(true);
 			uint ac = doc->Items->count();
 			bool savedAlignGrid = doc->useRaster;
@@ -3579,7 +3583,12 @@ void ScribusMainWindow::doPasteRecent(QString data)
 					AddBookMark(currItem);
 			}
 			doc->m_Selection->copy(tmpSelection, false);
-			pasteAction.commit();
+			if(pasteAction)
+			{
+				pasteAction->commit();
+				delete pasteAction;
+				pasteAction = NULL;
+			}
 		}
 		slotDocCh(false);
 		doc->regionsChanged()->update(QRectF());
@@ -5287,59 +5296,67 @@ void ScribusMainWindow::slotEditPaste()
 					}
 				}
 				int atPos = currItem->itemText.cursorPosition();
+				currItem->itemText.insert(*story);
+				doc->updateMarks(doc->notesChanged());
+				StoryText story2 = story->copy();
 				if (UndoManager::undoEnabled())
 				{
-					ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
-					is->set("PASTE_TEXT", "paste_text");
-					is->set("START",atPos);
-					is->setItem(*story);
-					undoManager->action(currItem, is);
-				}
-				currItem->itemText.insert(*story);
-				//check if new marks are created
-				//and set undo steps for them
-				if (doc->flag_updateMarksLabels)
-				{
-					doc->updateMarks(doc->notesChanged());
-					if (UndoManager::undoEnabled())
+					for (int i = story->length() -1; i >= 0; --i)
 					{
-						for(int i = 0; i< story->length(); ++i)
+						if (story->item(i)->hasMark())
+							story->removeChars(i,1);
+					}
+					if (story->length() > 0)
+					{
+						ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
+						is->set("PASTE_TEXT", "paste_text");
+						is->set("START",atPos);
+						is->setItem(*story);
+						undoManager->action(currItem, is);
+					}
+				}
+				if (UndoManager::undoEnabled())
+				{
+					int marksNum = 0;
+					for (int i = 0; i < story2.length(); ++i)
+					{
+						if (story2.item(i)->hasMark())
 						{
-							if (story->item(i)->hasMark())
+							ScItemsState* iss = NULL;
+							Mark* mrk = story2.item(i)->mark;
+							if (mrk->isType(MARKNoteMasterType))
 							{
-								ScItemsState* iss = NULL;
-								Mark* mrk = story->item(i)->mark;
-								if (mrk->isType(MARKNoteMasterType))
-									iss = new ScItemsState(UndoManager::InsertNote);
-								else
-									iss = new ScItemsState(UndoManager::InsertMark);
-								iss->set("ETEA", mrk->label);
-								iss->set("label", mrk->label);
-								iss->set("type", (int) mrk->getType());
-								iss->set("MARK", QString("paste"));
-								iss->set("strtxt", mrk->getString());
-								iss->set("at", atPos + i);
-								if (currItem->isNoteFrame())
-									iss->set("noteframeName", currItem->getUName());
-								else
-									iss->insertItem("inItem", currItem);
-								if (mrk->isType(MARK2MarkType))
-								{
-									QString dName;
-									MarkType dType;
-									mrk->getMark(dName, dType);
-									iss->set("dName", dName);
-									iss->set("dType", (int) dType);
-								}
-								if (mrk->isType(MARK2ItemType))
-									iss->insertItem("itemPtr", mrk->getItemPtr());
-								if (mrk->isType(MARKNoteMasterType))
-								{
-									iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
-									iss->set("noteTXT", mrk->getNotePtr()->saxedText());
-								}
-								undoManager->action(doc, iss);
+								iss = new ScItemsState(UndoManager::InsertNote);
+								doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
 							}
+							else
+								iss = new ScItemsState(UndoManager::InsertMark);
+							iss->set("MARK", QString("paste"));
+							iss->set("label", mrk->label);
+							iss->set("type", (int) mrk->getType());
+							iss->set("strtxt", mrk->getString());
+							iss->set("at", atPos + i - marksNum);
+							if (currItem->isNoteFrame())
+								iss->set("noteframeName", currItem->getUName());
+							else
+								iss->insertItem("inItem", currItem);
+							if (mrk->isType(MARK2MarkType))
+							{
+								QString dName;
+								MarkType dType;
+								mrk->getMark(dName, dType);
+								iss->set("dName", dName);
+								iss->set("dType", (int) dType);
+							}
+							if (mrk->isType(MARK2ItemType))
+								iss->insertItem("itemPtr", mrk->getItemPtr());
+							if (mrk->isType(MARKNoteMasterType))
+							{
+								iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
+								iss->set("noteTXT", mrk->getNotePtr()->saxedText());
+							}
+							++marksNum;
+							undoManager->action(doc, iss);
 						}
 					}
 				}
@@ -6418,6 +6435,12 @@ void ScribusMainWindow::ToggleUElements()
 	}
 }
 
+void ScribusMainWindow::SetSnapElements(bool b)
+{
+	if(doc && doc->SnapElement != b)
+		ToggleUElements();
+}
+
 
 void ScribusMainWindow::toggleNodeEdit()
 {
@@ -6691,7 +6714,7 @@ void ScribusMainWindow::setAppMode(int mode)
 			ToggleFrameEdit();
 
 		//Ugly hack but I have absolutly no idea about how to do this in another way
-		if(currItem && oldMode != mode && (mode == modeEditMeshPatch || mode == modeEditMeshGradient || mode == modeEditGradientVectors || oldMode == modeEditMeshPatch || oldMode == modeEditMeshGradient || oldMode == modeEditGradientVectors || oldMode == modeEditPolygon || mode == modeEditPolygon || oldMode == modeEditArc || mode == modeEditArc || oldMode == modeEditSpiral || mode == modeEditSpiral))
+		if(UndoManager::undoEnabled() && currItem && oldMode != mode && (mode == modeEditMeshPatch || mode == modeEditMeshGradient || mode == modeEditGradientVectors || oldMode == modeEditMeshPatch || oldMode == modeEditMeshGradient || oldMode == modeEditGradientVectors || oldMode == modeEditPolygon || mode == modeEditPolygon || oldMode == modeEditArc || mode == modeEditArc || oldMode == modeEditSpiral || mode == modeEditSpiral))
 		{
 			SimpleState *ss = new SimpleState(Um::Mode);
 			ss->set("CHANGE_MODE","change_mode");
@@ -7728,14 +7751,21 @@ void ScribusMainWindow::duplicateItem()
 	doc->SnapElement = false;
 	slotEditCopy();
 	view->Deselect(true);
-	UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Duplicate,"",Um::IMultipleDuplicate));
+	UndoTransaction *trans = NULL;
+	if(UndoManager::undoEnabled())
+		trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Duplicate,"",Um::IMultipleDuplicate));
 	slotEditPaste();
 	for (int b=0; b<doc->m_Selection->count(); ++b)
 	{
 		doc->m_Selection->itemAt(b)->setLocked(false);
 		doc->MoveItem(doc->opToolPrefs().dispX, doc->opToolPrefs().dispY, doc->m_Selection->itemAt(b));
 	}
-	trans.commit();
+	if(trans)
+	{
+		trans->commit();
+		delete trans;
+		trans = NULL;
+	}
 	doc->useRaster = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
 	doc->SnapElement = savedAlignElement;
@@ -10198,14 +10228,21 @@ void ScribusMainWindow::slotItemTransform()
 		TransformDialog td(this, doc);
 		if (td.exec())
 		{
-			UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Transform,"",Um::IMove));
+			UndoTransaction *trans = NULL;
+			if(UndoManager::undoEnabled())
+				trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IPolygon,Um::Transform,"",Um::IMove));
 			qApp->changeOverrideCursor(QCursor(Qt::WaitCursor));
 			int count=td.getCount();
 			QTransform matrix(td.getTransformMatrix());
 			int basepoint=td.getBasepoint();
 			doc->itemSelection_Transform(count, matrix, basepoint);
 			qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
-			trans.commit();
+			if(trans)
+			{
+				trans->commit();
+				delete trans;
+				trans = NULL;
+			}
 		}
 	}
 }
@@ -10653,8 +10690,6 @@ void ScribusMainWindow::slotInsertMarkNote()
 		currItem->itemText.insertMark(mrk);
 		currItem->invalidateLayout();
 		currItem->layout();
-		if (mrk->getNotePtr()->isEndNote())
-			doc->flag_updateEndNotes = true;
 		doc->regionsChanged()->update(QRectF());
 		doc->changed();
 		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());

@@ -338,9 +338,6 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	docu.writeAttribute("PENSHADE",m_Doc->itemToolPrefs().shapeLineColorShade);
 	docu.writeAttribute("LINESHADE",m_Doc->itemToolPrefs().lineColorShade);
 	docu.writeAttribute("BRUSHSHADE",m_Doc->itemToolPrefs().shapeFillColorShade);
-	docu.writeAttribute("MAGMIN",m_Doc->opToolPrefs().magMin);
-	docu.writeAttribute("MAGMAX",m_Doc->opToolPrefs().magMax);
-	docu.writeAttribute("MAGSTEP",m_Doc->opToolPrefs().magStep);
 	docu.writeAttribute("CPICT",m_Doc->itemToolPrefs().imageFillColor);
 	docu.writeAttribute("PICTSHADE",m_Doc->itemToolPrefs().imageFillColorShade);
 	docu.writeAttribute("CSPICT",m_Doc->itemToolPrefs().imageStrokeColor);
@@ -1568,9 +1565,29 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		else if (ch == SpecialChars::OBJECT && item->itemText.item(k)->mark != NULL)
 		{
 			Mark* mark = item->itemText.item(k)->mark;
+			if (mark->isType(MARKNoteFrameType))
+				continue;
 			docu.writeEmptyElement("MARK");
 			docu.writeAttribute("label", mark->label);
 			docu.writeAttribute("type", mark->getType());
+			docu.writeAttribute("strtxt", mark->getString());
+			if (mark->isType(MARKNoteMasterType))
+			{
+				docu.writeAttribute("nStyle", mark->getNotePtr()->notesStyle()->name());
+				docu.writeAttribute("noteTXT", mark->getNotePtr()->saxedText());
+			}
+			else if (mark->isType(MARK2MarkType))
+			{
+				QString l;
+				MarkType t;
+				mark->getMark(l, t);
+				docu.writeAttribute("dest_l", l);
+				docu.writeAttribute("dest_t", t);
+			}
+			else if (mark->isType(MARK2ItemType))
+				docu.writeAttribute("item", mark->getItemName());
+			else
+				continue;
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
 			putPStyle(docu, item->itemText.paragraphStyle(k), "para");

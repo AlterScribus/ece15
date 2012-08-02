@@ -484,6 +484,7 @@ public slots:
 	void ToggleBase();
 	void ToggleUGuides();
 	void ToggleUElements();
+	void SetSnapElements(bool b);
 	void EditTabs();
 	void SearchText();
 	void imageEditorExited(int, QProcess::ExitStatus);

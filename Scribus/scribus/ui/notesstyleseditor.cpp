@@ -305,8 +305,6 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 				{
 					foreach (PageItem_NoteFrame* nF, m_Doc->listNotesFrames(NS))
 						m_Doc->delNoteFrame(nF, false);
-					if (n.isEndNotes())
-						m_Doc->flag_updateEndNotes = true;
 				}
 				m_Doc->setNotesChanged(true); //notesframes width must be updated
 				*NS = n;

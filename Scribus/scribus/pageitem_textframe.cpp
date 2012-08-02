@@ -1556,7 +1556,7 @@ void PageItem_TextFrame::layout()
 						continue;
 					hl->mark->setItemPtr(this);
 					NotesStyle* nStyle = note->notesStyle();
-						Q_ASSERT(nStyle != NULL);
+					Q_ASSERT(nStyle != NULL);
 					QString chsName = nStyle->marksChStyle();
 					CharStyle newStyle(itemText.charStyle(a));
 					if ((chsName != "") && (chsName != tr("No Style")))
@@ -3798,7 +3798,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			unicodeInputString = "";
 			if (ok)
 			{
-				UndoTransaction trans(undoManager->beginTransaction(Um::Selection,Um::ITextFrame,Um::InsertText,"",Um::IDelete));
+				UndoTransaction *trans = NULL;
+				if(UndoManager::undoEnabled())
+					trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::ITextFrame,Um::InsertText,"",Um::IDelete));
 				if (itemText.lengthOfSelection() > 0)
 					deleteSelectedTextFromFrame();
 				if (conv < 31)
@@ -3818,7 +3820,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					}
 				}
 				itemText.insertChars(QString(QChar(conv)), true);
-				trans.commit();
+				if(trans)
+				{
+					trans->commit();
+					delete trans;
+					trans = NULL;
+				}
 //				Tinput = true;
 				m_Doc->scMW()->setTBvals(this);
 				if (isAutoNoteFrame() && m_Doc->notesChanged())
@@ -3828,6 +3835,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 				else
 					update();
+//				update();
+//				doc()->changed();
 				keyRepeat = false;
 				return;
 			}
@@ -4152,6 +4161,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			layout();
 		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 			NextBox->updateLayout();
+//		updateLayout();
+//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+//			NextBox->updateLayout();
+//		update();
 //		Tinput = false;
 //		if ((cr == QChar(13)) && (itemText.length() != 0))
 //		{
@@ -4225,6 +4238,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 		}
 		m_Doc->scMW()->setTBvals(this);
+//		update();
+//		doc()->changed();
 //		view->RefreshItem(this);
 		break;
 	default:
@@ -4494,8 +4509,6 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							TextNote* note = notes2DEL.at(ii).first;
 							Q_ASSERT(note != NULL);
 							m_Doc->setUndoDelNote(note);
-							if (note->isEndNote())
-								m_Doc->flag_updateEndNotes = true;
 							m_Doc->deleteNote(note);
 						}
 						if(is)
@@ -4969,10 +4982,7 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-	{
-		if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
-			delList.append(nF);
-	}
+		delList.append(nF);
 	while (!delList.isEmpty())
 	{
 		PageItem_NoteFrame* nF = delList.takeFirst();
@@ -4980,12 +4990,12 @@ void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 	}
 
 	//check if doc need update
+	m_Doc->setNotesChanged(true);
 	if (doUpdate && (oldItemsCount != m_Doc->Items->count()))
 	{
 		m_Doc->changed();
 		m_Doc->regionsChanged()->update(QRectF());
 	}
-	m_Doc->setNotesChanged(true);
 }
 
 Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
@@ -5233,8 +5243,6 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		{
 			if (doUndo && UndoManager::undoEnabled())
 				m_Doc->setUndoDelNote(note);
-			if (note->isEndNote())
-				m_Doc->flag_updateEndNotes = true;
 			m_Doc->deleteNote(note);
 			note = selectedNoteMark(true);
 			++num;

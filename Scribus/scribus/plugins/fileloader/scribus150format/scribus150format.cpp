@@ -2212,15 +2212,9 @@ void Scribus150Format::readToolSettings(ScribusDoc* doc, ScXmlStreamAttributes& 
 	doc->itemToolPrefs().calligrapicPenAngle = attrs.valueAsDouble("calligrapicPenAngle", 0.0);
 	doc->itemToolPrefs().calligrapicPenWidth = attrs.valueAsDouble("calligrapicPenWidth", 10.0);
 	doc->itemToolPrefs().calligrapicPenStyle = static_cast<Qt::PenStyle>(attrs.valueAsInt("calligrapicPenStyle"));
-	doc->opToolPrefs().magMin      = attrs.valueAsInt("MAGMIN", 1);
-	doc->opToolPrefs().magMax      = attrs.valueAsInt("MAGMAX", 3200);
-	doc->opToolPrefs().magStep     = attrs.valueAsInt("MAGSTEP", 125);
 	doc->opToolPrefs().dispX       = attrs.valueAsDouble("dispX", 10.0);
 	doc->opToolPrefs().dispY       = attrs.valueAsDouble("dispY", 10.0);
 	doc->opToolPrefs().constrain   = attrs.valueAsDouble("constrain", 15.0);
-	//CB Reset doc zoom step value to 200% instead of old values.
-	if (doc->opToolPrefs().magStep <= 100)
-		doc->opToolPrefs().magStep = 125;
 	doc->itemToolPrefs().textTabFillChar = attrs.valueAsString("TabFill","");
 	doc->itemToolPrefs().textTabWidth   = attrs.valueAsDouble("TabWidth", 36.0);
 	if (attrs.hasAttribute("CPICT"))
@@ -3781,51 +3775,87 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 			{
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
-				Mark* mark = NULL;
-				if (m_Doc->isLoading())
+				Mark* mrk = NULL;
+				if (doc->isLoading() || t == MARKVariableTextType)
+					mrk = m_Doc->getMarkDefinied(l, t);
+				if (mrk == NULL)
 				{
-					mark = m_Doc->getMarkDefinied(l, t);
-				}
-				else
-				{	//doc is not loading so it is copy/paste task
-					if (t == MARKVariableTextType)
-						mark = m_Doc->getMarkDefinied(l, t);
-					else
+					mrk = m_Doc->newMark();
+					getUniqueName(l,doc->marksLabelsList(t), "_");
+					mrk->label = l;
+					mrk->setType(t);
+					mrk->setString(tAtt.valueAsString("strtxt"));
+					if (mrk->isUnique())
 					{
-						//create copy of mark
-						Mark* oldMark = m_Doc->getMarkDefinied(l, t);
-						if (oldMark == NULL)
-						{
-							qWarning() << "wrong copy of oldMark";
-							mark = m_Doc->newMark();
-							mark->setType(t);
-						}
-						else
-						{
-							mark = m_Doc->newMark(oldMark);
-							getUniqueName(l,doc->marksLabelsList(t), "_");
-						}
-						mark->label = l;
-						if (t == MARKNoteMasterType)
-						{  //create copy of note
-							TextNote* old = mark->getNotePtr();
-							TextNote* note = m_Doc->newNote(old->notesStyle());
-							mark->setNotePtr(note);
-							note->setMasterMark(mark);
-							note->setSaxedText(old->saxedText());
-							m_Doc->setNotesChanged(true);
-						}
+						mrk->setItemPtr(newItem);
+						mrk->setItemName(newItem->getUName());
 					}
+					m_Doc->flag_updateMarksLabels = true;
 				}
-				if (mark == NULL)
-					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
-				else
+				if (mrk->isType(MARKNoteMasterType))
 				{
-					//set pointer to item holds mark in his text
-					if (t == MARKAnchorType)
-						mark->setItemPtr(newItem);
-					mark->OwnPage = newItem->OwnPage;
-					newItem->itemText.insertMark(mark, newItem->itemText.length());
+					NotesStyle* NS = m_Doc->getNotesStyle(tAtt.valueAsString("nStyle"));
+					Q_ASSERT(NS != NULL);
+					TextNote* note = m_Doc->newNote(NS);
+					mrk->setNotePtr(note);
+					note->setMasterMark(mrk);
+					note->setSaxedText(tAtt.valueAsString("noteTXT"));
+					m_Doc->setNotesChanged(true);
+				}
+				else if (mrk->isType(MARK2MarkType))
+				{
+					QString d_l = tAtt.valueAsString("dest_l");
+					MarkType d_t = (MarkType) tAtt.valueAsInt("dest_t");
+					mrk->setMark(d_l, d_t);
+				}
+				else if (mrk->isType(MARK2ItemType))
+				{
+					mrk->setItemName(tAtt.valueAsString("item"));
+					mrk->setItemPtr(m_Doc->getItemFromName(tAtt.valueAsString("item")));
+				}
+				if (!mrk->isType(MARK2ItemType))
+				{
+					mrk->setItemPtr(newItem);
+					mrk->setItemName(newItem->getUName());
+				}
+				mrk->OwnPage = newItem->OwnPage;
+				int atPos = newItem->itemText.length();
+				newItem->itemText.insertMark(mrk, atPos);
+				if (UndoManager::undoEnabled())
+				{
+					ScItemsState* iss = NULL;
+					if (mrk->isType(MARKNoteMasterType))
+					{
+						iss = new ScItemsState(UndoManager::InsertNote);
+						m_Doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
+					}
+					else
+						iss = new ScItemsState(UndoManager::InsertMark);
+					iss->set("MARK", QString("paste"));
+					iss->set("label", mrk->label);
+					iss->set("type", (int) mrk->getType());
+					iss->set("strtxt", mrk->getString());
+					iss->set("at", atPos);
+					if (newItem->isNoteFrame())
+						iss->set("noteframeName", newItem->getUName());
+					else
+						iss->insertItem("inItem", newItem);
+					if (mrk->isType(MARK2MarkType))
+					{
+						QString dName;
+						MarkType dType;
+						mrk->getMark(dName, dType);
+						iss->set("dName", dName);
+						iss->set("dType", (int) dType);
+					}
+					if (mrk->isType(MARK2ItemType))
+						iss->insertItem("itemPtr", mrk->getItemPtr());
+					if (mrk->isType(MARKNoteMasterType))
+					{
+						iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
+						iss->set("noteTXT", mrk->getNotePtr()->saxedText());
+					}
+					undoManager->action(m_Doc, iss);
 				}
 			}
 		}
