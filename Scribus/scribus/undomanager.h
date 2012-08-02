@@ -73,7 +73,9 @@ public:
 	TransactionState();
 	/** @brief Destroys the TransactionState instance */
 	~TransactionState();
-	
+	/** @brief To know if the state is a Transaction */
+	bool isTransaction(){return true;}
+
 	/**
 	 * @brief Add a new <code>UndoState</code> object to the transaction.
 	 * @param state state to be added to the transaction
@@ -136,7 +138,7 @@ private:
 /**
     Class which handles Undo transactions. No data, just methods.
  */
-class UndoTransaction : public Transaction
+class SCRIBUS_API UndoTransaction : public Transaction
 {
 public:
 	UndoTransaction(TransactionData* data);
@@ -442,6 +444,7 @@ public:
 	* Strings describing undo actions
 	*/
 	/*@{*/
+	static QString ConnectPath;
 	static QString AddVGuide;
 	static QString AddHGuide;
 	static QString DelVGuide;
@@ -451,6 +454,9 @@ public:
 	static QString MoveVGuide;
 	static QString MoveHGuide;
 	static QString UniteItem;
+	static QString Overprint;
+	static QString BlendMode;
+	static QString ActionPDF;
 	static QString SplitItem;
 	static QString RemoveAllGuides;
 	static QString RemoveAllPageGuides;
@@ -496,6 +502,7 @@ public:
 	static QString Delete;
 	static QString Rename;
 	static QString FromTo;
+	static QString Mode;
 	static QString ApplyMasterPage;
 	static QString Paste;
 	static QString Cut;
@@ -529,13 +536,20 @@ public:
 	static QString SetFontEffect;
 	static QString ImageFrame;
 	static QString TextFrame;
+	static QString Layer;
 	static QString LatexFrame;
+	static QString ResTyp;
 	static QString Polygon;
+	static QString EditPolygon;
+	static QString EditArc;
+	static QString EditSpiral;
 	static QString BezierCurve;
+	static QString ShowImage;
 	static QString Polyline;
 	static QString PathText;
 	static QString ConvertTo;
 	static QString ImportSVG;
+	static QString RoundCorner;
 	static QString ImportUniconv;
 	static QString ImportEPS;
 	static QString ImportBarcode;
@@ -590,11 +604,25 @@ public:
 	static QString DisableFlowLayer;
 	static QString SetLayerBlendMode;
 	static QString SetLayerTransparency;
+	static QString MeshGradient;
+	static QString ChangeMeshGradient;
 	static QString SetLayerLocked;
 	static QString SetLayerUnlocked;
+	static QString RemoveMeshPatch;
+	static QString StartArrowScale;
+	static QString EndArrowScale;
 	static QString GetImage;
 	static QString ChangeFormula;
+	static QString GradType;
+	static QString GradTypeMask;
+	static QString GradPos;
+	static QString GradVal;
+	static QString GradValStroke;
+	static QString GradCol;
+	static QString GradTypeStroke;
 	static QString MultipleDuplicate;
+	static QString Duplicate;
+	static QString Transform;
 	static QString ApplyTextStyle;
 	static QString RemoveTextStyle;
 	static QString Columns;

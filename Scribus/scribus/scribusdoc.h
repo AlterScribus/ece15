@@ -739,7 +739,6 @@ public:
 	 * @brief Undo function for grouping/ungrouping
 	 */
 	void restoreGrouping(SimpleState *state, bool isUndo);
-	void restoreUngrouping(SimpleState *state, bool isUndo);
 	/**
 	 * @brief Undo function for level
 	 */
@@ -1015,7 +1014,7 @@ public:
 	PageItem* groupObjectsSelection(Selection* customSelection=0);
 	PageItem* groupObjectsList(QList<PageItem*> &itemList);
 	void groupObjectsToItem(PageItem* groupItem, QList<PageItem*> &itemList);
-	const PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
+	PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
 	void itemSelection_UnGroupObjects(Selection* customSelection=0);
 	void addToGroup(PageItem* group, PageItem* item);
 	void removeFromGroup(PageItem* item);
@@ -1023,7 +1022,7 @@ public:
 
 	void itemSelection_ApplyParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0, bool rmDirectFormatting = false);
 	void itemSelection_SetParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0);
-	void itemSelection_ApplyCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
+	void itemSelection_ApplyCharStyle(const CharStyle & newstyle, Selection* customSelection=0, QString ETEA = "");
 	void itemSelection_SetCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
 	void itemSelection_EraseParagraphStyle(Selection* customSelection=0);
 	void itemSelection_EraseCharStyle(Selection* customSelection=0);
@@ -1131,10 +1130,12 @@ public:
 	bool hasTOCSetup() { return !docPrefsData.tocPrefs.defaultToCSetups.empty(); }
 	//! \brief Get the closest guide to the given point
 	void getClosestGuides(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
+	//! \brief Get the closest border of another element to the given point
+	void getClosestElementBorder(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
 	//! \brief Snap an item to the guides
 	void SnapToGuides(PageItem *currItem);
-	bool ApplyGuides(double *x, double *y);
-	bool ApplyGuides(FPoint* point);
+	bool ApplyGuides(double *x, double *y, bool elementSnap = false);
+	bool ApplyGuides(FPoint* point, bool elementSnap = false);
 	bool MoveItem(double newX, double newY, PageItem* ite, bool fromMP = false);
 	void RotateItem(double win, PageItem *currItem);
 	void MoveRotated(PageItem *currItem, FPoint npv, bool fromMP = false);
@@ -1199,6 +1200,7 @@ public: // Public attributes
 	int viewCount;
 	int viewID;
 	bool SnapGuides;
+	bool SnapElement;
 	bool GuideLock;
 	bool dontResize;
 	/** \brief Minimum and Maximum Points of Document */

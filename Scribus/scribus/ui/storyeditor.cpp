@@ -1965,6 +1965,7 @@ void StoryEditor::buildGUI()
 	EditorBar->editor = Editor;
 	Editor->installEventFilter(this);
 	languageChange();
+	ActionManager::setActionTooltips(&seActions);
 }
 
 void StoryEditor::changeEvent(QEvent *e)
@@ -3297,7 +3298,7 @@ void StoryEditor::SaveTextFile()
 	if (!fileName.isEmpty())
 	{
 		dirs->set("story_save", fileName.left(fileName.lastIndexOf("/")));
-		Serializer::writeWithEncoding(fileName, LoadEnc, Editor->toPlainText());
+		Serializer::writeWithEncoding(fileName, LoadEnc, Editor->StyledText.plainText());
 	}
 	blockUpdate = false;
 }
