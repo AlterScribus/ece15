@@ -5140,23 +5140,14 @@ void ScribusMainWindow::slotEditPaste()
 
 			if (ScMimeData::clipboardHasScribusText())
 			{
-				Serializer dig(*doc); // TODO: do we really need a new serializer here?
-				dig.store<ScribusDoc>("<scribusdoc>", doc);
-				StoryText::desaxeRules("/", dig, "SCRIBUSTEXT");
-				dig.addRule("/SCRIBUSTEXT", desaxe::Result<StoryText>());
+				Serializer *textSerializer = doc->textSerializer();
+				textSerializer->reset();
+				textSerializer->store<ScribusDoc>("<scribusdoc>", doc);
 
 				QByteArray xml = ScMimeData::clipboardScribusText();
-				dig.parseMemory(xml, xml.length());
+				textSerializer->parseMemory(xml, xml.length());
 
-				StoryText* story = dig.result<StoryText>();
-				if (UndoManager::undoEnabled())
-				{
-					ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
-					is->set("PASTE_TEXT", "paste_text");
-					is->set("START",currItem->itemText.cursorPosition());
-					is->setItem(*story);
-					undoManager->action(currItem, is);
-				}
+				StoryText* story = textSerializer->result<StoryText>();
 				currItem->itemText.insert(*story);
 
 				delete story;
