@@ -3780,52 +3780,60 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 			{
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
-				Mark* mark = NULL;
+				Mark* mrk = NULL;
 				if (doc->isLoading() || t == MARKVariableTextType)
-					mark = m_Doc->getMarkDefinied(l, t);
-				if (mark == NULL)
+					mrk = m_Doc->getMarkDefinied(l, t);
+				if (mrk == NULL)
 				{
-					mark = m_Doc->newMark();
+					mrk = m_Doc->newMark();
 					getUniqueName(l,doc->marksLabelsList(t), "_");
-					mark->label = l;
-					mark->setType(t);
-					mark->setString(tAtt.valueAsString("strtxt"));
+					mrk->label = l;
+					mrk->setType(t);
+					mrk->setString(tAtt.valueAsString("strtxt"));
+					if (mrk->isUnique())
+					{
+						mrk->setItemPtr(newItem);
+						mrk->setItemName(newItem->getUName());
+					}
 					m_Doc->flag_updateMarksLabels = true;
 				}
-				if (mark->isType(MARKNoteMasterType))
+				if (mrk->isType(MARKNoteMasterType))
 				{
 					NotesStyle* NS = m_Doc->getNotesStyle(tAtt.valueAsString("nStyle"));
 					Q_ASSERT(NS != NULL);
 					TextNote* note = m_Doc->newNote(NS);
-					mark->setNotePtr(note);
-					note->setMasterMark(mark);
+					mrk->setNotePtr(note);
+					note->setMasterMark(mrk);
 					note->setSaxedText(tAtt.valueAsString("noteTXT"));
 					m_Doc->setNotesChanged(true);
 				}
-				else if (mark->isType(MARK2MarkType))
+				else if (mrk->isType(MARK2MarkType))
 				{
 					QString d_l = tAtt.valueAsString("dest_l");
 					MarkType d_t = (MarkType) tAtt.valueAsInt("dest_t");
-					mark->setMark(d_l, d_t);
+					mrk->setMark(d_l, d_t);
 				}
-				else if (mark->isType(MARK2ItemType))
+				else if (mrk->isType(MARK2ItemType))
 				{
-					mark->setItemName(tAtt.valueAsString("item"));
-					mark->setItemPtr(m_Doc->getItemFromName(tAtt.valueAsString("item")));
+					mrk->setItemName(tAtt.valueAsString("item"));
+					mrk->setItemPtr(m_Doc->getItemFromName(tAtt.valueAsString("item")));
 				}
-				if (!mark->isType(MARK2ItemType))
+				if (!mrk->isType(MARK2ItemType))
 				{
-					mark->setItemPtr(newItem);
-					mark->setItemName(newItem->getUName());
+					mrk->setItemPtr(newItem);
+					mrk->setItemName(newItem->getUName());
 				}
-				mark->OwnPage = newItem->OwnPage;
+				mrk->OwnPage = newItem->OwnPage;
 				int atPos = newItem->itemText.length();
-				newItem->itemText.insertMark(mark, atPos);
+				newItem->itemText.insertMark(mrk, atPos);
 				if (UndoManager::undoEnabled())
 				{
 					ScItemsState* iss = NULL;
 					if (mrk->isType(MARKNoteMasterType))
+					{
 						iss = new ScItemsState(UndoManager::InsertNote);
+						m_Doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
+					}
 					else
 						iss = new ScItemsState(UndoManager::InsertMark);
 					iss->set("MARK", QString("paste"));
@@ -3833,7 +3841,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 					iss->set("type", (int) mrk->getType());
 					iss->set("strtxt", mrk->getString());
 					iss->set("at", atPos);
-					if (currItem->isNoteFrame())
+					if (newItem->isNoteFrame())
 						iss->set("noteframeName", newItem->getUName());
 					else
 						iss->insertItem("inItem", newItem);

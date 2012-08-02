@@ -4365,8 +4365,6 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							TextNote* note = notes2DEL.at(ii).first;
 							Q_ASSERT(note != NULL);
 							m_Doc->setUndoDelNote(note);
-							if (note->isEndNote())
-								m_Doc->flag_updateEndNotes = true;
 							m_Doc->deleteNote(note);
 						}
 						if(is)
@@ -5101,8 +5099,6 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		{
 			if (doUndo && UndoManager::undoEnabled())
 				m_Doc->setUndoDelNote(note);
-			if (note->isEndNote())
-				m_Doc->flag_updateEndNotes = true;
 			m_Doc->deleteNote(note);
 			note = selectedNoteMark(true);
 			++num;

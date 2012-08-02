@@ -5288,58 +5288,67 @@ void ScribusMainWindow::slotEditPaste()
 					}
 				}
 				int atPos = currItem->itemText.cursorPosition();
+				currItem->itemText.insert(*story);
+				doc->updateMarks(doc->notesChanged());
+				StoryText story2 = story->copy();
 				if (UndoManager::undoEnabled())
 				{
-					ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
-					is->set("PASTE_TEXT", "paste_text");
-					is->set("START",atPos);
-					is->setItem(*story);
-					undoManager->action(currItem, is);
-				}
-				currItem->itemText.insert(*story);
-				//check if new marks are created
-				//and set undo steps for them
-				if (doc->flag_updateMarksLabels)
-				{
-					doc->updateMarks(doc->notesChanged());
-					if (UndoManager::undoEnabled())
+					for (int i = story->length() -1; i >= 0; --i)
 					{
-						for(int i = 0; i< story->length(); ++i)
+						if (story->item(i)->hasMark())
+							story->removeChars(i,1);
+					}
+					if (story->length() > 0)
+					{
+						ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
+						is->set("PASTE_TEXT", "paste_text");
+						is->set("START",atPos);
+						is->setItem(*story);
+						undoManager->action(currItem, is);
+					}
+				}
+				if (UndoManager::undoEnabled())
+				{
+					int marksNum = 0;
+					for (int i = 0; i < story2.length(); ++i)
+					{
+						if (story2.item(i)->hasMark())
 						{
-							if (story->item(i)->hasMark())
+							ScItemsState* iss = NULL;
+							Mark* mrk = story2.item(i)->mark;
+							if (mrk->isType(MARKNoteMasterType))
 							{
-								ScItemsState* iss = NULL;
-								Mark* mrk = story->item(i)->mark;
-								if (mrk->isType(MARKNoteMasterType))
-									iss = new ScItemsState(UndoManager::InsertNote);
-								else
-									iss = new ScItemsState(UndoManager::InsertMark);
-								iss->set("MARK", QString("paste"));
-								iss->set("label", mrk->label);
-								iss->set("type", (int) mrk->getType());
-								iss->set("strtxt", mrk->getString());
-								iss->set("at", atPos + i);
-								if (currItem->isNoteFrame())
-									iss->set("noteframeName", currItem->getUName());
-								else
-									iss->insertItem("inItem", currItem);
-								if (mrk->isType(MARK2MarkType))
-								{
-									QString dName;
-									MarkType dType;
-									mrk->getMark(dName, dType);
-									iss->set("dName", dName);
-									iss->set("dType", (int) dType);
-								}
-								if (mrk->isType(MARK2ItemType))
-									iss->insertItem("itemPtr", mrk->getItemPtr());
-								if (mrk->isType(MARKNoteMasterType))
-								{
-									iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
-									iss->set("noteTXT", mrk->getNotePtr()->saxedText());
-								}
-								undoManager->action(doc, iss);
+								iss = new ScItemsState(UndoManager::InsertNote);
+								doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
 							}
+							else
+								iss = new ScItemsState(UndoManager::InsertMark);
+							iss->set("MARK", QString("paste"));
+							iss->set("label", mrk->label);
+							iss->set("type", (int) mrk->getType());
+							iss->set("strtxt", mrk->getString());
+							iss->set("at", atPos + i - marksNum);
+							if (currItem->isNoteFrame())
+								iss->set("noteframeName", currItem->getUName());
+							else
+								iss->insertItem("inItem", currItem);
+							if (mrk->isType(MARK2MarkType))
+							{
+								QString dName;
+								MarkType dType;
+								mrk->getMark(dName, dType);
+								iss->set("dName", dName);
+								iss->set("dType", (int) dType);
+							}
+							if (mrk->isType(MARK2ItemType))
+								iss->insertItem("itemPtr", mrk->getItemPtr());
+							if (mrk->isType(MARKNoteMasterType))
+							{
+								iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
+								iss->set("noteTXT", mrk->getNotePtr()->saxedText());
+							}
+							++marksNum;
+							undoManager->action(doc, iss);
 						}
 					}
 				}
@@ -10636,8 +10645,6 @@ void ScribusMainWindow::slotInsertMarkNote()
 		currItem->itemText.insertMark(mrk);
 		currItem->invalidateLayout();
 		currItem->layout();
-		if (mrk->getNotePtr()->isEndNote())
-			doc->flag_updateEndNotes = true;
 		doc->regionsChanged()->update(QRectF());
 		doc->changed();
 		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
