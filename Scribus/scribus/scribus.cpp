@@ -1679,11 +1679,8 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					}
 					keyrep=kr;
 				}
-<<<<<<< HEAD
 				//slotDocCh(false);
-				//doc->regionsChanged()->update(QRectF());
-=======
->>>>>>> a3d83a9581d7ce59e5dee3d6a8dd6e6d93e865a2
+				doc->regionsChanged()->update(QRectF());
 			}
 		}
 	}

@@ -9172,11 +9172,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 							ss = dynamic_cast<SimpleState*>(ts->at(0));
 						if(ss && ss->get("ETEA") == ETEA)
 						{
-<<<<<<< HEAD
 							for(int i=0;i < (int) ts->sizet();i++){
-=======
-							for(uint i=0;i<ts->sizet();i++){
->>>>>>> a3d83a9581d7ce59e5dee3d6a8dd6e6d93e865a2
 								is = dynamic_cast<ScItemState<QPair<CharStyle,CharStyle> > *>(ts->at(i));
 								is->setItem(qMakePair(newStyle, is->getItem().second));
 							}

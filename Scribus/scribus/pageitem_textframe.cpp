@@ -3686,7 +3686,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				trans.commit();
 //				Tinput = true;
 				m_Doc->scMW()->setTBvals(this);
-<<<<<<< HEAD
 				if (isAutoNoteFrame() && m_Doc->notesChanged())
 				{
 					Q_ASSERT(asNoteFrame()->masterFrame());
@@ -3694,10 +3693,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 				else
 					update();
-=======
-				update();
-				doc()->changed();
->>>>>>> a3d83a9581d7ce59e5dee3d6a8dd6e6d93e865a2
+//				update();
+//				doc()->changed();
 				keyRepeat = false;
 				return;
 			}
@@ -4010,7 +4007,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (itemText.lengthOfSelection() == 0)
 			itemText.select(itemText.cursorPosition(), 1, true);
 		deleteSelectedTextFromFrame();
-<<<<<<< HEAD
 		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
 			if (!asNoteFrame()->isEndNotesFrame())
@@ -4021,12 +4017,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		else
 			layout();
-=======
-		updateLayout();
-		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-			NextBox->updateLayout();
-		update();
->>>>>>> a3d83a9581d7ce59e5dee3d6a8dd6e6d93e865a2
+//		updateLayout();
+//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+//			NextBox->updateLayout();
+//		update();
 //		Tinput = false;
 //		if ((cr == QChar(13)) && (itemText.length() != 0))
 //		{
@@ -4100,12 +4094,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 		}
 		m_Doc->scMW()->setTBvals(this);
-<<<<<<< HEAD
 //		update();
-=======
-		update();
-		doc()->changed();
->>>>>>> a3d83a9581d7ce59e5dee3d6a8dd6e6d93e865a2
+//		doc()->changed();
 //		view->RefreshItem(this);
 		break;
 	default:
@@ -4248,12 +4238,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (!(isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty()) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 		{
 			view->Deselect(true);
-<<<<<<< HEAD
-			view->Deselect(true);
-			NextBox->layout();
-=======
 			NextBox->update();
->>>>>>> a3d83a9581d7ce59e5dee3d6a8dd6e6d93e865a2
 			m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 		}
 		break;
