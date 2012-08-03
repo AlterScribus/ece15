@@ -485,6 +485,10 @@ void ScribusDoc::init()
 	pstyle.setDropCapLines(2);
 	pstyle.setDropCapOffset(0);
 	pstyle.charStyle().setParent("");
+	if (docPrefsData.hyphPrefs.Automatic)
+		pstyle.setHyphenationMode(ParagraphStyle::AutomaticHyphenation);
+	else
+		pstyle.setHyphenationMode(ParagraphStyle::ManualHyphenation);
 	
 	CharStyle cstyle;
 	cstyle.setDefaultStyle(true);
@@ -1477,6 +1481,14 @@ void ScribusDoc::redefineStyles(const StyleSet<ParagraphStyle>& newStyles, bool 
 		}
 		else {
 			sty.breakImplicitCharStyleInheritance(false);
+		}
+//set HyphenationMode to doc default
+		if (sty.hyphenationMode() == ParagraphStyle::HyphModeNotSet)
+		{
+			if (docPrefsData.hyphPrefs.Automatic)
+				sty.setHyphenationMode(ParagraphStyle::AutomaticHyphenation);
+			else
+				sty.setHyphenationMode(ParagraphStyle::ManualHyphenation);
 		}
 	}
 	docParagraphStyles.invalidate();

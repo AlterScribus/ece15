@@ -1330,6 +1330,8 @@ void Scribus134Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	static const QString HyphenationMode("HyphenationMode");
 	if (attrs.hasAttribute(HyphenationMode))
 		newStyle.setHyphenationMode(attrs.valueAsInt(HyphenationMode));
+	else
+		newStyle.setHyphenationMode(ParagraphStyle::HyphModeNotSet);
 
 	static const QString MinWordTrack("MinWordTrack");
 	if (attrs.hasAttribute(MinWordTrack))
@@ -2685,6 +2687,8 @@ PageItem* Scribus134Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		pstyle.setOpticalMargins(attrs.valueAsInt("OpticalMargins"));
 	if (attrs.hasAttribute("HyphenationMode"))
 		pstyle.setHyphenationMode(attrs.valueAsInt("HyphenationMode"));
+	else
+		pstyle.setHyphenationMode(ParagraphStyle::HyphModeNotSet);
 	if (attrs.hasAttribute("leftMargin"))
 		pstyle.setLeftMargin(attrs.valueAsDouble("leftMargin"));
 	if (attrs.hasAttribute("rightMargin"))

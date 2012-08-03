@@ -1513,6 +1513,7 @@ void PageItem_TextFrame::layout()
 		current.mustLineEnd = current.colRight;
 		current.restartX = 0;
 		int lastStat = 0, curStat = 0;
+		bool disableHyph = false;
 
 		//why emit invalidating signals each time text is changed by appling styles?
 		//this speed up layouting in case of using notes marks and drop caps
@@ -1602,7 +1603,15 @@ void PageItem_TextFrame::layout()
 			double scaleH = charStyle.scaleH() / 1000.0;
 			double offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
 			style.setLineSpacing (calculateLineSpacing (style, this));
-			// find out about par gap and dropcap
+			//avoid hyphenation for words with softhyphen at it beginning
+			if (hl->ch == SpecialChars::SHYPHEN && !disableHyph)
+			{
+				if ((a == 0) || !itemText.item(a - 1)->ch.isLetterOrNumber())
+					disableHyph = true;
+			}
+			else if (disableHyph && !hl->ch.isLetterOrNumber())
+				disableHyph = false;
+						// find out about par gap and dropcap
 			if (a == firstInFrame())
 			{
 				if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
@@ -2347,7 +2356,7 @@ void PageItem_TextFrame::layout()
 			double overflowWidth = 0.0;
 			double hyphWidth = 0.0;
 			bool inOverflow = false;
-			if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
+			if ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN) && !disableHyph))
 				hyphWidth = charStyle.font().charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
 			{
@@ -2414,9 +2423,8 @@ void PageItem_TextFrame::layout()
 					charStart = static_cast<int>(qMax(floor(current.xPos - current.maxShrink - (style.minGlyphExtension() * wide)),0.0));
 					charEnd = static_cast<int>(ceil(current.xPos - current.maxShrink));
 				}
-				if (legacy &&
-						(((hl->ch == '-' || (hl->effects() & ScStyle_HyphenationPossible)) && (current.hyphenCount < m_Doc->hyphConsecutiveLines() || m_Doc->hyphConsecutiveLines() == 0))
-						 || hl->ch == SpecialChars::SHYPHEN))
+				if (legacy && !disableHyph && 
+						(hl->ch == '-' || ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible) && (current.hyphenCount < m_Doc->hyphConsecutiveLines() || m_Doc->hyphConsecutiveLines() == 0)) || hl->ch == SpecialChars::SHYPHEN)))
 				{
 					if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
 					{
@@ -2528,7 +2536,7 @@ void PageItem_TextFrame::layout()
 			}
 
 			// hyphenation
-			if (((hl->effects() & ScStyle_HyphenationPossible) || (hl->ch == '-') || hl->ch == SpecialChars::SHYPHEN) && (!outs) && !itemText.text(a-1).isSpace() )
+			if (!disableHyph && (style.hyphenationMode() != ParagraphStyle::NoHyphenation) && (((hl->effects() & ScStyle_HyphenationPossible) || (hl->ch == '-') || hl->ch == SpecialChars::SHYPHEN) && (!outs) && !itemText.text(a-1).isSpace() ))
 			{
 				breakPos = current.xPos;
 				if (hl->ch != '-')
@@ -2543,7 +2551,7 @@ void PageItem_TextFrame::layout()
 				
 				if (legacy || (breakPos - rightHang < current.colRight - style.rightMargin()))
 				{
-					if ((current.hyphenCount < m_Doc->hyphConsecutiveLines()) || (m_Doc->hyphConsecutiveLines() == 0) || hl->ch == SpecialChars::SHYPHEN)
+					if (!disableHyph &&((current.hyphenCount < m_Doc->hyphConsecutiveLines()) || (m_Doc->hyphConsecutiveLines() == 0) || hl->ch == SpecialChars::SHYPHEN))
 					{
 						current.rememberBreak(a, breakPos, style.rightMargin() + hyphWidth);
 					}
@@ -2682,7 +2690,7 @@ void PageItem_TextFrame::layout()
 						current.finishLine(EndX);
 						
 						hyphWidth = 0.0;
-						if ((hl->effects() & ScStyle_HyphenationPossible) || hl->ch == SpecialChars::SHYPHEN)
+						if (!disableHyph && (style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible) || hl->ch == SpecialChars::SHYPHEN))
 						{
 							// insert hyphen
 							if (current.lastInRowLine)

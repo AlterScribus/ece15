@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QEvent>
 
+#include "styles/paragraphstyle.h"
 #include "smpstylewidget.h"
 #include "units.h"
 #include "util.h"
@@ -39,6 +40,10 @@ SMPStyleWidget::SMPStyleWidget() : QWidget()
 	lineSpacing_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
+
+	hyphenationMode->addItem(tr("No Hyphenation"));
+	hyphenationMode->addItem(tr("Manual Hyphenation"));
+	hyphenationMode->addItem(tr("Automatic Hyphenation"));
 
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -84,6 +89,7 @@ void SMPStyleWidget::languageChange()
 	lineSpacing_->setToolTip(     tr("Line Spacing"));
 	spaceAbove_->setToolTip(      tr("Space Above"));
 	spaceBelow_->setToolTip(      tr("Space Below"));
+	hyphenationMode->setToolTip(  tr("Hyphenation Mode"));
 	lineSpacingLabel->setToolTip(lineSpacing_->toolTip());
 	spaceAboveLabel->setToolTip(spaceAbove_->toolTip());
 	spaceBelowLabel->setToolTip(spaceBelow_->toolTip());
@@ -125,6 +131,10 @@ void SMPStyleWidget::languageChange()
 	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
 	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
 	
+	hyphenationMode->addItem(tr("No Hyphenation"));
+	hyphenationMode->addItem(tr("Manual Hyphenation"));
+	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+
 //	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -152,6 +162,7 @@ void SMPStyleWidget::languageChange()
 	glyphExtensionLabel->setText( tr("Glyph Extension"));
 	minGlyphExtLabel->setText( tr("Min:", "Glyph Extension"));
 	maxGlyphExtLabel->setText (tr("Max:", "Glyph Extension"));
+	hyphenationModeLabel->setText(tr("Hyphenation Mode"));
 
 	opticalMarginsGroupBox->setTitle( tr("Optical Margins"));
 	optMarginRadioNone->setText( tr("None","optical margins") );
@@ -181,7 +192,12 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
 	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
 	
-//	optMarginCombo->clear();
+	hyphenationMode->clear();
+	hyphenationMode->addItem(tr("No Hyphenation"));
+	hyphenationMode->addItem(tr("Manual Hyphenation"));
+	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+
+	//	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
 //	optMarginCombo->addItem(tr("Right Protruding"), ParagraphStyle::OM_RightProtruding);
@@ -236,6 +252,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		dropCapOffset_->setValue(pstyle->dropCapOffset() * unitRatio, pstyle->isInhDropCapOffset());
 		dropCapOffset_->setParentValue(parent->dropCapOffset() * unitRatio);
 
+		hyphenationMode->setCurrentItem(pstyle->hyphenationMode(), pstyle->isInhHyphenationMode());
+		
 		alignement_->setStyle(pstyle->alignment(), pstyle->isInhAlignment());
 		alignement_->setParentItem(parent->alignment());
 
@@ -285,6 +303,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		dropCapLines_->setValue(pstyle->dropCapLines());
 		dropCapOffset_->setValue(pstyle->dropCapOffset() * unitRatio);
 		parentDropCapButton->hide();
+		hyphenationMode->setCurrentItem(pstyle->hyphenationMode());
 		alignement_->setStyle(pstyle->alignment());
 		tabList_->setTabs(pstyle->tabValues(), unitIndex);
 		tabList_->setLeftIndentValue(pstyle->leftMargin() * unitRatio);
@@ -824,6 +843,25 @@ void SMPStyleWidget::slotParentOpticalMargins()
 	emit useParentOptMargins();
 	connect(optMarginParentButton, SIGNAL(clicked()), this, SLOT(slotParentOpticalMargins()));
 //	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
+}
+
+void SMPStyleWidget::showHyphenationMode(QList<ParagraphStyle*> &pstyles)
+{
+	if(pstyles.isEmpty())
+	{
+		qDebug()<<"Warning showHyphenationMode called with an empty list of styles";
+		return;
+	}
+	int hm = (pstyles[0]->hyphenationMode());
+	for (int i = 0; i < pstyles.count(); ++i)
+	{
+		if (hm != (pstyles[i]->hyphenationMode()))
+		{
+			hyphenationMode->setCurrentItem(pstyles[i]->hyphenationMode());
+			return;
+		}
+	}
+	hyphenationMode->setCurrentItem(hm);
 }
 
 void SMPStyleWidget::clearAll()

@@ -47,6 +47,7 @@ private:
 	void showCStyle(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, const QString &defLang, int unitIndex);
 	void showParent(QList<ParagraphStyle*> &pstyles);
 	void setOpticalMargins(int o, bool inhO=false, const ParagraphStyle *parent=NULL);
+	void showHyphenationMode(QList<ParagraphStyle*> &pstyles);
 
 	friend class SMParagraphStyle;
 

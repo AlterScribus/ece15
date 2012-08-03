@@ -20,7 +20,7 @@ ATTRDEF(ParagraphStyle::LineSpacingMode, lineSpacingMode, LineSpacingMode, Parag
 ATTRDEF(double, lineSpacing, LineSpacing, 0.0)
 ATTRDEF(ParagraphStyle::AlignmentType, alignment, Alignment, Leftaligned)
 ATTRDEF(int, opticalMargins, OpticalMargins, 0)
-ATTRDEF(int, hyphenationMode, HyphenationMode, 0)
+ATTRDEF(int, hyphenationMode, HyphenationMode, -1)  //default value is ParagraphStyle::HyphModeNotSet
 ATTRDEF(double, minWordTracking, MinWordTracking, 1.0)
 //ATTRDEF(double, maxWordTracking, MaxWordTracking, 1.0)
 ATTRDEF(double, minGlyphExtension, MinGlyphExtension, 1.0)

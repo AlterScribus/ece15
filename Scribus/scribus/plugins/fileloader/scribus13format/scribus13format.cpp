@@ -1443,6 +1443,8 @@ void Scribus13Format::readParagraphStyle(ParagraphStyle& vg, const QDomElement& 
 		if (tbs.count() > 0)
 			vg.setTabValues(tbs);
 	}
+	//for feature of control of HyphenationMode
+	vg.setHyphenationMode(ParagraphStyle::HyphModeNotSet);
 }
 
 PageItem* Scribus13Format::PasteItem(QDomElement *obj, ScribusDoc *doc, const QString& baseDir, int pagenr)

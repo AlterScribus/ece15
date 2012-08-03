@@ -517,6 +517,8 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->dropCapOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
 	connect(pwidget_->dropCapCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
+	connect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+
 	connect(pwidget_->keepLinesStart, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesStart()));
 	connect(pwidget_->keepLinesEnd, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesEnd()));
 	connect(pwidget_->keepTogether, SIGNAL(stateChanged(int)), this, SLOT(handleKeepTogether()));
@@ -594,6 +596,8 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
 	disconnect(pwidget_->dropCapOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
 	disconnect(pwidget_->dropCapCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
+
+	disconnect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
 
 	disconnect(pwidget_->parentCombo, SIGNAL(activated(const QString&)),
 			this, SLOT(slotParentChanged(const QString&)));
@@ -1005,6 +1009,19 @@ void SMParagraphStyle::handleKeepWithNext()
 		emit selectionDirty();
 	}
 }
+
+void SMParagraphStyle::slotHyphenationMode(int mh)
+{
+	for (int i = 0; i < selection_.count(); ++i)
+		selection_[i]->setHyphenationMode(mh);
+
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
 
 void SMParagraphStyle::slotTabRuler()
 {

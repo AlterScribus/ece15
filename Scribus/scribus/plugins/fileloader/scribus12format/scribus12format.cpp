@@ -2233,6 +2233,8 @@ void Scribus12Format::GetStyle(QDomElement *pg, ParagraphStyle *vg, StyleSet<Par
 	vg->charStyle().setBaselineOffset(qRound(ScCLocale::toDoubleC(pg->attribute("BASEO"), 0.0) * 10));
 	vg->charStyle().setTracking(qRound(ScCLocale::toDoubleC(pg->attribute("KERN"), 0.0) * 10));
 //	vg->tabValues().clear();
+//for feature of control of HyphenationMode
+	vg->setHyphenationMode(ParagraphStyle::HyphModeNotSet);
 	if ((pg->hasAttribute("NUMTAB")) && (pg->attribute("NUMTAB", "0").toInt() != 0))
 	{
 		QList<ParagraphStyle::TabRecord> tbs;

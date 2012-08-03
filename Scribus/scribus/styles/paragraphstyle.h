@@ -48,6 +48,7 @@ public:
 		OM_Default           = OM_RightProtruding + OM_LeftHangingPunct + OM_RightHangingPunct
 	};
 	enum HyphenationMode {
+		HyphModeNotSet       = -1,
 		NoHyphenation        = 0,
 		ManualHyphenation    = 1,
 		AutomaticHyphenation = 2
