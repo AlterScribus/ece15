@@ -148,6 +148,8 @@ private slots:
 	void slotInvalidateLayout();
 
 public:
+	ScText * firstVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
+	
 	int getColumnSE(int col, bool start); // return start or end position for column col from QMap startendColumn field, start default value is true
 	void setTextFrameHeight();
 	//preflight warnings
@@ -184,8 +186,8 @@ private:
 
 protected:
 	// set text frame height to last line of text
-	double maxY;
-	void setMaxY(double y);
+	long long maxY;
+	void setMaxY(long long y);
 };
 
 #endif

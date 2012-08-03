@@ -1173,7 +1173,6 @@ void ScribusMainWindow::setStatusBarInfoText(QString newText)
 	statusLabelText = newText;
 }
 
-
 //AV to be replaced with Selection::update and listener in PropertiesPalette
 void ScribusMainWindow::setTBvals(PageItem *currItem)
 {
@@ -1950,14 +1949,15 @@ bool ScribusMainWindow::slotFileNew()
 		{
 			doc->setPageSetFirstPage(facingPages, firstPage);
 			doc->bleeds()->set(dia->bleedTop(), dia->bleedLeft(), dia->bleedBottom(), dia->bleedRight());
-			mainWindowStatusLabel->setText( tr("Ready"));
 			HaveNewDoc();
+			setStatusBarInfoText( tr("Reform Pages"));
 			doc->reformPages(true);
 			retVal = true;
 			// Don's disturb user with "save?" dialog just after new doc
 			// doc changing should be rewritten maybe... maybe later...
 			doc->setModified(false);
 			updateActiveWindowCaption(doc->DocName);
+			mainWindowStatusLabel->setText( tr("Ready"));
 		}
 	}
 	delete dia;
@@ -4171,8 +4171,10 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			}
 			if (doc->HasCMS)
 			{
+				setStatusBarInfoText( tr("Recalculate colors and images for use with CMS"));
 				recalcColors();
 				doc->RecalcPictures(&ScCore->InputProfiles, &ScCore->InputProfilesCMYK);
+				setStatusBarInfoText("");
 			}
 		}
 		else
@@ -4205,9 +4207,11 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		}
 		doc->RePos = true;
 		doc->setMasterPageMode(true);
+		setStatusBarInfoText( tr("Reform Pages"));
 		doc->reformPages();
 		doc->refreshGuides();
 		doc->setLoading(false);
+		setStatusBarInfoText( tr("Layout items"));
 		for (int azz=0; azz<doc->MasterItems.count(); ++azz)
 		{
 			PageItem *ite = doc->MasterItems.at(azz);
@@ -8076,6 +8080,7 @@ void ScribusMainWindow::slotDocSetup()
 		scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());
 		view->cmsToolbarButton->setChecked(doc->HasCMS);
 		//doc emits changed() via this
+		setStatusBarInfoText( tr("Reform Pages"));
 		doc->setMasterPageMode(true);
 		view->reformPages();
 		doc->setMasterPageMode(false);
@@ -8085,6 +8090,7 @@ void ScribusMainWindow::slotDocSetup()
 		pagePalette->rebuildPages();
 		emit UpdateRequest(reqCmsOptionsUpdate);
 		doc->changed();
+		setStatusBarInfoText("");
 	}
 }
 int ScribusMainWindow::ShowSubs()

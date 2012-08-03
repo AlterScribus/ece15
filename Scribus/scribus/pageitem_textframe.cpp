@@ -1393,7 +1393,7 @@ void PageItem_TextFrame::layout()
 
 	//hold Y position of last computed line of text (with glyphs descent)
 	//for moving next line if glyphs are higher than that
-	double lastLineY = 0;
+	double lastLineY = 0.0;
 
 	QMap<int, Mark*> noteMarksPosMap;  //maping notes marks and its position in text
 
@@ -1519,7 +1519,7 @@ void PageItem_TextFrame::layout()
 		//this speed up layouting in case of using notes marks and drop caps
 		itemText.blockSignals(true);
 		setMaxY(-1);
-		double maxYAsc = 0.0, maxYDesc = 0.0;
+		int maxYAsc = 0, maxYDesc = 0;
 
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
@@ -2018,7 +2018,7 @@ void PageItem_TextFrame::layout()
 				}
 			}
 			current.recalculateY = true;
-			maxYAsc = 0.0, maxYDesc = 0.0;
+			maxYAsc = 0, maxYDesc = 0;
 			if (current.startOfCol)
 			{
 				double addAsce;
@@ -2033,13 +2033,13 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing();
 				}
-				maxYAsc = current.yPos - addAsce;
+				maxYAsc = (int) ((current.yPos - addAsce) * 100);
 			}
 			else
-				maxYAsc = current.yPos - realAsce;
+				maxYAsc = (int) ((current.yPos - realAsce) * 100);
 			//fix for glyphs with negative realAsce value
-			maxYAsc = qMax(maxYAsc, 0.0);
-			maxYDesc = current.yPos + realDesc;
+			maxYAsc = qMax(maxYAsc, 0);
+			maxYDesc = (int) ((current.yPos + realDesc) * 100);
 
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2047,8 +2047,8 @@ void PageItem_TextFrame::layout()
 				goNoRoom = false;
 
 				// find line`s start
-				pt1 = QPoint(static_cast<int>(floor(current.xPos)), static_cast<int>(floor(maxYAsc)));
-				pt2 = QPoint(static_cast<int>(floor(current.xPos + (style.minGlyphExtension() * wide))), static_cast<int>(floor(maxYDesc)) -1);
+				pt1 = QPoint(static_cast<int>(floor(current.xPos)), maxYAsc/100);
+				pt2 = QPoint(static_cast<int>(floor(current.xPos + (style.minGlyphExtension() * wide))), (maxYDesc/100) -1);
 				pt = QRect(pt1, pt2);
 				realEnd = 0;
 				//check if there is overflow at start of line, if so jump behind it and check again
@@ -2075,7 +2075,7 @@ void PageItem_TextFrame::layout()
 					//check if in indent any overflow occurs
 					while (Xpos <= Xend && Xpos < current.colRight)
 					{
-						pt.moveTopLeft(QPoint(static_cast<int>(floor(Xpos)), static_cast<int>(floor(maxYAsc))));
+						pt.moveTopLeft(QPoint(static_cast<int>(floor(Xpos)), maxYAsc/100));
 						if (!regionContainsRect(m_availableRegion, pt))
 						{
 							Xpos = current.xPos = realEnd = findRealOverflowEnd(m_availableRegion, pt, current.colRight);
@@ -2107,7 +2107,7 @@ void PageItem_TextFrame::layout()
 							current.yPos += (current.startOfCol ? 1 : style.lineSpacing());
 						else
 							current.yPos++;
-						lastLineY = maxYAsc;
+						lastLineY = (double) maxYAsc / 100.0;
 						if (current.startOfCol)
 						{
 							double addAsce;
@@ -2122,13 +2122,13 @@ void PageItem_TextFrame::layout()
 								else if (firstLineOffset() == FLOPLineSpacing)
 									addAsce = style.lineSpacing() + offset;
 							}
-							maxYAsc = current.yPos - addAsce;
+							maxYAsc = (int) ((current.yPos - addAsce) *100);
 						}
 						else
-							maxYAsc = current.yPos - realAsce;
-						maxYDesc = current.yPos + realDesc;
+							maxYAsc = (int) ((current.yPos - realAsce) * 100);
+						maxYDesc = (int) ((current.yPos + realDesc) * 100);
 
-						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), static_cast<int>(floor(maxYAsc))));
+						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc/100));
 						done = false;
 					}
 					if (current.isEndOfCol(realDesc))
@@ -2358,6 +2358,8 @@ void PageItem_TextFrame::layout()
 			bool inOverflow = false;
 			if ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN) && !disableHyph))
 				hyphWidth = charStyle.font().charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
+			int maxYAsc100 = maxYAsc/100;
+			int maxYDesc100 = maxYDesc/100;
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
 			{
 				//end of row reached - right column, end of column, break char or line must end
@@ -2428,24 +2430,24 @@ void PageItem_TextFrame::layout()
 				{
 					if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
 					{
-						pt1 = QPoint(charStart,  static_cast<int>(floor(maxYAsc)));
-						pt2 = QPoint(static_cast<int>(charEnd + hyphWidth), static_cast<int>(floor(maxYDesc)) -1);
+						pt1 = QPoint(charStart,  maxYAsc100);
+						pt2 = QPoint(static_cast<int>(charEnd + hyphWidth), maxYDesc100 -1);
 					}
 					else
 					{
-						pt1 = QPoint(charStart, static_cast<int>(floor(maxYAsc)));
-						pt2 = QPoint(charEnd, static_cast<int>(floor(maxYDesc)) -1);
+						pt1 = QPoint(charStart, maxYAsc100);
+						pt2 = QPoint(charEnd, maxYDesc100 -1);
 					}
 				}
 				else if (!legacy && SpecialChars::isBreakingSpace(hl->ch))
 				{
-					pt1 = QPoint(static_cast<int>(qMax(floor(breakPos - current.maxShrink - (style.minGlyphExtension() * wide)),0.0)), static_cast<int>(floor(maxYAsc)));
+					pt1 = QPoint(static_cast<int>(qMax(floor(breakPos - current.maxShrink - (style.minGlyphExtension() * wide)),0.0)), maxYAsc100);
 					pt2 = QPoint(charEnd, static_cast<int>(floor(maxYDesc)) -1);
 				}
 				else
 				{
-					pt1 = QPoint(charStart, static_cast<int>(floor(maxYAsc)));
-					pt2 = QPoint(charEnd, static_cast<int>(floor(maxYDesc)) -1);
+					pt1 = QPoint(charStart, maxYAsc100);
+					pt2 = QPoint(charEnd, maxYDesc100-1);
 				}
 				pt = QRect(pt1, pt2);
 				if (!regionContainsRect(m_availableRegion, pt))
@@ -2609,7 +2611,7 @@ void PageItem_TextFrame::layout()
 				{
 					// find end of line
 					current.breakLine(itemText, style, firstLineOffset(), a);
-					EndX = current.endOfLine(m_availableRegion, style.rightMargin(), static_cast<int>(floor(maxYAsc)), static_cast<int>(floor(maxYDesc)));
+					EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc100, maxYDesc100);
 					current.finishLine(EndX);
 					//addLine = true;
 					assert(current.addLine);
@@ -2686,7 +2688,7 @@ void PageItem_TextFrame::layout()
 						current.updateHeightMetrics(itemText);
 						//current.updateLineOffset(itemText, style, firstLineOffset());
 						//current.xPos = current.breakXPos;
-						EndX = current.endOfLine(m_availableRegion, current.rightMargin, static_cast<int>(floor(maxYAsc)), static_cast<int>(floor(maxYDesc)));
+						EndX = current.endOfLine(m_availableRegion, current.rightMargin, maxYAsc100, maxYDesc100);
 						current.finishLine(EndX);
 						
 						hyphWidth = 0.0;
@@ -2923,14 +2925,14 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = current.yPos - addAsce;
+				maxYAsc = (int) (current.yPos - addAsce);
 			}
 			else
-				maxYAsc = current.yPos - realAsce;
-			maxYAsc = qMax(maxYAsc, 0.0);
-			maxYDesc = current.yPos + realDesc;
+				maxYAsc = (int) (current.yPos - realAsce);
+			maxYAsc = qMax(maxYAsc, 0);
+			maxYDesc = (int) (current.yPos + realDesc);
 
-			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), static_cast<int>(floor(maxYAsc)), static_cast<int>(floor(maxYDesc)));
+			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc, maxYDesc);
 			current.finishLine(EndX);
 
 			if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
@@ -3073,20 +3075,23 @@ NoRoom:
 		//check if last visible glyph in frame change
 		//if not then do not force invalidation of next frame
 		ScText * lastGlyph = NULL;
-		if (MaxChars>0)
+		ScText * nextFirstGlyph = NULL;
+		if (MaxChars > 0)
 		{
 			uint pos = MaxChars-1;
 			lastGlyph = itemText.item(pos);
 			while (!lastGlyph->isVisible(m_Doc))
 				lastGlyph = itemText.item(--pos);
+			if ((int) MaxChars < itemText.length())
+				nextFirstGlyph = itemText.item(MaxChars);
 		}
-		if (lastGlyph != lastVisibleGlyph)
+		if ((lastGlyph != lastVisibleGlyph) && (nextFrame->firstVisibleGlyph != nextFirstGlyph))
 		{
 			//force invalidating next frame
 			nextFrame->invalid = true;
 			nextFrame->firstChar = MaxChars;
 			lastVisibleGlyph = lastGlyph;
-			nextFrame->lastVisibleGlyph = NULL;
+			nextFrame->firstVisibleGlyph = nextFirstGlyph;
 			nextFrame->layout();
 		}
 		else if (nextFrame->firstChar != MaxChars)
@@ -3123,7 +3128,7 @@ void PageItem_TextFrame::invalidateLayout(bool wholeChain)
 
 void PageItem_TextFrame::slotInvalidateLayout()
 {
-	invalidateLayout(true);
+	invalidateLayout();
 }
 
 bool PageItem_TextFrame::isValidChainFromBegin()
@@ -4380,10 +4385,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 			}
 			else
-				update();
-			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-				NextBox->updateLayout();
-			doc()->changed();
+				layout();
 		}
 		//check if cursor need to jump to next linked frame
 		//but not for notes frames can`t be updated as may disapper during update
@@ -4393,6 +4395,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			NextBox->update();
 			m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 		}
+		else
+			doc()->changed();
 		break;
 	}
 // 	update();
@@ -5310,7 +5314,7 @@ void PageItem_TextFrame::setNoteFrame(PageItem_NoteFrame *nF)
 	 m_notesFramesMap.insert(nF, nF->notesList());
 }
 
-void PageItem_TextFrame::setMaxY(double y)
+void PageItem_TextFrame::setMaxY(long long y)
 {
 	if (y == -1)
 		maxY = 0;
@@ -5321,9 +5325,9 @@ void PageItem_TextFrame::setMaxY(double y)
 void PageItem_TextFrame::setTextFrameHeight()
 {
 	//ugly hack increasing min frame`s haeight against strange glyph painting if it is too close of bottom
-	double hackValue = 0.5;
+	int hackValue = 50;
 
-	setHeight(ceil(maxY) + BExtra + hackValue);
+	setHeight(double(maxY + hackValue)/100.0 + BExtra);
 	updateClip();
 	invalid = true;
 	m_Doc->changed();
