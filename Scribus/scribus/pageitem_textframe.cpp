@@ -675,8 +675,9 @@ struct LineControl {
 		// if we aren't restricted further, we'll end at this maxX:
 		double maxX = colRight - morespace;
 		if (legacy) maxX -= lineCorr;
+		int maxX100 = static_cast<int>(maxX*100);
 
-		double StartX = floor(qMax(line.x, qMin(maxX,breakXPos-maxShrink-1))-1);
+		int StartX = static_cast<int>(floor(qMax(line.x, qMin(maxX,breakXPos-maxShrink-1)) -1));
 		int xPos  = static_cast<int>(ceil(maxX));
 
 		QPoint  pt12 (xPos, yAsc);
@@ -690,41 +691,39 @@ struct LineControl {
 		// check if something gets in the way
 		QRegion lineI = shape.intersected (p.boundingRect());
 		// if the intersection only has 1 rectangle, then nothing gets in the way
+		StartX = static_cast<int>(ceil(StartX + morespace));
 		if (lineI.numRects() == 1)
 		{
-			int   cPos = static_cast<int>(ceil(StartX + morespace));
-			QRect cRect (QPoint(cPos, yAsc), QPoint(cPos, yDesc));
+			QRect cRect (QPoint(StartX, yAsc), QPoint(StartX, yDesc));
 			if (QRegion(cRect).subtracted(shape).isEmpty())
-			{
-				QRect rect = lineI.rects().at(0);
-				double  mx = qMax(rect.left(), rect.right()) /*- pf2.dx()*/; 
-				int steps  = static_cast<int>((mx - StartX - morespace - 2) / 0.25);
-				if (steps > 0)
-				{
-					StartX += steps * 0.25;
-				}
-			}
+				++StartX;
+			//{
+				//QRect rect = lineI.rects().at(0);
+				//int  mx = qMax(rect.left(), rect.right()) /*- pf2.dx()*/; 
+				//int steps  = static_cast<int>((mx - StartX - 2) / 0.25);
+				//if (steps > 0)
+				//{
+				//	StartX += steps * 0.25;
+				//}
+			//}
 		}
 
 		QRect   pt(pt12, pt22);
 
-		double EndX2 = StartX;
-		double Interval = 0.25;
+//		double EndX2 = StartX;
+//		double Interval = 0.25;
 		do {
-			int xP = static_cast<int>(ceil(EndX2 + morespace));
-			pt.moveTopLeft(QPoint(xP, yAsc));
+			//int xP = static_cast<int>(ceil(EndX2 + morespace));
+			//pt.moveTopLeft(QPoint(xP, yAsc));
+			pt.moveTopLeft(QPoint(StartX, yAsc));
 			if (!regionContainsRect(shape, pt))
 				break;
-			EndX2 += Interval;
-		} while ((EndX2 < maxX) && regionContainsRect(shape, pt));
+			//EndX2 += Interval;
+			++StartX;
+		//} while ((EndX2 < maxX) && regionContainsRect(shape, pt));
+		} while ((StartX < maxX100) && regionContainsRect(shape, pt));
 
-		/*double oldEndX2 = endOfLine_old(shape, pf2, morespace, yAsc, yDesc);
-		if (oldEndX2 != qMin(EndX2, maxX))
-		{
-			qDebug() << "Different EndX : " << oldEndX2 << " (old) " << EndX2 << " (new) ";
-		}*/
-
-		return qMin(EndX2, maxX);
+		return qMin((double) StartX, maxX);
 	}
 	
 	double getLineAscent(const StoryText& itemText)
@@ -741,16 +740,17 @@ struct LineControl {
 			result = qMax(result, (obj->height() + obj->lineWidth()) * (fcStyle.scaleV() / 1000.0));
 		else
 			result = fcStyle.font().realCharAscent(firstChar, fcStyle.fontSize() / 10.0);
+		QChar ch = QChar();
+		double asce = 0.0;
 		for (int zc = 0; zc < itemsInLine; ++zc)
 		{
-			QChar ch = itemText.text(line.firstItem + zc);
+			ch = itemText.text(line.firstItem + zc);
 			if ((ch == SpecialChars::PAGENUMBER) || (ch == SpecialChars::PAGECOUNT))
 				ch = '8'; // should have highest ascender even in oldstyle
 			const CharStyle& cStyle(itemText.charStyle(line.firstItem + zc));
 			if ((ch == SpecialChars::TAB) || (ch == QChar(10))
 				|| SpecialChars::isBreak (ch, true) || (ch == SpecialChars::NBHYPHEN) || (ch.isSpace()))
 				continue;
-			double asce;
 			PageItem *obj = itemText.object (line.firstItem + zc);
 			if (obj)
 				asce = obj->height() + obj->lineWidth() * (cStyle.scaleV() / 1000.0);
@@ -826,11 +826,12 @@ struct LineControl {
 	void updateHeightMetrics(const StoryText& itemText)
 	{
 		double asce, desc;
+		QChar ch = QChar();
 		line.ascent  = 0;
 		line.descent = 0;
 		for (int zc = 0; zc < itemsInLine; ++zc)
 		{
-			QChar ch = itemText.text(line.firstItem+zc);
+			ch = itemText.text(line.firstItem+zc);
 			if ((ch == SpecialChars::TAB) || (ch == QChar(10))
 				|| SpecialChars::isBreak (ch, true) || (ch == SpecialChars::NBHYPHEN) || (ch.isSpace()))
 				continue;
@@ -1049,13 +1050,15 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 	if (itemText.item(startItem)->effects() & ScStyle_DropCap)
 		startItem++;
 	// distribute whitespace on spaces and glyphs
+	double wide = 0.0;
+	GlyphLayout* glyph = NULL;
 	for (int yof = startItem; yof <= line.lastItem; ++yof)
 	{
-		double wide = itemText.item(yof)->glyph.wide();
+		wide = itemText.item(yof)->glyph.wide();
 		if (!SpecialChars::isExpandingSpace(itemText.text(yof)))
 		{
 			itemText.item(yof)->glyph.last()->xadvance += wide * glyphExtension;
-			GlyphLayout* glyph = &(itemText.item(yof)->glyph);
+			glyph = &(itemText.item(yof)->glyph);
 			while (glyph)
 			{
 				glyph->xoffset *= glyphScale;
@@ -1173,9 +1176,10 @@ static double opticalRightMargin(const StoryText& itemText, const LineSpec& line
 
 static double findRealOverflowEnd(const QRegion& shape, QRect pt, double maxX)
 {
-	while (!regionContainsRect(shape, pt) && pt.right() < maxX)
+	int int_maxX = static_cast<int>(maxX);
+	while (!regionContainsRect(shape, pt) && pt.right() < int_maxX)
 		pt.translate(1, 0);
-	if (pt.right() >= maxX)
+	if (pt.right() >= int_maxX)
 		return maxX;
 	return pt.left() + 0.5;
 }
@@ -1189,7 +1193,7 @@ static double adjustToBaselineGrid (const LineControl &control, PageItem *item, 
 	int ol2 = static_cast<int>(ol1 / item->doc()->guidesPrefs().valueBaselineGrid);
 //						qDebug() << QString("baseline adjust: y=%1->%2").arg(current.yPos).arg(ceil(  ol2 / 10000.0 ) * item->doc()->typographicSettings.valueBaselineGrid + item->doc()->typographicSettings.offsetBaselineGrid - by);
 
-	return ceil(  ol2 / 10000.0 ) * item->doc()->guidesPrefs().valueBaselineGrid + item->doc()->guidesPrefs().offsetBaselineGrid - by;
+	return ceil(ol2 / 10000.0) * item->doc()->guidesPrefs().valueBaselineGrid + item->doc()->guidesPrefs().offsetBaselineGrid - by;
 }
 
 static double nextAutoTab (const LineControl &current, PageItem *item)
@@ -1321,15 +1325,22 @@ void PageItem_TextFrame::layout()
 		// Why that invalid = false here? Calling prevInChain->layout() does
 		// not ensure that this box will be layouted
 		// invalid = false;
-		PageItem_TextFrame* prevInChain = dynamic_cast<PageItem_TextFrame*>(BackBox);
-		while (prevInChain && prevInChain->invalid)
+		PageItem_TextFrame* frame = dynamic_cast<PageItem_TextFrame*>(BackBox);
+		while (frame)
 		{
-			if (!prevInChain->BackBox || !prevInChain->BackBox->invalid)
+			if (!frame->BackBox)
 				break;
-			prevInChain = dynamic_cast<PageItem_TextFrame*>(prevInChain->BackBox);
+			frame = dynamic_cast<PageItem_TextFrame*>(frame->BackBox);
 		}
-		if (prevInChain && prevInChain->invalid)
-			prevInChain->layout();
+		while (frame != this)
+		{
+			if (frame->invalid)
+			{
+				frame->layout();
+				break;
+			}
+			frame = dynamic_cast<PageItem_TextFrame*>(frame->NextBox);
+		}
 		// #9592 : warning, BackBox->layout() may not layout BackBox next box
 		if (!invalid)
 			return;
@@ -1520,15 +1531,25 @@ void PageItem_TextFrame::layout()
 		itemText.blockSignals(true);
 		setMaxY(-1);
 		int maxYAsc = 0, maxYDesc = 0;
+		bool HasObject = false;
+		CharStyle charStyle = CharStyle();
+		double hlcsize10 = 0.0;
+		double scaleV = 0.0;
+		double scaleH = 0.0;
+		double offset = 0.0;
+		double breakPos = 0.0;
+		double overflowWidth = 0.0;
+		double hyphWidth = 0.0;
+		bool inOverflow = false;
 
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
 			if (startColumn == 0)  //for widows/orphans checking
 				startColumn = a;
 			hl = itemText.item(a);
-			bool HasObject = hl->hasObject(m_Doc);
-			bool HasMark = hl->hasMark();
-			if (HasMark)
+			if (hl->hasObject(m_Doc))
+				HasObject = true;
+			if (hl->hasMark())
 			{
 				//show control characters for marks
 				hl->glyph.glyph = SpecialChars::OBJECT.unicode() + ScFace::CONTROL_GLYPHS;
@@ -1597,11 +1618,11 @@ void PageItem_TextFrame::layout()
 				style = itemText.paragraphStyle(a);
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
-			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
-			double hlcsize10 = charStyle.fontSize() / 10.0;
-			double scaleV = charStyle.scaleV() / 1000.0;
-			double scaleH = charStyle.scaleH() / 1000.0;
-			double offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
+			charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
+			hlcsize10 = charStyle.fontSize() / 10.0;
+			scaleV = charStyle.scaleV() / 1000.0;
+			scaleH = charStyle.scaleH() / 1000.0;
+			offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 			//avoid hyphenation for words with softhyphen at it beginning
 			if (hl->ch == SpecialChars::SHYPHEN && !disableHyph)
@@ -1939,13 +1960,9 @@ void PageItem_TextFrame::layout()
 				else
 				{
 					asce = charStyle.font().ascent(hlcsize10);
-					if (HasMark)
-						realAsce = asce * scaleV + offset;
-					else
-					{
-						for (int i = 0; i < chstrLen; ++i)
-							realAsce = qMax(realAsce, charStyle.font().realCharAscent(chstr[i], hlcsize10) * scaleV + offset);
-					}
+					for (int i = 0; i < chstrLen; ++i)
+						realAsce = qMax(realAsce, charStyle.font().realCharAscent(chstr[i], hlcsize10));
+					realAsce = realAsce  * scaleV + offset;
 				}
 			}
 
@@ -2304,7 +2321,7 @@ void PageItem_TextFrame::layout()
 				hl->glyph.yoffset -= yoffset;
 			}
 			// remember x pos
-			double breakPos = current.xPos;
+			breakPos = current.xPos;
 			
 			if (!tabs.active) // normal case
 			{
@@ -2352,12 +2369,14 @@ void PageItem_TextFrame::layout()
 				hl = itemText.item(a);
 			}*/
 
+			overflowWidth = 0.0;
+			inOverflow = false;
+
 			// test if end of line reached
-			double overflowWidth = 0.0;
-			double hyphWidth = 0.0;
-			bool inOverflow = false;
 			if ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN) && !disableHyph))
-				hyphWidth = charStyle.font().charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
+				hyphWidth = charStyle.font().charWidth('-', hlcsize10) * scaleH;
+			else
+				hyphWidth = 0.0;
 			int maxYAsc100 = maxYAsc/100;
 			int maxYDesc100 = maxYDesc/100;
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
@@ -2425,8 +2444,11 @@ void PageItem_TextFrame::layout()
 					charStart = static_cast<int>(qMax(floor(current.xPos - current.maxShrink - (style.minGlyphExtension() * wide)),0.0));
 					charEnd = static_cast<int>(ceil(current.xPos - current.maxShrink));
 				}
-				if (legacy && !disableHyph && 
-						(hl->ch == '-' || ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible) && (current.hyphenCount < m_Doc->hyphConsecutiveLines() || m_Doc->hyphConsecutiveLines() == 0)) || hl->ch == SpecialChars::SHYPHEN)))
+				if (legacy
+					&& !disableHyph
+					&& ((hl->ch == '-')
+						|| ((style.hyphenationMode() != ParagraphStyle::NoHyphenation)
+							&& (( (hl->effects() & ScStyle_HyphenationPossible) && (current.hyphenCount < m_Doc->hyphConsecutiveLines() || m_Doc->hyphConsecutiveLines() == 0)) || hl->ch == SpecialChars::SHYPHEN))))
 				{
 					if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
 					{
@@ -2441,8 +2463,8 @@ void PageItem_TextFrame::layout()
 				}
 				else if (!legacy && SpecialChars::isBreakingSpace(hl->ch))
 				{
-					pt1 = QPoint(static_cast<int>(qMax(floor(breakPos - current.maxShrink - (style.minGlyphExtension() * wide)),0.0)), maxYAsc100);
-					pt2 = QPoint(charEnd, static_cast<int>(floor(maxYDesc)) -1);
+					pt1 = QPoint(qMax(static_cast<int>(floor(breakPos - current.maxShrink - (style.minGlyphExtension() * wide))), 0), maxYAsc100);
+					pt2 = QPoint(charEnd, maxYDesc100 -1);
 				}
 				else
 				{
@@ -2473,7 +2495,7 @@ void PageItem_TextFrame::layout()
 					if (current.itemsInLine == 0)
 					{
 						current.line.x = current.xPos = realEnd;
-						a--;
+						--a;
 						current.startLine(a+1);
 						if (!current.wasFirstInRow)
 							current.addLeftIndent = true;
@@ -2488,7 +2510,7 @@ void PageItem_TextFrame::layout()
 					}
 					if (current.breakIndex < 0)
 					{
-						a--;
+						--a;
 						current.breakLine(itemText, style, firstLineOffset(), a);
 					}
 					//check if after overflow text can be placed
@@ -2596,8 +2618,7 @@ void PageItem_TextFrame::layout()
 				current.xPos += style.dropCapOffset();
 				hl->glyph.xadvance += style.dropCapOffset();
 				maxDX = current.xPos;
-				double spacing = calculateLineSpacing (style, this);
-				current.yPos -= spacing * (DropLines-1);
+				current.yPos -= calculateLineSpacing (style, this) * (DropLines-1);
 				if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
 					current.yPos = adjustToBaselineGrid (current, this, OwnPage);
 				current.recalculateY = false;
@@ -3002,61 +3023,64 @@ NoRoom:
 			return;
 	}
 	//Prefligth warnings
-	if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
+	if (m_Doc->guidesPrefs().showPreflight)
 	{
-		uint nrPar;
-		int pos;
-		for (int i = 0; i < Cols; i++)
+		if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
 		{
-			//get start of column for orphans check
-			pos = getColumnSE(i, true);
-			if ( pos < 0 ) //probably empty column
-				break;
-			nrPar = itemText.nrOfParagraph(pos);
-			if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
-				 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
-				 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
-				warnedList.append(QPair<int, int>(itemText.startOfLine(pos), itemText.endOfLine(pos)));
-			//get end of column for widows check
-			pos = getColumnSE(i, false)-1;
-			nrPar = itemText.nrOfParagraph(pos);
-			if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
-				 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
-				 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
-				warnedList.append(QPair<int, int>(itemText.startOfLine(pos), itemText.endOfLine(pos)));
-		}
-	}
-
-	//check for RGB text
-	int startRGB = -1;
-	int endRGB = -1;
-	for (int e = firstInFrame(); e <= lastInFrame(); e++)
-	{
-		if (!itemText.paragraphStyle(e).isDefaultStyle())
-		{
-			ScColor col = m_Doc->PageColors.value(itemText.charStyle(e).fillColor());
-			if (col.getColorModel() == colorModelRGB || col.isRegistrationColor())
+			uint nrPar;
+			int pos;
+			for (int i = 0; i < Cols; i++)
 			{
-				if (startRGB == -1)
-					startRGB = e;
+				//get start of column for orphans check
+				pos = getColumnSE(i, true);
+				if ( pos < 0 ) //probably empty column
+					break;
+				nrPar = itemText.nrOfParagraph(pos);
+				if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
+					 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
+					 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
+					warnedList.append(QPair<int, int>(itemText.startOfLine(pos), itemText.endOfLine(pos)));
+				//get end of column for widows check
+				pos = getColumnSE(i, false)-1;
+				nrPar = itemText.nrOfParagraph(pos);
+				if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
+					 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
+					 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
+					warnedList.append(QPair<int, int>(itemText.startOfLine(pos), itemText.endOfLine(pos)));
 			}
-			else if (startRGB > -1)
-				endRGB = e;
 		}
-		if (startRGB < endRGB)
+		
+		//check for RGB text
+		int startRGB = -1;
+		int endRGB = -1;
+		for (int e = firstInFrame(); e <= lastInFrame(); e++)
 		{
-			warnedList.append(QPair<int, int>(startRGB, endRGB -1));
-			startRGB = -1;
-			endRGB = -1;
+			if (!itemText.paragraphStyle(e).isDefaultStyle())
+			{
+				ScColor col = m_Doc->PageColors.value(itemText.charStyle(e).fillColor());
+				if (col.getColorModel() == colorModelRGB || col.isRegistrationColor())
+				{
+					if (startRGB == -1)
+						startRGB = e;
+				}
+				else if (startRGB > -1)
+					endRGB = e;
+			}
+			if (startRGB < endRGB)
+			{
+				warnedList.append(QPair<int, int>(startRGB, endRGB -1));
+				startRGB = -1;
+				endRGB = -1;
+			}
 		}
 	}
 	PageItem_TextFrame* nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
-	while (nextFrame != NULL)
-	{
-		nextFrame->invalid   = true;
-		nextFrame->firstChar = MaxChars;
-		nextFrame = dynamic_cast<PageItem_TextFrame*>(nextFrame->NextBox);
-	}
+//	while (nextFrame != NULL)
+//	{
+//		nextFrame->invalid   = true;
+//		nextFrame->firstChar = MaxChars;
+//		nextFrame = dynamic_cast<PageItem_TextFrame*>(nextFrame->NextBox);
+//	}
 
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
 	{
@@ -3069,9 +3093,8 @@ NoRoom:
 		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
-	if (nextInChain() != NULL)
+	if (nextFrame != NULL)
 	{
-		nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
 		//check if last visible glyph in frame change
 		//if not then do not force invalidation of next frame
 		ScText * lastGlyph = NULL;
@@ -3257,30 +3280,41 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		assert( firstInFrame() >= 0 );
 		assert( lastInFrame() < itemText.length() );
 		LineSpec ls;
+		double CurX;
+		bool previousWasObject;
+		QRectF selectedFrame;
+		QList<QRectF> sFList;
+		QRectF warnnedFrame;
+		QList<QRectF> wFList;
+		double selX;
+		ScText *hls;
+		int last;
+		bool selecteds;
+		bool HasObject;
 		for (uint ll=0; ll < itemText.lines(); ++ll)
 		{
 			ls = itemText.line(ll);
-			double CurX = ls.x;
+			CurX = ls.x;
 
 			// Draw text selection rectangles
-			QRectF selectedFrame;
-			QList<QRectF> sFList;
-			QRectF warnnedFrame;
-			QList<QRectF> wFList;
-			bool previousWasObject(false);
-			double selX = ls.x;
-			ScText *hls = 0;
-			int last = qMin(ls.lastItem, itemText.length() - 1);
+			selectedFrame = QRect();
+			sFList.clear();
+			warnnedFrame = QRect();
+			wFList.clear();
+			previousWasObject = false;
+			selX = ls.x;
+			hls = NULL;
+			last = qMin(ls.lastItem, itemText.length() - 1);
 			for (int as = ls.firstItem; as <= last; ++as)
 			{
-				bool selecteds = itemText.selected(as);
+				selecteds = itemText.selected(as);
 				hls = itemText.item(as);
-				bool HasObject = hls->hasObject(m_Doc);
+				HasObject = hls->hasObject(m_Doc);
 				if (hls->mark != NULL && (hls->mark->isType(MARKAnchorType) || hls->mark->isType(MARKIndexType)))
 					continue;
+				const CharStyle& charStyleS(itemText.charStyle(as));
 				if(selecteds)
 				{
-					const CharStyle& charStyleS(itemText.charStyle(as));
 					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
 						|| ((!selectedFrame.isNull()) && HasObject)
 					    || previousWasObject)
@@ -3324,9 +3358,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				}
 				if (m_Doc->guidesPrefs().showPreflight && isWarnedText(as))
 				{
-					const CharStyle& charStyleS(itemText.charStyle(as));
 					if(((as > ls.firstItem) && (charStyleS != itemText.charStyle(as-1)))
-						|| ((!warnnedFrame.isNull()) && (hls->ch == SpecialChars::OBJECT))
+						|| ((!warnnedFrame.isNull()) && (HasObject))
 					    || previousWasObject)
 					{
 						wFList << warnnedFrame;
@@ -3403,7 +3436,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			{
 				hl = itemText.item(a);
 				const CharStyle& charStyle(itemText.charStyle(a));
-				bool selected = itemText.selected(a);
+				selecteds = itemText.selected(a);
 
 				actFill = charStyle.fillColor();
 				actFillShade = charStyle.fillShade();
@@ -3428,7 +3461,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				{
 					desc = - charStyle.font().descent(charStyle.fontSize() / 10.0);
 					asce = charStyle.font().ascent(charStyle.fontSize() / 10.0);
-					if (((selected && Select) || ((NextBox != 0 || BackBox != 0) && selected)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
+					if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
 						p->setBrush(qApp->palette().color(QPalette::Active, QPalette::HighlightedText));
@@ -3660,7 +3693,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			p->setBrush(m_Doc->layerMarker(LayerID));
 			p->setBrushOpacity(1.0);
 			p->setFillMode(ScPainter::Solid);
-			double ofwh = 10;
+			double ofwh = 10.0;
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
 			p->drawRect(ofx, ofy, ofwh, ofwh);
@@ -4172,8 +4205,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		}
 		else
 			layout();
-		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-			NextBox->updateLayout();
+//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+//			NextBox->updateLayout();
 //		updateLayout();
 //		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
 //			NextBox->updateLayout();
@@ -4234,8 +4267,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		else
 		{
 			layout();
-			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-				NextBox->updateLayout();
+//			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+//				NextBox->updateLayout();
 		}
 		if (itemText.cursorPosition() < firstInFrame())
 		{

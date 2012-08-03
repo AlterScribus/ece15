@@ -4421,7 +4421,9 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 				Really.insert(it->itemText.defaultStyle().charStyle().font().replacementName(), QMap<uint, FPointArray>());
 			}
 		}*/
-		for (int e = 0; e < it->itemText.length(); ++e)
+		int start = it->isTextFrame() ? it->firstInFrame():0;
+		int stop =  it->isTextFrame() ? it->lastInFrame() + 1 : it->itemText.length();
+		for (int e = start; e < stop; ++e)
 		{
 			if (! Really.contains(it->itemText.charStyle(e).font().replacementName()) )
 			{
@@ -14581,7 +14583,9 @@ void ScribusDoc::scaleGroup(double scx, double scy, bool scaleText, Selection* c
 			if (bb->itemText.length() != 0)
 			{
 //				bb->setLineSpacing(((bb->fontSize() / 10.0) * static_cast<double>(Doc->typographicSettings.autoLineSpacing) / 100));
-				for (aa = 0; aa < bb->itemText.length(); ++aa)
+				int start = bb->isTextFrame() ? bb->firstInFrame():0;
+				int stop =  bb->isTextFrame() ? bb->lastInFrame() + 1 : bb->itemText.length();
+				for (aa = start; aa < stop; ++aa)
 					bb->itemText.item(aa)->setFontSize(qMax(qRound(bb->itemText.item(aa)->fontSize()*((scx+scy)/2)), 1));
 				if (bb->asPathText())
 					bb->updatePolyClip();
