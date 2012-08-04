@@ -5085,10 +5085,8 @@ void PageItem_TextFrame::notesFramesLayout()
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF == NULL)
-			continue;
-		if (nF->deleteIt)
-			continue;
+		Q_ASSERT_X(nF != NULL,"PageItem_TextFrame::notesFramesLayout()","nF==NULL");
+		Q_ASSERT_X(!nF->deleteIt, "PageItem_TextFrame::notesFramesLayout()", "nF->deleteIt");
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
 		nF->invalid = true;

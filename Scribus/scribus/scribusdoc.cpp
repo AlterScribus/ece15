@@ -2008,6 +2008,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				}
 				else
 					currItem = (PageItem*) is->getItem("inItem");
+				if (currItem != NULL)
+					currItem->invalidateLayout();
 				if (isUndo)
 				{
 					if (is->get("MARK") == "new" || is->get("MARK") == "paste")
@@ -2146,7 +2148,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							note->setMasterMark(mrk);
 							if (is->get("MARK") == "paste")
 								note->setSaxedText(is->get("noteTXT"));
-							//updateNotesNums(nStyle);
+							updateNotesNums(nStyle);
 						}
 					}
 					else if (is->get("MARK") == "replace")
@@ -16895,9 +16897,9 @@ void ScribusDoc::deleteNote(TextNote* note)
 	{
 		nF->deleteIt = true;
 		master->asTextFrame()->removeNoteFrame(nF);
+		if (nF->isSelected())
+			setCursor2MarkPos(note->masterMark());
 	}
-//	else
-//		master->asTextFrame()->setNoteFrame(nF);
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), true, master);
 	if (note->noteMark() != NULL)
@@ -16907,6 +16909,8 @@ void ScribusDoc::deleteNote(TextNote* note)
 	if (note->isEndNote())
 		flag_updateEndNotes = true;
 	delete note;
+	if (nF->deleteIt)
+		delNoteFrame(nF,false);
 }
 
 void ScribusDoc::setUndoDelNote(TextNote *note)
