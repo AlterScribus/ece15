@@ -1998,14 +1998,9 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				if (mrk == NULL && is->contains("labelOLD"))
 					mrk = getMarkDefinied(is->get("labelOLD"), (MarkType) is->getInt("type"));
 				int pos = is->getInt("at");
-				bool isAutoNoteFrame = false;
 				PageItem* currItem = NULL;
 				if (is->contains("noteframeName"))
-				{
 					currItem = getItemFromName(is->get("noteframeName"));
-					if (currItem != NULL)
-						isAutoNoteFrame = currItem->asNoteFrame()->isAutoFrame();
-				}
 				else
 					currItem = (PageItem*) is->getItem("inItem");
 				if (isUndo)
