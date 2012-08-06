@@ -4604,8 +4604,17 @@ void PageItem::checkChanges(bool force)
 	// has the item been resized
 	if (force || ((oldWidth != Width || oldHeight != Height) && shouldCheck()))
 	{
+		bool widthChange = (oldWidth != Width);
 		resizeUndoAction();
 		spreadChanges = (textFlowMode() != TextFlowDisabled );
+		if (isTextFrame() && !asTextFrame()->notesFramesList().isEmpty() && widthChange)
+		{
+			foreach (PageItem_NoteFrame* nF, asTextFrame()->notesFramesList())
+			{
+				if (nF->isAutoWidth())
+					nF->invalidateLayout();
+			}
+		}
 	}
 	// has the item been rotated
 	if (force || ((oldRot != Rot) && (shouldCheck())))
@@ -9930,16 +9939,18 @@ void PageItem::updateClip(bool updateWelded)
 				{
 					for (int i = 0 ; i < weldList.count(); i++)
 					{
-						weldingInfo wInf = weldList.at(i);
-						FPointArray gr4;
-						FPoint wp = wInf.weldPoint;
-						gr4.addPoint(wp);
-						gr4.map(ma);
-						double dx = gr4.point(0).x() - wp.x();
-						double dy = gr4.point(0).y() - wp.y();
+//						weldingInfo wInf = weldList.at(i);
+//						FPointArray gr4;
+//						FPoint wp = wInf.weldPoint;
+//						gr4.addPoint(wp);
+//						gr4.map(ma);
+//						double dx = gr4.point(0).x() - wp.x();
+//						double dy = gr4.point(0).y() - wp.y();
+						double dx = Xpos - oldXpos;
+						double dy = Ypos - oldYpos;
 						moveWelded(dx, dy, i);
-						wInf.weldPoint = gr4.point(0);
-						weldList[i] = wInf;
+//						wInf.weldPoint = gr4.point(0);
+//						weldList[i] = wInf;
 					}
 				}
 			}
@@ -10046,34 +10057,9 @@ void PageItem::updateClip(bool updateWelded)
 			{
 				for (int i = 0 ; i < weldList.count(); i++)
 				{
-					weldingInfo wInf = weldList.at(i);
-					if (wInf.weldItem->isNoteFrame())
-					{
-						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-						if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
-						{
-							if (noteFrame->notesStyle()->isAutoNotesWidth())
-							{
-								if (noteFrame->width() != width())
-								{
-									noteFrame->setWidth(width());
-									noteFrame->updateClip();
-								}
-							}
-							setWeldPoint(0, height(), noteFrame);
-							noteFrame->setWeldPoint(0,0, this);
-							continue;
-						}
-					}
-					FPointArray gr4;
-					FPoint wp = wInf.weldPoint;
-					gr4.addPoint(wp);
-					gr4.map(ma);
-					double dx = gr4.point(0).x() - wp.x();
-					double dy = gr4.point(0).y() - wp.y();
+					double dx = Xpos - oldXpos;
+					double dy = Ypos - oldYpos;
 					moveWelded(dx, dy, i);
-					wInf.weldPoint = gr4.point(0);
-					weldList[i] = wInf;
 				}
 			}
 		}
