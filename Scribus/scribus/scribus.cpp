@@ -1671,6 +1671,14 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 					{
+						doc->m_Selection->delaySignalsOn();
+						view->Deselect(true);
+						if (!currItem->asNoteFrame()->isEndNotesFrame())
+						{
+							view->SelectItem(currItem->asNoteFrame()->masterFrame());
+							doc->m_Selection->connectItemToGUI();
+						}
+						doc->m_Selection->delaySignalsOff();
 						if (!currItem->asNoteFrame()->isEndNotesFrame())
 						{
 							currItem->asNoteFrame()->masterFrame()->invalidateLayout();

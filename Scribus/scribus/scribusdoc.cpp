@@ -1978,15 +1978,14 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						Q_ASSERT(nF != NULL);
 						master->asTextFrame()->setNoteFrame(nF);
 					}
-					setNotesChanged(true);
 				}
 				else
 				{
 					TextNote* note = master->itemText.item(is->getInt("at"))->mark->getNotePtr();
 					deleteNote(note);
 				}
-				master->invalidateLayout();
-				master->updateLayout();
+				updateNotesNums(nStyle);
+				scMW()->emitUpdateRequest(reqMarksUpdate);
 			}
 		}
 		else if (ss->contains("MARK"))
@@ -16891,13 +16890,6 @@ void ScribusDoc::deleteNote(TextNote* note)
 	PageItem* master = note->masterMark()->getItemPtr();
 	nF->invalid = true;
 	master->invalid = true;
-	if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
-	{
-		nF->deleteIt = true;
-		master->asTextFrame()->removeNoteFrame(nF);
-		if (nF->isSelected())
-			setCursor2MarkPos(note->masterMark());
-	}
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), true, master);
 	if (note->noteMark() != NULL)
@@ -17569,7 +17561,6 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 		{
 			view()->SelectItem(nF->masterFrame());
 			m_Selection->connectItemToGUI();
-			view()->requestMode(modeEdit);
 		}
 		m_Selection->delaySignalsOff();
 		view()->requestMode(modeNormal);
