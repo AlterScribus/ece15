@@ -10598,34 +10598,37 @@ void ScribusMainWindow::insertMark(MarkType mType)
 	}
 }
 
-void ScribusMainWindow::slotEditMark()
+void ScribusMainWindow::slotEditMark(Mark* mrk)
 {
 	if (!HaveDoc)
 		return;
-	if (doc->m_Selection->count() != 1)
-		return;
-	if  (doc->appMode != modeEdit)
-		return;
 	PageItem * currItem = doc->m_Selection->itemAt(0);
-	if (currItem->itemText.cursorPosition() < currItem->itemText.length())
+	if (mrk == NULL)
 	{
-		ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
-		if (hl->hasMark())
+		if (doc->m_Selection->count() != 1)
+			return;
+		if  (doc->appMode != modeEdit)
+			return;
+		if (currItem->itemText.cursorPosition() < currItem->itemText.length())
 		{
-			if (editMarkDlg(hl->mark, currItem->asTextFrame()))
-			{
-				if (hl->mark->isType(MARKVariableTextType))
-					doc->flag_updateMarksLabels = true;
-				else
-					currItem->invalid = true;
-				//doc->updateMarks();
-				doc->changed();
-				doc->regionsChanged()->update(QRectF());
-				view->DrawNew();
-			}
-			if (hl->mark->isNoteType())
-				nsEditor->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
+			ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+			if (!hl->hasMark())
+				return;
+			else mrk = hl->mark;
 		}
+	}
+	if (editMarkDlg(mrk, currItem->asTextFrame()))
+	{
+		if (mrk->isType(MARKVariableTextType))
+			doc->flag_updateMarksLabels = true;
+		else
+			currItem->invalid = true;
+		//doc->updateMarks();
+		doc->changed();
+		doc->regionsChanged()->update(QRectF());
+		view->DrawNew();
+		if (mrk->isNoteType())
+			nsEditor->setNotesStyle(mrk->getNotePtr()->notesStyle());
 	}
 }
 

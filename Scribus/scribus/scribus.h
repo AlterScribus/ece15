@@ -624,7 +624,7 @@ public slots:
 	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
 	void slotInsertMarkNote();
 	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
-	void slotEditMark();
+	void slotEditMark(Mark* nrk = NULL);
 	//connected to signal emited by actions when "Update Marks" menu item is triggered
 	void slotUpdateMarks();
 	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
