@@ -6752,7 +6752,7 @@ void ScribusMainWindow::setAppMode(int mode)
 			if (currItem != 0)
 			{
 				currItem->update();
-				if (currItem->asTextFrame())
+				if (currItem->isTextFrame())
 					enableTextActions(&scrActions, false);
 				//		scrMenuMgr->setMenuEnabled("Item", true);
 				scrActions["itemDuplicate"]->setEnabled(true);
