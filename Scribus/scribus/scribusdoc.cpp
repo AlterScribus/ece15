@@ -2146,7 +2146,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							note->setMasterMark(mrk);
 							if (is->get("MARK") == "paste")
 								note->setSaxedText(is->get("noteTXT"));
-							//updateNotesNums(nStyle);
+							updateNotesNums(nStyle);
 						}
 					}
 					else if (is->get("MARK") == "replace")
