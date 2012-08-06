@@ -2022,8 +2022,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					{
 						Q_ASSERT(pos >= 0);
 						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(mrk != NULL);
 						Mark* mrk = getMarkDefinied(is->get("label"), (MarkType) is->getInt("type"));
+						Q_ASSERT(mrk != NULL);
 						currItem->itemText.item(pos)->mark = mrk;
 						if (is->contains("strtxtOLD"))
 						{
@@ -16642,6 +16642,8 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 	Q_ASSERT(m_docMarksList.removeAll(NULL) == 0);
 
 	bool docWasChanged = false;
+	bool viewUpdates = view()->updateOn;
+	view()->updatesOn(false);
 
 	if (!isLoading())
 	{
@@ -16748,6 +16750,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 			}
 		}
 	}
+	view()->updatesOn(viewUpdates);
 	return docWasChanged;
 }
 
@@ -17004,6 +17007,8 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesStyle* nSty
 bool ScribusDoc::updateNotesNums(NotesStyle *nStyle)
 {
 	bool docWasChanged = false;
+	bool viewUpdates = view()->updateOn;
+	view()->updatesOn(false);
 	flag_restartMarksRenumbering = false;
 	flag_updateEndNotes = false;
 	PageItem_NoteFrame* endNF = NULL;
@@ -17239,6 +17244,7 @@ bool ScribusDoc::updateNotesNums(NotesStyle *nStyle)
 		}
 	}
 	flag_layoutNotesFrames = true;
+	view()->updatesOn(viewUpdates);
 	return docWasChanged;
 }
 
@@ -17349,6 +17355,8 @@ const ScPage *ScribusDoc::page4EndNotes(NotesStyle *NS, PageItem* item)
 
 bool ScribusDoc::notesFramesUpdate()
 {
+	bool viewUpdates = view()->updateOn;
+	view()->updatesOn(false);
 	bool removeEmptyNF = false;
 	bool docWasChanged = false;
 	int end = 0;
@@ -17411,6 +17419,7 @@ bool ScribusDoc::notesFramesUpdate()
 		}
 		docWasChanged = true;
 	}
+	view()->updatesOn(viewUpdates);
 	return docWasChanged;
 }
 
@@ -17548,11 +17557,18 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	if (nF->itemText.length() > 0 && removeMarks)
 		nF->removeMarksFromText(false);
 		
-	if (appMode == modeEdit && nF->isSelected())
+	if (nF->isSelected())
 	{
+		m_Selection->delaySignalsOn();
 		view()->Deselect(true);
 		if (!nF->isEndNotesFrame())
+		{
 			view()->SelectItem(nF->masterFrame());
+			m_Selection->connectItemToGUI();
+			view()->requestMode(modeEdit);
+		}
+		m_Selection->delaySignalsOff();
+		view()->requestMode(modeNormal);
 	}
 	if (m_docEndNotesFramesMap.contains(nF))
 	{
@@ -17582,16 +17598,6 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 		if (m->isType(MARK2ItemType) && (m->getItemPtr() == nF))
 			m->setItemPtr(NULL);
 	}
-	m_Selection->delaySignalsOn();
-	if (m_Selection->findItem(nF)!=-1)
-	{
-		if (appMode == modeEdit)
-			view()->requestMode(modeNormal);
-		m_Selection->removeItem(nF);
-	}
-	view()->Deselect(true);
-	m_Selection->delaySignalsOff();
-
 	Items->removeOne(nF);
 	setNotesChanged(true);
 	if (forceDeletion)

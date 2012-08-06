@@ -4023,20 +4023,22 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			}
 		}
 		else
+		{
 			layout();
-//		updateLayout();
-//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-//			NextBox->updateLayout();
-//		update();
-//		Tinput = false;
-//		if ((cr == QChar(13)) && (itemText.length() != 0))
-//		{
-//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(itemText.cursorPosition()-1,0))));
-//			Tinput = false;
-//		}
-		m_Doc->scMW()->setTBvals(this);
-		doc()->changed();
-//		view->RefreshItem(this);
+			//		updateLayout();
+			//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+			//			NextBox->updateLayout();
+			//		update();
+			//		Tinput = false;
+			//		if ((cr == QChar(13)) && (itemText.length() != 0))
+			//		{
+			//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(itemText.cursorPosition()-1,0))));
+			//			Tinput = false;
+			//		}
+			m_Doc->scMW()->setTBvals(this);
+			doc()->changed();
+			//		view->RefreshItem(this);
+		}
 		break;
 	case Qt::Key_Backspace:
 		if (itemText.cursorPosition() == 0)
@@ -4141,80 +4143,84 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			qDebug()<<"Native Virtual Key:"<<k->nativeVirtualKey();
 			*/
 		}
-		//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
-		if (kk == Qt::Key_Tab)
+		//if after deleting selection there is any note then stop handling inserting char
+		if (!isNoteFrame() || !asNoteFrame()->notesList().isEmpty())
 		{
-			if (UndoManager::undoEnabled())
+			//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
+			if (kk == Qt::Key_Tab)
 			{
-				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
-				if(ss && ss->get("ETEA") == "insert_frametext")
+				if (UndoManager::undoEnabled())
+				{
+					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+					if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(SpecialChars::TAB));
-				else {
-					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
-					ss->set("INSERT_FRAMETEXT", "insert_frametext");
-					ss->set("ETEA", QString("insert_frametext"));
-					ss->set("TEXT_STR", QString(SpecialChars::TAB));
-					ss->set("START", itemText.cursorPosition());
-					UndoObject * undoTarget = this;
-					if (isNoteFrame())
-					{
-						undoTarget = m_Doc;
-						ss->set("noteframeName", getUName());
+					else {
+						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+						ss->set("INSERT_FRAMETEXT", "insert_frametext");
+						ss->set("ETEA", QString("insert_frametext"));
+						ss->set("TEXT_STR", QString(SpecialChars::TAB));
+						ss->set("START", itemText.cursorPosition());
+						UndoObject * undoTarget = this;
+						if (isNoteFrame())
+						{
+							undoTarget = m_Doc;
+							ss->set("noteframeName", getUName());
+						}
+						undoManager->action(undoTarget, ss);
 					}
-					undoManager->action(undoTarget, ss);
 				}
+				itemText.insertChars(QString(SpecialChars::TAB), true);
+				//			Tinput = true;
+				//			view->RefreshItem(this);
+				doUpdate = true;
 			}
-			itemText.insertChars(QString(SpecialChars::TAB), true);
-//			Tinput = true;
-//			view->RefreshItem(this);
-			doUpdate = true;
-		}
-		else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
-		{
-			if (UndoManager::undoEnabled())
+			else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
 			{
-				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
-				if(ss && ss->get("ETEA") == "insert_frametext")
+				if (UndoManager::undoEnabled())
+				{
+					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+					if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + uc);
-				else {
-					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
-					ss->set("INSERT_FRAMETEXT", "insert_frametext");
-					ss->set("ETEA", QString("insert_frametext"));
-					ss->set("TEXT_STR",uc);
-					ss->set("START", itemText.cursorPosition());
-					UndoObject * undoTarget = this;
-					if (isNoteFrame())
-					{
-						undoTarget = m_Doc;
-						ss->set("noteframeName", getUName());
+					else {
+						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+						ss->set("INSERT_FRAMETEXT", "insert_frametext");
+						ss->set("ETEA", QString("insert_frametext"));
+						ss->set("TEXT_STR",uc);
+						ss->set("START", itemText.cursorPosition());
+						UndoObject * undoTarget = this;
+						if (isNoteFrame())
+						{
+							undoTarget = m_Doc;
+							ss->set("noteframeName", getUName());
+						}
+						undoManager->action(undoTarget, ss);
 					}
-					undoManager->action(undoTarget, ss);
 				}
-			}
-			itemText.insertChars(uc, true);
-			if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
-			{
-				Twort = "";
-				Tcoun = 0;
-				for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
+				itemText.insertChars(uc, true);
+				if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
 				{
-					Tcha = itemText.text(hych,1);
-					if (Tcha[0] == ' ')
+					Twort = "";
+					Tcoun = 0;
+					for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
 					{
-						Tcoun = hych+1;
-						break;
+						Tcha = itemText.text(hych,1);
+						if (Tcha[0] == ' ')
+						{
+							Tcoun = hych+1;
+							break;
+						}
+						Twort.prepend(Tcha);
 					}
-					Twort.prepend(Tcha);
+					if (!Twort.isEmpty())
+					{
+						m_Doc->docHyphenator->slotHyphenateWord(this, Twort, Tcoun);
+					}
 				}
-				if (!Twort.isEmpty())
-				{
-					m_Doc->docHyphenator->slotHyphenateWord(this, Twort, Tcoun);
-				}
+				invalid = true;
+				//			Tinput = true;
+				//			view->RefreshItem(this);
+				doUpdate = true;
 			}
-			invalid = true;
-//			Tinput = true;
-//			view->RefreshItem(this);
-			doUpdate = true;
 		}
 		if (doUpdate)
 		{
@@ -4235,10 +4241,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 			}
 			else
+			{
 				update();
-			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-				NextBox->updateLayout();
-			doc()->changed();
+				if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+					NextBox->updateLayout();
+				doc()->changed();
+			}
 		}
 		//check if cursor need to jump to next linked frame
 		//but not for notes frames can`t be updated as may disapper during update
