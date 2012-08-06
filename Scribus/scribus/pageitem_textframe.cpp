@@ -3587,7 +3587,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	int kk = k->key();
 	int as = k->text()[0].unicode();
 	QString uc = k->text();
-	QString cr, Tcha, Twort;
+	QString Tcha, Twort;
 	uint Tcoun;
 	int len, pos;
 	int keyModifiers=0;
@@ -3984,97 +3984,31 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		m_Doc->scMW()->setTBvals(this);
 		break;
 	case Qt::Key_Delete:
-		if (itemText.cursorPosition() == itemText.length())
-		{
-			if (itemText.lengthOfSelection() > 0)
-			{
-				deleteSelectedTextFromFrame();
-				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
-				{
-					if (!asNoteFrame()->isEndNotesFrame())
-					{
-						Q_ASSERT(asNoteFrame()->masterFrame());
-						asNoteFrame()->masterFrame()->invalid = true;
-					}
-				}
-				else
-					update();
-//				view->RefreshItem(this);
-			}
-			keyRepeat = false;
-			return;
-		}
-		if (itemText.length() == 0)
-		{
-			keyRepeat = false;
-			return;
-		}
-		cr = itemText.text();
-		if (itemText.lengthOfSelection() == 0)
-			itemText.select(itemText.cursorPosition(), 1, true);
-		deleteSelectedTextFromFrame();
-		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
-		{
-			if (!asNoteFrame()->isEndNotesFrame())
-			{
-				Q_ASSERT(asNoteFrame()->masterFrame());
-				asNoteFrame()->masterFrame()->invalid = true;
-			}
-		}
-		else
-		{
-			layout();
-			//		updateLayout();
-			//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-			//			NextBox->updateLayout();
-			//		update();
-			//		Tinput = false;
-			//		if ((cr == QChar(13)) && (itemText.length() != 0))
-			//		{
-			//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(itemText.cursorPosition()-1,0))));
-			//			Tinput = false;
-			//		}
-			m_Doc->scMW()->setTBvals(this);
-			doc()->changed();
-			//		view->RefreshItem(this);
-		}
-		break;
 	case Qt::Key_Backspace:
-		if (itemText.cursorPosition() == 0)
-		{
-			if (itemText.lengthOfSelection() > 0)
-			{
-				deleteSelectedTextFromFrame();
-				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
-				{
-					if (!asNoteFrame()->isEndNotesFrame())
-					{
-						Q_ASSERT(asNoteFrame()->masterFrame());
-						asNoteFrame()->masterFrame()->invalid = true;
-					}
-				}
-				else
-					update();
-			}
-			break;
-		}
 		if (itemText.length() == 0)
-			break;
-		cr = itemText.text(qMax((int) itemText.cursorPosition() - 1, 0), 1);
+		{
+			keyRepeat = false;
+			return;
+		}
 		if (itemText.lengthOfSelection() == 0)
 		{
-			itemText.setCursorPosition(-1, true);
+			if (kk==Qt::Key_Backspace)
+			{
+				if (itemText.cursorPosition() == 0)
+				{
+					keyRepeat = false;
+					return;
+				}
+				itemText.setCursorPosition(-1, true);
+			}
+			else if (itemText.cursorPosition() == itemText.length())
+			{
+				keyRepeat = false;
+				return;
+			}
 			itemText.select(itemText.cursorPosition(), 1, true);
 		}
 		deleteSelectedTextFromFrame();
-//		Tinput = false;
-		if ((cr == QChar(13)) && (itemText.length() != 0))
-		{
-//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
-//			Tinput = false;
-		}
 		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
 			if (!asNoteFrame()->isEndNotesFrame())
@@ -4086,26 +4020,32 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		else
 		{
 			layout();
-			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-				NextBox->updateLayout();
-		}
-		if (itemText.cursorPosition() < firstInFrame())
-		{
-			itemText.setCursorPosition( firstInFrame() );
-			if (BackBox != 0)
+			//check if cursor need to jump to linked frame
+			//but not for notes frames can`t be updated as may disapper during update
+			if ((itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 			{
 				view->Deselect(true);
-				if (BackBox->invalid)
-					BackBox->updateLayout();
-				itemText.setCursorPosition( BackBox->lastInFrame() );
-				m_Doc->scMW()->selectItemsFromOutlines(BackBox);
-				//currItem = currItem->BackBox;
+				NextBox->update();
+				m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 			}
+			else if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+				NextBox->updateLayout();
+
+			if (itemText.cursorPosition() < firstInFrame())
+			{
+				itemText.setCursorPosition( firstInFrame() );
+				if (BackBox != 0)
+				{
+					view->Deselect(true);
+					if (BackBox->invalid)
+						BackBox->updateLayout();
+					itemText.setCursorPosition( BackBox->lastInFrame() );
+					m_Doc->scMW()->selectItemsFromOutlines(BackBox);
+				}
+			}
+			m_Doc->scMW()->setTBvals(this);
+			doc()->changed();
 		}
-		m_Doc->scMW()->setTBvals(this);
-//		update();
-//		doc()->changed();
-//		view->RefreshItem(this);
 		break;
 	default:
 		if (isNoteFrame() && itemText.cursorPosition() == 0 && itemText.lengthOfSelection() == 0)
