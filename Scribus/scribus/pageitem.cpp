@@ -9931,25 +9931,6 @@ void PageItem::updateClip(bool updateWelded)
 					for (int i = 0 ; i < weldList.count(); i++)
 					{
 						weldingInfo wInf = weldList.at(i);
-						if (wInf.weldItem->isNoteFrame())
-						{
-							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-							if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
-							{
-								if (noteFrame->notesStyle()->isAutoNotesWidth())
-								{
-									if (noteFrame->width() != width())
-									{
-										noteFrame->setWidth(width());
-										noteFrame->updateClip();
-									}
-								}
-								noteFrame->setXYPos(xPos(),yPos() + height());
-								setWeldPoint(0, height(), noteFrame);
-								noteFrame->setWeldPoint(0,0, this);
-								continue;
-							}
-						}
 						FPointArray gr4;
 						FPoint wp = wInf.weldPoint;
 						gr4.addPoint(wp);
