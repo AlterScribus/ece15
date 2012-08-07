@@ -1962,6 +1962,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					master = getItemFromName(is->get("noteframeName"));
 				else
 					master = (PageItem*) is->getItem("inItem");
+				Q_ASSERT(master != NULL);
 				if (isUndo)
 				{
 					TextNote* note = newNote(nStyle);
@@ -1977,6 +1978,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) is->getItem("noteframe");
 						Q_ASSERT(nF != NULL);
 						master->asTextFrame()->setNoteFrame(nF);
+						nF->invalid = true;
 					}
 				}
 				else
@@ -17364,12 +17366,20 @@ bool ScribusDoc::notesFramesUpdate()
 			PageItem* item = Items->at(i);
 			if (!item->isTextFrame())
 				continue;
-			if (item->isNoteFrame())
+			if (!item->isNoteFrame() && item->invalid)
+			{
+				flag_layoutNotesFrames = false;
+				item->layout();
+			}
+			else if (item->isNoteFrame())
 			{
 				if (item->asNoteFrame()->notesList().isEmpty())
 				{
 					if (item->isAutoNoteFrame())
+					{
 						item->asNoteFrame()->deleteIt = true;
+						removeEmptyNF = true;
+					}
 				}
 				else
 				{
@@ -17379,21 +17389,19 @@ bool ScribusDoc::notesFramesUpdate()
 					{
 						if (item->itemText.length() == 0 && !item->asNoteFrame()->notesList().isEmpty())
 							item->asNoteFrame()->updateNotes(item->asNoteFrame()->notesList(), true);
+						flag_layoutNotesFrames = true;
 						item->invalid = true;
 						item->layout();
 					}
 				}
-				if (item->asNoteFrame()->deleteIt)
-					removeEmptyNF = true;
 			}
 			if (end != Items->count())
 			{
 				end = Items->count();
 				setNotesChanged(true);
-			}
-			docWasChanged = docWasChanged || notesChanged();
-			if (notesChanged())
+				docWasChanged = true;
 				break;
+			}
 		}
 	} while (notesChanged());
 

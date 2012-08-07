@@ -4789,17 +4789,25 @@ bool PageItem_TextFrame::hasNoteFrame(NotesStyle *NS, bool inChain)
 
 void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 {
+	if (m_notesFramesMap.isEmpty())
+		return;
 	int oldItemsCount = m_Doc->Items->count();
 
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-		delList.append(nF);
+	{
+		if (nF->isEndNotesFrame())
+			removeNoteFrame(nF);
+		else
+			delList.append(nF);
+	}
+	
 	while (!delList.isEmpty())
 	{
 		PageItem_NoteFrame* nF = delList.takeFirst();
 		m_Doc->delNoteFrame(nF);
 	}
-
+	Q_ASSERT(m_notesFramesMap.isEmpty());
 	//check if doc need update
 	m_Doc->setNotesChanged(true);
 	if (doUpdate && (oldItemsCount != m_Doc->Items->count()))
@@ -4949,7 +4957,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					//create new footnotes frame for that text frame
 					nF = m_Doc->createNoteFrame(this, note->notesStyle(), m_Doc->DocItems.indexOf(lastItem));
 				//insert in map noteframe with empty list of notes
-				m_notesFramesMap.insert(nF, QList<TextNote*>());
+				setNoteFrame(nF);
 				m_Doc->setNotesChanged(true);
 			}
 			else if (NS->isEndNotes())
@@ -4992,7 +5000,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
+		if (nF->deleteIt) //|| (nF->isAutoNoteFrame() && ((!notesMap.keys().contains(nF) && !nF->isEndNotesFrame()) || nF->notesList().isEmpty())))
 		{
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
@@ -5010,17 +5018,29 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	if (m_notesFramesMap != notesMap)
 	{
 		docWasChanged = true;
-		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+		if (notesMap.isEmpty())
 		{
-			if (notesMap.contains(nF))
+			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-				m_notesFramesMap.insert(nF, notesMap.value(nF));
-				notesMap.remove(nF);
+				if (nF->isAutoNoteFrame())
+					removeNoteFrame(nF);
 			}
-			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
-				m_notesFramesMap.remove(nF);
 		}
-		m_notesFramesMap.unite(notesMap);
+		else
+		{
+			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+			{
+				if (notesMap.contains(nF))
+				{
+					nF->updateNotes(notesMap.value(nF));
+					setNoteFrame(nF);
+					notesMap.remove(nF);
+				}
+				else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
+					removeNoteFrame(nF);
+			}
+			m_notesFramesMap.unite(notesMap);
+		}
 	}
 	if (docWasChanged)
 	{
