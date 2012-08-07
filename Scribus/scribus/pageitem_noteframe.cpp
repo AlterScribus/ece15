@@ -179,11 +179,9 @@ void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
 
 void PageItem_NoteFrame::layout()
 {
-	if (!invalid || l_notes.isEmpty())
+	if (!invalid)
 		return;
 	if (!m_Doc->flag_layoutNotesFrames)
-		return;
-	if (itemText.length() == 0)
 		return;
 	if ((masterFrame() != NULL) && masterFrame()->invalid)
 		return;
@@ -195,7 +193,7 @@ void PageItem_NoteFrame::layout()
 	if (m_nstyle->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
 		oldWidth = Width = m_masterFrame->width();
-		updateClip();
+		updateClip(false);
 	}
 
 	if ((m_Doc->appMode == modeEdit) && isSelected())
@@ -221,6 +219,8 @@ void PageItem_NoteFrame::layout()
 		}
 		double hackValue = 0.5;
 		oldHeight = Height = ceil(maxY) + BExtra + hackValue;
+		oldXpos = Xpos;
+		oldYpos = Ypos;
 		updateConstants();
 		updateClip();
 		invalid = true;
