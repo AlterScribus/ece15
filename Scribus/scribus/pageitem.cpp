@@ -1351,6 +1351,23 @@ void PageItem::dropLinks()
 	PageItem* after = NextBox;
 	if (after != 0 || before != 0)
 	{
+		if (undoManager->undoEnabled())
+		{
+			if (before)
+			{
+				ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
+				is->set("UNLINK_TEXT_FRAME", "unlinkTextFrame");
+				is->setItem(qMakePair(before, this));
+				undoManager->action(before, is);
+			}
+			if (after)
+			{
+				ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
+				is->set("UNLINK_TEXT_FRAME", "unlinkTextFrame");
+				is->setItem(qMakePair(this, after));
+				undoManager->action(this, is);
+			}
+		}
 		itemText = StoryText(m_Doc);
 		if (before)
 			before->NextBox = after;
@@ -5035,6 +5052,12 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreAppMode(ss, isUndo);
 		else if (ss->contains("CONNECT_PATH"))
 			restoreConnectPath(ss, isUndo);
+		else if (ss->contains("WELD_ITEMS"))
+			restoreWeldItems(ss, isUndo);
+		else if (ss->contains("UNWELD_ITEM"))
+			restoreUnWeldItem(ss, isUndo);
+		else if (ss->contains("MOVE_NOTE_FRAME"))
+			restoreNoteFramePos(ss, isUndo);
 	}
 	if (!OnMasterPage.isEmpty())
 		m_Doc->setCurrentPage(oldCurrentPage);
@@ -5063,6 +5086,64 @@ void PageItem::restoreConnectPath(SimpleState *state, bool isUndo)
 	OldH2 = height();
 	updateClip();
 	ContourLine = PoLine.copy();
+}
+
+void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
+{
+	if (isUndo)
+	{
+		unWeld();
+	}
+	else
+	{
+		ScItemState<PageItem*> *is = dynamic_cast<ScItemState<PageItem*>*>(state);
+		PageItem* wIt = is->getItem();
+		weldTo(wIt);
+	}
+	m_Doc->changed();
+	m_Doc->regionsChanged()->update(QRectF());
+}
+
+void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
+{
+	if (isUndo)
+	{
+		ScItemState<PageItem*> *is = dynamic_cast<ScItemState<PageItem*>*>(state);
+		PageItem* wIt = NULL;
+		if (is->contains("noteframe"))
+			wIt = m_Doc->getItemFromName(is->get("noteframe"));
+		else
+			wIt = is->getItem();
+		if (wIt == NULL)
+			return;
+		weldingInfo wInf;
+
+		wInf.weldItem = wIt;
+		wInf.weldID = is->getInt("thisID");
+		wInf.weldPoint = FPoint(is->getDouble("thisPoint_x"), is->getDouble("thisPoint_y"));
+		weldList.append(wInf);
+
+		wInf.weldItem = this;
+		wInf.weldID = is->getInt("ID");
+		wInf.weldPoint = FPoint(is->getDouble("Point_x"), is->getDouble("Point_y"));
+		wIt->weldList.append(wInf);
+	}
+	else
+	{
+		unWeld();
+	}
+	m_Doc->changed();
+	m_Doc->regionsChanged()->update(QRectF());
+}
+
+void PageItem::restoreNoteFramePos(SimpleState *state, bool isUndo)
+{
+	if (isUndo)
+	{
+		PageItem_NoteFrame* nF = asTextFrame()->itemNoteFrame(m_Doc->getNotesStyle(state->get("nStyle")));
+		if (nF != NULL)
+			nF->setXYPos(state->getDouble("NEW_XPOS"), state->getDouble("NEW_YPOS"));
+	}
 }
 
 bool PageItem::checkGradientUndoRedo(SimpleState *ss, bool isUndo)
@@ -6848,7 +6929,21 @@ void PageItem::restoreUnlinkTextFrame(UndoState *state, bool isUndo)
 	else
 	{
 		if (isUndo)
-			asTextFrame()->link(is->getItem().second->asTextFrame());
+		{
+			PageItem* next = is->getItem().second;
+			if (next != NULL)
+			{
+				asTextFrame()->link(next);
+				invalid = true;
+				layout();
+				if (m_Doc->notesChanged())
+				{
+					m_Doc->flag_undoNotesFrames = false;
+					m_Doc->updateMarks();
+					m_Doc->flag_undoNotesFrames = true;
+				}
+			}
+		}
 		else
 			unlink();
 	}
@@ -10171,6 +10266,13 @@ void PageItem::weldTo(PageItem* pIt)
 		return;
 	addWelded(pIt);
 	pIt->addWelded(this);
+	if(!pIt->isNoteFrame() && undoManager->undoEnabled())
+	{
+		ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);
+		is->set("WELD_ITEMS", "weld_items");
+		is->setItem(pIt);
+		undoManager->action(this, is, getUPixmap());
+	}
 	update();
 	pIt->update();
 }
@@ -10276,6 +10378,10 @@ void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
 
 void PageItem::unWeld()
 {
+	UndoTransaction* activeTransaction = NULL;
+	if (undoManager->undoEnabled())
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::WeldItems + "/" + Um::Selection, Um::IGroup,
+																			  Um::WeldItems, "", Um::IDelete));
 	for (int a = 0 ; a < weldList.count(); a++)
 	{
 		weldingInfo wInf = weldList.at(a);
@@ -10289,9 +10395,33 @@ void PageItem::unWeld()
 			if (pIt2 == this)
 			{
 				pIt->weldList.removeAt(b);
+//				if (isNoteFrame() && asNoteFrame()->masterFrame() != NULL && asNoteFrame()->masterFrame() == pIt)
+//					break;
+				if(undoManager->undoEnabled())
+				{
+					ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);
+					is->set("UNWELD_ITEM", "unweld_item");
+					if (pIt->isNoteFrame())
+						is->set("noteframe", pIt->getUName());
+					else
+						is->setItem(pIt);
+					is->set("thisPoint_x", wInf.weldPoint.x());
+					is->set("thisPoint_y", wInf.weldPoint.y());
+					is->set("thisID", wInf.weldID);
+					is->set("Point_x", wInf2.weldPoint.x());
+					is->set("Point_y", wInf2.weldPoint.y());
+					is->set("ID", wInf2.weldID);
+					undoManager->action(this, is, getUPixmap());
+				}
 				break;
 			}
 		}
+	}
+	if (activeTransaction)
+	{
+		activeTransaction->commit();
+		delete activeTransaction;
+		activeTransaction = NULL;
 	}
 	weldList.clear();
 }

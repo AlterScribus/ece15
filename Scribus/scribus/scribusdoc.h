@@ -1662,6 +1662,7 @@ public:
 	bool flag_updateMarksLabels;
 	bool flag_updateEndNotes;
 	bool flag_layoutNotesFrames;
+	bool flag_undoNotesFrames;
 
 	//returns list of marks labels for given mark type
 	QStringList marksLabelsList(MarkType type);

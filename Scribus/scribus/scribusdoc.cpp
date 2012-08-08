@@ -275,7 +275,8 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true)
+	flag_layoutNotesFrames(true),
+	flag_undoNotesFrames(true)
 {
 	docUnitRatio=unitGetRatioFromIndex(docPrefsData.docSetupPrefs.docUnitIndex);
 	docPrefsData.docSetupPrefs.pageHeight=0;
@@ -375,7 +376,8 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true)
+	flag_layoutNotesFrames(true),
+	flag_undoNotesFrames(true)
 {
 	docPrefsData.docSetupPrefs.docUnitIndex=unitindex;
 	docPrefsData.docSetupPrefs.pageHeight=pagesize.height();
@@ -11285,7 +11287,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 	selectedItemCount = delItems.count();
 
 	UndoTransaction* activeTransaction = NULL;
-	if ((selectedItemCount > 1 || currItem->isNoteFrame()) && UndoManager::undoEnabled())
+	if (UndoManager::undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Group + "/" + Um::Selection, Um::IGroup,
 																			  Um::Delete, tooltip, Um::IDelete));
 
@@ -11294,14 +11296,9 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		currItem = delItems.at(selectedItemCount - (de + 1));
 		if ((currItem->asImageFrame()) && ((ScCore->fileWatcher->files().contains(currItem->Pfile) != 0) && (currItem->PictureIsAvailable)))
 			ScCore->fileWatcher->removeFile(currItem->Pfile);
-		//delete marks pointed to that item
-		for (int a=0; a < m_docMarksList.count(); a++)
-		{
-			Mark* m = m_docMarksList.at(a);
-			Q_ASSERT(m != NULL);
-			if (m->isType(MARK2ItemType) && (m->getItemPtr() == currItem))
-				m->setItemPtr(NULL);
-		}
+		if (currItem->isWelded())
+			currItem->unWeld();
+		currItem->dropLinks();
 		if (currItem->isNoteFrame())
 		{
 			if (currItem->itemText.length() >0)
@@ -11321,11 +11318,31 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		else
 		{
 			if (currItem->asTextFrame())
-			{
 				currItem->asTextFrame()->delAllNoteFrames(false);
-				currItem->dropLinks();
+			//delete marks pointed to that item
+			for (int a=0; a < m_docMarksList.count(); a++)
+			{
+				Mark* m = m_docMarksList.at(a);
+				Q_ASSERT(m != NULL);
+				if (m->isType(MARK2ItemType) && (m->getItemPtr() == currItem))
+				{
+					if (undoManager->undoEnabled())
+					{
+						ScItemsState* is = new ScItemsState(UndoManager::EditMark);
+						is->set("ETEA", m->label);
+						is->set("label", m->label);
+						is->set("type", MARK2ItemType);
+						is->set("strtxt", m->getString());
+						is->set("MARK", QString("edit"));
+						is->insertItem("itemPtrOLD", currItem);
+						is->insertItem("itemPtrNEW", NULL);
+						undoManager->action(this, is);
+					}
+					m->setItemPtr(NULL);
+				}
 			}
-				/* this code will instead remove the contained text
+		}
+		/* this code will instead remove the contained text
 		if (currItem->asTextFrame())
 		{
 			currItem->dropLinks();
@@ -11344,9 +11361,6 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 				}
 			}
 			*/
-		}
-		if (currItem->isWelded())
-			currItem->unWeld();
 		if (currItem->isBookmark)
 			//CB From view   emit DelBM(currItem);
 			m_ScMW->DelBookMark(currItem);
@@ -17561,6 +17575,24 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	if (nF->itemText.length() > 0 && removeMarks)
 		nF->removeMarksFromText(false);
 		
+	if (undoManager->undoEnabled() && flag_undoNotesFrames)
+	{
+		ScItemsState* ss = new ScItemsState(Um::Move, "", Um::IMove);
+		ss->set("MOVE_NOTE_FRAME", true);
+		ss->set("NEW_XPOS", nF->Xpos);
+		ss->set("NEW_YPOS", nF->Ypos);
+		ss->set("nSet", nF->notesStyle()->name());
+		if (nF->isEndNotesFrame())
+		{
+			if (nF->notesStyle()->range() == NSRsection)
+				ss->set("section", m_docEndNotesFramesMap.value(nF).sectionIndex);
+			else
+				ss->insertItem("rangeItem", m_docEndNotesFramesMap.value(nF).voidPtr);
+		}
+		else
+			ss->insertItem("master", nF->masterFrame());
+		undoManager->action(this, ss);
+	}
 	if (nF->isSelected())
 	{
 		m_Selection->delaySignalsOn();
@@ -17590,16 +17622,35 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	}
 	m_docNotesInFrameMap.remove(nF);
 
+	bool undoEnable = undoManager->undoEnabled();
 	nF->dropLinks();
 	if (nF->isWelded())
+	{
+		undoManager->setUndoEnabled(false);
 		nF->unWeld();
+		undoManager->setUndoEnabled(undoEnable);
+	}
 	//delete marks pointed to that item
 	for (int a=0; a < m_docMarksList.count(); ++a)
 	{
 		Mark* m = m_docMarksList.at(a);
 		Q_ASSERT(m != NULL);
 		if (m->isType(MARK2ItemType) && (m->getItemPtr() == nF))
+		{
+			if (undoManager->undoEnabled())
+			{
+				ScItemsState* is = new ScItemsState(UndoManager::EditMark);
+				is->set("ETEA", m->label);
+				is->set("label", m->label);
+				is->set("type", MARK2ItemType);
+				is->set("strtxt", m->getString());
+				is->set("MARK", QString("edit"));
+				is->set("itemframeOLD", nF->getUName());
+				is->insertItem("itemPtrNEW", NULL);
+				undoManager->action(this, is);
+			}
 			m->setItemPtr(NULL);
+		}
 	}
 	Items->removeOne(nF);
 	setNotesChanged(true);
@@ -17704,7 +17755,7 @@ PageItem_NoteFrame* ScribusDoc::endNoteFrame(NotesStyle *nStyle, void* item)
 
 		if (nF->notesStyle() == nStyle)
 		{
-			if ((nStyle->range() == NSRdocument) || (item == rItem.P))
+			if ((nStyle->range() == NSRdocument) || (item == rItem.voidPtr))
 				return nF;
 		}
 		++it;

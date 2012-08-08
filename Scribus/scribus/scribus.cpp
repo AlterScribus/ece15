@@ -11162,8 +11162,14 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				}
 				if (mrk->isType(MARK2ItemType) && mrk->getItemPtr() != oldMark.getItemPtr())
 				{
-					is->insertItem("itemPtrOLD", oldMark.getItemPtr());
-					is->insertItem("itemPtrNEW", mrk->getItemPtr());
+					if (oldMark.getItemPtr() != NULL && oldMark.getItemPtr()->isNoteFrame())
+						is->set("noteframeOLD", oldMark.getItemPtr()->getUName());
+					else
+						is->insertItem("itemPtrOLD", oldMark.getItemPtr());
+					if (mrk->getItemPtr() != NULL && mrk->getItemPtr()->isNoteFrame())
+						is->set("noteframeNEW", mrk->getItemPtr()->getUName());
+					else
+						is->insertItem("itemPtrNEW", mrk->getItemPtr());
 				}
 			}
 			undoManager->action(doc, is);
