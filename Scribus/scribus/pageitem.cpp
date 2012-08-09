@@ -5098,8 +5098,6 @@ void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
 		PageItem* wIt = is->getItem();
 		weldTo(wIt);
 	}
-//	m_Doc->changed();
-//	m_Doc->regionsChanged()->update(QRectF());
 }
 
 void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
@@ -5130,8 +5128,6 @@ void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
 	{
 		unWeld();
 	}
-//	m_Doc->changed();
-//	m_Doc->regionsChanged()->update(QRectF());
 }
 
 bool PageItem::checkGradientUndoRedo(SimpleState *ss, bool isUndo)

@@ -298,7 +298,8 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 	if (clear)
 	{
 		itemText.selectAll();
-		deleteSelectedTextFromFrame();
+		itemText.removeSelection();
+		HasSel = false;
 		l_notes = nList;
 		for (int a=0; a < l_notes.count(); ++a)
 			insertNote(l_notes.at(a));

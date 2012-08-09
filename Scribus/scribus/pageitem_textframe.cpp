@@ -4268,7 +4268,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 			{
 				added = false;
 				lastIsDelete = false;
-				if (is && sch && sch->get("ETEA") == "delete_frametext" && is->getItem().equiv(lastParent))
+				if (!(hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
+					&& (is && sch && sch->get("ETEA") == "delete_frametext" && is->getItem().equiv(lastParent)))
 				{
 					if  (lastPos < is->getInt("START"))
 					{

@@ -16913,8 +16913,6 @@ void ScribusDoc::deleteNote(TextNote* note)
 	if (note->isEndNote())
 		flag_updateEndNotes = true;
 	delete note;
-	if (nF->deleteIt)
-		delNoteFrame(nF,false);
 }
 
 void ScribusDoc::setUndoDelNote(TextNote *note)
@@ -17582,7 +17580,6 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 			m_Selection->connectItemToGUI();
 		}
 		m_Selection->delaySignalsOff();
-		view()->requestMode(modeNormal);
 	}
 	if (m_docEndNotesFramesMap.contains(nF))
 	{

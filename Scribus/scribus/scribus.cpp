@@ -1685,6 +1685,8 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 							currItem->asNoteFrame()->masterFrame()->updateLayout();
 						}
 					}
+					if (doc->notesChanged())
+						slotDocCh(false);
 					keyrep=kr;
 				}
 				//slotDocCh(false);
