@@ -1447,7 +1447,6 @@ protected:
 
 	void restoreWeldItems(SimpleState *state, bool isUndo);
 	void restoreUnWeldItem(SimpleState *state, bool isUndo);
-	void restoreNoteFramePos(SimpleState *state, bool isUndo);
 
 	/*@}*/
 

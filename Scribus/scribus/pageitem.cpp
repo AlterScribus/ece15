@@ -1356,14 +1356,14 @@ void PageItem::dropLinks()
 			if (before)
 			{
 				ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
-				is->set("UNLINK_TEXT_FRAME", "unlinkTextFrame");
+				is->set("UNLINK_TEXT_FRAME", QString("drop_links"));
 				is->setItem(qMakePair(before, this));
 				undoManager->action(before, is);
 			}
 			if (after)
 			{
 				ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
-				is->set("UNLINK_TEXT_FRAME", "unlinkTextFrame");
+				is->set("UNLINK_TEXT_FRAME", QString("drop_links"));
 				is->setItem(qMakePair(this, after));
 				undoManager->action(this, is);
 			}
@@ -5056,8 +5056,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreWeldItems(ss, isUndo);
 		else if (ss->contains("UNWELD_ITEM"))
 			restoreUnWeldItem(ss, isUndo);
-		else if (ss->contains("MOVE_NOTE_FRAME"))
-			restoreNoteFramePos(ss, isUndo);
 	}
 	if (!OnMasterPage.isEmpty())
 		m_Doc->setCurrentPage(oldCurrentPage);
@@ -5100,8 +5098,8 @@ void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
 		PageItem* wIt = is->getItem();
 		weldTo(wIt);
 	}
-	m_Doc->changed();
-	m_Doc->regionsChanged()->update(QRectF());
+//	m_Doc->changed();
+//	m_Doc->regionsChanged()->update(QRectF());
 }
 
 void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
@@ -5132,18 +5130,8 @@ void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
 	{
 		unWeld();
 	}
-	m_Doc->changed();
-	m_Doc->regionsChanged()->update(QRectF());
-}
-
-void PageItem::restoreNoteFramePos(SimpleState *state, bool isUndo)
-{
-	if (isUndo)
-	{
-		PageItem_NoteFrame* nF = asTextFrame()->itemNoteFrame(m_Doc->getNotesStyle(state->get("nStyle")));
-		if (nF != NULL)
-			nF->setXYPos(state->getDouble("NEW_XPOS"), state->getDouble("NEW_YPOS"));
-	}
+//	m_Doc->changed();
+//	m_Doc->regionsChanged()->update(QRectF());
 }
 
 bool PageItem::checkGradientUndoRedo(SimpleState *ss, bool isUndo)
@@ -6932,20 +6920,15 @@ void PageItem::restoreUnlinkTextFrame(UndoState *state, bool isUndo)
 		{
 			PageItem* next = is->getItem().second;
 			if (next != NULL)
-			{
 				asTextFrame()->link(next);
-				invalid = true;
-				layout();
-				if (m_Doc->notesChanged())
-				{
-					m_Doc->flag_undoNotesFrames = false;
-					m_Doc->updateMarks();
-					m_Doc->flag_undoNotesFrames = true;
-				}
-			}
 		}
 		else
-			unlink();
+		{
+			if (is->get("UNLINK_TEXT_FRAME") == "drop_links")
+				dropLinks();
+			else
+				unlink();
+		}
 	}
 }
 
@@ -10034,18 +10017,20 @@ void PageItem::updateClip(bool updateWelded)
 				{
 					for (int i = 0 ; i < weldList.count(); i++)
 					{
-//						weldingInfo wInf = weldList.at(i);
-//						FPointArray gr4;
-//						FPoint wp = wInf.weldPoint;
-//						gr4.addPoint(wp);
-//						gr4.map(ma);
-//						double dx = gr4.point(0).x() - wp.x();
-//						double dy = gr4.point(0).y() - wp.y();
-						double dx = Xpos - oldXpos;
-						double dy = Ypos - oldYpos;
+						weldingInfo wInf = weldList.at(i);
+						FPointArray gr4;
+						FPoint wp = wInf.weldPoint;
+						gr4.addPoint(wp);
+						gr4.map(ma);
+						double dx = gr4.point(0).x() - wp.x();
+						double dy = gr4.point(0).y() - wp.y();
+						if (Xpos != oldXpos)
+							dx -= (Width - oldWidth);
+						if (Ypos != oldYpos)
+							dy -= (Height - oldHeight);
 						moveWelded(dx, dy, i);
-//						wInf.weldPoint = gr4.point(0);
-//						weldList[i] = wInf;
+						wInf.weldPoint = gr4.point(0);
+						weldList[i] = wInf;
 					}
 				}
 			}

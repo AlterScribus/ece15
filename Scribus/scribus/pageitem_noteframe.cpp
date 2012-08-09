@@ -96,16 +96,26 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
+	ScribusDoc::coords c;
+	if (m_Doc->getNFCoords(inFrame, nStyle, c))
+	{
+		Xpos = oldXpos = c._X;
+		Ypos = oldYpos = c._Y;
+		Height = oldHeight = c._H;
+		Width = oldWidth = c._W;
+	}
+	else
+	{
+		double frameHeight = calculateLineSpacing(newStyle, this);
+		if (frameHeight == 0.0 && !m_nstyle->isAutoNotesHeight())
+			frameHeight = newStyle.charStyle().fontSize()/10;
+		Height = oldHeight = frameHeight;
+		oldWidth = Width;
+		oldRot = Rot;
+		oldXpos = Xpos;
+		Ypos = oldYpos = m_masterFrame->yPos() + m_masterFrame->height();
+	}
 	
-	double frameHeight = calculateLineSpacing(newStyle, this);
-	if (frameHeight == 0.0 && !m_nstyle->isAutoNotesHeight())
-		frameHeight = newStyle.charStyle().fontSize()/10;
-	Height = oldHeight = frameHeight;
-	oldWidth = Width;
-	oldRot = Rot;
-	oldXpos = Xpos;
-	Ypos = oldYpos =m_masterFrame->yPos() + m_masterFrame->height();
-
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
 
@@ -237,6 +247,8 @@ void PageItem_NoteFrame::layout()
 		m_Doc->regionsChanged()->update(QRect());
 	}
 	invalid = false;
+	if (masterFrame() != NULL)
+		m_Doc->setNFCoords(this);
 	UndoManager::instance()->setUndoEnabled(true);
 }
 

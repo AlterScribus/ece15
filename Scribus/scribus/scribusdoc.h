@@ -1662,7 +1662,6 @@ public:
 	bool flag_updateMarksLabels;
 	bool flag_updateEndNotes;
 	bool flag_layoutNotesFrames;
-	bool flag_undoNotesFrames;
 
 	//returns list of marks labels for given mark type
 	QStringList marksLabelsList(MarkType type);
@@ -1730,8 +1729,20 @@ public:
 
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(Mark* mrk, int &lastItem);
+
+	//struct to save position and dimension if noteframe (undo puropses)
+	struct coords {
+		double _X, _Y, _W, _H;
+		coords() : _X(0.0), _Y(0.0), _W(-1.0), _H(-1.0) {}
+		coords(double x, double y, double w = -1.0, double h = -1.0) { _X = x; _Y = y; _W = w; _H = h; }
+	};
+	bool getNFCoords(PageItem* item, NotesStyle* nStyle, coords &c);
+	void setNFCoords(PageItem_NoteFrame* nF);
 	
 private:
+	//maps to storing noteframes coords for each text frame
+	QMap<PageItem*, QMap<NotesStyle*, coords> > noteframesCoords;
+	
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
 	NotesInFrameMap m_docNotesInFrameMap;
 

@@ -275,8 +275,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true),
-	flag_undoNotesFrames(true)
+	flag_layoutNotesFrames(true)
 {
 	docUnitRatio=unitGetRatioFromIndex(docPrefsData.docSetupPrefs.docUnitIndex);
 	docPrefsData.docSetupPrefs.pageHeight=0;
@@ -376,8 +375,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true),
-	flag_undoNotesFrames(true)
+	flag_layoutNotesFrames(true)
 {
 	docPrefsData.docSetupPrefs.docUnitIndex=unitindex;
 	docPrefsData.docSetupPrefs.pageHeight=pagesize.height();
@@ -17574,25 +17572,6 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	//check if note frame is listed in text frames m_notesFramesMap
 	if (nF->itemText.length() > 0 && removeMarks)
 		nF->removeMarksFromText(false);
-		
-	if (undoManager->undoEnabled() && flag_undoNotesFrames)
-	{
-		ScItemsState* ss = new ScItemsState(Um::Move, "", Um::IMove);
-		ss->set("MOVE_NOTE_FRAME", true);
-		ss->set("NEW_XPOS", nF->Xpos);
-		ss->set("NEW_YPOS", nF->Ypos);
-		ss->set("nSet", nF->notesStyle()->name());
-		if (nF->isEndNotesFrame())
-		{
-			if (nF->notesStyle()->range() == NSRsection)
-				ss->set("section", m_docEndNotesFramesMap.value(nF).sectionIndex);
-			else
-				ss->insertItem("rangeItem", m_docEndNotesFramesMap.value(nF).voidPtr);
-		}
-		else
-			ss->insertItem("master", nF->masterFrame());
-		undoManager->action(this, ss);
-	}
 	if (nF->isSelected())
 	{
 		m_Selection->delaySignalsOn();
@@ -17619,17 +17598,16 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	{
 		nF->masterFrame()->removeNoteFrame(nF);
 		nF->masterFrame()->invalid = true;
+		setNFCoords(nF);
 	}
 	m_docNotesInFrameMap.remove(nF);
 
-	bool undoEnable = undoManager->undoEnabled();
+	undoManager->setUndoEnabled(false);
 	nF->dropLinks();
 	if (nF->isWelded())
-	{
-		undoManager->setUndoEnabled(false);
 		nF->unWeld();
-		undoManager->setUndoEnabled(undoEnable);
-	}
+	undoManager->setUndoEnabled(true);
+
 	//delete marks pointed to that item
 	for (int a=0; a < m_docMarksList.count(); ++a)
 	{
@@ -17805,4 +17783,27 @@ void ScribusDoc::itemResizeToMargin(PageItem* item, int direction)
 	item->invalid = true;
 	changed();
 	regionsChanged()->update(QRect());
+}
+
+bool ScribusDoc::getNFCoords(PageItem *item, NotesStyle *nStyle, coords &c)
+{
+	if (noteframesCoords.contains(item))
+	{
+		if (noteframesCoords.value(item).contains(nStyle))
+		{
+			c = noteframesCoords.value(item).value(nStyle);
+			return true;
+		}
+	}
+	return false;
+}
+
+void ScribusDoc::setNFCoords(PageItem_NoteFrame* nF)
+{
+	coords c(nF->xPos(), nF->yPos(), nF->width(), nF->height());
+	QMap<NotesStyle*, coords> coordsMap;
+	if (noteframesCoords.contains(nF->masterFrame()))
+		coordsMap = noteframesCoords.value(nF->masterFrame());
+	coordsMap.insert(nF->notesStyle(), c);
+	noteframesCoords.insert(nF->masterFrame(), coordsMap);
 }
