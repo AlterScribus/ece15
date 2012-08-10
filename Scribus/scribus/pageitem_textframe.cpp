@@ -4934,6 +4934,15 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
 					w = scP->width() - scP->Margins.Left - scP->Margins.Right;
 					h = calculateLineSpacing(itemText.defaultStyle(), this);
+					//if page is not empty then position new endnoteframe at bottom of page (above margins)
+					for (int d = 0; d < m_Doc->Items->count(); ++d)
+					{
+						if (m_Doc->Items->at(d)->OwnPage == scP->pageNr())
+						{
+							y += scP->height() - scP->Margins.Top - scP->Margins.Bottom - h;
+							break;
+						}
+					}
 					nF = m_Doc->createNoteFrame(note->notesStyle(), x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
 					switch (NS->range())
 					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
@@ -4969,9 +4978,19 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					double x,y;
 					x = scP->Margins.Left + m_Doc->rulerXoffset + scP->xOffset();
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
+					//check if endnoteframe is on proper page and not outside of it
 					if ((scP->pageNr() != nF->OwnPage) || (nF->xPos() > (x + scP->width())) || nF->yPos() > (y + scP->height()))
 					{
 						undoManager->setUndoEnabled(false);
+						//if page is not empty then position new endnoteframe at bottom of page (above margins)
+						for (int d = 0; d < m_Doc->Items->count(); ++d)
+						{
+							if (m_Doc->Items->at(d)->OwnPage == scP->pageNr())
+							{
+								y += scP->height() - scP->Margins.Top - scP->Margins.Bottom - nF->height();
+								break;
+							}
+						}
 						nF->setXYPos(x,y);
 						undoManager->setUndoEnabled(true);
 					}
