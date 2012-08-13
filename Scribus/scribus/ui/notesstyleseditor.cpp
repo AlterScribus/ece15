@@ -8,6 +8,7 @@
 #include "scribusview.h"
 #include "scribus.h"
 #include "scmessagebox.h"
+#include "selection.h"
 #include "undomanager.h"
 
 NotesStylesEditor::NotesStylesEditor(QWidget *parent, const char *name)
@@ -303,6 +304,7 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 				//converting foot <--> end notes or changing footnotes range
 				if ((NS->isEndNotes() != n.isEndNotes()) || (NS->isEndNotes() && n.isEndNotes() && NS->range() != n.range()))
 				{
+					m_Doc->view()->Deselect(false);
 					foreach (PageItem_NoteFrame* nF, m_Doc->listNotesFrames(NS))
 						m_Doc->delNoteFrame(nF, false);
 				}

@@ -17522,7 +17522,10 @@ PageItem_NoteFrame *ScribusDoc::createNoteFrame(NotesStyle *nStyle, double x, do
 {
 	PageItem_NoteFrame* nF = new PageItem_NoteFrame(nStyle, this, x, y, w, h, w2, fill, outline);
 	if (nStyle->isEndNotes())
+	{
 		m_docEndNotesFramesMap.insert(nF, rangeItem());
+		flag_updateEndNotes = true;
+	}
 	m_docNotesInFrameMap.insert(nF, QList<TextNote*>());
 	DocItems.append(nF);
 	return nF;

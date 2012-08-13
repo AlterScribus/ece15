@@ -1408,14 +1408,18 @@ void PageItem_TextFrame::layout()
 		if (!isNoteFrame() && m_Doc->notesChanged() && !m_notesFramesMap.isEmpty())
 		{ //if notes are used
 			UndoManager::instance()->setUndoEnabled(false);
-			QList<PageItem_NoteFrame*> delList;
+//			QList<PageItem_NoteFrame*> delList;
 			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-				if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
-					delList.append(nF);
+					if (nF->isEndNotesFrame())
+						removeNoteFrame(nF);
+					else if (nF->isAutoNoteFrame())
+						m_Doc->delNoteFrame(nF,false);
 			}
-			while (!delList.isEmpty())
-				m_Doc->delNoteFrame(delList.takeFirst(), false);
+//			while (!delList.isEmpty())
+//			{
+//				m_Doc->delNoteFrame(delList.takeFirst(), false);
+//			}
 			UndoManager::instance()->setUndoEnabled(true);
 		}
 		return;
@@ -5002,6 +5006,8 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 			{
 				nList.append(note);
 				notesMap.insert(nF, nList);
+				if (nF->isEndNotesFrame())
+					m_Doc->flag_updateEndNotes = true;
 			}
 			if (!nF->isEndNotesFrame())
 				lastItem = nF;
@@ -5042,7 +5048,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 		{
 			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-				if (nF->isAutoNoteFrame())
+				if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
 					removeNoteFrame(nF);
 			}
 		}
