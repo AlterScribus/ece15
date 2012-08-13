@@ -43,6 +43,7 @@ class gtStyle;
 class gtWriter;
 class ListStyle;
 class StyleReader;
+class TextNote;
 
 typedef std::vector<std::pair<QString, QString> > Properties;
 typedef QMap<QString, Properties > TMap;

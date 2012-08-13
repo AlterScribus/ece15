@@ -34,9 +34,11 @@ for which a new license (GPL+exception) is in place.
 
 #include "scribusapi.h"
 
+class TextNote;
 class PageItem;
 class PrefsManager;
 class ScFace;
+class StoryText;
 class CharStyle;
 class ParagraphStyle;
 class ScribusDoc;
@@ -81,6 +83,9 @@ private:
 	QColor  parseColorN(const QString &rgbColor);
 	void finalize();
 	PrefsManager *prefsManager;
+	StoryText* noteStory;
+	TextNote* note;
+	
 public:
 //	gtAction(bool append);
 	gtAction(bool append, PageItem *pageitem);
@@ -93,8 +98,8 @@ public:
 	void clearFrame();
 	void getFrameFont(gtFont *font);
 	void getFrameStyle(gtFrameStyle *fstyle);
-	void write(const QString& text, gtStyle *style);
-	void writeUnstyled(const QString& text);
+	void write(const QString& text, gtStyle *style, bool isNote =false);
+	void writeUnstyled(const QString& text, bool isNote = false);
 	void applyFrameStyle(gtFrameStyle* fstyle);
 	void createParagraphStyle(gtParagraphStyle* pstyle);
 	void setCharStyleAttributes(gtFont *font, CharStyle& style);
