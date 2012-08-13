@@ -17637,7 +17637,7 @@ void ScribusDoc::invalidateMasterFrames(NotesStyle *nStyle)
 	QList<PageItem*> toInvalidate;
 	foreach (TextNote* note, m_docNotesList)
 	{
-		if (note->notesStyle() == nStyle)
+		if ((note->notesStyle() == nStyle) && (note->masterMark()->getItemPtr() != NULL))
 			toInvalidate.append(note->masterMark()->getItemPtr());
 	}
 	while (!toInvalidate.isEmpty())
