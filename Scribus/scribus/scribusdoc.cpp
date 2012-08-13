@@ -1932,7 +1932,8 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				}
 				setNotesChanged(true);
 				if ((ss->get("marksChStyle") != ss->get("NEWmarksChStyle"))
-					|| (ss->getBool("superMaster") != ss->getBool("NEWsuperMaster")))
+					|| (ss->getBool("superMaster") != ss->getBool("NEWsuperMaster"))
+					|| (ss->getBool("endNotes") != ss->getBool("NEWendNotes")))
 					invalidateMasterFrames(NS);
 				updateNotesNums(NS);
 				updateNotesFramesSettings(NS);
@@ -17541,7 +17542,11 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	if (nF->itemText.length() > 0 && removeMarks)
 		nF->removeMarksFromText(false);
 	if (nF->isSelected())
+	{
 		m_Selection->removeItem(nF);
+		if (appMode == modeEdit)
+			view()->requestMode(modeNormal);
+	}
 	if (m_docEndNotesFramesMap.contains(nF))
 	{
 		m_docEndNotesFramesMap.remove(nF);
