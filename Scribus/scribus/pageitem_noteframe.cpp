@@ -96,16 +96,26 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
+	ScribusDoc::coords c;
+	if (m_Doc->getNFCoords(inFrame, nStyle, c))
+	{
+		Xpos = oldXpos = c._X;
+		Ypos = oldYpos = c._Y;
+		Height = oldHeight = c._H;
+		Width = oldWidth = c._W;
+	}
+	else
+	{
+		double frameHeight = calculateLineSpacing(newStyle, this);
+		if (frameHeight == 0.0 && !m_nstyle->isAutoNotesHeight())
+			frameHeight = newStyle.charStyle().fontSize()/10;
+		Height = oldHeight = frameHeight;
+		oldWidth = Width;
+		oldRot = Rot;
+		oldXpos = Xpos;
+		Ypos = oldYpos = m_masterFrame->yPos() + m_masterFrame->height();
+	}
 	
-	double frameHeight = calculateLineSpacing(newStyle, this);
-	if (frameHeight == 0.0 && !m_nstyle->isAutoNotesHeight())
-		frameHeight = newStyle.charStyle().fontSize()/10;
-	Height = oldHeight = frameHeight;
-	oldWidth = Width;
-	oldRot = Rot;
-	oldXpos = Xpos;
-	Ypos = oldYpos =m_masterFrame->yPos() + m_masterFrame->height();
-
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
 
@@ -179,11 +189,9 @@ void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
 
 void PageItem_NoteFrame::layout()
 {
-	if (!invalid || l_notes.isEmpty())
+	if (!invalid)
 		return;
 	if (!m_Doc->flag_layoutNotesFrames)
-		return;
-	if (itemText.length() == 0)
 		return;
 	if ((masterFrame() != NULL) && masterFrame()->invalid)
 		return;
@@ -195,7 +203,7 @@ void PageItem_NoteFrame::layout()
 	if (m_nstyle->isAutoNotesWidth() && (Width != m_masterFrame->width()))
 	{
 		oldWidth = Width = m_masterFrame->width();
-		updateClip();
+		updateClip(false);
 	}
 
 	if ((m_Doc->appMode == modeEdit) && isSelected())
@@ -221,6 +229,8 @@ void PageItem_NoteFrame::layout()
 		}
 		double hackValue = 0.5;
 		oldHeight = Height = ceil(maxY) + BExtra + hackValue;
+		oldXpos = Xpos;
+		oldYpos = Ypos;
 		updateConstants();
 		updateClip();
 		invalid = true;
@@ -237,6 +247,8 @@ void PageItem_NoteFrame::layout()
 		m_Doc->regionsChanged()->update(QRect());
 	}
 	invalid = false;
+	if (masterFrame() != NULL)
+		m_Doc->setNFCoords(this);
 	UndoManager::instance()->setUndoEnabled(true);
 }
 
@@ -286,7 +298,8 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 	if (clear)
 	{
 		itemText.selectAll();
-		deleteSelectedTextFromFrame();
+		itemText.removeSelection();
+		HasSel = false;
 		l_notes = nList;
 		for (int a=0; a < l_notes.count(); ++a)
 			insertNote(l_notes.at(a));

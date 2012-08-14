@@ -1437,14 +1437,18 @@ void PageItem_TextFrame::layout()
 		if (!isNoteFrame() && m_Doc->notesChanged() && !m_notesFramesMap.isEmpty())
 		{ //if notes are used
 			UndoManager::instance()->setUndoEnabled(false);
-			QList<PageItem_NoteFrame*> delList;
+//			QList<PageItem_NoteFrame*> delList;
 			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-				if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
-					delList.append(nF);
+					if (nF->isEndNotesFrame())
+						removeNoteFrame(nF);
+					else if (nF->isAutoNoteFrame())
+						m_Doc->delNoteFrame(nF,false);
 			}
-			while (!delList.isEmpty())
-				m_Doc->delNoteFrame(delList.takeFirst(), false);
+//			while (!delList.isEmpty())
+//			{
+//				m_Doc->delNoteFrame(delList.takeFirst(), false);
+//			}
 			UndoManager::instance()->setUndoEnabled(true);
 		}
 		return;
@@ -3768,7 +3772,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	int kk = k->key();
 	int as = k->text()[0].unicode();
 	QString uc = k->text();
-	QString cr, Tcha, Twort;
+	QString Tcha, Twort;
 	uint Tcoun;
 	int len, pos;
 	int keyModifiers=0;
@@ -4165,97 +4169,31 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		m_Doc->scMW()->setTBvals(this);
 		break;
 	case Qt::Key_Delete:
-		if (itemText.cursorPosition() == itemText.length())
-		{
-			if (itemText.lengthOfSelection() > 0)
-			{
-				deleteSelectedTextFromFrame();
-				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
-				{
-					if (!asNoteFrame()->isEndNotesFrame())
-					{
-						Q_ASSERT(asNoteFrame()->masterFrame());
-						asNoteFrame()->masterFrame()->invalid = true;
-					}
-				}
-				else
-					update();
-//				view->RefreshItem(this);
-			}
-			keyRepeat = false;
-			return;
-		}
-		if (itemText.length() == 0)
-		{
-			keyRepeat = false;
-			return;
-		}
-		cr = itemText.text();
-		if (itemText.lengthOfSelection() == 0)
-			itemText.select(itemText.cursorPosition(), 1, true);
-		deleteSelectedTextFromFrame();
-		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
-		{
-			if (!asNoteFrame()->isEndNotesFrame())
-			{
-				Q_ASSERT(asNoteFrame()->masterFrame());
-				asNoteFrame()->masterFrame()->invalid = true;
-			}
-		}
-		else
-			layout();
-//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-//			NextBox->updateLayout();
-//		updateLayout();
-//		if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-//			NextBox->updateLayout();
-//		update();
-//		Tinput = false;
-//		if ((cr == QChar(13)) && (itemText.length() != 0))
-//		{
-//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(itemText.cursorPosition()-1,0))));
-//			Tinput = false;
-//		}
-		m_Doc->scMW()->setTBvals(this);
-		doc()->changed();
-//		view->RefreshItem(this);
-		break;
 	case Qt::Key_Backspace:
-		if (itemText.cursorPosition() == 0)
-		{
-			if (itemText.lengthOfSelection() > 0)
-			{
-				deleteSelectedTextFromFrame();
-				m_Doc->scMW()->setTBvals(this);
-				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
-				{
-					if (!asNoteFrame()->isEndNotesFrame())
-					{
-						Q_ASSERT(asNoteFrame()->masterFrame());
-						asNoteFrame()->masterFrame()->invalid = true;
-					}
-				}
-				else
-					update();
-			}
-			break;
-		}
 		if (itemText.length() == 0)
-			break;
-		cr = itemText.text(qMax((int) itemText.cursorPosition() - 1, 0), 1);
+		{
+			keyRepeat = false;
+			return;
+		}
 		if (itemText.lengthOfSelection() == 0)
 		{
-			itemText.setCursorPosition(-1, true);
+			if (kk==Qt::Key_Backspace)
+			{
+				if (itemText.cursorPosition() == 0)
+				{
+					keyRepeat = false;
+					return;
+				}
+				itemText.setCursorPosition(-1, true);
+			}
+			else if (itemText.cursorPosition() == itemText.length())
+			{
+				keyRepeat = false;
+				return;
+			}
 			itemText.select(itemText.cursorPosition(), 1, true);
 		}
 		deleteSelectedTextFromFrame();
-//		Tinput = false;
-		if ((cr == QChar(13)) && (itemText.length() != 0))
-		{
-//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
-//			Tinput = false;
-		}
 		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
 			if (!asNoteFrame()->isEndNotesFrame())
@@ -4267,29 +4205,35 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		else
 		{
 			layout();
-//			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-//				NextBox->updateLayout();
-		}
-		if (itemText.cursorPosition() < firstInFrame())
-		{
-			itemText.setCursorPosition( firstInFrame() );
-			if (BackBox != 0)
+			//check if cursor need to jump to linked frame
+			//but not for notes frames can`t be updated as may disapper during update
+			if ((itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 			{
 				view->Deselect(true);
-				if (BackBox->invalid)
-					BackBox->updateLayout();
-				itemText.setCursorPosition( BackBox->lastInFrame() );
-				m_Doc->scMW()->selectItemsFromOutlines(BackBox);
-				//currItem = currItem->BackBox;
+				NextBox->update();
+				m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 			}
+			else if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+				NextBox->updateLayout();
+
+			if (itemText.cursorPosition() < firstInFrame())
+			{
+				itemText.setCursorPosition( firstInFrame() );
+				if (BackBox != 0)
+				{
+					view->Deselect(true);
+					if (BackBox->invalid)
+						BackBox->updateLayout();
+					itemText.setCursorPosition( BackBox->lastInFrame() );
+					m_Doc->scMW()->selectItemsFromOutlines(BackBox);
+				}
+			}
+			m_Doc->scMW()->setTBvals(this);
+			doc()->changed();
 		}
-		m_Doc->scMW()->setTBvals(this);
-//		update();
-//		doc()->changed();
-//		view->RefreshItem(this);
 		break;
 	default:
-		if (isNoteFrame() && itemText.cursorPosition() == 0)
+		if (isNoteFrame() && itemText.cursorPosition() == 0 && itemText.lengthOfSelection() == 0)
 			break; //avoid inserting chars before first note mark
 		bool doUpdate = false;
 		UndoTransaction* activeTransaction = NULL;
@@ -4324,80 +4268,84 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			qDebug()<<"Native Virtual Key:"<<k->nativeVirtualKey();
 			*/
 		}
-		//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
-		if (kk == Qt::Key_Tab)
+		//if after deleting selection there is any note then stop handling inserting char
+		if (!isNoteFrame() || !asNoteFrame()->notesList().isEmpty())
 		{
-			if (UndoManager::undoEnabled())
+			//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
+			if (kk == Qt::Key_Tab)
 			{
-				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
-				if(ss && ss->get("ETEA") == "insert_frametext")
+				if (UndoManager::undoEnabled())
+				{
+					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+					if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(SpecialChars::TAB));
-				else {
-					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
-					ss->set("INSERT_FRAMETEXT", "insert_frametext");
-					ss->set("ETEA", QString("insert_frametext"));
-					ss->set("TEXT_STR", QString(SpecialChars::TAB));
-					ss->set("START", itemText.cursorPosition());
-					UndoObject * undoTarget = this;
-					if (isNoteFrame())
-					{
-						undoTarget = m_Doc;
-						ss->set("noteframeName", getUName());
+					else {
+						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+						ss->set("INSERT_FRAMETEXT", "insert_frametext");
+						ss->set("ETEA", QString("insert_frametext"));
+						ss->set("TEXT_STR", QString(SpecialChars::TAB));
+						ss->set("START", itemText.cursorPosition());
+						UndoObject * undoTarget = this;
+						if (isNoteFrame())
+						{
+							undoTarget = m_Doc;
+							ss->set("noteframeName", getUName());
+						}
+						undoManager->action(undoTarget, ss);
 					}
-					undoManager->action(undoTarget, ss);
 				}
+				itemText.insertChars(QString(SpecialChars::TAB), true);
+				//			Tinput = true;
+				//			view->RefreshItem(this);
+				doUpdate = true;
 			}
-			itemText.insertChars(QString(SpecialChars::TAB), true);
-//			Tinput = true;
-//			view->RefreshItem(this);
-			doUpdate = true;
-		}
-		else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
-		{
-			if (UndoManager::undoEnabled())
+			else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
 			{
-				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
-				if(ss && ss->get("ETEA") == "insert_frametext")
+				if (UndoManager::undoEnabled())
+				{
+					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+					if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + uc);
-				else {
-					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
-					ss->set("INSERT_FRAMETEXT", "insert_frametext");
-					ss->set("ETEA", QString("insert_frametext"));
-					ss->set("TEXT_STR",uc);
-					ss->set("START", itemText.cursorPosition());
-					UndoObject * undoTarget = this;
-					if (isNoteFrame())
-					{
-						undoTarget = m_Doc;
-						ss->set("noteframeName", getUName());
+					else {
+						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+						ss->set("INSERT_FRAMETEXT", "insert_frametext");
+						ss->set("ETEA", QString("insert_frametext"));
+						ss->set("TEXT_STR",uc);
+						ss->set("START", itemText.cursorPosition());
+						UndoObject * undoTarget = this;
+						if (isNoteFrame())
+						{
+							undoTarget = m_Doc;
+							ss->set("noteframeName", getUName());
+						}
+						undoManager->action(undoTarget, ss);
 					}
-					undoManager->action(undoTarget, ss);
 				}
-			}
-			itemText.insertChars(uc, true);
-			if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
-			{
-				Twort = "";
-				Tcoun = 0;
-				for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
+				itemText.insertChars(uc, true);
+				if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
 				{
-					Tcha = itemText.text(hych,1);
-					if (Tcha[0] == ' ')
+					Twort = "";
+					Tcoun = 0;
+					for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
 					{
-						Tcoun = hych+1;
-						break;
+						Tcha = itemText.text(hych,1);
+						if (Tcha[0] == ' ')
+						{
+							Tcoun = hych+1;
+							break;
+						}
+						Twort.prepend(Tcha);
 					}
-					Twort.prepend(Tcha);
+					if (!Twort.isEmpty())
+					{
+						m_Doc->docHyphenator->slotHyphenateWord(this, Twort, Tcoun);
+					}
 				}
-				if (!Twort.isEmpty())
-				{
-					m_Doc->docHyphenator->slotHyphenateWord(this, Twort, Tcoun);
-				}
+				invalid = true;
+				//			Tinput = true;
+				//			view->RefreshItem(this);
+				doUpdate = true;
 			}
-			invalid = true;
-//			Tinput = true;
-//			view->RefreshItem(this);
-			doUpdate = true;
 		}
 		if (doUpdate)
 		{
@@ -4418,7 +4366,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 			}
 			else
-				layout();
+			{
+				update();
+				if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+					NextBox->updateLayout();
+				doc()->changed();
+			}
 		}
 		//check if cursor need to jump to next linked frame
 		//but not for notes frames can`t be updated as may disapper during update
@@ -4502,7 +4455,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 			{
 				added = false;
 				lastIsDelete = false;
-				if (is && sch && sch->get("ETEA") == "delete_frametext" && is->getItem().equiv(lastParent))
+				if (!(hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
+					&& (is && sch && sch->get("ETEA") == "delete_frametext" && is->getItem().equiv(lastParent)))
 				{
 					if  (lastPos < is->getInt("START"))
 					{
@@ -5023,17 +4977,25 @@ bool PageItem_TextFrame::hasNoteFrame(NotesStyle *NS, bool inChain)
 
 void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 {
+	if (m_notesFramesMap.isEmpty())
+		return;
 	int oldItemsCount = m_Doc->Items->count();
 
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-		delList.append(nF);
+	{
+		if (nF->isEndNotesFrame())
+			removeNoteFrame(nF);
+		else
+			delList.append(nF);
+	}
+	
 	while (!delList.isEmpty())
 	{
 		PageItem_NoteFrame* nF = delList.takeFirst();
 		m_Doc->delNoteFrame(nF);
 	}
-
+	Q_ASSERT(m_notesFramesMap.isEmpty());
 	//check if doc need update
 	m_Doc->setNotesChanged(true);
 	if (doUpdate && (oldItemsCount != m_Doc->Items->count()))
@@ -5159,6 +5121,15 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
 					w = scP->width() - scP->Margins.Left - scP->Margins.Right;
 					h = calculateLineSpacing(itemText.defaultStyle(), this);
+					//if page is not empty then position new endnoteframe at bottom of page (above margins)
+					for (int d = 0; d < m_Doc->Items->count(); ++d)
+					{
+						if (m_Doc->Items->at(d)->OwnPage == scP->pageNr())
+						{
+							y += scP->height() - scP->Margins.Top - scP->Margins.Bottom - h;
+							break;
+						}
+					}
 					nF = m_Doc->createNoteFrame(note->notesStyle(), x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
 					switch (NS->range())
 					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
@@ -5183,7 +5154,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					//create new footnotes frame for that text frame
 					nF = m_Doc->createNoteFrame(this, note->notesStyle(), m_Doc->DocItems.indexOf(lastItem));
 				//insert in map noteframe with empty list of notes
-				m_notesFramesMap.insert(nF, QList<TextNote*>());
+				setNoteFrame(nF);
 				m_Doc->setNotesChanged(true);
 			}
 			else if (NS->isEndNotes())
@@ -5194,9 +5165,19 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					double x,y;
 					x = scP->Margins.Left + m_Doc->rulerXoffset + scP->xOffset();
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
+					//check if endnoteframe is on proper page and not outside of it
 					if ((scP->pageNr() != nF->OwnPage) || (nF->xPos() > (x + scP->width())) || nF->yPos() > (y + scP->height()))
 					{
 						undoManager->setUndoEnabled(false);
+						//if page is not empty then position new endnoteframe at bottom of page (above margins)
+						for (int d = 0; d < m_Doc->Items->count(); ++d)
+						{
+							if (m_Doc->Items->at(d)->OwnPage == scP->pageNr())
+							{
+								y += scP->height() - scP->Margins.Top - scP->Margins.Bottom - nF->height();
+								break;
+							}
+						}
 						nF->setXYPos(x,y);
 						undoManager->setUndoEnabled(true);
 					}
@@ -5208,6 +5189,8 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 			{
 				nList.append(note);
 				notesMap.insert(nF, nList);
+				if (nF->isEndNotesFrame())
+					m_Doc->flag_updateEndNotes = true;
 			}
 			if (!nF->isEndNotesFrame())
 				lastItem = nF;
@@ -5226,7 +5209,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
+		if (nF->deleteIt) //|| (nF->isAutoNoteFrame() && ((!notesMap.keys().contains(nF) && !nF->isEndNotesFrame()) || nF->notesList().isEmpty())))
 		{
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
@@ -5244,17 +5227,29 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	if (m_notesFramesMap != notesMap)
 	{
 		docWasChanged = true;
-		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+		if (notesMap.isEmpty())
 		{
-			if (notesMap.contains(nF))
+			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-				m_notesFramesMap.insert(nF, notesMap.value(nF));
-				notesMap.remove(nF);
+				if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
+					removeNoteFrame(nF);
 			}
-			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
-				m_notesFramesMap.remove(nF);
 		}
-		m_notesFramesMap.unite(notesMap);
+		else
+		{
+			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+			{
+				if (notesMap.contains(nF))
+				{
+					nF->updateNotes(notesMap.value(nF));
+					setNoteFrame(nF);
+					notesMap.remove(nF);
+				}
+				else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
+					removeNoteFrame(nF);
+			}
+			m_notesFramesMap.unite(notesMap);
+		}
 	}
 	if (docWasChanged)
 	{
@@ -5267,10 +5262,8 @@ void PageItem_TextFrame::notesFramesLayout()
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF == NULL)
-			continue;
-		if (nF->deleteIt)
-			continue;
+		Q_ASSERT_X(nF != NULL,"PageItem_TextFrame::notesFramesLayout()","nF==NULL");
+		Q_ASSERT_X(!nF->deleteIt, "PageItem_TextFrame::notesFramesLayout()", "nF->deleteIt");
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
 		nF->invalid = true;

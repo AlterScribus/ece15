@@ -1671,12 +1671,22 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 					{
+						doc->m_Selection->delaySignalsOn();
+						view->Deselect(true);
+						if (!currItem->asNoteFrame()->isEndNotesFrame())
+						{
+							view->SelectItem(currItem->asNoteFrame()->masterFrame());
+							doc->m_Selection->connectItemToGUI();
+						}
+						doc->m_Selection->delaySignalsOff();
 						if (!currItem->asNoteFrame()->isEndNotesFrame())
 						{
 							currItem->asNoteFrame()->masterFrame()->invalidateLayout();
 							currItem->asNoteFrame()->masterFrame()->updateLayout();
 						}
 					}
+					if (doc->notesChanged())
+						slotDocCh(false);
 					keyrep=kr;
 				}
 				//slotDocCh(false);
@@ -6772,7 +6782,7 @@ void ScribusMainWindow::setAppMode(int mode)
 			if (currItem != 0)
 			{
 				currItem->update();
-				if (currItem->asTextFrame())
+				if (currItem->isTextFrame())
 					enableTextActions(&scrActions, false);
 				//		scrMenuMgr->setMenuEnabled("Item", true);
 				scrActions["itemDuplicate"]->setEnabled(true);
@@ -10614,34 +10624,37 @@ void ScribusMainWindow::insertMark(MarkType mType)
 	}
 }
 
-void ScribusMainWindow::slotEditMark()
+void ScribusMainWindow::slotEditMark(Mark* mrk)
 {
 	if (!HaveDoc)
 		return;
-	if (doc->m_Selection->count() != 1)
-		return;
-	if  (doc->appMode != modeEdit)
-		return;
 	PageItem * currItem = doc->m_Selection->itemAt(0);
-	if (currItem->itemText.cursorPosition() < currItem->itemText.length())
+	if (mrk == NULL)
 	{
-		ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
-		if (hl->hasMark())
+		if (doc->m_Selection->count() != 1)
+			return;
+		if  (doc->appMode != modeEdit)
+			return;
+		if (currItem->itemText.cursorPosition() < currItem->itemText.length())
 		{
-			if (editMarkDlg(hl->mark, currItem->asTextFrame()))
-			{
-				if (hl->mark->isType(MARKVariableTextType))
-					doc->flag_updateMarksLabels = true;
-				else
-					currItem->invalid = true;
-				//doc->updateMarks();
-				doc->changed();
-				doc->regionsChanged()->update(QRectF());
-				view->DrawNew();
-			}
-			if (hl->mark->isNoteType())
-				nsEditor->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
+			ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+			if (!hl->hasMark())
+				return;
+			else mrk = hl->mark;
 		}
+	}
+	if (editMarkDlg(mrk, currItem->asTextFrame()))
+	{
+		if (mrk->isType(MARKVariableTextType))
+			doc->flag_updateMarksLabels = true;
+		else
+			currItem->invalid = true;
+		//doc->updateMarks();
+		doc->changed();
+		doc->regionsChanged()->update(QRectF());
+		view->DrawNew();
+		if (mrk->isNoteType())
+			nsEditor->setNotesStyle(mrk->getNotePtr()->notesStyle());
 	}
 }
 
@@ -11175,8 +11188,14 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				}
 				if (mrk->isType(MARK2ItemType) && mrk->getItemPtr() != oldMark.getItemPtr())
 				{
-					is->insertItem("itemPtrOLD", oldMark.getItemPtr());
-					is->insertItem("itemPtrNEW", mrk->getItemPtr());
+					if (oldMark.getItemPtr() != NULL && oldMark.getItemPtr()->isNoteFrame())
+						is->set("noteframeOLD", oldMark.getItemPtr()->getUName());
+					else
+						is->insertItem("itemPtrOLD", oldMark.getItemPtr());
+					if (mrk->getItemPtr() != NULL && mrk->getItemPtr()->isNoteFrame())
+						is->set("noteframeNEW", mrk->getItemPtr()->getUName());
+					else
+						is->insertItem("itemPtrNEW", mrk->getItemPtr());
 				}
 			}
 			undoManager->action(doc, is);

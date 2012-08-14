@@ -38,7 +38,7 @@ typedef enum {
 //used for map with endnotes frames maped with range item
 typedef union
 {
-	void* P;
+	void* voidPtr;
 	int sectionIndex;
 	ScPage* page;
 	PageItem_TextFrame* firstStoryFrame;

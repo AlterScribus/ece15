@@ -316,8 +316,13 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 				currItem->itemText.setCursorPosition(stop);
 			}
 			else if ((currItem->itemText.cursorPosition() < currItem->itemText.length()) && (currItem->itemText.item(currItem->itemText.cursorPosition())->mark != NULL))
-			{	//invoke edit marker dialog
-				m_ScMW->slotEditMark();
+			{
+				m_ScMW->slotEditMark(currItem->itemText.item(currItem->itemText.cursorPosition())->mark);
+				return;
+			}
+			else if ((currItem->itemText.cursorPosition() > 0) && currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark != NULL)
+			{
+				m_ScMW->slotEditMark(currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark);
 				return;
 			}
 			else

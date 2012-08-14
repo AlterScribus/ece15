@@ -15,6 +15,8 @@ for which a new license (GPL+exception) is in place.
  ***************************************************************************/
 
 //#include <QDebug>
+#include <sstream>
+#include "desaxe/saxXML.h"
 
 #include "scribusdoc.h"
 #include "util_text.h"
@@ -61,4 +63,15 @@ StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 	textSerializer->store<ScribusDoc>("<scribusdoc>", doc);
 	textSerializer->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
 	return *(textSerializer->result<StoryText>());
+}
+
+QString saxedText(StoryText* story)
+{
+	std::ostringstream xmlString;
+	SaxXML xmlStream(xmlString);
+	xmlStream.beginDoc();
+	story->saxx(xmlStream, "SCRIBUSTEXT");
+	xmlStream.endDoc();
+	std::string xml(xmlString.str());
+	return QString(xml.c_str());
 }
