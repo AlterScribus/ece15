@@ -1730,7 +1730,7 @@ public:
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(Mark* mrk, int &lastItem);
 
-	//struct to save position and dimension if noteframe (undo puropses)
+	//struct to save position and dimensions of noteframe (undo puropses)
 	struct coords {
 		double _X, _Y, _W, _H;
 		coords() : _X(0.0), _Y(0.0), _W(-1.0), _H(-1.0) {}
