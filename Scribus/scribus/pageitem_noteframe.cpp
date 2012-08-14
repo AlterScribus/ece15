@@ -227,8 +227,8 @@ void PageItem_NoteFrame::layout()
 					break;
 			}
 		}
-		double hackValue = 0.5;
-		oldHeight = Height = ceil(maxY) + BExtra + hackValue;
+		int hackValue = 50;
+		oldHeight = Height = double(maxY + hackValue)/100.0 + BExtra;
 		oldXpos = Xpos;
 		oldYpos = Ypos;
 		updateConstants();

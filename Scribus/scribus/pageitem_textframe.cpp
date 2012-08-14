@@ -3008,12 +3008,6 @@ void PageItem_TextFrame::layout()
 	}
 	MaxChars = itemText.length();
 
-	if (itemText.length() == 0)
-	{
-		itemText.blockSignals(false);
-		return;
-	}
-
 NoRoom:
 	invalid = false;
 	int pos = itemText.lastInFrame();
@@ -3021,6 +3015,18 @@ NoRoom:
 		adjustParagraphEndings (pos, true);
 
 	setColumnSE(Cols-1, startColumn, MaxChars -1);
+
+	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
+		if (notesMap != m_notesFramesMap)
+		{
+			updateNotesMarks(notesMap);
+			notesFramesLayout();
+		}
+		UndoManager::instance()->setUndoEnabled(true);
+	}
 	if (itemText.length() == 0)
 	{
 			itemText.blockSignals(false);
@@ -3079,24 +3085,6 @@ NoRoom:
 		}
 	}
 	PageItem_TextFrame* nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
-//	while (nextFrame != NULL)
-//	{
-//		nextFrame->invalid   = true;
-//		nextFrame->firstChar = MaxChars;
-//		nextFrame = dynamic_cast<PageItem_TextFrame*>(nextFrame->NextBox);
-//	}
-
-	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-	{
-		UndoManager::instance()->setUndoEnabled(false);
-		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
-		if (notesMap != m_notesFramesMap)
-		{
-			updateNotesMarks(notesMap);
-			notesFramesLayout();
-		}
-		UndoManager::instance()->setUndoEnabled(true);
-	}
 	if (nextFrame != NULL)
 	{
 		//check if last visible glyph in frame change
