@@ -224,28 +224,40 @@ bool ImportAIPlugin::import(QString fileName, int flags)
 
 QImage ImportAIPlugin::readThumbnail(const QString& fileName)
 {
+	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return QImage();
-	UndoManager::instance()->setUndoEnabled(false);
+	if (UndoManager::undoEnabled())
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		wasUndo = true;
+	}
 	m_Doc = NULL;
 	AIPlug *dia = new AIPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);
-	UndoManager::instance()->setUndoEnabled(true);
+	if (wasUndo)
+		UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }
 
 bool ImportAIPlugin::readColors(const QString& fileName, ColorList &colors)
 {
+	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return false;
-	UndoManager::instance()->setUndoEnabled(false);
+	if (UndoManager::undoEnabled())
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		wasUndo = true;
+	}
 	m_Doc = NULL;
 	AIPlug *dia = new AIPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	bool ret = dia->readColors(fileName, colors);
-	UndoManager::instance()->setUndoEnabled(true);
+	if (wasUndo)
+		UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }

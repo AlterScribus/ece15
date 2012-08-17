@@ -672,8 +672,6 @@ void ActionManager::initViewMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewSnapToGuides";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-	name="viewSnapToElements";
-	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewShowContextMenu";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="showMouseCoordinates";
@@ -696,7 +694,6 @@ void ActionManager::initViewMenuActions()
 	(*scrActions)["viewRulerMode"]->setToggleAction(true);
 	(*scrActions)["viewSnapToGrid"]->setToggleAction(true);
 	(*scrActions)["viewSnapToGuides"]->setToggleAction(true);
-	(*scrActions)["viewSnapToElements"]->setToggleAction(true);
 	(*scrActions)["showMouseCoordinates"]->setToggleAction(true);
 
 	(*scrActions)["viewPreviewMode"]->setChecked(false);
@@ -733,7 +730,6 @@ void ActionManager::initViewMenuActions()
 	connect( (*scrActions)["viewRulerMode"], SIGNAL(triggered()), mainWindow, SLOT(ToggleRulerMode()) );
 	connect( (*scrActions)["viewSnapToGrid"], SIGNAL(triggered()), mainWindow, SLOT(ToggleURaster()) );
 	connect( (*scrActions)["viewSnapToGuides"], SIGNAL(triggered()), mainWindow, SLOT(ToggleUGuides()) );
-	connect( (*scrActions)["viewSnapToElements"], SIGNAL(triggered()), mainWindow, SLOT(ToggleUElements()) );
 	connect( (*scrActions)["showMouseCoordinates"], SIGNAL(triggered()), mainWindow, SLOT(ToggleMouseTips()) );
 //	connect( (*scrActions)["viewNewView"], SIGNAL(triggered()), mainWindow, SLOT(newView()) );
 
@@ -1595,7 +1591,6 @@ void ActionManager::languageChange()
 	(*scrActions)["viewRulerMode"]->setTexts( tr("Rulers Relative to Page"));
 	(*scrActions)["viewSnapToGrid"]->setTexts( tr("Sn&ap to Grid"));
 	(*scrActions)["viewSnapToGuides"]->setTexts( tr("Sna&p to Guides"));
-	(*scrActions)["viewSnapToElements"]->setTexts( tr("Snap to Items"));
 	(*scrActions)["viewShowContextMenu"]->setTexts( tr("Show Context Menu"));
 //	(*scrActions)["viewNewView"]->setTexts( tr("New View"));
 
@@ -2153,8 +2148,7 @@ void ActionManager::createDefaultMenus()
 		<< "pageManageGuides"
 		<< "pageManageMargins"
 		<< "viewSnapToGrid"
-		<< "viewSnapToGuides"
-		<< "viewSnapToElements";
+		<< "viewSnapToGuides";
 	//View
 	++itmenu;
 	itmenu->second

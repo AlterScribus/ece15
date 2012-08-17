@@ -179,7 +179,6 @@ void CanvasMode_ObjImport::mousePressEvent(QMouseEvent *m)
 		{
 			undoTransaction->commit();
 			delete undoTransaction;
-			undoTransaction = NULL;
 		}
 		// Return to normal mode
 		m_view->requestMode(modeNormal);

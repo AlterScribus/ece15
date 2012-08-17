@@ -576,7 +576,7 @@ void CanvasMode_EditMeshGradient::mouseMoveEvent(QMouseEvent *m)
 		FPoint npfN;
 		double nx = mousePointDoc.x();
 		double ny = mousePointDoc.y();
-		if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
+		if (!m_doc->ApplyGuides(&nx, &ny))
 			npfN = m_doc->ApplyGridF(FPoint(nx, ny));
 		else
 			npfN = FPoint(nx, ny);
@@ -972,7 +972,7 @@ void CanvasMode_EditMeshGradient::mouseReleaseEvent(QMouseEvent *m)
 	m_canvas->resetRenderMode();
 	m->accept();
 	PageItem *currItem = m_doc->m_Selection->itemAt(0);
-	if (currItem->selectedMeshPointX >=0 && currItem->selectedMeshPointY >=0 && UndoManager::undoEnabled())
+	if (currItem->selectedMeshPointX >=0 && currItem->selectedMeshPointY >=0)
 	{
 		ScItemState<QPair<meshPoint,meshPoint> > *ss = new ScItemState<QPair<meshPoint,meshPoint> >(Um::GradPos);
 		ss->set("MOVE_MESH_PATCH","move_mesh_patch");

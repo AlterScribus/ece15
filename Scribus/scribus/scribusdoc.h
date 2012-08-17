@@ -1141,12 +1141,10 @@ public:
 	bool hasTOCSetup() { return !docPrefsData.tocPrefs.defaultToCSetups.empty(); }
 	//! \brief Get the closest guide to the given point
 	void getClosestGuides(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
-	//! \brief Get the closest border of another element to the given point
-	void getClosestElementBorder(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
 	//! \brief Snap an item to the guides
 	void SnapToGuides(PageItem *currItem);
-	bool ApplyGuides(double *x, double *y, bool elementSnap = false);
-	bool ApplyGuides(FPoint* point, bool elementSnap = false);
+	bool ApplyGuides(double *x, double *y);
+	bool ApplyGuides(FPoint* point);
 	bool MoveItem(double newX, double newY, PageItem* ite, bool fromMP = false);
 	void RotateItem(double win, PageItem *currItem);
 	void MoveRotated(PageItem *currItem, FPoint npv, bool fromMP = false);
@@ -1161,8 +1159,6 @@ public:
 	QMap<PageItem*, QString> getDocItemNames(PageItem::ItemType itemType);
 	//! \brief Returns a serializer for this document
 	Serializer *serializer();
-	//! \brief Returns a text serializer for this document, used to paste text chunks
-	Serializer *textSerializer();
 
 	//! \brief Get rotation mode
 	int RotMode() const {return rotMode;}
@@ -1199,7 +1195,7 @@ protected:
 	ScribusMainWindow* m_ScMW;
 	ScribusView* m_View;
 	ScGuardedObject<ScribusDoc> m_guardedObject;
-	Serializer *m_serializer, *m_tserializer;
+	Serializer *m_serializer;
 	QString currentEditedSymbol;
 	int currentEditedIFrame;
 
@@ -1211,7 +1207,6 @@ public: // Public attributes
 	int viewCount;
 	int viewID;
 	bool SnapGuides;
-	bool SnapElement;
 	bool GuideLock;
 	bool dontResize;
 	/** \brief Minimum and Maximum Points of Document */
@@ -1729,20 +1724,8 @@ public:
 
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(Mark* mrk, int &lastItem);
-
-	//struct to save position and dimensions of noteframe (undo puropses)
-	struct coords {
-		double _X, _Y, _W, _H;
-		coords() : _X(0.0), _Y(0.0), _W(-1.0), _H(-1.0) {}
-		coords(double x, double y, double w = -1.0, double h = -1.0) { _X = x; _Y = y; _W = w; _H = h; }
-	};
-	bool getNFCoords(PageItem* item, NotesStyle* nStyle, coords &c);
-	void setNFCoords(PageItem_NoteFrame* nF);
 	
 private:
-	//maps to storing noteframes coords for each text frame
-	QMap<PageItem*, QMap<NotesStyle*, coords> > noteframesCoords;
-	
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
 	NotesInFrameMap m_docNotesInFrameMap;
 

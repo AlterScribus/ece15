@@ -52,12 +52,8 @@ void CanvasMode_ImageImport::setImageList(QStringList l)
 		while(!(m_doc->m_Selection->itemAt(0)->isImageFrame()))
 			m_doc->m_Selection->removeFirst();
 		if(!m_doc->m_Selection->isEmpty())
-		{
 			setImage(m_doc->m_Selection->itemAt(0));
-			m_view->requestMode(submodePaintingDone);
-		}
-		else
-			newToolTip(l.first());
+		m_view->requestMode(submodePaintingDone);
 	}
 	else
 		newToolTip(l.first());
@@ -75,6 +71,7 @@ void CanvasMode_ImageImport::newToolTip(QString name)
 	{
 		thumb = thumb.scaled(80,80,Qt::KeepAspectRatio);
 		p.drawImage((80 - thumb.width()) / 2, (80 - thumb.height()) / 2, thumb);
+		p.end();
 		QBuffer buffer;
 		buffer.open(QIODevice::WriteOnly);
 		pm.save(&buffer, "PNG");
@@ -83,9 +80,11 @@ void CanvasMode_ImageImport::newToolTip(QString name)
 		tipText = "<p align=\"center\"><img src=\"data:image/png;base64," + QString(ba) + "\"></p>";
 	}
 	else
+	{
+		p.end();
 		tipText = "<p align=\"center\">" + name.right(name.lastIndexOf("/")) + "</p>";
+	}
 	QToolTip::showText(QPoint(Mx,My), tipText, qApp->activeWindow());
-	p.end();
 }
 
 void CanvasMode_ImageImport::drawControls(QPainter* p)
@@ -113,9 +112,6 @@ void CanvasMode_ImageImport::keyPressEvent(QKeyEvent *e)
 			break;
 		case Qt::Key_Backtab:
 			imageList.append(imageList.takeFirst());
-			break;
-		case Qt::Key_Backspace:
-			imageList.removeFirst();
 			break;
 		case Qt::Key_Escape:
 			imageList.clear();
@@ -166,17 +162,6 @@ void CanvasMode_ImageImport::mouseMoveEvent(QMouseEvent *m)
 	QToolTip::showText(m->globalPos(), tipText, qApp->activeWindow());
 	QToolTip::showText(m->globalPos(), tipText + "<b></b>", qApp->activeWindow());
 	m->accept();
-	PageItem *item;
-	if((item = m_canvas->itemUnderCursor(m->globalPos())) != NULL)
-	{
-		PageItem_ImageFrame *currItem;
-		if((currItem = item->asImageFrame()) != NULL)
-			qApp->changeOverrideCursor(QCursor(loadIcon("DrawImageFrame.xpm")));
-		else
-			qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
-	}
-	else
-		qApp->changeOverrideCursor(QCursor(loadIcon("DrawImageFrame.xpm")));
 	if (commonMouseMove(m))
 		return;
 }

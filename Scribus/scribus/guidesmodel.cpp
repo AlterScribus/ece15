@@ -48,13 +48,13 @@ QVariant GuidesModel::data(const QModelIndex & index, int role) const
 	if (role == Qt::DisplayRole)
 	{
 		QLocale l;
-		return QVariant(l.toString(pts2value(m_values.at(index.row()) - rule,
+		return QVariant(l.toString(pts2value(m_values.at(index.row()),
 											  m_docUnitIndex), 'f',
 											  m_docUnitDecimals)
 						);
 	}
 	if (role == Qt::EditRole)
-		return pts2value(m_values.at(index.row()) - rule, m_docUnitIndex);
+		return pts2value(m_values.at(index.row()), m_docUnitIndex);
 
 	if (role == Qt::BackgroundColorRole && m_values.at(index.row()) == 0.0)
 		return QVariant(Qt::red);
@@ -69,7 +69,7 @@ bool GuidesModel::setData(const QModelIndex & index, const QVariant & value, int
 	double newVal = value.toDouble(&ok);
 	if (!ok)
 		return false;
-	m_values[index.row()] = value2pts(newVal, m_docUnitIndex) + rule;
+	m_values[index.row()] = value2pts(newVal, m_docUnitIndex);
 	qSort(m_values);
 	emit dataChanged(index, index);
 	emit valueChanged();
@@ -138,9 +138,8 @@ Guides GuidesModel::values()
 	return m_values;
 }
 
-void GuidesModel::unitChange(int docUnitIndex, int docUnitDecimals,double offset)
+void GuidesModel::unitChange(int docUnitIndex, int docUnitDecimals)
 {
-	rule = offset;
 	m_docUnitIndex = docUnitIndex;
 	m_docUnitDecimals = docUnitDecimals;
 	reset();

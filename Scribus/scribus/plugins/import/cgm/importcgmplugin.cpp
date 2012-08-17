@@ -170,12 +170,17 @@ QImage ImportCgmPlugin::readThumbnail(const QString& fileName)
 	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return QImage();
-	UndoManager::instance()->setUndoEnabled(false);
+	if (UndoManager::undoEnabled())
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		wasUndo = true;
+	}
 	m_Doc = NULL;
 	CgmPlug *dia = new CgmPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);
-	UndoManager::instance()->setUndoEnabled(true);
+	if (wasUndo)
+		UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }

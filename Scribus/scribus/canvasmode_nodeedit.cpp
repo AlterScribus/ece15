@@ -428,7 +428,7 @@ void CanvasMode_NodeEdit::mouseReleaseEvent(QMouseEvent *m)
 			FPoint npf;
 			double nx = newP.x();
 			double ny = newP.y();
-			if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
+			if (!m_doc->ApplyGuides(&nx, &ny))
 				npf = m_doc->ApplyGridF(FPoint(nx, ny));
 			else
 				npf = FPoint(nx, ny);
@@ -459,7 +459,10 @@ void CanvasMode_NodeEdit::mouseReleaseEvent(QMouseEvent *m)
 			}
 			m_doc->nodeEdit.moveClipPoint(currItem, npf);
 		}
+
+		undoManager->setUndoEnabled(false);
 		m_doc->AdjustItemSize(currItem, true, true);
+		undoManager->setUndoEnabled(true);
 		if (!m_doc->nodeEdit.isContourLine)
 			currItem->ContourLine.translate(xposOrig - currItem->xPos(), yposOrig - currItem->yPos());
 		m_doc->regionsChanged()->update(QRectF());
@@ -1115,7 +1118,7 @@ void CanvasMode_NodeEdit::handleNodeEditDrag(QMouseEvent* m, PageItem* currItem)
 				npf = m_canvas->globalToCanvas(m->globalPos());
 				double nx = npf.x();
 				double ny = npf.y();
-				if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
+				if (!m_doc->ApplyGuides(&nx, &ny))
 					npf = m_doc->ApplyGridF(FPoint(nx, ny));
 				else
 					npf = FPoint(nx, ny);
@@ -1216,7 +1219,7 @@ void CanvasMode_NodeEdit::handleNodeEditDrag(QMouseEvent* m, PageItem* currItem)
 			npf = m_canvas->globalToCanvas(m->globalPos());
 			double nx = npf.x();
 			double ny = npf.y();
-			if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
+			if (!m_doc->ApplyGuides(&nx, &ny))
 				npf = m_doc->ApplyGridF(FPoint(nx, ny));
 			else
 				npf = FPoint(nx, ny);

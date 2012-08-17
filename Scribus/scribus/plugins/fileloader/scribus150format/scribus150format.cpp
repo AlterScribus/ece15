@@ -440,12 +440,10 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem   = LinkID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = LinkID[wInf.weldID];
 				}
 			}
 		}
@@ -544,12 +542,10 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = WeldID[wInf.weldID];
 				}
 			}
 		}
@@ -939,12 +935,10 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = LinkID[wInf.weldID];
 				}
 			}
 		}
@@ -1043,12 +1037,10 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = WeldID[wInf.weldID];
 				}
 			}
 		}
@@ -1614,12 +1606,10 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = LinkID[wInf.weldID];
 				}
 			}
 		}
@@ -1718,12 +1708,10 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = WeldID[wInf.weldID];
 				}
 			}
 		}
@@ -2023,7 +2011,6 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->rulerXoffset = attrs.valueAsDouble("rulerXoffset", 0.0);
 	m_Doc->rulerYoffset = attrs.valueAsDouble("rulerYoffset", 0.0);
 	m_Doc->SnapGuides   = attrs.valueAsBool("SnapToGuides", false);
-	m_Doc->SnapElement  = attrs.valueAsBool("SnapToElement", false);
 	m_Doc->useRaster    = attrs.valueAsBool("SnapToGrid", false);
 	
 	m_Doc->setAutoSave(attrs.valueAsBool("AutoSave", false));
@@ -2211,9 +2198,15 @@ void Scribus150Format::readToolSettings(ScribusDoc* doc, ScXmlStreamAttributes& 
 	doc->itemToolPrefs().calligrapicPenAngle = attrs.valueAsDouble("calligrapicPenAngle", 0.0);
 	doc->itemToolPrefs().calligrapicPenWidth = attrs.valueAsDouble("calligrapicPenWidth", 10.0);
 	doc->itemToolPrefs().calligrapicPenStyle = static_cast<Qt::PenStyle>(attrs.valueAsInt("calligrapicPenStyle"));
+	doc->opToolPrefs().magMin      = attrs.valueAsInt("MAGMIN", 1);
+	doc->opToolPrefs().magMax      = attrs.valueAsInt("MAGMAX", 3200);
+	doc->opToolPrefs().magStep     = attrs.valueAsInt("MAGSTEP", 200);
 	doc->opToolPrefs().dispX       = attrs.valueAsDouble("dispX", 10.0);
 	doc->opToolPrefs().dispY       = attrs.valueAsDouble("dispY", 10.0);
 	doc->opToolPrefs().constrain   = attrs.valueAsDouble("constrain", 15.0);
+	//CB Reset doc zoom step value to 200% instead of old values.
+	if (doc->opToolPrefs().magStep <= 100)
+		doc->opToolPrefs().magStep = 200;
 	doc->itemToolPrefs().textTabFillChar = attrs.valueAsString("TabFill","");
 	doc->itemToolPrefs().textTabWidth   = attrs.valueAsDouble("TabWidth", 36.0);
 	if (attrs.hasAttribute("CPICT"))
@@ -3774,87 +3767,51 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 			{
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
-				Mark* mrk = NULL;
-				if (doc->isLoading() || t == MARKVariableTextType)
-					mrk = m_Doc->getMarkDefinied(l, t);
-				if (mrk == NULL)
+				Mark* mark = NULL;
+				if (m_Doc->isLoading())
 				{
-					mrk = m_Doc->newMark();
-					getUniqueName(l,doc->marksLabelsList(t), "_");
-					mrk->label = l;
-					mrk->setType(t);
-					mrk->setString(tAtt.valueAsString("strtxt"));
-					if (mrk->isUnique())
-					{
-						mrk->setItemPtr(newItem);
-						mrk->setItemName(newItem->getUName());
-					}
-					m_Doc->flag_updateMarksLabels = true;
+					mark = m_Doc->getMarkDefinied(l, t);
 				}
-				if (mrk->isType(MARKNoteMasterType))
-				{
-					NotesStyle* NS = m_Doc->getNotesStyle(tAtt.valueAsString("nStyle"));
-					Q_ASSERT(NS != NULL);
-					TextNote* note = m_Doc->newNote(NS);
-					mrk->setNotePtr(note);
-					note->setMasterMark(mrk);
-					note->setSaxedText(tAtt.valueAsString("noteTXT"));
-					m_Doc->setNotesChanged(true);
-				}
-				else if (mrk->isType(MARK2MarkType))
-				{
-					QString d_l = tAtt.valueAsString("dest_l");
-					MarkType d_t = (MarkType) tAtt.valueAsInt("dest_t");
-					mrk->setMark(d_l, d_t);
-				}
-				else if (mrk->isType(MARK2ItemType))
-				{
-					mrk->setItemName(tAtt.valueAsString("item"));
-					mrk->setItemPtr(m_Doc->getItemFromName(tAtt.valueAsString("item")));
-				}
-				if (!mrk->isType(MARK2ItemType))
-				{
-					mrk->setItemPtr(newItem);
-					mrk->setItemName(newItem->getUName());
-				}
-				mrk->OwnPage = newItem->OwnPage;
-				int atPos = newItem->itemText.length();
-				newItem->itemText.insertMark(mrk, atPos);
-				if (UndoManager::undoEnabled())
-				{
-					ScItemsState* iss = NULL;
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						iss = new ScItemsState(UndoManager::InsertNote);
-						m_Doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
-					}
+				else
+				{	//doc is not loading so it is copy/paste task
+					if (t == MARKVariableTextType)
+						mark = m_Doc->getMarkDefinied(l, t);
 					else
-						iss = new ScItemsState(UndoManager::InsertMark);
-					iss->set("MARK", QString("paste"));
-					iss->set("label", mrk->label);
-					iss->set("type", (int) mrk->getType());
-					iss->set("strtxt", mrk->getString());
-					iss->set("at", atPos);
-					if (newItem->isNoteFrame())
-						iss->set("noteframeName", newItem->getUName());
-					else
-						iss->insertItem("inItem", newItem);
-					if (mrk->isType(MARK2MarkType))
 					{
-						QString dName;
-						MarkType dType;
-						mrk->getMark(dName, dType);
-						iss->set("dName", dName);
-						iss->set("dType", (int) dType);
+						//create copy of mark
+						Mark* oldMark = m_Doc->getMarkDefinied(l, t);
+						if (oldMark == NULL)
+						{
+							qWarning() << "wrong copy of oldMark";
+							mark = m_Doc->newMark();
+							mark->setType(t);
+						}
+						else
+						{
+							mark = m_Doc->newMark(oldMark);
+							getUniqueName(l,doc->marksLabelsList(t), "_");
+						}
+						mark->label = l;
+						if (t == MARKNoteMasterType)
+						{  //create copy of note
+							TextNote* old = mark->getNotePtr();
+							TextNote* note = m_Doc->newNote(old->notesStyle());
+							mark->setNotePtr(note);
+							note->setMasterMark(mark);
+							note->setSaxedText(old->saxedText());
+							m_Doc->setNotesChanged(true);
+						}
 					}
-					if (mrk->isType(MARK2ItemType))
-						iss->insertItem("itemPtr", mrk->getItemPtr());
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
-						iss->set("noteTXT", mrk->getNotePtr()->saxedText());
-					}
-					undoManager->action(m_Doc, iss);
+				}
+				if (mark == NULL)
+					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
+				else
+				{
+					//set pointer to item holds mark in his text
+					if (t == MARKAnchorType)
+						mark->setItemPtr(newItem);
+					mark->OwnPage = newItem->OwnPage;
+					newItem->itemText.insertMark(mark, newItem->itemText.length());
 				}
 			}
 		}
@@ -3974,10 +3931,8 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 	uint itemCount1 = m_Doc->Items->count();
 	bool savedAlignGrid = m_Doc->useRaster;
 	bool savedAlignGuides = m_Doc->SnapGuides;
-	bool savedAlignElement = m_Doc->SnapElement;
 	m_Doc->useRaster = false;
 	m_Doc->SnapGuides = false;
-	m_Doc->SnapElement = false;
 
 	QStringRef tagName = reader.name();
 	while(!reader.atEnd() && !reader.hasError())
@@ -4042,7 +3997,6 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 
 	doc->useRaster  = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
-	doc->SnapElement = savedAlignElement;
 	if (!success)
 	{
 		return false;
@@ -4077,12 +4031,10 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = LinkID[wInf.weldID];
 				}
 			}
 		}
@@ -4117,12 +4069,10 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = WeldID[wInf.weldID];
 				}
 			}
 		}
@@ -5862,12 +5812,10 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = LinkID[wInf.weldID];
 				}
 			}
 		}
@@ -5920,12 +5868,10 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); ++i)
+				for (int i = 0 ; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
-					if (ta->weldList[i].weldItem == NULL)
-						ta->weldList.removeAt(i--);
+					ta->weldList[i].weldItem = WeldID[wInf.weldID];
 				}
 			}
 		}

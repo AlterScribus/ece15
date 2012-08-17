@@ -482,8 +482,6 @@ public slots:
 	void ToggleGuides();
 	void ToggleBase();
 	void ToggleUGuides();
-	void ToggleUElements();
-	void SetSnapElements(bool b);
 	void EditTabs();
 	void SearchText();
 	void imageEditorExited(int, QProcess::ExitStatus);
@@ -624,7 +622,7 @@ public slots:
 	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
 	void slotInsertMarkNote();
 	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
-	void slotEditMark(Mark* nrk = NULL);
+	void slotEditMark();
 	//connected to signal emited by actions when "Update Marks" menu item is triggered
 	void slotUpdateMarks();
 	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);

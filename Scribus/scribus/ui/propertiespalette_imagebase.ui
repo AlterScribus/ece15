@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>286</width>
-    <height>617</height>
+    <width>280</width>
+    <height>502</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -143,9 +143,6 @@
         <property name="checkable">
          <bool>true</bool>
         </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
         <property name="autoRaise">
          <bool>true</bool>
         </property>
@@ -183,9 +180,6 @@
          <string>...</string>
         </property>
         <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
          <bool>true</bool>
         </property>
         <property name="autoRaise">
@@ -344,8 +338,8 @@
  <customwidgets>
   <customwidget>
    <class>ScrSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">ui/scrspinbox.h</header>
+   <extends>QDoubleSpinBox</extends>
+   <header>ui/scrspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>LinkButton</class>

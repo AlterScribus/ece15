@@ -161,28 +161,40 @@ bool ImportXarPlugin::import(QString fileName, int flags)
 
 QImage ImportXarPlugin::readThumbnail(const QString& fileName)
 {
+	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return QImage();
-	UndoManager::instance()->setUndoEnabled(false);
+	if (UndoManager::undoEnabled())
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		wasUndo = true;
+	}
 	m_Doc = ScCore->primaryMainWindow()->doc;
 	XarPlug *dia = new XarPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);
-	UndoManager::instance()->setUndoEnabled(true);
+	if (wasUndo)
+		UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }
 
 bool ImportXarPlugin::readColors(const QString& fileName, ColorList &colors)
 {
+	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return false;
-	UndoManager::instance()->setUndoEnabled(false);
+	if (UndoManager::undoEnabled())
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		wasUndo = true;
+	}
 	m_Doc = NULL;
 	XarPlug *dia = new XarPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	bool ret = dia->readColors(fileName, colors);
-	UndoManager::instance()->setUndoEnabled(true);
+	if (wasUndo)
+		UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }

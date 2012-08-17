@@ -36,7 +36,6 @@ for which a new license (GPL+exception) is in place.
 #ifdef HAVE_OSG
 	#include "pageitem_osgframe.h"
 #endif
-#include "pageitem_textframe.h"
 #include "prefsmanager.h"
 #include "scclocale.h"
 #include "scpage.h"
@@ -223,7 +222,6 @@ QString ScriXmlDoc::WriteElem(ScribusDoc *doc, Selection* selection)
 	retImg.fill( qRgba(0, 0, 0, 0) );
 	ScPainter *painter = new ScPainter(&retImg, retImg.width(), retImg.height(), 1, 0);
 	painter->setZoomFactor(scaleI);
-	QMap<PageItem*, QList<PageItem::weldingInfo> > weldingBackupList;
 	for (int em = 0; em < emG.count(); ++em)
 	{
 		PageItem* embedded = emG.at(em);
@@ -235,20 +233,6 @@ QString ScriXmlDoc::WriteElem(ScribusDoc *doc, Selection* selection)
 		embedded->DrawObj(painter, QRectF());
 		embedded->setXYPos(x, y, true);
 		painter->restore();
-		//check welding list and remove welded notes frames
-		if (embedded->isWelded() && !embedded->asTextFrame()->notesFramesList().isEmpty())
-		{
-			weldingBackupList.insert(embedded, embedded->weldList);
-			for (int a = 0 ; a < embedded->weldList.count(); a++)
-			{
-				PageItem::weldingInfo wInf = embedded->weldList.at(a);
-				if (wInf.weldItem->isNoteFrame())
-				{
-					embedded->weldList.removeAt(a);
-					--a;
-				}
-			}
-		}
 	}
 	delete painter;
 	QBuffer buffer;
@@ -262,9 +246,5 @@ QString ScriXmlDoc::WriteElem(ScribusDoc *doc, Selection* selection)
 		fmt->setupTargets(doc, 0, doc->scMW(), 0, &(PrefsManager::instance()->appPrefs.fontPrefs.AvailFonts));
 		documentStr = fmt->saveElements(xp, yp, wp, hp, selection, ba);
 	}
-	//restore welding of notes frames
-	foreach (PageItem* item, weldingBackupList.keys())
-		item->weldList = weldingBackupList.value(item);
-
 	return documentStr;
 }

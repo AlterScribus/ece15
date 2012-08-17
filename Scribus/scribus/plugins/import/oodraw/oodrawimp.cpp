@@ -220,14 +220,20 @@ bool OODrawImportPlugin::import(QString fileName, int flags)
 
 QImage OODrawImportPlugin::readThumbnail(const QString& fileName)
 {
+	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return QImage();
-	UndoManager::instance()->setUndoEnabled(false);
+	if (UndoManager::undoEnabled())
+	{
+		UndoManager::instance()->setUndoEnabled(false);
+		wasUndo = true;
+	}
 	m_Doc = NULL;
 	OODPlug *dia = new OODPlug(m_Doc);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);
-	UndoManager::instance()->setUndoEnabled(true);
+	if (wasUndo)
+		UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }

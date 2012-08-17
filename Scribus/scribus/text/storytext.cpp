@@ -1953,7 +1953,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			else if (mrk->isType(MARKNoteMasterType))
 			{
 				mark_attr.insert("nStyle", mrk->getNotePtr()->notesStyle()->name());
-				mark_attr.insert("noteTXT",mrk->getNotePtr()->saxedText());
+				mark_attr.insert("note",mrk->getNotePtr()->saxedText());
 				//store noteframe name for inserting into note if it is non-auto-removable
 				if (!mrk->getNotePtr()->noteMark()->getItemPtr()->isAutoNoteFrame())
 					mark_attr.insert("noteframe", mrk->getNotePtr()->noteMark()->getItemPtr()->getUName());
@@ -2145,7 +2145,7 @@ public:
 			if (tIt != attr.end())
 				t = (MarkType) parseInt(Xml_data(tIt));
 			ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
-			if (t == MARKVariableTextType || t == MARKIndexType)
+			if (t == MARKVariableTextType)
 				mrk = doc->getMarkDefinied(l,t);
 			else
 			{
@@ -2176,6 +2176,7 @@ public:
 				}
 				if (mrk->isType(MARKNoteMasterType))
 				{
+					Xml_attr::iterator nIt = attr.find("note");
 					Xml_attr::iterator nsIt = attr.find("nStyle");
 					NotesStyle* NS;
 					if (nsIt == attr.end())
@@ -2184,16 +2185,20 @@ public:
 						NS = doc->getNotesStyle(Xml_data(nsIt));
 					TextNote* note = doc->newNote(NS);
 					note->setMasterMark(mrk);
-
-					Xml_attr::iterator nIt = attr.find("noteTXT");
 					if (nIt != attr.end())
 						note->setSaxedText(Xml_data(nIt));
+//					if (!NS->isAutoRemoveEmptyNotesFrames() && (nf_It != attr.end()))
+//					{
+//						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) doc->getItemFromName(Xml_data(nf_It));
+//						if (nF != NULL)
+//							doc->m_Selection->itemAt(0)->asTextFrame()->setNoteFrame(nF);
+//					}
 					mrk->setNotePtr(note);
 					doc->setNotesChanged(true);
 				}
+				doc->newMark(mrk);
 			}
 			story->insertMark(mrk);
-			doc->flag_updateMarksLabels = true;
 		}
 	}
 };
@@ -2275,11 +2280,6 @@ public:
 	{
 		if (lastStyle)
 			delete lastStyle;
-	}
-
-	virtual void reset()
-	{
-		numPara = 0;
 	}
 	
 	void begin(const Xml_string& tag, Xml_attr attr)

@@ -293,8 +293,8 @@ void GuideManager::unitChange()
 	horizontalGroupBox->setTitle(horizontalGroupBox->title() + " ("+suffix.trimmed()+")");
 	verticalGroupBox->setTitle(verticalGroupBox->title() + " ("+suffix.trimmed()+")");
 	// models display
-	horizontalModel->unitChange(docUnitIndex, docUnitDecimals, m_Doc->rulerYoffset);
-	verticalModel->unitChange(docUnitIndex, docUnitDecimals, m_Doc->rulerXoffset);
+	horizontalModel->unitChange(docUnitIndex, docUnitDecimals);
+	verticalModel->unitChange(docUnitIndex, docUnitDecimals);
 	qobject_cast<GuidesHDelegate*>(horizontalView->itemDelegateForColumn(0))->setDoc(m_Doc);
 	qobject_cast<GuidesVDelegate*>(verticalView->itemDelegateForColumn(0))->setDoc(m_Doc);
 }
@@ -518,9 +518,7 @@ void GuideManager::clearRestoreVerticalList()
 
 void GuideManager::deletePageButton_clicked()
 {
-	UndoTransaction *trans = NULL;
-	if(UndoManager::undoEnabled())
-		trans = new UndoTransaction(UndoManager::instance()->beginTransaction(currentPage->getUName(),
+	UndoTransaction trans(UndoManager::instance()->beginTransaction(currentPage->getUName(),
 																currentPage->getUPixmap(),
 																Um::RemoveAllPageGuides, "",
 																Um::IGuides));
@@ -539,12 +537,7 @@ void GuideManager::deletePageButton_clicked()
 	currentPage->guides.setVerticalAutoRefer(0);
 	horizontalAutoCountSpin->setValue(0);
 	verticalAutoCountSpin->setValue(0);
-	if(trans)
-	{
-		trans->commit();
-		delete trans;
-		trans = NULL;
-	}
+	trans.commit();
 
 	drawGuides();
 	m_Doc->changed();
@@ -552,9 +545,7 @@ void GuideManager::deletePageButton_clicked()
 
 void GuideManager::deleteAllGuides_clicked()
 {
-	UndoTransaction *trans = NULL;
-	if(UndoManager::undoEnabled())
-		trans = new UndoTransaction(UndoManager::instance()->beginTransaction(m_Doc->getUName(),
+	UndoTransaction trans(UndoManager::instance()->beginTransaction(m_Doc->getUName(),
 																m_Doc->getUPixmap(),
 																Um::RemoveAllGuides, "",
 																Um::IGuides));
@@ -563,12 +554,7 @@ void GuideManager::deleteAllGuides_clicked()
 	copyGuidesToAllPages(GuideManagerCore::Standard);
 	copyGuidesToAllPages(GuideManagerCore::Auto);
 	m_drawGuides = true;
-	if(trans)
-	{
-		trans->commit();
-		delete trans;
-		trans = NULL;
-	}
+	trans.commit();
 	drawGuides();
 	m_Doc->changed();
 }

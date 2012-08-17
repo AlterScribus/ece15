@@ -1283,6 +1283,7 @@ void PaintManagerDialog::loadVectors(QString data)
 {
 	m_doc->PageColors = m_colorList;
 	m_doc->docGradients = dialogGradients;
+	bool wasUndo = UndoManager::undoEnabled();
 	UndoManager::instance()->setUndoEnabled(false);
 	m_doc->setLoading(true);
 	QFileInfo fi(data);
@@ -1291,10 +1292,8 @@ void PaintManagerDialog::loadVectors(QString data)
 	uint ap = m_doc->docPatterns.count();
 	bool savedAlignGrid = m_doc->useRaster;
 	bool savedAlignGuides = m_doc->SnapGuides;
-	bool savedAlignElement = m_doc->SnapElement;
 	m_doc->useRaster = false;
 	m_doc->SnapGuides = false;
-	m_doc->SnapElement = false;
 	if (fi.suffix().toLower() == "sce")
 	{
 		ScriXmlDoc ss;
@@ -1317,7 +1316,6 @@ void PaintManagerDialog::loadVectors(QString data)
 	}
 	m_doc->useRaster = savedAlignGrid;
 	m_doc->SnapGuides = savedAlignGuides;
-	m_doc->SnapElement = savedAlignElement;
 	uint ae = m_doc->Items->count();
 	if (ac != ae)
 	{
@@ -1386,7 +1384,7 @@ void PaintManagerDialog::loadVectors(QString data)
 	m_doc->setLoading(false);
 	m_colorList = m_doc->PageColors;
 	dialogGradients = m_doc->docGradients;
-	UndoManager::instance()->setUndoEnabled(true);
+	UndoManager::instance()->setUndoEnabled(wasUndo);
 }
 
 ColorList PaintManagerDialog::getGradientColors()

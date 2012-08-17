@@ -42,7 +42,6 @@ class ColorListBox;
 class ScrSpinBox;
 class ScComboBox;
 class ScPattern;
-class UndoManager;
 
 /**
   *@author Franz Schmid
@@ -73,7 +72,6 @@ public:
 private:
 
 	PageItem* currentItemFromSelection();
-	UndoManager * undoManager;
 
 public slots:
 
@@ -85,7 +83,6 @@ public slots:
 	void fillStrokeSelector(int /*index*/);
 	void displayColorValues(QString stroke, QString fille, int sShade, int fShade);
 	void displayGradient(int nr);
-	void displayGradientStroke(int nr);
 	void displayOverprint(int);
 	void handleFillShade(double);
 	void handleStrokeShade(double);

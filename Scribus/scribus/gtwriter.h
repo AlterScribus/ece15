@@ -60,8 +60,6 @@ public:
 	void setUpdateParagraphStyles(bool newUPS);
 	bool getOverridePStyleFont();
 	void setOverridePStyleFont(bool newOPSF);
-	bool inNote;
-	bool inNoteBody;
 private:
 	gtAction *action;
 	gtFrameStyle* defaultStyle;

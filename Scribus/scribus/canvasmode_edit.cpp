@@ -316,13 +316,8 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 				currItem->itemText.setCursorPosition(stop);
 			}
 			else if ((currItem->itemText.cursorPosition() < currItem->itemText.length()) && (currItem->itemText.item(currItem->itemText.cursorPosition())->mark != NULL))
-			{
-				m_ScMW->slotEditMark(currItem->itemText.item(currItem->itemText.cursorPosition())->mark);
-				return;
-			}
-			else if ((currItem->itemText.cursorPosition() > 0) && currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark != NULL)
-			{
-				m_ScMW->slotEditMark(currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark);
+			{	//invoke edit marker dialog
+				m_ScMW->slotEditMark();
 				return;
 			}
 			else
@@ -738,7 +733,7 @@ void CanvasMode_Edit::mouseReleaseEvent(QMouseEvent *m)
 				m_doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
 				double nx = gx;
 				double ny = gy;
-				if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
+				if (!m_doc->ApplyGuides(&nx, &ny))
 				{
 					FPoint npx = m_doc->ApplyGridF(FPoint(gx, gy));
 					FPoint npw = m_doc->ApplyGridF(FPoint(gx+gw, gy+gh));
@@ -756,7 +751,7 @@ void CanvasMode_Edit::mouseReleaseEvent(QMouseEvent *m)
 				m_doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
 				nx = gx+gw;
 				ny = gy+gh;
-				if (m_doc->ApplyGuides(&nx, &ny) || m_doc->ApplyGuides(&nx,&ny,true))
+				if (m_doc->ApplyGuides(&nx, &ny))
 					m_doc->moveGroup(nx-(gx+gw), ny-(gy+gh), false);
 				m_doc->m_Selection->setGroupRect();
 			}
@@ -767,7 +762,7 @@ void CanvasMode_Edit::mouseReleaseEvent(QMouseEvent *m)
 				{
 					double nx = currItem->xPos();
 					double ny = currItem->yPos();
-					if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
+					if (!m_doc->ApplyGuides(&nx, &ny))
 					{
 						m_doc->m_Selection->setGroupRect();
 						double gx, gy, gh, gw;
