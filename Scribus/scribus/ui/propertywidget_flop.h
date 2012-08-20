@@ -23,7 +23,8 @@ public:
     {
         RealHeightID  = 0,
         FontAscentID  = 1,
-        LineSpacingID = 2
+        LineSpacingID = 2,
+		BaseGridID    = 3
     };
 
 	PropertyWidget_Flop(QWidget* parent);

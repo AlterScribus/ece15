@@ -156,7 +156,8 @@ enum FirstLineOffsetPolicy
 {
     FLOPRealGlyphHeight = 0, // Historical
     FLOPFontAscent	= 1,
-    FLOPLineSpacing	= 2
+    FLOPLineSpacing	= 2,
+	FLOPBaseGrid = 3
 };
 
 

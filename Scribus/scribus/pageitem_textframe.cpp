@@ -1494,6 +1494,8 @@ void PageItem_TextFrame::layout()
 		{
 			hl = itemText.item(firstInFrame());
 			style = itemText.paragraphStyle(firstInFrame());
+			if (firstLineOffset() == FLOPBaseGrid)
+				style.setLineSpacingMode(ParagraphStyle::BaselineGridLineSpacing);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 
 //			qDebug() << QString("style @0: %1 -- %2, %4/%5 char: %3").arg(style.leftMargin()).arg(style.rightMargin())
@@ -1630,6 +1632,8 @@ void PageItem_TextFrame::layout()
 			scaleV = charStyle.scaleV() / 1000.0;
 			scaleH = charStyle.scaleH() / 1000.0;
 			offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
+			if (current.startOfCol && firstLineOffset() == FLOPBaseGrid)
+				style.setLineSpacingMode(ParagraphStyle::BaselineGridLineSpacing);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 			//avoid hyphenation for words with softhyphen at it beginning
 			if (hl->ch == SpecialChars::SHYPHEN && !disableHyph)
@@ -1985,7 +1989,7 @@ void PageItem_TextFrame::layout()
 						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
-						else if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+						else if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
 						{
 							if (firstLineOffset() == FLOPRealGlyphHeight)
 							{
@@ -1999,7 +2003,7 @@ void PageItem_TextFrame::layout()
 							else
 								current.yPos += asce;
 						}
-						else if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+						else if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (firstLineOffset() == FLOPBaseGrid))
 						{
 							if (current.yPos <= lastLineY)
 								current.yPos = lastLineY +1;
@@ -2050,7 +2054,7 @@ void PageItem_TextFrame::layout()
 					addAsce = qMax(realAsce, asce + offset);
 				else
 					addAsce = asce + offset;
-				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+				if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;
@@ -2117,7 +2121,7 @@ void PageItem_TextFrame::layout()
 					{
 						// new line
 						current.xPos = qMax(current.colLeft, maxDX);
-						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+						if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (current.startOfCol && (firstLineOffset() == FLOPBaseGrid)))
 						{
 							current.yPos++;
 							double by = Ypos;
@@ -2139,7 +2143,7 @@ void PageItem_TextFrame::layout()
 								addAsce = qMax(realAsce, asce + offset);
 							else
 								addAsce = asce + offset;
-							if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+							if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
 							{
 								if (firstLineOffset() == FLOPRealGlyphHeight)
 									addAsce = realAsce;
@@ -2626,7 +2630,7 @@ void PageItem_TextFrame::layout()
 				hl->glyph.xadvance += style.dropCapOffset();
 				maxDX = current.xPos;
 				current.yPos -= calculateLineSpacing (style, this) * (DropLines-1);
-				if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+				if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (firstLineOffset() == FLOPBaseGrid))
 					current.yPos = adjustToBaselineGrid (current, this, OwnPage);
 				current.recalculateY = false;
 			}
@@ -2946,7 +2950,7 @@ void PageItem_TextFrame::layout()
 					addAsce = qMax(realAsce, asce + offset);
 				else
 					addAsce = asce + offset;
-				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+				if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;
