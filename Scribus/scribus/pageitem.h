@@ -1803,6 +1803,7 @@ public:
 	void setWeldPoint(double DX, double DY, PageItem *pItem);
 	//used by notes frames to get content of notes from itemText
 	QString getItemTextSaxed(int selStart, int selLength);
+	void expandParaSelection(bool includeEOL = false);
 };
 
 Q_DECLARE_METATYPE(PageItem*)

@@ -7776,7 +7776,7 @@ void ScribusDoc::itemSelection_SetNamedParagraphStyle(const QString& name, Selec
 {
 	ParagraphStyle newStyle;
 	newStyle.setParent(name.isEmpty()? Style::INHERIT_PARENT : name);
-	itemSelection_ApplyParagraphStyle(newStyle, customSelection, true);
+	itemSelection_ApplyParagraphStyle(newStyle, customSelection);
 }
 
 
@@ -8976,20 +8976,18 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
-//		int currItemTextCount = currItem->lastInFrame() + 1 - currItem->firstInFrame();
-//		if (currItemTextCount > 0 && ( appMode == modeEdit || !FRAMESELECTION_EDITS_DEFAULTSTYLE))
-		int currItemTextCount = currItem->itemText.length();
-		if ((currItemTextCount > 0) && ((appMode == modeEdit) || (appMode == modeEditTable)))
+		if (currItem->itemText.length() > 0)
 		{
-			int start = currItem->itemText.startOfItem(currItem->firstInFrame());
-			int stop = currItem->itemText.endOfItem(currItem->lastInFrame());
+			//in edit mode without selection select paragraph where cursor is
 			if ((appMode == modeEdit) || (appMode == modeEditTable))
 			{
-				start = currItem->itemText.startOfSelection();
-				stop = currItem->itemText.endOfSelection();
-				if (start >= stop)
-					start = stop = currItem->itemText.normalizedCursorPosition();
+				if (!currItem->HasSel)
+					currItem->expandParaSelection();
 			}
+			else //select whole text
+				currItem->itemText.selectAll();
+			int start = currItem->itemText.startOfSelection();
+			int stop = currItem->itemText.endOfSelection();
 			for (int pos=start; pos < stop; ++pos)
 			{
 				if (currItem->itemText.text(pos) == SpecialChars::PARSEP)
@@ -9018,38 +9016,38 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 				undoManager->action(currItem, is);
 			}
 			currItem->itemText.setStyle(stop, newStyle2);
-		}
-		else
-		{
-			ParagraphStyle newStyle;
-			//for notes frames apply style from master frame
-			if (currItem->isNoteFrame() && (currItem->asNoteFrame()->masterFrame() != NULL))
-			{
-				newStyle.setParent(currItem->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
-				newStyle.applyStyle(currItem->asNoteFrame()->masterFrame()->currentStyle());
-			}
-			else
-				newStyle.setParent(currItem->itemText.defaultStyle().parent());
-			if (UndoManager::undoEnabled())
-			{
-				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
-				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
-				is->setItem(qMakePair(newStyle, currItem->itemText.defaultStyle()));
-				undoManager->action(currItem, is);
-			}
-			currItem->itemText.setDefaultStyle(newStyle);
-			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-				updateItemNotesFramesStyles(currItem, newStyle);
-			else if (currItem->isNoteFrame())
+//		else
+//		{
+//			ParagraphStyle newStyle;
+//			//for notes frames apply style from master frame
+//			if (currItem->isNoteFrame() && (currItem->asNoteFrame()->masterFrame() != NULL))
+//			{
+//				newStyle.setParent(currItem->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
+//				newStyle.applyStyle(currItem->asNoteFrame()->masterFrame()->currentStyle());
+//			}
+//			else
+//				newStyle.setParent(currItem->itemText.defaultStyle().parent());
+//			if (UndoManager::undoEnabled())
+//			{
+//				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+//				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
+//				is->setItem(qMakePair(newStyle, currItem->itemText.defaultStyle()));
+//				undoManager->action(currItem, is);
+//			}
+//			currItem->itemText.setDefaultStyle(newStyle);
+//			if (currItem->isTextFrame() && !currItem->isNoteFrame())
+//				updateItemNotesFramesStyles(currItem, newStyle);
+//			else if (currItem->isNoteFrame())
+//				setNotesChanged(true);
+//		}
+			currItem->invalid = true;
+			if (currItem->asPathText())
+				currItem->updatePolyClip();
+			if (currItem->isNoteFrame())
+				currItem->asNoteFrame()->updateNotesText();
+			else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
 				setNotesChanged(true);
 		}
-		currItem->invalid = true;
-		if (currItem->asPathText())
-			currItem->updatePolyClip();
-		if (currItem->isNoteFrame())
-			currItem->asNoteFrame()->updateNotesText();
-		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
-			setNotesChanged(true);
 	}
 	if (activeTransaction)
 	{

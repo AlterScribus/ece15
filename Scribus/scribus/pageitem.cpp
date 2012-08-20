@@ -10409,6 +10409,44 @@ void PageItem::unWeld()
 	weldList.clear();
 }
 
+void PageItem::expandParaSelection(bool includeEOL)
+{
+	if (itemText.length() == 0)
+		return;
+	int selStart, selLength;
+	if (itemText.lengthOfSelection() >0)
+	{
+		if (itemText.cursorPosition() == itemText.endOfSelection() && itemText.cursorPosition() < itemText.length())
+			//hack for situation, when CPos is before first char of next paragraph
+			//it add unselected paragraph if cursor is at its beginning
+			itemText.select(itemText.startOfSelection(), itemText.lengthOfSelection() +1);
+			
+		//remove PARSEP from end of selection - will be added if includeEOL is true
+		if (itemText.text(itemText.endOfSelection()-1) == SpecialChars::PARSEP)
+		{
+			selStart = itemText.startOfSelection();
+			selLength = itemText.lengthOfSelection() -1;
+			itemText.deselectAll();
+			itemText.select(selStart, selLength);
+		}
+		//extend selection to whole paragraphs
+		selStart  = itemText.startOfParagraph(itemText.nrOfParagraph(itemText.startOfSelection()));
+		selLength = itemText.endOfParagraph(itemText.nrOfParagraph(itemText.endOfSelection()-1)) - selStart;
+	}
+	else
+	{
+		//extend selection to whole paragraph where is cursor
+		selStart  = itemText.startOfParagraph();
+		selLength = itemText.endOfParagraph() - selStart;
+	}
+	if (includeEOL && itemText.text(selStart + selLength -1) != SpecialChars::PARSEP)
+		selLength += 1;
+	selLength = qMin(selLength, itemText.length() - selStart);
+
+	itemText.select(selStart, selLength);
+	HasSel = true;
+}
+
 QString PageItem::getItemTextSaxed(int selStart, int selLength)
 {
 	if (selStart < 0 || selLength < 0)
