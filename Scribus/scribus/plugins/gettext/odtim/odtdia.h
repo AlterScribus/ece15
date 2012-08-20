@@ -38,19 +38,23 @@ class OdtDialog : public QDialog
 	Q_OBJECT
 
 public:
-	OdtDialog(bool update, bool prefix, bool pack);
+	OdtDialog(bool update, bool prefix, bool pack, bool omit);
 	~OdtDialog();
+	bool omitPStyles();
 	bool shouldUpdate();
 	bool usePrefix();
 	bool askAgain();
 	bool packStyles();
 private:
+	QCheckBox* omitCheck;
 	QCheckBox* updateCheck;
 	QCheckBox* prefixCheck;
 	QCheckBox* doNotAskCheck;
 	QCheckBox* packCheck;
 	QPushButton* okButton;
 	QPushButton* cancelButton;
+private slots:
+	void omitPSchanged();
 };
 
 #endif // ODTDIA_H

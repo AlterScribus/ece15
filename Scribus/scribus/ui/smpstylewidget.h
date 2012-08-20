@@ -34,6 +34,7 @@ public:
 private:
 	bool hasParent_;
 	bool parentDropCap_;
+	bool parentClearOnApply_;
 
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
@@ -48,6 +49,7 @@ private:
 	void showParent(QList<ParagraphStyle*> &pstyles);
 	void setOpticalMargins(int o, bool inhO=false, const ParagraphStyle *parent=NULL);
 	void showHyphenationMode(QList<ParagraphStyle*> &pstyles);
+	void showClearOnApply(QList<ParagraphStyle*> &pstyles);
 
 	friend class SMParagraphStyle;
 
@@ -55,6 +57,8 @@ private slots:
 	void slotLineSpacingModeChanged(int);
 	void slotDropCap(bool isOn);
 	void slotParentDropCap();
+	void slotClearOnApply(bool isOn);
+	void slotParentClearOnApply();
 	void slotDefaultOpticalMargins();
 	void slotParentOpticalMargins();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
@@ -62,6 +66,7 @@ private slots:
 
 signals:
 	void useParentDropCap();
+	void useParentClearOnApply();
 	void useParentOptMargins();
 };
 

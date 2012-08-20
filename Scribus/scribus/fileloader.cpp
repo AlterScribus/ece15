@@ -319,6 +319,7 @@ void FileLoader::readParagraphStyle(ParagraphStyle& vg, const QDomElement& pg, S
 	currDoc->AllFonts->findFont(tmpf, currDoc);
 		vg.charStyle().setFont((*currDoc->AllFonts)[tmpf]);
 		vg.charStyle().setFontSize(qRound(ScCLocale::toDoubleC(pg.attribute("FONTSIZE"), 12.0) * 10.0));
+		vg.setClearOnApply(static_cast<bool>(pg.attribute("ClearOnApply", "0").toInt()));
 		vg.setHasDropCap(static_cast<bool>(pg.attribute("DROP", "0").toInt()));
 		vg.setDcCharStyleName(pg.attribute("DROPCHSTYLE", ""));
 		vg.setDropCapLines(pg.attribute("DROPLIN", "2").toInt());

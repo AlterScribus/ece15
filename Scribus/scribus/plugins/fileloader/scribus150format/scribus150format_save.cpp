@@ -658,6 +658,8 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("MinGlyphShrink", style.minGlyphExtension());
 	if ( ! style.isInhMaxGlyphExtension())
 		docu.writeAttribute("MaxGlyphExtend", style.maxGlyphExtension());
+	if ( ! style.isInhClearOnApply())
+		docu.writeAttribute("ClearOnApply", style.clearOnApply());
 	if ( ! style.isInhKeepLinesStart())
 		docu.writeAttribute("KeepLinesStart", style.keepLinesStart());
 	if ( ! style.isInhKeepLinesEnd())
@@ -2524,6 +2526,8 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 			docu.writeAttribute("MinGlyphShrink", dStyle.minGlyphExtension());
 		if ( ! dStyle.isInhMaxGlyphExtension())
 			docu.writeAttribute("MaxGlyphExtend", dStyle.maxGlyphExtension());
+		if ( ! dStyle.isInhClearOnApply())
+			docu.writeAttribute("ClearOnApply", dStyle.clearOnApply());
 		if ( ! dStyle.isInhOpticalMargins())
 			docu.writeAttribute("OpticalMargins", dStyle.opticalMargins());
 		if ( ! dStyle.isInhHyphenationMode())

@@ -253,6 +253,12 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		dropCapOffset_->setParentValue(parent->dropCapOffset() * unitRatio);
 
 		hyphenationMode->setCurrentItem(pstyle->hyphenationMode(), pstyle->isInhHyphenationMode());
+		clearOnApplyBox->setChecked(pstyle->clearOnApply());;
+		parentClearOnApply_ = parent->clearOnApply();
+		if (pstyle->isInhClearOnApply())
+			parentClearOnApplyButton->hide();
+		else
+			parentClearOnApplyButton->show();
 		
 		alignement_->setStyle(pstyle->alignment(), pstyle->isInhAlignment());
 		alignement_->setParentItem(parent->alignment());
@@ -304,6 +310,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		dropCapOffset_->setValue(pstyle->dropCapOffset() * unitRatio);
 		parentDropCapButton->hide();
 		hyphenationMode->setCurrentItem(pstyle->hyphenationMode());
+		clearOnApplyBox->setChecked(pstyle->clearOnApply());
 		alignement_->setStyle(pstyle->alignment());
 		tabList_->setTabs(pstyle->tabValues(), unitIndex);
 		tabList_->setLeftIndentValue(pstyle->leftMargin() * unitRatio);
@@ -360,6 +367,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	}
 
 	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
+	connect(clearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 }
 
 void SMPStyleWidget::show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang)
@@ -524,6 +532,26 @@ void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyl
 	dropCapLines_->setEnabled(true);
 	dropCapOffset_->setEnabled(true);
 	dropCapCharStyleCombo->setEnabled(true);
+}
+
+void SMPStyleWidget::showClearOnApply(QList<ParagraphStyle*> &pstyles)
+{
+	parentClearOnApplyButton->hide();
+	disconnect(parentClearOnApplyButton, SIGNAL(clicked()), this, SLOT(slotParentClearOnApply()));
+
+	bool dc = pstyles[0]->clearOnApply();
+	for (int i = 0; i < pstyles.count(); ++i)
+	{
+		if (dc != pstyles[i]->clearOnApply())
+		{
+			dc = false;
+			break;
+		}
+	}
+	clearOnApplyBox->setChecked(dc);
+
+	connect(clearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
+	clearOnApplyBox->setEnabled(true);
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
@@ -898,6 +926,27 @@ void SMPStyleWidget::slotParentDropCap()
 	emit useParentDropCap();
 	connect(parentDropCapButton, SIGNAL(clicked()), this, SLOT(slotParentDropCap()));
 	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
+}
+
+void SMPStyleWidget::slotClearOnApply(bool isOn)
+{
+	if (isOn)
+		clearOnApplyBox->setEnabled(true);
+	else
+		clearOnApplyBox->setEnabled(true);
+	if (hasParent_)
+		parentClearOnApplyButton->show();
+}
+
+void SMPStyleWidget::slotParentClearOnApply()
+{
+	disconnect(parentClearOnApplyButton, SIGNAL(clicked()), this, SLOT(slotParentClearOnApply()));
+	disconnect(clearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
+	parentClearOnApplyButton->hide();
+	clearOnApplyBox->setChecked(parentClearOnApply_);
+	emit useParentClearOnApply();
+	connect(parentClearOnApplyButton, SIGNAL(clicked()), this, SLOT(slotParentClearOnApply()));
+	connect(clearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 }
 
 SMPStyleWidget::~SMPStyleWidget()

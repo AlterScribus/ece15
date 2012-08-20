@@ -38,13 +38,14 @@ ContentReader* ContentReader::creader = NULL;
 
 extern xmlSAXHandlerPtr cSAXHandler;
 
-ContentReader::ContentReader(QString documentName, StyleReader *s, gtWriter *w, bool textOnly)
+ContentReader::ContentReader(QString documentName, StyleReader *s, gtWriter *w, bool textOnly, bool omitPS)
 {
 	creader = this;
 	docname = documentName;
 	sreader = s;
 	writer  = w;
 	importTextOnly = textOnly;
+	omitPStyles = omitPS;
 	defaultStyle = NULL;
 	currentStyle = NULL;
 	inList = false;
@@ -286,7 +287,7 @@ void ContentReader::write(const QString& text)
 	{
 		if (importTextOnly)
 			writer->appendUnstyled(text);
-		else if (inSpan)
+		else if (inSpan || omitPStyles)
 			writer->append(text, currentStyle, false);
 		else
 			writer->append(text, currentStyle);

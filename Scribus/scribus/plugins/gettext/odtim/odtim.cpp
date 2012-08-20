@@ -67,16 +67,19 @@ OdtIm::OdtIm(QString fileName, QString enc, gtWriter* w, bool textOnly)
 	bool prefix = prefs->getBool("prefix", true);
 	bool ask = prefs->getBool("askAgain", true);
 	bool pack = prefs->getBool("pack", true);
+	bool omitPS = prefs->getBool("omitPS", false);
 	encoding = enc;
 	if (!textOnly)
 	{
 		if (ask)
 		{
-			OdtDialog* sxwdia = new OdtDialog(update, prefix, pack);
+			OdtDialog* sxwdia = new OdtDialog(update, prefix, pack, omitPS);
 			if (sxwdia->exec()) {
+				omitPS = sxwdia->omitPStyles();
 				update = sxwdia->shouldUpdate();
 				prefix = sxwdia->usePrefix();
 				pack = sxwdia->packStyles();
+				prefs->set("omitPS", omitPS);
 				prefs->set("update", update);
 				prefs->set("prefix", sxwdia->usePrefix());
 				prefs->set("askAgain", sxwdia->askAgain());
@@ -91,6 +94,7 @@ OdtIm::OdtIm(QString fileName, QString enc, gtWriter* w, bool textOnly)
 	filename = fileName;
 	writer = w;
 	writer->setUpdateParagraphStyles(update);
+	writer->setOmitParagraphStyles(omitPS);
 	FileUnzip* fun = new FileUnzip(fileName);
 	stylePath   = fun->getFile(STYLE);
 	contentPath = fun->getFile(CONTENT);
@@ -99,9 +103,9 @@ OdtIm::OdtIm(QString fileName, QString enc, gtWriter* w, bool textOnly)
 	{
 		QString docname = filename.right(filename.length() - filename.lastIndexOf("/") - 1);
 		docname = docname.left(docname.lastIndexOf("."));
-		StyleReader *sreader = new StyleReader(docname, writer, textOnly, prefix, pack);
+		StyleReader *sreader = new StyleReader(docname, writer, textOnly, prefix, pack, omitPS);
 		sreader->parse(stylePath);
-		ContentReader *creader = new ContentReader(docname, sreader, writer, textOnly);
+		ContentReader *creader = new ContentReader(docname, sreader, writer, textOnly, omitPS);
 		creader->parse(contentPath);
 		delete sreader;
 		delete creader;

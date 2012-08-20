@@ -65,6 +65,7 @@ private:
 	bool doAppend;
 	bool lastCharWasLineChange;
 	bool updateParagraphStyles;
+	bool omitParagraphStyles;
 	/* If paragraph style is used should the font style of the gtpstyle be used 
 	   or should writer respect the font set in the real paragraph style
 	*/
@@ -98,7 +99,7 @@ public:
 	void clearFrame();
 	void getFrameFont(gtFont *font);
 	void getFrameStyle(gtFrameStyle *fstyle);
-	void write(const QString& text, gtStyle *style, bool isNote =false);
+	void write(const QString& text, gtStyle *style, bool isNote, bool keepPStyles = true);
 	void writeUnstyled(const QString& text, bool isNote = false);
 	void applyFrameStyle(gtFrameStyle* fstyle);
 	void createParagraphStyle(gtParagraphStyle* pstyle);
@@ -113,6 +114,7 @@ public:
 	void setUpdateParagraphStyles(bool newUPS);
 	bool getOverridePStyleFont();
 	void setOverridePStyleFont(bool newOPSF);
+	void setOmitParagraphStyles(bool newOPS);
 };
 
 #endif

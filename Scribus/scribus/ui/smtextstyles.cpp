@@ -518,6 +518,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->dropCapCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
 	connect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+	connect(pwidget_->clearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 
 	connect(pwidget_->keepLinesStart, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesStart()));
 	connect(pwidget_->keepLinesEnd, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesEnd()));
@@ -598,6 +599,7 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->dropCapCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
 	disconnect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+	disconnect(pwidget_->clearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 
 	disconnect(pwidget_->parentCombo, SIGNAL(activated(const QString&)),
 			this, SLOT(slotParentChanged(const QString&)));
@@ -1022,6 +1024,29 @@ void SMParagraphStyle::slotHyphenationMode(int mh)
 	}
 }
 
+void SMParagraphStyle::slotClearOnApply(bool isOn)
+{
+	for (int i = 0; i < selection_.count(); ++i)
+		selection_[i]->setClearOnApply(isOn);
+
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
+void SMParagraphStyle::slotParentClearOnApply()
+{
+	for (int i = 0; i < selection_.count(); ++i)
+		selection_[i]->resetClearOnApply();
+
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
 
 void SMParagraphStyle::slotTabRuler()
 {

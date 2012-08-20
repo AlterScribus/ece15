@@ -36,7 +36,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 #include "util_icon.h"
 
-OdtDialog::OdtDialog(bool update, bool prefix, bool pack) : QDialog(0)
+OdtDialog::OdtDialog(bool update, bool prefix, bool pack, bool omit) : QDialog(0)
 {
 	setModal(true);
 	setWindowIcon(QIcon(loadIcon ( "AppIcon.png" )));
@@ -45,6 +45,15 @@ OdtDialog::OdtDialog(bool update, bool prefix, bool pack) : QDialog(0)
 	QBoxLayout* layout = new QVBoxLayout(this);
 	layout->setMargin(0);
 	layout->setSpacing(0);
+
+	QBoxLayout* olayout = new QHBoxLayout;
+	olayout->setMargin(5);
+	olayout->setSpacing(5);
+	omitCheck = new QCheckBox( tr("Omit Paragraph Styles"), this);
+	omitCheck->setChecked(omit);
+	omitCheck->setToolTip( "<qt>" + tr("Enabling this will omit any paragraph styles from ODT document") + "</qt>");
+	olayout->addWidget(omitCheck);
+	layout->addLayout(olayout);
 
 	QBoxLayout* hlayout = new QHBoxLayout;
 	hlayout->setMargin(5);
@@ -95,6 +104,24 @@ OdtDialog::OdtDialog(bool update, bool prefix, bool pack) : QDialog(0)
 
 	connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
 	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+	connect(omitCheck, SIGNAL(stateChanged(int)), this, SLOT(omitPSchanged()));
+
+	omitPSchanged();
+}
+
+void OdtDialog::omitPSchanged()
+{
+	if (omitCheck->isChecked())
+	{
+		updateCheck->setDisabled(omitCheck->isChecked());
+		packCheck->setDisabled(omitCheck->isChecked());
+		prefixCheck->setDisabled(omitCheck->isChecked());
+	}
+}
+
+bool OdtDialog::omitPStyles()
+{
+	return omitCheck->isChecked();
 }
 
 bool OdtDialog::shouldUpdate()

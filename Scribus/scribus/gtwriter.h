@@ -60,6 +60,7 @@ public:
 	void setUpdateParagraphStyles(bool newUPS);
 	bool getOverridePStyleFont();
 	void setOverridePStyleFont(bool newOPSF);
+	void setOmitParagraphStyles(bool newOPS);
 	bool inNote;
 	bool inNoteBody;
 private:

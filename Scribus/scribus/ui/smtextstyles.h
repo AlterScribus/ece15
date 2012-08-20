@@ -77,6 +77,8 @@ private slots:
 	void slotDropCapOffset();
 	void slotDropCapCharStyle(const QString &name);
 	void slotHyphenationMode(int mh);
+	void slotClearOnApply(bool isOn);
+	void slotParentClearOnApply();
 	void slotSpaceAbove();
 	void slotSpaceBelow();
 	void slotAlignment();

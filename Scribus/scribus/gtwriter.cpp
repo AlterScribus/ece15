@@ -197,6 +197,11 @@ void gtWriter::setOverridePStyleFont(bool newOPSF)
 	action->setOverridePStyleFont(newOPSF);
 }
 
+void gtWriter::setOmitParagraphStyles(bool newOPS)
+{
+	action->setOmitParagraphStyles(newOPS);
+}
+
 gtWriter::~gtWriter()
 {
 	if (!errorSet)

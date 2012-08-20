@@ -9063,6 +9063,8 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 
 void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection, bool rmDirectFormatting)
 {
+	if (newStyle.clearOnApply())
+		rmDirectFormatting = true;
 	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
 	assert(itemSelection!=0);
 	uint selectedItemCount=itemSelection->count();

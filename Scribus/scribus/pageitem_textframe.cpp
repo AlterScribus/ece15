@@ -1539,7 +1539,6 @@ void PageItem_TextFrame::layout()
 		setMaxY(-1);
 		int maxYAsc = 0, maxYDesc = 0;
 		bool HasObject = false;
-		CharStyle charStyle = CharStyle();
 		double hlcsize10 = 0.0;
 		double scaleV = 0.0;
 		double scaleH = 0.0;
@@ -1625,7 +1624,8 @@ void PageItem_TextFrame::layout()
 				style = itemText.paragraphStyle(a);
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
-			charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
+			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
+			const ScFace font = charStyle.font();
 			hlcsize10 = charStyle.fontSize() / 10.0;
 			scaleV = charStyle.scaleV() / 1000.0;
 			scaleH = charStyle.scaleH() / 1000.0;
@@ -1639,7 +1639,7 @@ void PageItem_TextFrame::layout()
 			}
 			else if (disableHyph && !hl->ch.isLetterOrNumber())
 				disableHyph = false;
-						// find out about par gap and dropcap
+			// find out about par gap and dropcap
 			if (a == firstInFrame())
 			{
 				if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
@@ -1679,8 +1679,6 @@ void PageItem_TextFrame::layout()
 					itemText.setCharStyle(a, chstr.length(),charStyle);
 				}
 			}
-
-			const ScFace font = charStyle.font();
 
 			{  // local block for 'fl'
 				StyleFlag fl = hl->effects();
@@ -1754,7 +1752,7 @@ void PageItem_TextFrame::layout()
 			// find charsize factors
 			if (DropCmode)
 			{
-				DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
+				//DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
 
 				// FIXME : we should ensure that fonts are loaded before calls to layout()
 				// ScFace::realCharHeight()/Ascent() ensure font is loaded thanks to an indirect call to char2CMap()
@@ -1919,7 +1917,7 @@ void PageItem_TextFrame::layout()
 					//
 					for (int i = 0; i < chstrLen; ++i)
 					{
-						realCharHeight = qMax(realCharHeight, font.realCharHeight(chstr[i], charStyle.fontSize() / 10.0));
+						realCharHeight = qMax(realCharHeight, font.realCharHeight(chstr[i], hlcsize10));
 						realAsce = qMax(realAsce, font.realCharHeight(chstr[i], chsd / 10.0));
 						wide += font.realCharWidth(chstr[i], chsd / 10.0);
 					}
@@ -3178,7 +3176,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	}
 	QTransform pf2;
 	QPoint pt1, pt2;
-	double wide;
 	QString cachedStroke = "";
 	QString cachedFill = "";
 	double cachedFillShade = -1;
@@ -3336,11 +3333,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 									xcoZli -= hls->glyph.xoffset;
 								}
 							}
-							const ScFace font = charStyleS.font();
-							double fontSize = charStyleS.fontSize() / 10.0;
-							desc = - font.descent(fontSize);
-							asce = font.ascent(fontSize);
-							wide = hls->glyph.wide();
 							QRectF scr;
 							if (HasObject)
 							{
@@ -3350,7 +3342,13 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 								previousWasObject = true;
 							}
 							else
-								scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, wide , (asce+desc) * (hls->glyph.scaleV));
+							{
+								const ScFace font = charStyleS.font();
+								double fontSize = charStyleS.fontSize() / 10.0;
+								desc = - font.descent(fontSize);
+								asce = font.ascent(fontSize);
+								scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, hls->glyph.wide(), (asce+desc) * (hls->glyph.scaleV));
+							}
 							selectedFrame |=  scr;
 						}
 					}
@@ -3378,9 +3376,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 								xcoZli -= hls->glyph.xoffset;
 							}
 						}
-						desc = - charStyleS.font().descent(charStyleS.fontSize() / 10.0);
-						asce = charStyleS.font().ascent(charStyleS.fontSize() / 10.0);
-						wide = hls->glyph.wide();
 						QRectF scr;
 						if ((hls->ch == SpecialChars::OBJECT)  && (hls->hasObject(m_Doc)))
 						{
@@ -3390,7 +3385,13 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							previousWasObject = true;
 						}
 						else
-							scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, wide , (asce+desc) * (hls->glyph.scaleV));
+						{
+							const ScFace font = charStyleS.font();
+							double fontSize = charStyleS.fontSize() / 10.0;
+							desc = - font.descent(fontSize);
+							asce = font.ascent(fontSize);
+							scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, hls->glyph.wide(), (asce+desc) * (hls->glyph.scaleV));
+						}
 						warnnedFrame |=  scr;
 					}
 				}
@@ -3496,7 +3497,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							if (m_Doc->guidesPrefs().showControls && hl->hasMark() && (hl->glyph.glyph != SpecialChars::OBJECT))
 							{
 								GlyphLayout markGlyph;
-								layoutGlyphs(charStyle,SpecialChars::OBJECT, markGlyph);
+								layoutGlyphs(charStyle, SpecialChars::OBJECT, markGlyph);
 								drawGlyphs(p, charStyle, markGlyph);
 							}
 							drawGlyphs(p, charStyle, hl->glyph);

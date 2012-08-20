@@ -61,6 +61,7 @@ private:
 	gtStyle *lastStyle;
 	gtStyle *pstyle;
 	bool importTextOnly;
+	bool omitPStyles;
 	bool inList;
 	bool inAnnotation;
 	bool inNote;
@@ -79,7 +80,7 @@ private:
 	QString getName();
 	void getStyle();
 public:
-	ContentReader(QString documentName, StyleReader* s, gtWriter *w, bool textOnly);
+	ContentReader(QString documentName, StyleReader* s, gtWriter *w, bool textOnly, bool omitPS = false);
 	~ContentReader();
 	static void startElement(void *user_data, const xmlChar *fullname, const xmlChar ** atts);
 	static void endElement(void *user_data, const xmlChar *name);

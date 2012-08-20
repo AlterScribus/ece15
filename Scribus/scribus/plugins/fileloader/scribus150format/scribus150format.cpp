@@ -2578,6 +2578,10 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(MaxGlyphExtend))
 		newStyle.setMaxGlyphExtension(attrs.valueAsDouble(MaxGlyphExtend));
 	
+	static const QString ClearOnApply("ClearOnApply");
+	if (attrs.hasAttribute(ClearOnApply))
+		newStyle.setClearOnApply(attrs.valueAsBool(ClearOnApply));
+	
 	static const QString KeepLinesStart("KeepLinesStart");
 	if (attrs.hasAttribute(KeepLinesStart))
 		newStyle.setKeepLinesStart(attrs.valueAsInt(KeepLinesStart));
@@ -4607,6 +4611,8 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		pstyle.setMinGlyphExtension(attrs.valueAsDouble("MinGlyphShrink"));
 	if (attrs.hasAttribute("MaxGlyphExtend"))
 		pstyle.setMaxGlyphExtension(attrs.valueAsDouble("MaxGlyphExtend"));
+	if (attrs.hasAttribute("ClearOnApply"))
+		pstyle.setClearOnApply(attrs.valueAsBool("ClearOnApply"));
 	if (attrs.hasAttribute("OpticalMargins"))
 		pstyle.setOpticalMargins(attrs.valueAsInt("OpticalMargins"));
 	if (attrs.hasAttribute("HyphenationMode"))

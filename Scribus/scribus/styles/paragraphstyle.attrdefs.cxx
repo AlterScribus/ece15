@@ -40,4 +40,4 @@ ATTRDEF(int, keepLinesEnd, KeepLinesEnd, 0)
 ATTRDEF(bool, keepWithNext, KeepWithNext, false)
 ATTRDEF(bool, keepTogether, KeepTogether, false)
 ATTRDEF(QString, dcCharStyleName, DcCharStyleName,"")
-
+ATTRDEF(bool, clearOnApply, ClearOnApply, false)

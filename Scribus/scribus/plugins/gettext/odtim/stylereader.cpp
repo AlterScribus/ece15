@@ -38,7 +38,7 @@ StyleReader* StyleReader::sreader = NULL;
 extern xmlSAXHandlerPtr sSAXHandler;
  
 StyleReader::StyleReader(QString documentName, gtWriter *w,
-                         bool textOnly, bool prefix, bool combineStyles)
+                         bool textOnly, bool prefix, bool combineStyles, bool omitPS)
 {
  	sreader      = this;
  	docname      = documentName;
@@ -47,6 +47,7 @@ StyleReader::StyleReader(QString documentName, gtWriter *w,
  	importTextOnly = textOnly;
  	usePrefix    = prefix;
 	packStyles   = combineStyles;
+	omitPStyles  = omitPS;
  	currentStyle = 0;
 	currentListStyle = 0;
  	parentStyle  = 0;
@@ -414,7 +415,7 @@ StyleReader::StyleReader(QString documentName, gtWriter *w,
  		{
  			parentStyle = new gtStyle("tmp-parent");
  		}
- 		if (isParaStyle)
+ 		if (isParaStyle && !omitPStyles)
  		{
  			gtParagraphStyle *tmpP;
  			if (parentStyle->target() == "paragraph")

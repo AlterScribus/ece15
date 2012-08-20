@@ -88,6 +88,7 @@ gtAction::gtAction(bool append, PageItem* pageitem)
 	undoManager = UndoManager::instance();
 	noteStory = NULL;
 	note = NULL;
+	overridePStyleFont = true;
 }
 
 void gtAction::setProgressInfo()
@@ -223,7 +224,7 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 	}
 }
 
-void gtAction::write(const QString& text, gtStyle *style, bool isNote)
+void gtAction::write(const QString& text, gtStyle *style, bool isNote, bool keepPStyles)
 {
 	if (isFirstWrite)
 	{
@@ -242,7 +243,7 @@ void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 		}
 	}
 	int paragraphStyle = -1;
-	if (style->target() == "paragraph")
+	if (style->target() == "paragraph" && keepPStyles)
 	{
 		gtParagraphStyle* pstyle = dynamic_cast<gtParagraphStyle*>(style);
 		assert(pstyle != NULL);
@@ -800,6 +801,11 @@ bool gtAction::getOverridePStyleFont()
 void gtAction::setOverridePStyleFont(bool newOPSF)
 {
 	overridePStyleFont = newOPSF;
+}
+
+void gtAction::setOmitParagraphStyles(bool newOPS)
+{
+	omitParagraphStyles = newOPS;
 }
 
 QString gtAction::parseColor(const QString &s)
