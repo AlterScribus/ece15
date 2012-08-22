@@ -179,7 +179,6 @@ void Scribus150Format::getReplacedFontData(bool & getNewReplacement, QMap<QStrin
 bool Scribus150Format::loadElements(const QString & data, QString fileDir, int toLayer, double Xp_in, double Yp_in, bool loc)
 {
 	ParagraphStyle vg;
-	bool newVersion = false;
 	isNewFormat = false;
 	LayerToPaste = toLayer;
 	Xp = Xp_in;
@@ -200,8 +199,6 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 	QStack< QList<PageItem*> > groupStackM;
 	QStack< QList<PageItem*> > groupStackP;
 	QStack<int> groupStack2;
-
-	ScColor lf = ScColor();
 
 	itemRemap.clear();
 	itemNext.clear();
@@ -243,8 +240,6 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 					GrX = attrs.valueAsDouble("XP");
 					GrY = attrs.valueAsDouble("YP");
 				}
-				if (attrs.hasAttribute("Version"))
-					newVersion = true;
 			}
 			else
 			{
@@ -421,10 +416,12 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem   = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -523,10 +520,12 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -683,7 +682,6 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 		return false;
 	}
 	QString fileDir = QFileInfo(fileName).absolutePath();
-	ScColor lf = ScColor();
 	
 	if (m_mwProgressBar!=0)
 	{
@@ -897,10 +895,12 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -999,10 +999,12 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1163,7 +1165,6 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	struct ScribusDoc::BookMa bok;
 	QMap<int, ScribusDoc::BookMa> bookmarks;
 
-	bool newVersion = false;
 	isNewFormat = false;
 
 	QMap<int,PageItem*> TableID;
@@ -1189,7 +1190,6 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	QString fileDir = QFileInfo(fileName).absolutePath();
 	int firstPage = 0;
 	int layerToSetActive = 0;
-	ScColor lf = ScColor();
 	
 	if (m_mwProgressBar!=0)
 	{
@@ -1256,8 +1256,6 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 				success = false;
 				break;
 			}
-			if (attrs.hasAttribute("Version"))
-				newVersion = true;
 			firstElement = false;
 		}
 		if (tagName == "DOCUMENT")
@@ -1545,10 +1543,12 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1647,10 +1647,12 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1948,6 +1950,7 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->rulerXoffset = attrs.valueAsDouble("rulerXoffset", 0.0);
 	m_Doc->rulerYoffset = attrs.valueAsDouble("rulerYoffset", 0.0);
 	m_Doc->SnapGuides   = attrs.valueAsBool("SnapToGuides", false);
+	m_Doc->SnapElement  = attrs.valueAsBool("SnapToElement", false);
 	m_Doc->useRaster    = attrs.valueAsBool("SnapToGrid", false);
 	
 	m_Doc->setAutoSave(attrs.valueAsBool("AutoSave", false));
@@ -2135,15 +2138,9 @@ void Scribus150Format::readToolSettings(ScribusDoc* doc, ScXmlStreamAttributes& 
 	doc->itemToolPrefs().calligrapicPenAngle = attrs.valueAsDouble("calligrapicPenAngle", 0.0);
 	doc->itemToolPrefs().calligrapicPenWidth = attrs.valueAsDouble("calligrapicPenWidth", 10.0);
 	doc->itemToolPrefs().calligrapicPenStyle = static_cast<Qt::PenStyle>(attrs.valueAsInt("calligrapicPenStyle"));
-	doc->opToolPrefs().magMin      = attrs.valueAsInt("MAGMIN", 1);
-	doc->opToolPrefs().magMax      = attrs.valueAsInt("MAGMAX", 3200);
-	doc->opToolPrefs().magStep     = attrs.valueAsInt("MAGSTEP", 200);
 	doc->opToolPrefs().dispX       = attrs.valueAsDouble("dispX", 10.0);
 	doc->opToolPrefs().dispY       = attrs.valueAsDouble("dispY", 10.0);
 	doc->opToolPrefs().constrain   = attrs.valueAsDouble("constrain", 15.0);
-	//CB Reset doc zoom step value to 200% instead of old values.
-	if (doc->opToolPrefs().magStep <= 100)
-		doc->opToolPrefs().magStep = 200;
 	doc->itemToolPrefs().textTabFillChar = attrs.valueAsString("TabFill","");
 	doc->itemToolPrefs().textTabWidth   = attrs.valueAsDouble("TabWidth", 36.0);
 	if (attrs.hasAttribute("CPICT"))
@@ -3653,8 +3650,10 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 	uint itemCount1 = m_Doc->Items->count();
 	bool savedAlignGrid = m_Doc->useRaster;
 	bool savedAlignGuides = m_Doc->SnapGuides;
+	bool savedAlignElement = m_Doc->SnapElement;
 	m_Doc->useRaster = false;
 	m_Doc->SnapGuides = false;
+	m_Doc->SnapElement = false;
 
 	QStringRef tagName = reader.name();
 	while(!reader.atEnd() && !reader.hasError())
@@ -3719,6 +3718,7 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 
 	doc->useRaster  = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
 	if (!success)
 	{
 		return false;
@@ -3753,10 +3753,12 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -3791,10 +3793,12 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -4194,7 +4198,6 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		break;
 	}
 
-	UndoManager::instance()->setUndoEnabled(false);
 	currItem->FrameType = attrs.valueAsInt("FRTYPE", 0);
 	int startArrowIndex = attrs.valueAsInt("startArrowIndex", 0);
 	if ((startArrowIndex < 0) || (startArrowIndex > static_cast<int>(doc->arrowStyles().size())))
@@ -4787,7 +4790,6 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 
 	//currItem->setRedrawBounding();
 	//currItem->OwnPage = view->OnPage(currItem);
-	UndoManager::instance()->setUndoEnabled(true);
 	return currItem;
 }
 
@@ -5140,7 +5142,6 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 
 	ScPage* newPage = NULL;
 	
-	QString tmp;
 	QMap<int,PageItem*> TableID;
 	QList<PageItem*> TableItems;
 	QMap<int,PageItem*> WeldID;
@@ -5150,7 +5151,6 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 	QStack< QList<PageItem*> > groupStackP;
 	QStack<int> groupStack2;
 	double pageX = 0, pageY = 0;
-	bool newVersion = false;
 	QMap<int,int> layerTrans;
 	int maxLayer = 0, maxLevel = 0, a = 0;
 
@@ -5205,8 +5205,6 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 				success = false;
 				break;
 			}
-			if (attrs.hasAttribute("Version"))
-				newVersion = true;
 			firstElement = false;
 		}
 
@@ -5284,10 +5282,37 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 				continue;
 			a = m_Doc->currentPage()->pageNr();
 			newPage = m_Doc->Pages->at(a);
+			SimpleState *ss = NULL;
+			if (UndoManager::undoEnabled())
+			{
+				ss = new SimpleState(Um::ChangePageAttrs, "", Um::ICreate);
+				ss->set("PAGE_ATTRS", "page_attrs");
+				ss->set("LEFT_OLD", newPage->LeftPg);
+				ss->set("NAME_OLD", newPage->pageName());
+				ss->set("ORIENTATION_OLD", newPage->orientation());
+				ss->set("SIZE_OLD", newPage->m_pageSize);
+				ss->set("WIDTH_OLD", newPage->width());
+				ss->set("HEIGHT_OLD", newPage->height());
+				ss->set("INIT_HEIGHT_OLD", newPage->initialHeight());
+				ss->set("INIT_WIDTH_OLD", newPage->initialWidth());
+				ss->set("INIT_MARGINTOP_OLD", newPage->initialMargins.Top);
+				ss->set("INIT_MARGINBOTTOM_OLD", newPage->initialMargins.Bottom);
+				ss->set("INIT_MARGINRIGHT_OLD", newPage->initialMargins.Right);
+				ss->set("INIT_MARGINLEFT_OLD", newPage->initialMargins.Left);
+				ss->set("MARGINTOP_OLD", newPage->Margins.Top);
+				ss->set("MARGINBOTTOM_OLD", newPage->Margins.Bottom);
+				ss->set("MARGINPRESET_OLD", newPage->marginPreset);
+				ss->set("HORIZONTAL_AUTOGAP_OLD", newPage->guides.horizontalAutoGap());
+				ss->set("VERTICAL_AUTOGAP_OLD", newPage->guides.verticalAutoGap());
+				ss->set("HORIZONTAL_AUTOCOUNT_OLD", newPage->guides.horizontalAutoCount());
+				ss->set("VERTICAL_AUTOCOUNT_OLD", newPage->guides.verticalAutoCount());
+				ss->set("HORIZONTAL_AUTOREFER_OLD", newPage->guides.horizontalAutoRefer());
+				ss->set("VERTICAL_AUTOREFER_OLD", newPage->guides.verticalAutoRefer());
+			}
 			if (Mpage)
 			{
 				newPage->LeftPg = attrs.valueAsInt("LEFT", 0);
-				
+
 				if (!renamedPageName.isEmpty())
 					newPage->setPageName(renamedPageName);
 				else
@@ -5313,8 +5338,8 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			newPage->Margins.Bottom = newPage->initialMargins.Bottom;
 			pageX = attrs.valueAsDouble( attrs.valueAsString("PAGEXPOS"));
 			pageY = attrs.valueAsDouble( attrs.valueAsString("PAGEYPOS"));
+
 			// guides reading
-			tmp = "";
 			newPage->guides.setHorizontalAutoGap(attrs.valueAsDouble("AGhorizontalAutoGap", 0.0));
 			newPage->guides.setVerticalAutoGap(attrs.valueAsDouble("AGverticalAutoGap", 0.0));
 			newPage->guides.setHorizontalAutoCount(attrs.valueAsInt("AGhorizontalAutoCount", 0));
@@ -5333,6 +5358,31 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 
 			newPage->guides.addHorizontals(newPage->guides.getAutoHorizontals(newPage), GuideManagerCore::Auto);
 			newPage->guides.addVerticals(newPage->guides.getAutoVerticals(newPage), GuideManagerCore::Auto);
+			if (UndoManager::undoEnabled())
+			{
+				ss->set("LEFT", newPage->LeftPg);
+				ss->set("NAME", newPage->pageName());
+				ss->set("ORIENTATION", newPage->orientation());
+				ss->set("SIZE", newPage->m_pageSize);
+				ss->set("WIDTH", newPage->width());
+				ss->set("HEIGHT", newPage->height());
+				ss->set("INIT_HEIGHT", newPage->initialHeight());
+				ss->set("INIT_WIDTH", newPage->initialWidth());
+				ss->set("INIT_MARGINTOP", newPage->initialMargins.Top);
+				ss->set("INIT_MARGINBOTTOM", newPage->initialMargins.Bottom);
+				ss->set("INIT_MARGINRIGHT", newPage->initialMargins.Right);
+				ss->set("INIT_MARGINLEFT", newPage->initialMargins.Left);
+				ss->set("MARGINTOP", newPage->Margins.Top);
+				ss->set("MARGINBOTTOM", newPage->Margins.Bottom);
+				ss->set("MARGINPRESET", newPage->marginPreset);
+				ss->set("HORIZONTAL_AUTOGAP", newPage->guides.horizontalAutoGap());
+				ss->set("VERTICAL_AUTOGAP", newPage->guides.verticalAutoGap());
+				ss->set("HORIZONTAL_AUTOCOUNT", newPage->guides.horizontalAutoCount());
+				ss->set("VERTICAL_AUTOCOUNT", newPage->guides.verticalAutoCount());
+				ss->set("HORIZONTAL_AUTOREFER", newPage->guides.horizontalAutoRefer());
+				ss->set("VERTICAL_AUTOREFER", newPage->guides.verticalAutoRefer());
+				undoManager->action(newPage, ss);
+			}
 		}
 		if ((tagName == "PAGEOBJECT") || (tagName == "MASTEROBJECT") || (tagName == "FRAMEOBJECT"))
 		{
@@ -5480,10 +5530,12 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -5536,10 +5588,12 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -5831,7 +5885,7 @@ bool Scribus150Format::readLineStyles(const QString& fileName, QHash<QString,mul
 			styles->insert(mlName2, ml);
 		}
 	}
-	return true;
+	return success;
 }
 
 bool Scribus150Format::readColors(const QString& fileName, ColorList & colors)
@@ -5869,7 +5923,7 @@ bool Scribus150Format::readColors(const QString& fileName, ColorList & colors)
 			}
 		}
 	}
-	return true;
+	return success;
 }
 
 bool Scribus150Format::readPageCount(const QString& fileName, int *num1, int *num2, QStringList & masterPageNames)

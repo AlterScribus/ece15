@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QEvent>
 
+#include "numeration.h"
 #include "smpstylewidget.h"
 #include "units.h"
 #include "util.h"
@@ -22,7 +23,7 @@ static bool isEqual(double a, double b)
 }
 
 
-SMPStyleWidget::SMPStyleWidget() : QWidget()
+SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 {
 	setupUi(this);
 	//Not used yet
@@ -54,7 +55,6 @@ SMPStyleWidget::SMPStyleWidget() : QWidget()
 	maxGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 
 	connect(optMarginDefaultButton, SIGNAL(clicked()), this, SLOT(slotDefaultOpticalMargins()));
-
 }
 
 void SMPStyleWidget::slotLineSpacingModeChanged(int i)
@@ -169,7 +169,7 @@ void SMPStyleWidget::unitChange(double oldRatio, double newRatio, int unitIndex)
 	tabList_->unitChange(unitIndex);
 }
 
-void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang)
+void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles, QList<CharStyle> &cstyles, QList<Bullet> bullets, QList<Numeration> numerations, int unitIndex, const QString &defLang)
 {
 	double unitRatio = unitGetRatioFromIndex(unitIndex);
 	parentCombo->setEnabled(!pstyle->isDefaultStyle());
@@ -341,17 +341,67 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	}
 
 	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
+	
+	if (pstyle->bulletName() != "")
+	{
+		bulletBox->setChecked(true);
+		Bullet bul;
+		for (int i=0; i < bullets.count(); ++i)
+		{
+			if (bullets.at(i).name == pstyle->bulletName())
+			{
+				bul = bullets.at(i);
+				break;
+			}
+		}
+		Q_ASSERT(bul.name != "");
+		setCurrentComboItem(bulletsList, bul.name);
+		bulletsList->setEnabled(true);
+	}
+	else
+	{
+		bulletsList->setCurrentIndex(0);
+		bulletsList->setEnabled(false);
+		bulletBox->setChecked(false);
+	}
+	connect(bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
+	
+	if (pstyle->numName() != "")
+	{
+		numberingBox->setChecked(true);
+		Numeration num;
+		for (int i=0; i < numerations.count(); ++i)
+		{
+			if (numerations.at(i).name == pstyle->numName())
+			{
+				num = numerations.at(i);
+				break;
+			}
+		}
+		Q_ASSERT(num.name != "");
+		setCurrentComboItem(numberingList, num.name);
+		numberingList->setEnabled(true);
+	}
+	else
+	{
+		numberingList->setCurrentIndex(0);
+		numberingList->setEnabled(false);
+		numberingBox->setChecked(false);
+	}
+	connect(numberingBox, SIGNAL(toggled(bool)), this, SLOT(slotNumbering(bool)));
 }
 
-void SMPStyleWidget::show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang)
+void SMPStyleWidget::show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, QList<Bullet> bullets, QList<Numeration> numerations, int unitIndex, const QString &defLang)
 {
 	if (pstyles.count() == 1)
-		show(pstyles[0], pstylesAll, cstyles, unitIndex, defLang);
+		show(pstyles[0], pstylesAll, cstyles, bullets, numerations, unitIndex, defLang);
 	else if (pstyles.count() > 1)
 	{
 		showLineSpacing(pstyles);
 		showSpaceAB(pstyles, unitIndex);
 		showDropCap(pstyles, cstyles, unitIndex);
+		showBullets(pstyles, bullets);
+		showNumeration(pstyles, numerations);
 		showAlignment(pstyles);
 		showOpticalMargin(pstyles);
 		showMinSpace(pstyles);
@@ -505,6 +555,78 @@ void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyl
 	dropCapLines_->setEnabled(true);
 	dropCapOffset_->setEnabled(true);
 	dropCapCharStyleCombo->setEnabled(true);
+}
+
+void SMPStyleWidget::showBullets(QList<ParagraphStyle *> &pstyles, QList<Bullet> bullets)
+{
+	if(pstyles.isEmpty())
+	{
+		qDebug()<<"Warning showOpticalMargin called with an empty list of styles";
+		return;
+	}
+
+	bulletsList->clear();
+	for (int i=0; i < bullets.count(); i++)
+		bulletsList->addItem(bullets.at(i).name);
+
+	QString bulName = QString();
+	for (int i = 0; i < pstyles.count(); ++i)
+	{
+		if (!bulName.isEmpty() && (pstyles[i]->bulletName() != bulName))
+		{
+			bulName.clear();
+			break;
+		}
+		else
+			bulName = pstyles[i]->bulletName();
+	}
+
+	if (bulName.isEmpty())
+		bulletsList->setCurrentIndex(0);
+	else
+	{
+		Bullet bul;
+		for (int i=0; i < bullets.count(); ++i)
+		{
+			if (bullets.at(i).name == pstyles[0]->bulletName())
+			{
+				bul = bullets.at(i);
+				break;
+			}
+		}
+		Q_ASSERT(bul.name != "");
+		setCurrentComboItem(bulletsList, bul.name);
+	}
+	
+	connect(bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
+	bulletsList->setEnabled(true);
+}
+
+void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Numeration> numerations)
+{
+	if(pstyles.isEmpty())
+	{
+		qDebug()<<"Warning showOpticalMargin called with an empty list of styles";
+		return;
+	}
+	numberingList->clear();
+	for (int i=0; i < numerations.count(); i++)
+		numberingList->addItem(numerations.at(i).name);
+
+	Numeration num;
+	for (int i=0; i < numerations.count(); ++i)
+	{
+		if (numerations.at(i).name == pstyles[0]->numName())
+		{
+			num = numerations.at(i);
+			break;
+		}
+	}
+	Q_ASSERT(num.name != "");
+	setCurrentComboItem(numberingList, num.name);
+
+	connect(numberingBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
+	numberingList->setEnabled(true);
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
@@ -835,20 +957,62 @@ void SMPStyleWidget::slotDropCap(bool isOn)
 {
 	if (isOn)
 	{
-		dropCapsBox->setEnabled(true);
 		dropCapLines_->setEnabled(true);
 		dropCapOffset_->setEnabled(true);
 		dropCapCharStyleCombo->setEnabled(true);
+		bulletBox->setChecked(false);
+		bulletsList->setEnabled(false);
+		numberingBox->setChecked(false);
+		numberingList->setEnabled(false);
+		levelSpin->setEnabled(false);
 	}
 	else
 	{
-		dropCapsBox->setEnabled(true);
 		dropCapLines_->setEnabled(false);
 		dropCapOffset_->setEnabled(false);
 		dropCapCharStyleCombo->setEnabled(false);
 	}
 	if (hasParent_)
 		parentDropCapButton->show();
+}
+
+void SMPStyleWidget::slotBullets(bool isOn)
+{
+	if (isOn)
+	{
+		bulletsList->setEnabled(true);
+		numberingBox->setChecked(false);
+		numberingList->setEnabled(false);
+		levelSpin->setEnabled(false);
+		dropCapsBox->setChecked(false);
+		dropCapLines_->setEnabled(false);
+		dropCapOffset_->setEnabled(false);
+		dropCapCharStyleCombo->setEnabled(false);
+	}
+	else
+	{
+		bulletsList->setEnabled(false);
+	}
+}
+
+void SMPStyleWidget::slotNumbering(bool isOn)
+{
+	if (isOn)
+	{
+		numberingList->setEnabled(true);
+		levelSpin->setEnabled(true);
+		bulletBox->setChecked(false);
+		bulletsList->setEnabled(false);
+		dropCapsBox->setChecked(false);
+		dropCapLines_->setEnabled(false);
+		dropCapOffset_->setEnabled(false);
+		dropCapCharStyleCombo->setEnabled(false);
+	}
+	else
+	{
+		numberingList->setEnabled(false);
+		levelSpin->setEnabled(false);
+	}
 }
 
 void SMPStyleWidget::slotParentDropCap()

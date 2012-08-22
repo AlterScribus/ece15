@@ -122,17 +122,7 @@ StoryText StoryText::copy() const
 	StoryText result(doc);
 	*(result.d) = *d;
 	return result;
-//	qDebug() << QString("StoryText::copy:");
-	QListIterator<ScText*> it( *(result.d) );
-	ScText* elem;
-	while ( it.hasNext() ) {
-		elem = it.next();
-//		qDebug() << QString("\tchar '%1' size %2 (orig %3)").arg(elem->ch).arg(elem->fontSize()).arg(charStyle(i++).fontSize());
-	}
-	
-	return result;
 }
-
 
 StoryText& StoryText::operator= (const StoryText & other)
 {
@@ -657,6 +647,28 @@ void StoryText::replaceObject(int pos, int ob)
 int StoryText::length() const
 {
 	return d->len;
+}
+
+QString StoryText::plainText() const
+{
+	if (length() <= 0)
+		return QString();
+
+	QChar   ch;
+	QString result;
+
+	uint len = length();
+	result.reserve(len);
+
+	StoryText* that(const_cast<StoryText*>(this));
+	for (int i = 0; i < len; ++i) {
+		ch = that->d->at(i)->ch;
+		if (ch == SpecialChars::PARSEP)
+			ch = QLatin1Char('\n');
+		result += ch;
+	}
+
+	return result;
 }
 
 QChar StoryText::text() const
@@ -2090,6 +2102,11 @@ public:
 	{
 		if (lastStyle)
 			delete lastStyle;
+	}
+
+	virtual void reset()
+	{
+		numPara = 0;
 	}
 	
 	void begin(const Xml_string& tag, Xml_attr attr)

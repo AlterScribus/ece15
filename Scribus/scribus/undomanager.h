@@ -73,7 +73,9 @@ public:
 	TransactionState();
 	/** @brief Destroys the TransactionState instance */
 	~TransactionState();
-	
+	/** @brief To know if the state is a Transaction */
+	bool isTransaction(){return true;}
+
 	/**
 	 * @brief Add a new <code>UndoState</code> object to the transaction.
 	 * @param state state to be added to the transaction
@@ -136,7 +138,7 @@ private:
 /**
     Class which handles Undo transactions. No data, just methods.
  */
-class UndoTransaction : public Transaction
+class SCRIBUS_API UndoTransaction : public Transaction
 {
 public:
 	UndoTransaction(TransactionData* data);
@@ -353,6 +355,8 @@ public:
 	 */
 	bool isGlobalMode();
 
+	UndoState* getLastUndo();
+
 private:
 	/**
 	 * @brief The only instance of UndoManager available.
@@ -440,6 +444,7 @@ public:
 	* Strings describing undo actions
 	*/
 	/*@{*/
+	static QString ConnectPath;
 	static QString AddVGuide;
 	static QString AddHGuide;
 	static QString DelVGuide;
@@ -448,11 +453,20 @@ public:
 	static QString DelHAGuide;
 	static QString MoveVGuide;
 	static QString MoveHGuide;
+	static QString UniteItem;
+	static QString Overprint;
+	static QString BlendMode;
+	static QString ActionPDF;
+	static QString SplitItem;
 	static QString RemoveAllGuides;
 	static QString RemoveAllPageGuides;
 	static QString LockGuides;
 	static QString UnlockGuides;
 	static QString Move;
+	static QString NewMasterPage;
+	static QString DelMasterPage;
+	static QString ImportMasterPage;
+	static QString DuplicateMasterPage;
 	static QString Resize;
 	static QString Rotate;
 	static QString MoveFromTo;
@@ -488,6 +502,7 @@ public:
 	static QString Delete;
 	static QString Rename;
 	static QString FromTo;
+	static QString Mode;
 	static QString ApplyMasterPage;
 	static QString Paste;
 	static QString Cut;
@@ -521,13 +536,20 @@ public:
 	static QString SetFontEffect;
 	static QString ImageFrame;
 	static QString TextFrame;
+	static QString Layer;
 	static QString LatexFrame;
+	static QString ResTyp;
 	static QString Polygon;
+	static QString EditPolygon;
+	static QString EditArc;
+	static QString EditSpiral;
 	static QString BezierCurve;
+	static QString ShowImage;
 	static QString Polyline;
 	static QString PathText;
 	static QString ConvertTo;
 	static QString ImportSVG;
+	static QString RoundCorner;
 	static QString ImportUniconv;
 	static QString ImportEPS;
 	static QString ImportBarcode;
@@ -557,6 +579,14 @@ public:
 	static QString ResetContourLine;
 	static QString AddPage;
 	static QString AddPages;
+	static QString ReplaceText;
+	static QString FirstLineOffset;
+	static QString AppendText;
+	static QString ImportText;
+	static QString ClearText;
+	static QString AddLoremIpsum;
+	static QString DeleteText;
+	static QString InsertText;
 	static QString DeletePage;
 	static QString DeletePages;
 	static QString ChangePageProps;
@@ -574,12 +604,30 @@ public:
 	static QString DisableFlowLayer;
 	static QString SetLayerBlendMode;
 	static QString SetLayerTransparency;
+	static QString MeshGradient;
+	static QString ChangeMeshGradient;
 	static QString SetLayerLocked;
 	static QString SetLayerUnlocked;
+	static QString RemoveMeshPatch;
+	static QString StartArrowScale;
+	static QString EndArrowScale;
 	static QString GetImage;
 	static QString ChangeFormula;
+	static QString GradType;
+	static QString GradTypeMask;
+	static QString GradPos;
+	static QString GradVal;
+	static QString GradValStroke;
+	static QString GradCol;
+	static QString GradTypeStroke;
 	static QString MultipleDuplicate;
+	static QString Duplicate;
+	static QString Transform;
 	static QString ApplyTextStyle;
+	static QString RemoveTextStyle;
+	static QString Columns;
+	static QString ColumnsGap;
+	static QString TextFrameDist;
 	static QString MenuUndo;
 	static QString MenuUndoEmpty;
 	static QString MenuRedo;
@@ -588,10 +636,16 @@ public:
 	static QString ResetControlPoint;
 	static QString ResetControlPoints;
 	static QString ImageEffects;
+	static QString LevelUp;
+	static QString LevelDown;
+	static QString LevelBottom;
+	static QString LevelTop;
 	static QString InsertFrame;
 	static QString AdjustFrameToImage;
 	static QString Copy;
 	static QString CopyPage;
+	static QString ChangePageAttrs;
+	static QString ImportPage;
 	static QString MovePage;
 	static QString ToOutlines;
 	static QString LinkTextFrame;

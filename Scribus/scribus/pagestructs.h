@@ -10,6 +10,7 @@ for which a new license (GPL+exception) is in place.
 #include <QMap>
 #include <QList>
 #include <QString>
+#include "numeration.h"
 
 struct ObjectAttribute 
 {
@@ -41,15 +42,16 @@ struct ToCSetup
 typedef QList<ToCSetup> ToCSetupVector;
 
 
-typedef enum 
-{
-	Type_1_2_3,
-	Type_i_ii_iii,
-	Type_I_II_III,
-	Type_a_b_c,
-	Type_A_B_C,
-	Type_None=99
-} DocumentSectionType;
+//typedef enum 
+//{
+//	Type_1_2_3,
+//	Type_i_ii_iii,
+//	Type_I_II_III,
+//	Type_a_b_c,
+//	Type_A_B_C,
+//	Type_None=99
+//}
+typedef NumFormat DocumentSectionType;
 
 struct DocumentSection
 {

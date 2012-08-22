@@ -183,6 +183,13 @@ void ResizeGesture::mouseReleaseEvent(QMouseEvent *m)
 			if (currItem->asImageFrame())
 				currItem->AdjustPictScale();
 		}
+		//add action itemResizeToMargin for right click on item`s handlers
+		else if (m->button() == Qt::RightButton)
+		{
+			const FPoint mousePointDoc = m_canvas->globalToCanvas(m->globalPos());
+			Canvas::FrameHandle fh = m_canvas->frameHitTest(QPointF(mousePointDoc.x(),mousePointDoc.y()), currItem);
+			m_doc->itemResizeToMargin(currItem, fh);
+		}
 		m_view->resetMousePressed();
 		// necessary since mousebutton is still recorded pressed, and otherwise checkchanges() will do nothing
 		// we must check changes on whole selection otherwise resize operation won't undo correctly on groups
@@ -335,12 +342,8 @@ void ResizeGesture::doResize(bool scaleContent)
 				}
 			}
 		}
-		double oldX = currItem->xPos();
-		double oldY = currItem->yPos();
 		QTransform mm = currItem->getTransform();
 		QPointF itPos = mm.map(QPointF(0, 0));
-		oldX = itPos.x();
-		oldY = itPos.y();
 		double m_scaleX, m_scaleY;
 		getScaleFromMatrix(mm, m_scaleX, m_scaleY);
 		double dx = (itPos.x() - newBounds.x()) / m_scaleX;
@@ -417,13 +420,21 @@ void ResizeGesture::adjustBounds(QMouseEvent *m)
 	}
 
 	// snap to grid	+ snap to guides
+	xSnap = 0;
+	ySnap = 0;
 	bool isCorner = m_handle == Canvas::NORTHWEST || m_handle == Canvas::NORTHEAST 
 		|| m_handle == Canvas::SOUTHWEST || m_handle == Canvas::SOUTHEAST;
 	if (m_rotation == 0 || isCorner)
 	{
 		FPoint snappedPoint = m_doc->ApplyGridF(docPoint);
 		double x = snappedPoint.x(), y = snappedPoint.y();
+
 		m_doc->ApplyGuides(&x, &y);
+		m_doc->ApplyGuides(&x, &y,true);
+		if(x != snappedPoint.x() && m_handle != Canvas::NORTH && m_handle != Canvas::SOUTH)
+			xSnap = x * m_canvas->scale();
+		if(y != snappedPoint.y() && m_handle != Canvas::EAST && m_handle != Canvas::WEST)
+			ySnap = y * m_canvas->scale();
 //		if (m_doc->ApplyGuides(&x, &y))
 //			qDebug() << "guides applied:" << snappedPoint.x() << snappedPoint.y() << "to" << x << y;
 		if (m_handle == Canvas::NORTH || m_handle == Canvas::SOUTH) 

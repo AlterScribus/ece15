@@ -19,13 +19,13 @@ class SMPStyleWidget : public QWidget, Ui::SMPStyleWidget
 {
 	Q_OBJECT
 public:
-	SMPStyleWidget();
+	SMPStyleWidget(ScribusDoc* doc);
 	~SMPStyleWidget();
 	
 	virtual void changeEvent(QEvent *e);
 
-	void show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang);
-	void show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang);
+	void show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles, QList<CharStyle> &cstyles, QList<Bullet> bullets, QList<Numeration> numerations, int unitIndex, const QString &defLang);
+	void show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, QList<Bullet> bullets, QList<Numeration> numerations, int unitIndex, const QString &defLang);
 
 	void clearAll();
 	void languageChange();
@@ -38,6 +38,8 @@ private:
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
 	void showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);
+	void showBullets(QList<ParagraphStyle*> &pstyles, QList<Bullet> bullets);
+	void showNumeration(QList<ParagraphStyle*> &pstyles, QList<Numeration> numerations);
 	void showAlignment(QList<ParagraphStyle*> &pstyles);
 	void showOpticalMargin(QList<ParagraphStyle*> &pstyles);
 	void showMinSpace(QList<ParagraphStyle*> &pstyles);
@@ -53,6 +55,8 @@ private:
 private slots:
 	void slotLineSpacingModeChanged(int);
 	void slotDropCap(bool isOn);
+	void slotBullets(bool isOn);
+	void slotNumbering(bool isOn);
 	void slotParentDropCap();
 	void slotDefaultOpticalMargins();
 	void slotParentOpticalMargins();

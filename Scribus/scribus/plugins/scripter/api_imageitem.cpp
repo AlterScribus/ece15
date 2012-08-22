@@ -12,59 +12,79 @@ for which a new license (GPL+exception) is in place.
 #include "ui/propertiespalette.h"
 #include "ui/propertiespalette_image.h"
 
-ScribusImageItem::ScribusImageItem(PageItem_ImageFrame* im) : ScribusItem(im)
+ImageAPI::ImageAPI(PageItem_ImageFrame* im) : ItemAPI(im)
 {
 	qDebug() << "ImageitemAPI loaded";
-	setObjectName("imageItem");
+    setObjectName("ImageItemAPI");
 	item = im;
 }
 
 
-double ScribusImageItem::imageXScale()
+double ImageAPI::xScale()
 {
 	return item->imageXScale();
 }
 
-void ScribusImageItem::setImageXScale(double value)
+void ImageAPI::setXScale(double value)
 {
 	item->setImageXScale(value);
 }
 
 
-double ScribusImageItem::imageYScale()
+double ImageAPI::yScale()
 {
 	return item->imageYScale();
 }
 
-void ScribusImageItem::setImageYScale(double value)
+void ImageAPI::setYScale(double value)
 {
 	item->setImageYScale(value);
 }
 
 
-double ScribusImageItem::imageXOffset()
+double ImageAPI::xOffset()
 {
 	return item->imageXOffset();
 }
 
-void ScribusImageItem::setImageXOffset(double value)
+void ImageAPI::setXOffset(double value)
 {
 	item->setImageXOffset(value);
 }
 
 
-double ScribusImageItem::imageYOffset()
+double ImageAPI::yOffset()
 {
 	return item->imageYOffset();
 }
 
-void ScribusImageItem::setImageYOffset(double value)
+void ImageAPI::setYOffset(double value)
 {
 	item->setImageYOffset(value);
 }
 
+void ImageAPI::setGrayscale()
+{
+    if (!checkHaveDocument())
+        RAISE("No document open");
+    if (item == NULL)
+        return;
+    if (! item->asImageFrame())
+    {
+        RAISE("Specified item not an image frame.");
+        return;
+    }
 
-void ScribusImageItem::loadImage(QString filename)
+    ImageEffect ef;
+    ef.effectCode = ScImage::EF_GRAYSCALE;
+
+    item->effectsInUse.append(ef);
+    item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->doc->PageColors, false);
+
+    ScCore->primaryMainWindow()->doc->updatePic();
+}
+
+void ImageAPI::load(QString filename)
 {
 	if (!checkHaveDocument())
 		RAISE("No document open");
@@ -78,7 +98,7 @@ void ScribusImageItem::loadImage(QString filename)
 	ScCore->primaryMainWindow()->doc->loadPict(filename, item);
 }
 
-void ScribusImageItem::scaleImage(double x, double y)
+void ImageAPI::scale(double x, double y)
 {
 	if (!checkHaveDocument())
 		RAISE("No document open");
@@ -90,19 +110,14 @@ void ScribusImageItem::scaleImage(double x, double y)
 		return;
 	}
 
-	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
+    Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
 	ScCore->primaryMainWindow()->doc->m_Selection->clear();
-	// Clear the selection
-	ScCore->primaryMainWindow()->view->Deselect();
-	// Select the item, which will also select its group if
-	// there is one.
-	ScCore->primaryMainWindow()->view->SelectItem(item);
+    ScCore->primaryMainWindow()->view->Deselect();
+    ScCore->primaryMainWindow()->view->SelectItem(item);
 
-	// scale
-	ScCore->primaryMainWindow()->doc->itemSelection_SetImageScale(x, y);    //CB why when this is done above?
+    ScCore->primaryMainWindow()->doc->itemSelection_SetImageScale(x, y);
 	ScCore->primaryMainWindow()->doc->updatePic();
 
 	// Now restore the selection.
@@ -111,7 +126,7 @@ void ScribusImageItem::scaleImage(double x, double y)
 		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 }
 
-void ScribusImageItem::setImageOffset(double x, double y)
+void ImageAPI::offset(double x, double y)
 {
 	if (!checkHaveDocument())
 		RAISE("No document open");
@@ -146,7 +161,7 @@ void ScribusImageItem::setImageOffset(double x, double y)
 		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 }
 
-void ScribusImageItem::setImageBrightness(double n)
+void ImageAPI::setBrightness(double n)
 {
 	if (!checkHaveDocument())
 		RAISE("No document open");
@@ -169,28 +184,7 @@ void ScribusImageItem::setImageBrightness(double n)
 	ScCore->primaryMainWindow()->doc->updatePic();
 }
 
-void ScribusImageItem::setImageGrayscale()
-{
-	if (!checkHaveDocument())
-		RAISE("No document open");
-	if (item == NULL)
-		return;
-	if (! item->asImageFrame())
-	{
-		RAISE("Specified item not an image frame.");
-		return;
-	}
-
-	ImageEffect ef;
-	ef.effectCode = ScImage::EF_GRAYSCALE;
-
-	item->effectsInUse.append(ef);
-	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->doc->PageColors, false);
-
-	ScCore->primaryMainWindow()->doc->updatePic();
-}
-
-void ScribusImageItem::setScaleImageToFrame(bool scaletoframe, bool Proportional)
+void ImageAPI::scaleToFrame(bool scaletoframe, bool Proportional)
 {
 	bool scaleToFrame = false;
 	bool proportional = true;
@@ -223,7 +217,7 @@ void ScribusImageItem::setScaleImageToFrame(bool scaletoframe, bool Proportional
 	item->update();
 }
 
-ScribusImageItem::~ScribusImageItem()
+ImageAPI::~ImageAPI()
 {
 	qDebug() << "ImageitemAPI deleted";
 }

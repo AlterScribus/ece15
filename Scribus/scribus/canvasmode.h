@@ -36,6 +36,7 @@ class QMouseEvent;
 class QKeyEvent;
 class QPainter;
 
+class  UndoManager;
 class  Canvas;
 struct CanvasViewMode;
 class  PanGesture;
@@ -122,6 +123,8 @@ public:
 	/** Draws the regular selection marker */
 	void drawSelection(QPainter* psx, bool drawHandles);
 	/** Draws an outline of selected items */
+	void drawSnapLine(QPainter* psx);
+	/** Draws an outline of selected items */
 	void drawOutline(QPainter* p, double scalex=1.0, double scaley=1.0, double deltax=0.0, double deltay=0.0);
 #ifdef GESTURE_FRAME_PREVIEW
 	// I don’t know why the methods above have been implemented here and left non-virtual.
@@ -140,10 +143,12 @@ public:
 	
 
 protected:
+	UndoManager* undoManager;
 	ScribusView * const m_view;	
 	Canvas * const m_canvas;
 	ScribusDoc * const m_doc;
 	PanGesture * m_panGesture;
+	double xSnap,ySnap;
 	
 	void setResizeCursor(int how, double rot = 0.0);
 	bool commonMouseMove(QMouseEvent *m);

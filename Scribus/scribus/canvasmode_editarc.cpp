@@ -227,10 +227,8 @@ void CanvasMode_EditArc::applyValues(double start, double end, double height, do
 	QRectF upRect2 = QRectF(mPoint.x() - item->arcWidth / 2.0, mPoint.y() - item->arcHeight / 2.0, item->arcWidth, item->arcHeight);
 	upRect = upRect2.united(upRect);
 	upRect.translate(currItem->xPos(), currItem->yPos());
-	item->arcWidth = width;
-	item->arcHeight = height;
 	QTransform bb;
-	bb.scale(item->arcHeight / item->arcWidth, 1.0);
+	bb.scale(height / width, 1.0);
 	QLineF inp = QLineF(QPointF(width / 2.0, height / 2.0), QPointF(width, height / 2.0));
 	inp.setAngle(start);
 	QLineF res = bb.map(inp);
@@ -243,12 +241,34 @@ void CanvasMode_EditArc::applyValues(double start, double end, double height, do
 		nSweep += 360;
 	QPainterPath pp;
 	pp.moveTo(mPoint);
-	pp.arcTo(QRectF(mPoint.x() - item->arcWidth / 2.0, mPoint.y() - item->arcHeight / 2.0, item->arcWidth, item->arcHeight), startAngle, nSweep);
+	pp.arcTo(QRectF(mPoint.x() - width / 2.0, mPoint.y() - height / 2.0, width, height), startAngle, nSweep);
 	pp.closeSubpath();
 	currItem->PoLine.fromQPainterPath(pp);
 	m_doc->AdjustItemSize(currItem);
+	if(UndoManager::undoEnabled())
+	{
+		ScItemState<QPair<FPointArray, FPointArray> > *ss = new ScItemState<QPair<FPointArray, FPointArray> >(Um::EditArc,"",Um::IPolygon);
+		FPointArray old = item->PoLine;
+		ss->set("ARC","arc");
+		ss->set("OLD_WIDTH",item->arcWidth);
+		ss->set("NEW_WIDTH",width);
+		ss->set("OLD_XPOS",item->xPos());
+		ss->set("OLD_YPOS",item->yPos());
+		ss->set("OLD_HEIGHT",item->arcHeight);
+		ss->set("NEW_HEIGHT",height);
+		ss->set("OLD_START",item->arcStartAngle);
+		ss->set("NEW_START",startAngle);
+		ss->set("OLD_SWEEP",item->arcSweepAngle);
+		ss->set("NEW_SWEEP",nSweep);
+		ss->setItem(qMakePair(old,item->PoLine));
+		ss->set("NEW_XPOS",item->xPos());
+		ss->set("NEW_YPOS",item->yPos());
+		undoManager->action(currItem,ss);
+	}
 	item->arcStartAngle = startAngle;
-	item->arcSweepAngle = endAngle - startAngle;
+	item->arcSweepAngle = nSweep;
+	item->arcWidth = width;
+	item->arcHeight = height;
 	startPoint = currItem->PoLine.pointQF(2);
 	endPoint = currItem->PoLine.pointQF(currItem->PoLine.size() - 4);
 	centerPoint = currItem->PoLine.pointQF(0);
@@ -391,28 +411,15 @@ void CanvasMode_EditArc::mouseReleaseEvent(QMouseEvent *m)
 	QPointF mPoint = item->PoLine.pointQF(0);
 	if ((m_arcPoint == useControlStart) || (m_arcPoint == useControlSweep) || (m_arcPoint == useControlHeight) || (m_arcPoint == useControlWidth))
 	{
+		QTransform bb;
+		bb.scale(item->arcHeight / item->arcWidth, 1.0);
+		QLineF inp = QLineF(QPointF(item->arcWidth / 2.0, item->arcHeight / 2.0), QPointF(item->arcWidth, item->arcHeight / 2.0));
+		double start = inp.angleTo(QLineF(QPointF(item->arcWidth / 2.0, item->arcHeight / 2.0),startPoint));
+		inp.setAngle(start);
+		double end = inp.angleTo(QLineF(QPointF(item->arcWidth / 2.0, item->arcHeight / 2.0),endPoint));
 		double nWidth = mPoint.x() - widthPoint.x();
 		double nHeight = mPoint.y() - heightPoint.y();
-		item->arcWidth = nWidth * 2.0;
-		item->arcHeight = nHeight * 2.0;
-		double nSweep = endAngle - startAngle;
-		if (nSweep < 0)
-			nSweep += 360;
-		QPainterPath pp;
-		pp.moveTo(mPoint);
-		pp.arcTo(QRectF(mPoint.x() - item->arcWidth / 2.0, mPoint.y() - item->arcHeight / 2.0, item->arcWidth, item->arcHeight), startAngle, nSweep);
-		pp.closeSubpath();
-		currItem->PoLine.fromQPainterPath(pp);
-		m_doc->AdjustItemSize(currItem);
-		item->arcStartAngle = startAngle;
-		item->arcSweepAngle = endAngle - startAngle;
-		startPoint = currItem->PoLine.pointQF(2);
-		endPoint = currItem->PoLine.pointQF(currItem->PoLine.size() - 4);
-		centerPoint = currItem->PoLine.pointQF(0);
-		widthPoint = QPointF(centerPoint.x() - item->arcWidth / 2.0, centerPoint.y());
-		heightPoint = QPointF(centerPoint.x(), centerPoint.y() - item->arcHeight / 2.0);
-		startAngle = item->arcStartAngle;
-		endAngle = startAngle + item->arcSweepAngle;
+		applyValues(start,end + start, 2.0 * nHeight, 2.0 * nWidth);
 	}
 	QTransform itemMatrix = currItem->getTransform();
 	m_doc->regionsChanged()->update(itemMatrix.mapRect(QRectF(0, 0, currItem->width(), currItem->height())).adjusted(-currItem->width() / 2.0, -currItem->height() / 2.0, currItem->width(), currItem->height()));

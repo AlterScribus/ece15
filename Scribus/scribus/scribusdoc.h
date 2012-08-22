@@ -41,6 +41,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 #include "colormgmt/sccolormgmtengine.h"
 #include "documentinformation.h"
+#include "numeration.h"
 #include "observable.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
@@ -734,11 +735,16 @@ public:
 	void restoreMasterPageApplying(SimpleState *state, bool isUndo);
 	void restoreCopyPage(SimpleState *state, bool isUndo);
 	void restoreMovePage(SimpleState *state, bool isUndo);
+	void restoreAddMasterPage(SimpleState *state, bool isUndo);
 	/**
 	 * @brief Undo function for grouping/ungrouping
 	 */
 	void restoreGrouping(SimpleState *state, bool isUndo);
-	void restoreUngrouping(SimpleState *state, bool isUndo);
+	/**
+	 * @brief Undo function for level
+	 */
+	void restoreLevelDown(SimpleState *state, bool isUndo);
+	void restoreLevelBottom(SimpleState *state, bool isUndo);
 	/**
 	 * @brief Save function
 	 */
@@ -1009,7 +1015,7 @@ public:
 	PageItem* groupObjectsSelection(Selection* customSelection=0);
 	PageItem* groupObjectsList(QList<PageItem*> &itemList);
 	void groupObjectsToItem(PageItem* groupItem, QList<PageItem*> &itemList);
-	const PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
+	PageItem * itemSelection_GroupObjects  (bool changeLock, bool lock, Selection* customSelection=0);
 	void itemSelection_UnGroupObjects(Selection* customSelection=0);
 	void addToGroup(PageItem* group, PageItem* item);
 	void removeFromGroup(PageItem* item);
@@ -1017,7 +1023,7 @@ public:
 
 	void itemSelection_ApplyParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0, bool rmDirectFormatting = false);
 	void itemSelection_SetParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0);
-	void itemSelection_ApplyCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
+	void itemSelection_ApplyCharStyle(const CharStyle & newstyle, Selection* customSelection=0, QString ETEA = "");
 	void itemSelection_SetCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
 	void itemSelection_EraseParagraphStyle(Selection* customSelection=0);
 	void itemSelection_EraseCharStyle(Selection* customSelection=0);
@@ -1125,10 +1131,12 @@ public:
 	bool hasTOCSetup() { return !docPrefsData.tocPrefs.defaultToCSetups.empty(); }
 	//! \brief Get the closest guide to the given point
 	void getClosestGuides(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
+	//! \brief Get the closest border of another element to the given point
+	void getClosestElementBorder(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
 	//! \brief Snap an item to the guides
 	void SnapToGuides(PageItem *currItem);
-	bool ApplyGuides(double *x, double *y);
-	bool ApplyGuides(FPoint* point);
+	bool ApplyGuides(double *x, double *y, bool elementSnap = false);
+	bool ApplyGuides(FPoint* point, bool elementSnap = false);
 	bool MoveItem(double newX, double newY, PageItem* ite, bool fromMP = false);
 	void RotateItem(double win, PageItem *currItem);
 	void MoveRotated(PageItem *currItem, FPoint npv, bool fromMP = false);
@@ -1143,6 +1151,8 @@ public:
 	QMap<PageItem*, QString> getDocItemNames(PageItem::ItemType itemType);
 	//! \brief Returns a serializer for this document
 	Serializer *serializer();
+	//! \brief Returns a text serializer for this document, used to paste text chunks
+	Serializer *textSerializer();
 
 	//! \brief Get rotation mode
 	int RotMode() const {return rotMode;}
@@ -1179,7 +1189,7 @@ protected:
 	ScribusMainWindow* m_ScMW;
 	ScribusView* m_View;
 	ScGuardedObject<ScribusDoc> m_guardedObject;
-	Serializer *m_serializer;
+	Serializer *m_serializer, *m_tserializer;
 	QString currentEditedSymbol;
 	int currentEditedIFrame;
 
@@ -1191,6 +1201,7 @@ public: // Public attributes
 	int viewCount;
 	int viewID;
 	bool SnapGuides;
+	bool SnapElement;
 	bool GuideLock;
 	bool dontResize;
 	/** \brief Minimum and Maximum Points of Document */
@@ -1328,6 +1339,8 @@ public:
 	FPointArray symNewFrame;
 	
 	Hyphenator * docHyphenator;
+	void itemResizeToMargin(PageItem* item, int direction); //direction reflect enum numbers from Canvas::FrameHandle
+
 private:
 	UndoTransaction* m_itemCreationTransaction;
 	UndoTransaction* m_alignTransaction;
@@ -1607,6 +1620,11 @@ public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();
 	void itemSelection_EditWeld();
+public:
+//for bullets and numbering
+	QList<Bullet> bulletsList;
+	Bullet getBullet(QString bName);
+	QList<Numeration> numerationsList;
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

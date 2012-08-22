@@ -170,7 +170,6 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 	ParagraphStyle vg;
 	struct ScribusDoc::BookMa bok;
 	int counter;//, Pgc;
-	bool newVersion = false;
 	QString tmp, tmpf, tmp2, tmp3, tmp4, PgNam, Defont, tmf;
 	QFont fo;
 	QMap<int,int> TableID;
@@ -216,8 +215,6 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 	QDomElement elem=docu.documentElement();
 	if (elem.tagName() != "SCRIBUSUTF8NEW")
 		return false;
-	if (elem.hasAttribute("Version"))
-		newVersion = true;
 	QDomNode DOC=elem.firstChild();
 	if (m_mwProgressBar!=0)
 	{
@@ -403,12 +400,6 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 		m_Doc->itemToolPrefs().shapeLineColorShade    = dc.attribute("PENSHADE", "100").toInt();
 		m_Doc->itemToolPrefs().lineColorShade = dc.attribute("LINESHADE", "100").toInt();
 		m_Doc->itemToolPrefs().shapeFillColorShade     = dc.attribute("BRUSHSHADE", "100").toInt();
-		m_Doc->opToolPrefs().magMin     = dc.attribute("MAGMIN", "1").toInt();
-		m_Doc->opToolPrefs().magMax     = dc.attribute("MAGMAX", "3200").toInt();
-		m_Doc->opToolPrefs().magStep    = dc.attribute("MAGSTEP", "200").toInt();
-		//CB Reset doc zoom step value to 200% instead of old values.
-		if (m_Doc->opToolPrefs().magStep <= 100)
-			m_Doc->opToolPrefs().magStep = 200;
 		m_Doc->itemToolPrefs().textTabFillChar = dc.attribute("TabFill","");
 		m_Doc->itemToolPrefs().textTabWidth   = ScCLocale::toDoubleC(dc.attribute("TabWidth"), 36.0);
 		if (dc.hasAttribute("CPICT"))
@@ -2009,9 +2000,8 @@ bool Scribus13Format::loadPage(const QString & fileName, int pageNumber, bool Mp
 	newReplacement = false;
 	QMap<int,int> TableID;
 	QList<PageItem*> TableItems;
-	int a, counter, baseobj;
+	int a, counter;
 	double pageX = 0, pageY = 0;
-	bool newVersion = false;
 	bool VorLFound = false;
 	QMap<int,int> layerTrans;
 	int maxLayer = 0;
@@ -2049,11 +2039,8 @@ bool Scribus13Format::loadPage(const QString & fileName, int pageNumber, bool Mp
 	QDomElement elem=docu.documentElement();
 	if (elem.tagName() != "SCRIBUSUTF8NEW")
 		return false;
-	if (elem.hasAttribute("Version"))
-		newVersion = true;
 	QDomNode DOC=elem.firstChild();
 	counter = m_Doc->Items->count();
-	baseobj = counter;
 	while(!DOC.isNull())
 	{
 		QDomElement dc=DOC.toElement();

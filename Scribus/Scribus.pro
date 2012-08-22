@@ -1078,7 +1078,9 @@ HEADERS += scribus/actionmanager.h \
            scribus/main_nix.cpp \
            scribus/main_win32.cpp \
            scribus/styles/linestyle.attrdefs.cxx \
-    scribus/numeration.h
+    scribus/numeration.h \
+    scribus/ui/numerationwidget.h \
+    scribus/styles/smbulettwidget.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1202,7 +1204,9 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/tools/spellcheck/aspellpluginbase.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
-         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui
+         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
+    scribus/ui/numerationwidget.ui \
+    scribus/styles/smbulettwidget.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2076,7 +2080,9 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp \
-    scribus/numeration.cpp
+    scribus/numeration.cpp \
+    scribus/ui/numerationwidget.cpp \
+    scribus/styles/smbulettwidget.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \

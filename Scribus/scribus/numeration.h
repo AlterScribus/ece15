@@ -11,7 +11,7 @@ typedef enum
 	Type_A_B_C,
 	Type_asterix,
 	Type_None=99
-} NumStyle;
+} NumFormat;
 
 typedef enum {
 	NSRdocument,
@@ -25,20 +25,27 @@ typedef enum {
 class Numeration
 {
 public:
-	Numeration() : numStyle(Type_1_2_3) {}
-	void setType(NumStyle style) { numStyle = style; }
-	const NumStyle style() { return numStyle; }
+	Numeration() : name(""), numFormat(Type_1_2_3) {}
+	Numeration(QString n, NumFormat f) : name(n), numFormat(f), asterix("*") {}
+	void setType(NumFormat format) { numFormat = format; }
+	const NumFormat format() { return numFormat; }
 	const QString numString(const uint num); 
 
+	QString name;
 private:
-	NumStyle numStyle;
+	NumFormat numFormat;
 	QString asterix;
 	QChar lead;
 	uint len;
 	NumerationRange range;
+	QString prefix;
+	QString suffix;
 };
 
-const QString getStringFromNum(NumStyle style, uint num, const QChar leadingChar='0', const ushort charsLen=0);
+//util functions for use without Numeration class
+//convert passed num to string using numeration style
+const QString getStringFromNum(NumFormat format, uint num, const QChar leadingChar='0', const ushort charsLen=0);
+//convert passed num to string with custom chars
 const QString getAsterixStringFromNum(uint num, QString asterix, const QChar leadingChar='_', const ushort charsLen=0);
 
 #endif // NUMERATION_H

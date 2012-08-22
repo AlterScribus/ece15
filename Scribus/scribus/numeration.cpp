@@ -1,9 +1,9 @@
 #include "numeration.h"
 #include "util.h"
 
-const QString getStringFromNum(NumStyle style, uint num, const QChar leadingChar, const ushort charsLen)
+const QString getStringFromNum(NumFormat format, uint num, const QChar leadingChar, const ushort charsLen)
 {
-	QString str = getStringFromSequence(style, num);
+	QString str = getStringFromSequence(format, num);
 	if (charsLen > str.length())
 		str = str.rightJustified(leadingChar, charsLen);
 	return str;
@@ -21,7 +21,7 @@ const QString getAsterixStringFromNum(uint num, QString asterix, const QChar lea
 
 Numeration::Numeration()
 {
-	numStyle = Type_1_2_3;
+	numFormat = Type_1_2_3;
 	asterix = "";
 	lead = '0';
 	len = 0;
@@ -30,7 +30,7 @@ Numeration::Numeration()
 
 const QString Numeration::numString(const uint num)
 {
-	if (numStyle == Type_asterix)
+	if (numFormat == Type_asterix)
 		return getAsterixStringFromNum(num, asterix, lead, len);
 
 	return getStringFromNum(style, num, lead, len);

@@ -188,8 +188,6 @@ bool Scribus134Format::loadFile(const QString & fileName, const FileFormat & /* 
 	struct ScribusDoc::BookMa bok;
 	QMap<int, ScribusDoc::BookMa> bookmarks;
 
-	bool newVersion = false;
-
 	QMap<int,PageItem*> TableID;
 	QMap<int,PageItem*> TableIDM;
 	QMap<int,PageItem*> TableIDF;
@@ -214,7 +212,6 @@ bool Scribus134Format::loadFile(const QString & fileName, const FileFormat & /* 
 	QString fileDir = QFileInfo(fileName).absolutePath();
 	int firstPage = 0;
 	int layerToSetActive = 0;
-	ScColor lf = ScColor();
 	
 	if (m_mwProgressBar!=0)
 	{
@@ -277,8 +274,6 @@ bool Scribus134Format::loadFile(const QString & fileName, const FileFormat & /* 
 				success = false;
 				break;
 			}
-			if (attrs.hasAttribute("Version"))
-				newVersion = true;
 			firstElement = false;
 		}
 		if (tagName == "DOCUMENT")
@@ -1021,15 +1016,9 @@ void Scribus134Format::readToolSettings(ScribusDoc* doc, ScXmlStreamAttributes& 
 	doc->itemToolPrefs().shapeLineColorShade     = attrs.valueAsInt("PENSHADE", 100);
 	doc->itemToolPrefs().lineColor  = attrs.valueAsInt("LINESHADE", 100);
 	doc->itemToolPrefs().shapeFillColorShade      = attrs.valueAsInt("BRUSHSHADE", 100);
-	doc->opToolPrefs().magMin      = attrs.valueAsInt("MAGMIN", 1);
-	doc->opToolPrefs().magMax      = attrs.valueAsInt("MAGMAX", 3200);
-	doc->opToolPrefs().magStep     = attrs.valueAsInt("MAGSTEP", 200);
 	doc->opToolPrefs().dispX       = attrs.valueAsDouble("dispX", 10.0);
 	doc->opToolPrefs().dispY       = attrs.valueAsDouble("dispY", 10.0);
 	doc->opToolPrefs().constrain   = attrs.valueAsDouble("constrain", 15.0);
-	//CB Reset doc zoom step value to 200% instead of old values.
-	if (doc->opToolPrefs().magStep <= 100)
-		doc->opToolPrefs().magStep = 200;
 	doc->itemToolPrefs().textTabFillChar = attrs.valueAsString("TabFill","");
 	doc->itemToolPrefs().textTabWidth   = attrs.valueAsDouble("TabWidth", 36.0);
 	if (attrs.hasAttribute("CPICT"))
@@ -2207,7 +2196,7 @@ bool Scribus134Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 	return success;
 }
 
-bool Scribus134Format::readItemText(PageItem *obj, ScXmlStreamAttributes& attrs, LastStyles* last, bool impo, bool VorLFound)
+bool Scribus134Format::readItemText(PageItem *obj, ScXmlStreamAttributes& attrs, LastStyles* last)
 {
 	QString tmp2;
 	CharStyle newStyle;
@@ -2319,7 +2308,7 @@ bool Scribus134Format::readItemText(PageItem *obj, ScXmlStreamAttributes& attrs,
 	
 	fixLegacyCharStyle(newStyle);
 	
-	if (impo && ab >= 0 && VorLFound)
+	if (ab >= 0)
 		last->ParaStyle = legacyStyleMap[ab];
 	else
 		last->ParaStyle = pstylename;
@@ -3065,8 +3054,6 @@ bool Scribus134Format::loadPage(const QString & fileName, int pageNumber, bool M
 	QList<PageItem*> TableItems;
 	QMap<PageItem*, int> groupID;
 	double pageX = 0, pageY = 0;
-	bool newVersion = false;
-	bool vorLFound  = false;
 	QMap<int,int> layerTrans;
 	int maxLayer = 0, maxLevel = 0, a = 0;
 
@@ -3124,8 +3111,6 @@ bool Scribus134Format::loadPage(const QString & fileName, int pageNumber, bool M
 				success = false;
 				break;
 			}
-			if (attrs.hasAttribute("Version"))
-				newVersion = true;
 			firstElement = false;
 		}
 
@@ -3196,7 +3181,6 @@ bool Scribus134Format::loadPage(const QString & fileName, int pageNumber, bool M
 		if(tagName == "STYLE")
 		{
 			getStyle(vg, reader, NULL, m_Doc, true);
-			vorLFound = true;
 		}
 		if (((tagName == "PAGE") || (tagName == "MASTERPAGE")) && (attrs.valueAsInt("NUM") == pageNumber))
 		{
@@ -3539,7 +3523,7 @@ bool Scribus134Format::readCharStyles(const QString& fileName, ScribusDoc* doc, 
 			docCharStyles.create(cstyle);
 		}
 	}
-	return true;
+	return success;
 }
 
 bool Scribus134Format::readLineStyles(const QString& fileName, QHash<QString,multiLine> *styles)
@@ -3588,7 +3572,7 @@ bool Scribus134Format::readLineStyles(const QString& fileName, QHash<QString,mul
 			styles->insert(mlName2, ml);
 		}
 	}
-	return true;
+	return success;
 }
 
 bool Scribus134Format::readColors(const QString& fileName, ColorList & colors)
@@ -3674,7 +3658,3 @@ bool Scribus134Format::readPageCount(const QString& fileName, int *num1, int *nu
 	*num2 = counter2;
 	return success;
 }
-
-
-
-

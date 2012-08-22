@@ -211,6 +211,7 @@ public:
 	static QString trCMYK;
 	static QString trGrayscale;
 	static QString trDuotone;
+	static QString trMonochrome;
 	static QString trUnknownCS;
 
 	//Color Blindness
@@ -271,6 +272,12 @@ public:
 	static QString strP;
 	static QString strCM;
 	static QString strC;
+
+	//Keyboard Modifiers
+	static QString controlModifier;
+	static QString altModifier;
+	static QString shiftModifier;
+	static QString metaModifier;
 };
 
 #endif

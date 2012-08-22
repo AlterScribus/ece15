@@ -20,6 +20,7 @@
 #include <QPainter>
 
 #include "canvas.h"
+#include "canvasgesture_pan.h"
 #include "canvasgesture_rectselect.h"
 #include "fpoint.h"
 #include "pageitem.h"
@@ -370,6 +371,17 @@ void CanvasMode_NodeEdit::mousePressEvent(QMouseEvent *m)
 	QRect mpo;
 	Mxp = m->x();
 	Myp = m->y();
+
+	if (((m->buttons() & Qt::RightButton) && (m->modifiers() & Qt::ControlModifier)) || ((!(m->modifiers() & Qt::ControlModifier)) && (m->buttons() & Qt::MidButton)))
+	{
+		if (!m_panGesture)
+		{
+			m_panGesture = new PanGesture(this);
+		}
+		m_view->startGesture(m_panGesture);
+		m_panGesture->mousePressEvent(m); // Not an error, this is used to register current canvas point
+		return;
+	}
 	
 	if (m_doc->m_Selection->count() != 0)
 	{
@@ -416,7 +428,7 @@ void CanvasMode_NodeEdit::mouseReleaseEvent(QMouseEvent *m)
 			FPoint npf;
 			double nx = newP.x();
 			double ny = newP.y();
-			if (!m_doc->ApplyGuides(&nx, &ny))
+			if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
 				npf = m_doc->ApplyGridF(FPoint(nx, ny));
 			else
 				npf = FPoint(nx, ny);
@@ -447,7 +459,6 @@ void CanvasMode_NodeEdit::mouseReleaseEvent(QMouseEvent *m)
 			}
 			m_doc->nodeEdit.moveClipPoint(currItem, npf);
 		}
-
 		m_doc->AdjustItemSize(currItem, true, true);
 		if (!m_doc->nodeEdit.isContourLine)
 			currItem->ContourLine.translate(xposOrig - currItem->xPos(), yposOrig - currItem->yPos());
@@ -1104,7 +1115,7 @@ void CanvasMode_NodeEdit::handleNodeEditDrag(QMouseEvent* m, PageItem* currItem)
 				npf = m_canvas->globalToCanvas(m->globalPos());
 				double nx = npf.x();
 				double ny = npf.y();
-				if (!m_doc->ApplyGuides(&nx, &ny))
+				if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
 					npf = m_doc->ApplyGridF(FPoint(nx, ny));
 				else
 					npf = FPoint(nx, ny);
@@ -1127,7 +1138,56 @@ void CanvasMode_NodeEdit::handleNodeEditDrag(QMouseEvent* m, PageItem* currItem)
 						npf = npf.transformPoint(p, false);
 					}
 				}
+
+				//Control Modifier to have parallele shape
+				if (m->modifiers() == Qt::ControlModifier){
+					FPointArray cli;
+					if (m_doc->nodeEdit.isContourLine)
+						cli = currItem->ContourLine;
+					else
+						cli = currItem->PoLine;
+					FPoint npf1(npf);
+					int tmpNode;
+					int curr = (m_doc->nodeEdit.ClRe==0)?cli.size()-2:m_doc->nodeEdit.ClRe;
+					int prev = (curr+cli.size()-4)%cli.size();
+					int next = (curr+4)%cli.size();
+
+					if(abs(cli.point(prev).x()-cli.point(curr).x())<abs(cli.point(next).x()-cli.point(curr).x()))
+						tmpNode=next;
+					else if(abs(cli.point(prev).x()-cli.point(curr).x())==abs(cli.point(next).x()-cli.point(curr).x())){
+						if(cli.point(prev).y()!=cli.point(curr).y())
+							tmpNode=next;
+						else
+							tmpNode=prev;
+					}
+					else
+						tmpNode=prev;
+
+					m_doc->nodeEdit.moveClipPoint(currItem, npf);
+
+					m_doc->nodeEdit.ClRe=tmpNode;
+
+					if (m_doc->nodeEdit.isContourLine)
+						npf1.setX(currItem->ContourLine.point(m_doc->nodeEdit.ClRe).x());
+					else
+						npf1.setX(currItem->PoLine.point(m_doc->nodeEdit.ClRe).x());
+
+					m_doc->nodeEdit.moveClipPoint(currItem, npf1);
+
+					if(m_doc->nodeEdit.ClRe==prev)
+						m_doc->nodeEdit.ClRe=next;
+					else
+						m_doc->nodeEdit.ClRe=prev;
+
+					if (m_doc->nodeEdit.isContourLine)
+						npf.setY(currItem->ContourLine.point(m_doc->nodeEdit.ClRe).y());
+					else
+						npf.setY(currItem->PoLine.point(m_doc->nodeEdit.ClRe).y());
+
+
+				}
 				m_doc->nodeEdit.moveClipPoint(currItem, npf);
+
 				m_canvas->displayXYHUD(m->globalPos(), npf.x(), npf.y());
 			}
 			else
@@ -1156,7 +1216,7 @@ void CanvasMode_NodeEdit::handleNodeEditDrag(QMouseEvent* m, PageItem* currItem)
 			npf = m_canvas->globalToCanvas(m->globalPos());
 			double nx = npf.x();
 			double ny = npf.y();
-			if (!m_doc->ApplyGuides(&nx, &ny))
+			if (!m_doc->ApplyGuides(&nx, &ny) && !m_doc->ApplyGuides(&nx, &ny,true))
 				npf = m_doc->ApplyGridF(FPoint(nx, ny));
 			else
 				npf = FPoint(nx, ny);

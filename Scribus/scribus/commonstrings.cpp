@@ -129,6 +129,7 @@ QString CommonStrings::trRGB       = "";
 QString CommonStrings::trCMYK      = "";
 QString CommonStrings::trGrayscale = "";
 QString CommonStrings::trDuotone   = "";
+QString CommonStrings::trMonochrome = "";
 QString CommonStrings::trUnknownCS = "";
 
 QString CommonStrings::trVisionNormal         = "";
@@ -181,6 +182,11 @@ QString CommonStrings::strIN   = "";
 QString CommonStrings::strP    = "";
 QString CommonStrings::strCM   = "";
 QString CommonStrings::strC    = "";
+
+QString CommonStrings::controlModifier = "";
+QString CommonStrings::altModifier     = "";
+QString CommonStrings::shiftModifier   = "";
+QString CommonStrings::metaModifier    = "";
 
 CommonStrings::CommonStrings()
 {
@@ -375,6 +381,7 @@ void CommonStrings::languageChange()
 	CommonStrings::trCMYK      = tr("CMYK", "Colorspace");
 	CommonStrings::trGrayscale = tr("Grayscale", "Colorspace");
 	CommonStrings::trDuotone   = tr("Duotone", "Colorspace");
+	CommonStrings::trMonochrome= tr("Monochrome", "Colorspace");
 	CommonStrings::trUnknownCS = tr("Unknown", "Colorspace (Unknown)");
 
 	CommonStrings::trVisionNormal         = tr("Normal Vision", "Color Blindness - Normal Vision");
@@ -432,6 +439,23 @@ void CommonStrings::languageChange()
 	CommonStrings::strP =unitGetUntranslatedStrFromIndex(SC_P);
 	CommonStrings::strCM=unitGetUntranslatedStrFromIndex(SC_CM);
 	CommonStrings::strC =unitGetUntranslatedStrFromIndex(SC_C);
+
+	//Keyboard Modifiers
+	CommonStrings::altModifier=tr("Alt");
+	CommonStrings::shiftModifier=tr("Shift");
+
+#ifdef Q_OS_MAC
+	CommonStrings::controlModifier=tr("Cmd");
+	CommonStrings::metaModifier=tr("Ctrl");
+#endif
+#ifdef Q_OS_WIN32
+	CommonStrings::metaModifier=tr("Windows");
+#endif
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_MAC)
+	CommonStrings::controlModifier=tr("Ctrl");
+	CommonStrings::metaModifier=tr("Meta");
+#endif
+
 }
 
 const QString & CommonStrings::translatePenStyleName( Qt::PenStyle ps )

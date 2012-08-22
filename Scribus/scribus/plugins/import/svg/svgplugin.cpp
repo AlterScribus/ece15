@@ -207,20 +207,14 @@ bool SVGImportPlugin::import(QString filename, int flags)
 
 QImage SVGImportPlugin::readThumbnail(const QString& fileName)
 {
-	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return QImage();
-	if (UndoManager::undoEnabled())
-	{
-		UndoManager::instance()->setUndoEnabled(false);
-		wasUndo = true;
-	}
+	UndoManager::instance()->setUndoEnabled(false);
 	m_Doc = NULL;
 	SVGPlug *dia = new SVGPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);
-	if (wasUndo)
-		UndoManager::instance()->setUndoEnabled(true);
+	UndoManager::instance()->setUndoEnabled(true);
 	delete dia;
 	return ret;
 }
@@ -634,7 +628,7 @@ void SVGPlug::finishNode( const QDomNode &e, PageItem* item)
 		}
 	case PageItem::TextFrame:
 		{
-			QTransform mm = gc->matrix;
+			//QTransform mm = gc->matrix;
 			item->setLineWidth(item->lineWidth() * (coeff1 + coeff2) / 2.0);
 		}
 		break;

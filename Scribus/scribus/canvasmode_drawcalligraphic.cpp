@@ -188,8 +188,6 @@ void CalligraphicMode::mousePressEvent(QMouseEvent *m)
 	const FPoint mousePointDoc = m_canvas->globalToCanvas(m->globalPos());
 	double Rxp = 0;
 	double Ryp = 0;
-	double Rxpd = 0;
-	double Rypd = 0;
 	FPoint npf, npf2;
 	QRect tx;
 	QTransform pm;
@@ -203,10 +201,8 @@ void CalligraphicMode::mousePressEvent(QMouseEvent *m)
 	Myp = mousePointDoc.y(); //qRound(m->y()/m_canvas->scale() + 0*m_doc->minCanvasCoordinate.y());
 	QRect mpo(m->x()-m_doc->guidesPrefs().grabRadius, m->y()-m_doc->guidesPrefs().grabRadius, m_doc->guidesPrefs().grabRadius*2, m_doc->guidesPrefs().grabRadius*2);
 	Rxp = m_doc->ApplyGridF(FPoint(Mxp, Myp)).x();
-	Rxpd = Mxp - Rxp;
 	Mxp = qRound(Rxp);
 	Ryp = m_doc->ApplyGridF(FPoint(Mxp, Myp)).y();
-	Rypd = Myp - Ryp;
 	Myp = qRound(Ryp);
 	SeRx = Mxp;
 	SeRy = Myp;
@@ -229,15 +225,14 @@ void CalligraphicMode::mousePressEvent(QMouseEvent *m)
 	SeRx = Mxp;
 	SeRy = Myp;
 	m_canvas->setRenderModeFillBuffer();
+	undoManager->setUndoEnabled(false);
 }
 
 
 
 void CalligraphicMode::mouseReleaseEvent(QMouseEvent *m)
 {
-	const FPoint mousePointDoc = m_canvas->globalToCanvas(m->globalPos());
-	
-
+	undoManager->setUndoEnabled(true);
 	PageItem *currItem;
 	m_MouseButtonPressed = false;
 	m_canvas->resetRenderMode();
@@ -247,7 +242,9 @@ void CalligraphicMode::mouseReleaseEvent(QMouseEvent *m)
 	{
 		if (RecordP.size() > 1)
 		{
-			UndoTransaction createTransaction(UndoManager::instance()->beginTransaction());
+			UndoTransaction *createTransaction = NULL;
+			if(UndoManager::undoEnabled())
+				createTransaction = new UndoTransaction(UndoManager::instance()->beginTransaction());
 			uint z = m_doc->itemAdd(PageItem::Polygon, PageItem::Unspecified, Mxp, Myp, 1, 1, m_doc->itemToolPrefs().calligrapicPenLineWidth, m_doc->itemToolPrefs().calligrapicPenFillColor, m_doc->itemToolPrefs().calligrapicPenLineColor, true);
 			currItem = m_doc->Items->at(z);
 			currItem->PoLine.resize(0);
@@ -288,7 +285,12 @@ void CalligraphicMode::mouseReleaseEvent(QMouseEvent *m)
 			QString targetName = Um::ScratchSpace;
 			if (currItem->OwnPage > -1)
 				targetName = m_doc->Pages->at(currItem->OwnPage)->getUName();
-			createTransaction.commit(targetName, currItem->getUPixmap(), Um::Create + " " + currItem->getUName(),  "", Um::ICreate);
+			if(createTransaction)
+			{
+				createTransaction->commit(targetName, currItem->getUPixmap(), Um::Create + " " + currItem->getUName(),  "", Um::ICreate);
+				delete createTransaction;
+				createTransaction = NULL;
+			}
 			//FIXME	
 			m_canvas->m_viewMode.operItemResizing = false;
 			m_doc->changed();

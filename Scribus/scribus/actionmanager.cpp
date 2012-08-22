@@ -75,6 +75,7 @@ void ActionManager::init(ScribusMainWindow *mw)
 	createDefaultMenus();
 	createDefaultNonMenuActions();
 	languageChange();
+	setActionTooltips(scrActions);
 }
 
 void ActionManager::createActions()
@@ -94,7 +95,6 @@ void ActionManager::createActions()
 	initUnicodeActions(scrActions, mainWindow, unicodeCharActionNames);
 	enableUnicodeActions(scrActions, false);
 	initSpecialActions();
-	
 }
 
 void ActionManager::initFileMenuActions()
@@ -599,7 +599,7 @@ void ActionManager::initViewMenuActions()
 	scrActions->insert(name, new ScrAction(ScrAction::DataDouble, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 0, 200.0));
 	name="viewFit400";
 	scrActions->insert(name, new ScrAction(ScrAction::DataDouble, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 0, 400.0));
-	name="viewFitPreview";
+	name="viewPreviewMode";
 	scrActions->insert(name, new ScrAction(ScrAction::DataDouble, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 0, 20.0));
 	name="viewShowMargins";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
@@ -631,13 +631,15 @@ void ActionManager::initViewMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewSnapToGuides";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="viewSnapToElements";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewShowContextMenu";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="showMouseCoordinates";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 //	scrActions->insert("viewNewView", new ScrAction("", defaultKey(name), mainWindow));
 
-	(*scrActions)["viewFitPreview"]->setToggleAction(true);
+	(*scrActions)["viewPreviewMode"]->setToggleAction(true);
 	(*scrActions)["viewShowMargins"]->setToggleAction(true);
 	(*scrActions)["viewShowBleeds"]->setToggleAction(true);
 	(*scrActions)["viewShowFrames"]->setToggleAction(true);
@@ -653,9 +655,10 @@ void ActionManager::initViewMenuActions()
 	(*scrActions)["viewRulerMode"]->setToggleAction(true);
 	(*scrActions)["viewSnapToGrid"]->setToggleAction(true);
 	(*scrActions)["viewSnapToGuides"]->setToggleAction(true);
+	(*scrActions)["viewSnapToElements"]->setToggleAction(true);
 	(*scrActions)["showMouseCoordinates"]->setToggleAction(true);
 
-	(*scrActions)["viewFitPreview"]->setChecked(false);
+	(*scrActions)["viewPreviewMode"]->setChecked(false);
 	(*scrActions)["viewShowMargins"]->setChecked(true);
 	(*scrActions)["viewShowBleeds"]->setChecked(true);
 	(*scrActions)["viewShowFrames"]->setChecked(true);
@@ -689,6 +692,7 @@ void ActionManager::initViewMenuActions()
 	connect( (*scrActions)["viewRulerMode"], SIGNAL(triggered()), mainWindow, SLOT(ToggleRulerMode()) );
 	connect( (*scrActions)["viewSnapToGrid"], SIGNAL(triggered()), mainWindow, SLOT(ToggleURaster()) );
 	connect( (*scrActions)["viewSnapToGuides"], SIGNAL(triggered()), mainWindow, SLOT(ToggleUGuides()) );
+	connect( (*scrActions)["viewSnapToElements"], SIGNAL(triggered()), mainWindow, SLOT(ToggleUElements()) );
 	connect( (*scrActions)["showMouseCoordinates"], SIGNAL(triggered()), mainWindow, SLOT(ToggleMouseTips()) );
 //	connect( (*scrActions)["viewNewView"], SIGNAL(triggered()), mainWindow, SLOT(newView()) );
 
@@ -829,7 +833,7 @@ void ActionManager::initToolsMenuActions()
 	*modeActionNames << "toolsSelect" << "toolsInsertTextFrame" << "toolsInsertImageFrame" << "toolsInsertTable";
 	*modeActionNames << "toolsInsertShape" << "toolsInsertPolygon" << "toolsInsertArc" << "toolsInsertSpiral" << "toolsInsertLine" << "toolsInsertBezier";
 	*modeActionNames << "toolsInsertFreehandLine" << "toolsInsertCalligraphicLine" << "toolsInsertRenderFrame" << "toolsRotate" << "toolsZoom" << "toolsEditContents";
-	*modeActionNames << "toolsEditWithStoryEditor" << "toolsLinkTextFrame" << "toolsUnlinkTextFrame" << "toolsUnlinkTextFrameWithTextCopy" << "toolsUnlinkTextFrameWithTextCut";
+	*modeActionNames << "toolsEditWithStoryEditor" << "toolsLinkTextFrame" << "toolsUnlinkTextFrame"; //<< "toolsUnlinkTextFrameWithTextCopy" << "toolsUnlinkTextFrameWithTextCut";
 	*modeActionNames << "toolsEyeDropper" << "toolsCopyProperties";
 	*modeActionNames << "toolsPDFPushButton" << "toolsPDFTextField" << "toolsPDFCheckBox" << "toolsPDFComboBox" << "toolsPDFListBox" << "toolsPDFAnnotText" << "toolsPDFAnnotLink";
 #ifdef HAVE_OSG
@@ -1083,6 +1087,12 @@ void ActionManager::initSpecialActions()
 	connect( (*scrActions)["specialToggleAllGuides"], SIGNAL(triggered()), mainWindow, SLOT(ToggleAllGuides()) );
 }
 
+void ActionManager::setActionTooltips(QMap<QString, QPointer<ScrAction> > *actionMap)
+{
+	for( QMap<QString, QPointer<ScrAction> >::Iterator it = actionMap->begin(); it!=actionMap->end(); ++it )
+		it.value()->setToolTipFromTextAndShortcut();
+}
+
 void ActionManager::disconnectModeActions()
 {
 	for ( QStringList::Iterator it = modeActionNames->begin(); it != modeActionNames->end(); ++it )
@@ -1177,7 +1187,7 @@ void ActionManager::connectNewDocActions(ScribusDoc *currDoc)
 
 void ActionManager::disconnectNewViewActions()
 {
-	disconnect( (*scrActions)["viewFitPreview"], 0, 0, 0);
+	disconnect( (*scrActions)["viewPreviewMode"], 0, 0, 0);
 	disconnect( (*scrActions)["toolsZoomIn"], 0, 0, 0);
 	disconnect( (*scrActions)["toolsZoomOut"], 0, 0, 0);
 	disconnect( (*scrActions)["itemImageIsVisible"], 0, 0, 0);
@@ -1198,7 +1208,7 @@ void ActionManager::connectNewViewActions(ScribusView *currView)
 {
 	if (currView==NULL)
 		return;
-	connect( (*scrActions)["viewFitPreview"], SIGNAL(triggered()), currView, SLOT(togglePreview()) );
+	connect( (*scrActions)["viewPreviewMode"], SIGNAL(triggered()), currView, SLOT(togglePreview()) );
 	connect( (*scrActions)["toolsZoomIn"], SIGNAL(triggered()) , currView, SLOT(slotZoomIn()) );
 	connect( (*scrActions)["toolsZoomOut"], SIGNAL(triggered()) , currView, SLOT(slotZoomOut()) );
 	connect( (*scrActions)["itemConvertToBezierCurve"], SIGNAL(triggered()), currView, SLOT(ToBezierFrame()) );
@@ -1518,7 +1528,7 @@ void ActionManager::languageChange()
 	(*scrActions)["viewFit100"]->setTexts( tr("&100%"));
 	(*scrActions)["viewFit200"]->setTexts( tr("&200%"));
 	(*scrActions)["viewFit400"]->setTexts( tr("&400%"));
-	(*scrActions)["viewFitPreview"]->setTexts( tr("Preview Mode"));
+	(*scrActions)["viewPreviewMode"]->setTexts( tr("Preview Mode"));
 	(*scrActions)["viewShowMargins"]->setTexts( tr("Show &Margins"));
 	(*scrActions)["viewShowBleeds"]->setTexts( tr("Show Bleeds"));
 	(*scrActions)["viewShowFrames"]->setTexts( tr("Show &Frames"));
@@ -1534,6 +1544,7 @@ void ActionManager::languageChange()
 	(*scrActions)["viewRulerMode"]->setTexts( tr("Rulers Relative to Page"));
 	(*scrActions)["viewSnapToGrid"]->setTexts( tr("Sn&ap to Grid"));
 	(*scrActions)["viewSnapToGuides"]->setTexts( tr("Sna&p to Guides"));
+	(*scrActions)["viewSnapToElements"]->setTexts( tr("Snap to Items"));
 	(*scrActions)["viewShowContextMenu"]->setTexts( tr("Show Context Menu"));
 //	(*scrActions)["viewNewView"]->setTexts( tr("New View"));
 
@@ -1696,7 +1707,7 @@ void ActionManager::createDefaultShortcuts()
 	defKeys.insert("fileImportText", Qt::CTRL+Qt::Key_I);
 	defKeys.insert("fileImportImage", Qt::CTRL+Qt::Key_I);
 	defKeys.insert("filePrint", QKeySequence::Print);
-	defKeys.insert("PrintPreview", Qt::CTRL+Qt::ALT+Qt::Key_P);
+	defKeys.insert("fileExportAsPDF", Qt::CTRL+Qt::SHIFT+Qt::Key_P);
 	defKeys.insert("fileQuit", Qt::CTRL+Qt::Key_Q);
 	//Edit Menu
 	defKeys.insert("editUndoAction", QKeySequence::Undo);
@@ -1732,6 +1743,7 @@ void ActionManager::createDefaultShortcuts()
 	//View Menu
 	defKeys.insert("viewFitInWindow", Qt::CTRL+Qt::Key_0);
 	defKeys.insert("viewFit100", Qt::CTRL+Qt::Key_1);
+	defKeys.insert("viewPreviewMode", Qt::CTRL+Qt::ALT+Qt::Key_P);
 	defKeys.insert("viewShowRulers", Qt::CTRL+Qt::SHIFT+Qt::Key_R);
 	defKeys.insert("viewShowContextMenu", Qt::Key_Menu); //Context menu key on Windows. Do we have one to use on Linux/OSX? Super_L ?
 
@@ -1974,7 +1986,10 @@ void ActionManager::createDefaultMenus()
 		<< "itemSplitPolygons"
 		<< "itemsUnWeld"
 		<< "itemWeld"
-		<< "itemEditWeld";
+		<< "itemEditWeld"
+		<< "toolsUnlinkTextFrameWithTextCopy"
+		<< "toolsUnlinkTextFrameWithTextCut";
+	
 	//Insert
 	++itmenu;
 	itmenu->second
@@ -2077,7 +2092,8 @@ void ActionManager::createDefaultMenus()
 		<< "pageManageGuides"
 		<< "pageManageMargins"
 		<< "viewSnapToGrid"
-		<< "viewSnapToGuides";
+		<< "viewSnapToGuides"
+		<< "viewSnapToElements";
 	//View
 	++itmenu;
 	itmenu->second
@@ -2088,7 +2104,7 @@ void ActionManager::createDefaultMenus()
 		<< "viewFit100"
 		<< "viewFit200"
 		<< "viewFit400"
-		<< "viewFitPreview"
+		<< "viewPreviewMode"
 		<< "viewShowMargins"
 		<< "viewShowBleeds"
 		<< "viewShowFrames"
@@ -2198,8 +2214,8 @@ void ActionManager::createDefaultNonMenuActions()
 	itnmenua->second << "toolsEditContents";
 	itnmenua->second << "toolsLinkTextFrame";
 	itnmenua->second << "toolsUnlinkTextFrame";
-	itnmenua->second << "toolsUnlinkTextFrameWithTextCopy";
-	itnmenua->second << "toolsUnlinkTextFrameWithTextCut";
+//	itnmenua->second << "toolsUnlinkTextFrameWithTextCopy";
+//	itnmenua->second << "toolsUnlinkTextFrameWithTextCut";
 	itnmenua->second << "toolsEyeDropper";
 	itnmenua->second << "toolsCopyProperties";
 	itnmenua->second << "toolsPDFPushButton";

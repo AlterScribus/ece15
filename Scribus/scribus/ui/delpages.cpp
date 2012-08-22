@@ -25,20 +25,24 @@ DelPages::DelPages( QWidget* parent, int currentPage, int maxPage ) : QDialog( p
 	fromToLayout->setMargin( 5 );
 	fromLabel = new QLabel( tr( "Delete From:" ), this );
 	fromToLayout->addWidget( fromLabel );
-	fromPageData = new ScrSpinBox(this );
+	fromPageData = new ScrSpinBox(this);
 	fromPageData->setDecimals(0);
+	fromPageData->setSuffix("");
 	fromPageData->setMinimum(1);
 	fromPageData->setMaximum(maxPage);
+	fromPageData->setSuffix("");
 	fromPageData->setValue( currentPage );
 	fromToLayout->addWidget( fromPageData );
 	toLabel = new QLabel( this );
 	toLabel->setText( tr( "to:" ) );
 	fromToLayout->addWidget( toLabel );
-	toPageData = new ScrSpinBox( this );
+	toPageData = new ScrSpinBox(this);
 	toPageData->setDecimals(0);
 	toPageData->setMinimum(1);
 	toPageData->setMaximum(maxPage);
+	toPageData->setSuffix("");
 	toPageData->setValue( currentPage );
+	toPageData->setSuffix("");
 	fromToLayout->addWidget( toPageData );
 	dialogLayout->addLayout( fromToLayout );
 

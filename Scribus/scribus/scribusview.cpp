@@ -75,6 +75,7 @@ for which a new license (GPL+exception) is in place.
 #include "canvasgesture.h"
 #include "canvasmode.h"
 #include "canvasmode_objimport.h"
+#include "canvasmode_imageimport.h"
 #include "actionmanager.h"
 #include "commonstrings.h"
 #include "filewatcher.h"
@@ -164,6 +165,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	m_groupTransaction(NULL),
 	_isGlobalMode(true),
 	linkAfterDraw(false),
+	ImageAfterDraw(false),
 	m_vhRulerHW(17)
 {
 	setObjectName("s");
@@ -315,7 +317,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	redrawMarker->hide();
 	m_canvas->newRedrawPolygon();
 	m_canvas->resetRenderMode();
-	m_ScMW->scrActions["viewFitPreview"]->setChecked(m_canvas->m_viewMode.viewAsPreview);
+	m_ScMW->scrActions["viewPreviewMode"]->setChecked(m_canvas->m_viewMode.viewAsPreview);
 //	m_SnapCounter = 0;
 
 	Doc->regionsChanged()->connectObserver(this);
@@ -421,6 +423,7 @@ void ScribusView::switchPreviewVisual(int vis)
 
 void ScribusView::togglePreview()
 {
+	undoManager->setUndoEnabled(false);
 	m_canvas->m_viewMode.viewAsPreview = !m_canvas->m_viewMode.viewAsPreview;
 	Doc->drawAsPreview = m_canvas->m_viewMode.viewAsPreview;
 	if (m_canvas->m_viewMode.viewAsPreview)
@@ -446,7 +449,7 @@ void ScribusView::togglePreview()
 		visualMenu->setCurrentIndex(0);
 		connect(visualMenu, SIGNAL(activated(int)), this, SLOT(switchPreviewVisual(int)));
 	}
-	m_ScMW->scrActions["viewFitPreview"]->setChecked(m_canvas->m_viewMode.viewAsPreview);
+	m_ScMW->scrActions["viewPreviewMode"]->setChecked(m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowMargins"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowFrames"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowLayerMarkers"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
@@ -468,6 +471,7 @@ void ScribusView::togglePreview()
 	{
 		DrawNew();
 	}
+	undoManager->setUndoEnabled(true);
 }
 
 void ScribusView::changed(QRectF re, bool)
@@ -591,9 +595,9 @@ void ScribusView::requestMode(int appMode)
 				 return;
 				 */
 		case submodeLoadPic:         // open GetImage dialog
+			m_ScMW->slotGetContent();
 			appMode = Doc->appMode;
 			m_previousMode = appMode;
-			m_ScMW->slotGetContent();
 			break;
 		case submodeStatusPic:       // open ManageImages dialog
 			appMode = Doc->appMode;
@@ -1179,7 +1183,7 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 				Doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
 				double nx = gx;
 				double ny = gy;
-				if (!Doc->ApplyGuides(&nx, &ny))
+				if (!Doc->ApplyGuides(&nx, &ny) && !Doc->ApplyGuides(&nx, &ny,true))
 				{
 					FPoint npx;
 					npx = Doc->ApplyGridF(FPoint(nx, ny));
@@ -1193,6 +1197,7 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 				nx = gx+gw;
 				ny = gy+gh;
 				Doc->ApplyGuides(&nx, &ny);
+				Doc->ApplyGuides(&nx, &ny,true);
 				Doc->moveGroup(nx-(gx+gw), ny-(gy+gh), false);
 				Doc->m_Selection->setGroupRect();
 				Doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
@@ -1219,7 +1224,7 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 				{
 					double nx = currItem->xPos();
 					double ny = currItem->yPos();
-					if (!Doc->ApplyGuides(&nx, &ny))
+					if (!Doc->ApplyGuides(&nx, &ny) && !Doc->ApplyGuides(&nx, &ny,true))
 					{
 						FPoint npx;
 						npx = Doc->ApplyGridF(FPoint(nx, ny));
@@ -1382,6 +1387,7 @@ void ScribusView::TransformPoly(int mode, int rot, double scaling)
 	PageItem *currItem = Doc->m_Selection->itemAt(0);
 	currItem->ClipEdited = true;
 	QTransform ma;
+	undoManager->setUndoEnabled(false);
 	if (Doc->nodeEdit.isContourLine)
 	{
 		FPoint tp2(getMinClipF(&currItem->ContourLine));
@@ -1462,6 +1468,7 @@ void ScribusView::TransformPoly(int mode, int rot, double scaling)
 		updateContents();
 		currItem->FrameOnly = true;
 		updateContents(currItem->getRedrawBounding(m_canvas->scale()));
+		undoManager->setUndoEnabled(true);
 		if (UndoManager::undoEnabled())
 		{
 			undoManager->setUndoEnabled(false);
@@ -1566,6 +1573,7 @@ void ScribusView::TransformPoly(int mode, int rot, double scaling)
 	currItem->update();
 //	MarkClip(currItem, currItem->PoLine, true);
 	currItem->FrameType = 3;
+	undoManager->setUndoEnabled(true);
 	if (UndoManager::undoEnabled())
 	{
 		undoManager->setUndoEnabled(false);
@@ -1830,13 +1838,16 @@ void ScribusView::ToggleBookmark()
 	{
 		for (uint a = 0; a < docSelectionCount; ++a)
 		{
+			UndoTransaction* activeTransaction = NULL;
+			if (UndoManager::undoEnabled())
+				activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 			PageItem* currItem = Doc->m_Selection->itemAt(a);
 			if (currItem->asTextFrame())
 			{
 				if (currItem->OwnPage != -1)
 				{
 					bool old = currItem->isBookmark;
-					currItem->isBookmark = !currItem->isBookmark;
+					currItem->setIsBookMark(!currItem->isBookmark);
 					if (currItem->isBookmark)
 					{
 						currItem->setIsAnnotation(false);
@@ -1848,6 +1859,15 @@ void ScribusView::ToggleBookmark()
 							emit DelBM(currItem);
 					}
 				}
+			}
+			if (activeTransaction){
+				activeTransaction->commit(Um::Selection,
+										  Um::IGroup,
+										  Um::ActionPDF,
+										  "",
+										  Um::IGroup);
+				delete activeTransaction;
+				activeTransaction = NULL;
 			}
 		}
 		m_ScMW->actionManager->setPDFActions(this);
@@ -1862,6 +1882,9 @@ void ScribusView::ToggleAnnotation()
 	{
 		for (int a = 0; a < Doc->m_Selection->count(); ++a)
 		{
+			UndoTransaction* activeTransaction = NULL;
+			if (UndoManager::undoEnabled())
+				activeTransaction = new UndoTransaction(undoManager->beginTransaction());
 			PageItem* currItem = Doc->m_Selection->itemAt(a);
 			if (currItem->asTextFrame())
 			{
@@ -1880,6 +1903,15 @@ void ScribusView::ToggleAnnotation()
 						emit DelBM(currItem);
 					currItem->isBookmark = false;
 				}
+			}
+			if (activeTransaction){
+				activeTransaction->commit(Um::Selection,
+										  Um::IGroup,
+										  Um::ActionPDF,
+										  "",
+										  Um::IGroup);
+				delete activeTransaction;
+				activeTransaction = NULL;
 			}
 		}
 		m_ScMW->actionManager->setPDFActions(this);
@@ -1933,7 +1965,7 @@ void ScribusView::PasteToPage()
 		newObjects.getGroupRect(&gx, &gy, &gw, &gh);
 		double nx = gx;
 		double ny = gy;
-		if (!Doc->ApplyGuides(&nx, &ny))
+		if (!Doc->ApplyGuides(&nx, &ny) && !Doc->ApplyGuides(&nx, &ny,true))
 		{
 			FPoint npx;
 			npx = Doc->ApplyGridF(FPoint(nx, ny));
@@ -1946,6 +1978,7 @@ void ScribusView::PasteToPage()
 		nx = gx+gw;
 		ny = gy+gh;
 		Doc->ApplyGuides(&nx, &ny);
+		Doc->ApplyGuides(&nx, &ny,true);
 		Doc->moveGroup(nx-(gx+gw), ny-(gy+gh), false, &newObjects);
 		newObjects.setGroupRect();
 		newObjects.getGroupRect(&gx, &gy, &gw, &gh);
@@ -1959,7 +1992,7 @@ void ScribusView::PasteToPage()
 		{
 			double nx = currItem->xPos();
 			double ny = currItem->yPos();
-			if (!Doc->ApplyGuides(&nx, &ny))
+			if (!Doc->ApplyGuides(&nx, &ny) && !Doc->ApplyGuides(&nx, &ny,true))
 			{
 				FPoint npx;
 				npx = Doc->ApplyGridF(FPoint(nx, ny));
@@ -2409,7 +2442,9 @@ void ScribusView::slotZoomIn(int mx,int my)
 	}
 	else
 		rememberOldZoomLocation(mx,my);
-	double newScale = m_canvas->scale() * static_cast<double>(Doc->opToolPrefs().magStep)/100.0;
+	double newScale = m_canvas->scale() * (1 + static_cast<double>(Doc->opToolPrefs().magStep)/100.0);
+	if(static_cast<int>(newScale*100)>static_cast<int>(100 * static_cast<double>(Doc->opToolPrefs().magStep)*Prefs->displayPrefs.displayScale/100))
+		newScale = m_canvas->scale() + static_cast<double>(Doc->opToolPrefs().magStep)*Prefs->displayPrefs.displayScale/100;
 	if (Doc->m_Selection->count() != 0)
 	{
 		PageItem *currItem = Doc->m_Selection->itemAt(0);
@@ -2435,7 +2470,11 @@ void ScribusView::slotZoomOut(int mx,int my)
 	}
 	else
 		rememberOldZoomLocation(mx,my);
-	double newScale = m_canvas->scale() / (static_cast<double>(Doc->opToolPrefs().magStep)/100.0);
+	double newScale = m_canvas->scale() - static_cast<double>(Doc->opToolPrefs().magStep)*Prefs->displayPrefs.displayScale/100;
+	if(newScale<=Prefs->displayPrefs.displayScale/100)
+		newScale = m_canvas->scale() / (1 + static_cast<double>(Doc->opToolPrefs().magStep)/100.0);
+	if(newScale<=Prefs->displayPrefs.displayScale/100)
+		newScale = m_canvas->scale();
 	if (Doc->m_Selection->count() != 0)
 	{
 		PageItem *currItem = Doc->m_Selection->itemAt(0);
@@ -3790,6 +3829,7 @@ void ScribusView::TextToPath()
 									chma.scale(-1, 1);
 								if (currItem->imageFlippedV())
 									chma.scale(1, -1);
+								undoManager->setUndoEnabled(false);
 								pts.map(chma);
 								if ((charStyle.effects() & ScStyle_Shadowed) && (charStyle.strokeColor() != CommonStrings::None))
 								{
@@ -3847,7 +3887,6 @@ void ScribusView::TextToPath()
 								}
 								uint z = Doc->itemAdd(PageItem::Polygon, PageItem::Unspecified, currItem->xPos(), currItem->yPos(), currItem->width(), currItem->height(), currItem->lineWidth(), currItem->lineColor(), currItem->fillColor(), true);
 								bb = Doc->Items->at(z);
-								undoManager->setUndoEnabled(false);
 								//bb->setTextFlowsAroundFrame(currItem->textFlowsAroundFrame());
 								//bb->setTextFlowUsesBoundingBox(currItem->textFlowUsesBoundingBox());
 								bb->setTextFlowMode(currItem->textFlowMode());
@@ -4222,6 +4261,18 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 			}
 			linkAfterDraw = false;
 		}
+		if (ImageAfterDraw)
+		{
+			//user creates new frame using linking tool
+			PageItem * frame = Doc->m_Selection->itemAt(0);
+			requestMode(modeImportImage);
+			if (frame)
+			{
+				dynamic_cast<CanvasMode_ImageImport*>(canvasMode())->setImage(frame);
+				dynamic_cast<CanvasMode_ImageImport*>(canvasMode())->updateList();
+			}
+			ImageAfterDraw = false;
+		}
 		return true;
 	}
 	else if (obj == widget() && event->type() == QEvent::MouseButtonPress)
@@ -4241,6 +4292,12 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 		}
 		else
 			firstFrame = NULL;
+		if(Doc->appMode == modeImportImage && ImageAfterDraw)
+		{
+			//switch to drawing new text frame
+			requestMode(modeDrawImage);
+			m_canvasMode->mousePressEvent(m);
+		}
 		m_canvas->m_viewMode.m_MouseButtonPressed = true;
 		return true;
 	}
@@ -4253,6 +4310,8 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	else if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
+		if(m->key() == Qt::Key_Shift)
+			m_ScMW->SetSnapElements(false);
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyPressEvent(m);
 		else
@@ -4262,6 +4321,8 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	else if (event->type() == QEvent::KeyRelease)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
+		if(m->key() == Qt::Key_Shift)
+			m_ScMW->SetSnapElements(true);
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyReleaseEvent(m);
 		else
