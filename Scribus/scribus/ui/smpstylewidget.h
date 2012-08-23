@@ -19,13 +19,13 @@ class SMPStyleWidget : public QWidget, Ui::SMPStyleWidget
 {
 	Q_OBJECT
 public:
-	SMPStyleWidget(ScribusDoc* doc);
+	SMPStyleWidget();
 	~SMPStyleWidget();
 	
 	virtual void changeEvent(QEvent *e);
 
-	void show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles, QList<CharStyle> &cstyles, QList<Bullet> bullets, QList<Numeration> numerations, int unitIndex, const QString &defLang);
-	void show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, QList<Bullet> bullets, QList<Numeration> numerations, int unitIndex, const QString &defLang);
+	void show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang);
+	void show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle> &pstylesAll, QList<CharStyle> &cstyles, int unitIndex, const QString &defLang);
 
 	void clearAll();
 	void languageChange();
@@ -33,13 +33,14 @@ public:
 
 private:
 	bool hasParent_;
-	bool parentDropCap_;
+	//bool parentParEffects_;
+	bool parentDC_, parentBul_, parentNum_;
 
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
 	void showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);
-	void showBullets(QList<ParagraphStyle*> &pstyles, QList<Bullet> bullets);
-	void showNumeration(QList<ParagraphStyle*> &pstyles, QList<Numeration> numerations);
+	void showBullet(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);
+	void showNumeration(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);
 	void showAlignment(QList<ParagraphStyle*> &pstyles);
 	void showOpticalMargin(QList<ParagraphStyle*> &pstyles);
 	void showMinSpace(QList<ParagraphStyle*> &pstyles);
@@ -50,6 +51,9 @@ private:
 	void showParent(QList<ParagraphStyle*> &pstyles);
 	void setOpticalMargins(int o, bool inhO=false, const ParagraphStyle *parent=NULL);
 
+	//Bullet getBulletFromName(QString name, QList<Bullet> bullets);
+	//Numeration getNumerationFromName(QString name, QList<Numeration> numerations);
+
 	friend class SMParagraphStyle;
 
 private slots:
@@ -57,14 +61,13 @@ private slots:
 	void slotDropCap(bool isOn);
 	void slotBullets(bool isOn);
 	void slotNumbering(bool isOn);
-	void slotParentDropCap();
+	void slotParentParEffects();
 	void slotDefaultOpticalMargins();
 	void slotParentOpticalMargins();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
 
-
 signals:
-	void useParentDropCap();
+	void useParentParaEffects();
 	void useParentOptMargins();
 };
 

@@ -71,15 +71,15 @@ private slots:
 	// pstyle
 	void slotLineSpacingMode(int mode);
 	void slotLineSpacing();
-	void slotParentDropCap();
+	void slotParentParaEffects();
 	void slotDropCap(bool isOn);
 	void slotDropCapLines(int lines);
 	void slotDropCapOffset();
 	void slotDropCapCharStyle(const QString &name);
 	void slotBullet(bool isOn);
-	void slotBulletName(const QString &name);
+	void slotBulletStr(const QString &str);
 	void slotNumeration(bool isOn);
-	void slotNumerationName(const QString &name);
+	void slotNumerationStyle(int numStyle);
 	void slotNumerationLevel(int level);
 	void slotSpaceAbove();
 	void slotSpaceBelow();

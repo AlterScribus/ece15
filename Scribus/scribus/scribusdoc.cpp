@@ -549,10 +549,6 @@ void ScribusDoc::init()
 	m_masterPageMode=true; // quick hack to force the change of pointers in setMasterPageMode();
 	setMasterPageMode(false);
 	addSymbols();
-	bulletsList.clear();
-	bulletsList.append(Bullet("dot", QChar(0x2022)));
-	numerationsList.clear();
-	numerationsList.append(Numeration("deafult 123", Type_1_2_3));
 }
 
 
@@ -15823,16 +15819,6 @@ void ScribusDoc::itemSelection_Weld()
 void ScribusDoc::itemSelection_EditWeld()
 {
 	m_ScMW->view->requestMode(modeEditWeldPoint);
-}
-
-Bullet ScribusDoc::getBullet(QString bName)
-{
-	for (int i=0; i < bulletsList.count(); ++i)
-	{
-		if (bulletsList.at(i).name == bName)
-			return (bulletsList.at(i));
-	}
-	return Bullet();
 }
 
 int ScribusDoc::addToInlineFrames(PageItem *item)

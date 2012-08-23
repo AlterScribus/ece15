@@ -152,4 +152,5 @@ void    SCRIBUS_API getDashArray(int dashtype, double linewidth, QVector<float> 
 void SCRIBUS_API printBacktrace(int nFrames);
 void SCRIBUS_API convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, QStack< QList<PageItem*> > *groupStackT = NULL, QList<PageItem *> *target = NULL);
 
+void SCRIBUS_API setWidgetBoldFont(QWidget* w, bool wantBold);
 #endif

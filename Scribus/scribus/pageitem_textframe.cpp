@@ -1329,6 +1329,7 @@ void PageItem_TextFrame::layout()
 	double chs, chsd = 0;
 	double EndX, OFs, wide, kernVal;
 	QString chstr;
+	QString prefixStr;
 	ScText *hl;
 	PageItem_TextFrame* nextFrame;
 	ParagraphStyle style;
@@ -1348,6 +1349,7 @@ void PageItem_TextFrame::layout()
 	tTabValues.clear();
 	
 	bool DropCmode = false;
+	bool BulNumMode = false; //when bullet or counter should be inserted
 	double desc=0, asce=0, realAsce=0, realDesc = 0, offset = 0;
 	double maxDY=0, maxDX=0;
 	double DropCapDrop = 0;
@@ -1477,7 +1479,23 @@ void PageItem_TextFrame::layout()
 				opticalMargins = style.opticalMargins();
 			
 			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
+			{
+				BulNumMode = true;
+				if (style.hasBullet())
+					prefixStr = style.bulletStr();
+				if (style.hasNum())
+					prefixStr = "1. ";
+				hl->prefix = new ScText();
+			}
+			else
+			{
+				BulNumMode = false;
+				if (hl->prefix)
+					delete hl->prefix;
+			}
 			chstr = ExpandToken(a);
+
 			double hlcsize10 = charStyle.fontSize() / 10.0;
 			double scaleV = charStyle.scaleV() / 1000.0;
 			double scaleH = charStyle.scaleH() / 1000.0;
@@ -1526,11 +1544,6 @@ void PageItem_TextFrame::layout()
 						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
 						charStyle.setStyle(newStyle);
 						itemText.setCharStyle(a, chstr.length(),charStyle);
-					}
-					if (style.bulletName() != "")
-					{
-						Bullet bul = m_Doc->getBullet(style.bulletName());
-						chstr.prepend(bul.charStr);
 					}
 				}
 			}
@@ -1641,7 +1654,7 @@ void PageItem_TextFrame::layout()
 			// set StartOfLine (and find tracking?)
 			if (current.itemsInLine == 0)
 			{
-				itemText.item(a)->setEffects(itemText.item(a)->effects() | ScStyle_StartOfLine);
+				hl->setEffects(hl->effects() | ScStyle_StartOfLine);
 				kernVal = 0;
 			}
 			else
@@ -1651,6 +1664,13 @@ void PageItem_TextFrame::layout()
 			}
 			hl->glyph.yadvance = 0;
 			layoutGlyphs(*hl, chstr, hl->glyph);
+			if (BulNumMode)
+			{
+				hl->prefix->glyph.yadvance = 0;
+				hl->prefix->ch = prefixStr[0];
+				layoutGlyphs(*hl, prefixStr, hl->prefix->glyph);
+				hl->glyph.xadvance += hl->prefix->glyph.wide();
+			}
 			// find out width, ascent and descent of char
 			if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
 			{
@@ -1864,10 +1884,16 @@ void PageItem_TextFrame::layout()
 				if (current.addLeftIndent && (maxDX == 0 || DropCmode))
 				{
 					current.leftIndent = style.leftMargin();
+					if (BulNumMode)
+						current.leftIndent += style.bulletIndent() + hl->prefix->glyph.wide();
 					if (current.hasDropCap)
 						current.leftIndent = 0;
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
+					{
 						current.leftIndent += style.firstIndent();
+						if (BulNumMode)
+							current.leftIndent += style.bulletFirst();
+					}
 					current.addLeftIndent = false;
 				}
 			}
@@ -3136,7 +3162,11 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
 							DrawObj_Embedded(p, cullingArea, charStyle, hl->getItem(m_Doc));
 						else
+						{
+							if (hl->prefix)
+								drawGlyphs(p, charStyle, hl->prefix->glyph);
 							drawGlyphs(p, charStyle, hl->glyph);
+						}
 						p->restore();//RE4
 					}
 					// Unneeded now that glyph xadvance is set appropriately for inline objects by layout() - JG

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>792</width>
-    <height>747</height>
+    <height>755</height>
    </rect>
   </property>
   <layout class="QVBoxLayout">
@@ -234,54 +234,15 @@
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="dropCapsBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
+            <widget class="QGroupBox" name="parEffectsBox">
              <property name="title">
-              <string>Drop Caps</string>
+              <string>Paragraph Effects</string>
              </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-             <layout class="QVBoxLayout">
+             <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <layout class="QHBoxLayout">
+               <layout class="QHBoxLayout" name="horizontalLayout_12">
                 <item>
-                 <widget class="QLabel" name="dropCapsLineLabel">
-                  <property name="text">
-                   <string>&amp;Lines:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>dropCapLines_</cstring>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="SMSpinBox" name="dropCapLines_">
-                  <property name="minimum">
-                   <number>2</number>
-                  </property>
-                  <property name="maximum">
-                   <number>20</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_2">
+                 <spacer name="spacer_10">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -294,355 +255,451 @@
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QLabel" name="distFromTextLabel">
+                 <widget class="QToolButton" name="parentParEffectsButton">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
                   <property name="text">
-                   <string>Distance from Text:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>dropCapOffset_</cstring>
+                   <string>Use Parent`s Values</string>
                   </property>
                  </widget>
-                </item>
-                <item>
-                 <widget class="SMScrSpinBox" name="dropCapOffset_">
-                  <property name="minimum">
-                   <number>-3000</number>
-                  </property>
-                  <property name="maximum">
-                   <number>3000</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer>
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                </layout>
               </item>
               <item>
-               <widget class="QLabel" name="dropCapCharStyleComboLabel">
-                <property name="text">
-                 <string>Character Style for Drop Cap:</string>
+               <widget class="QGroupBox" name="bulletBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="SMScComboBox" name="dropCapCharStyleCombo"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="parentDropCapButton">
-                <property name="enabled">
+                <property name="title">
+                 <string>Bullets</string>
+                </property>
+                <property name="checkable">
                  <bool>true</bool>
                 </property>
-                <property name="text">
-                 <string>Use Parent Value</string>
+                <property name="checked">
+                 <bool>false</bool>
                 </property>
+                <layout class="QVBoxLayout" name="verticalLayout">
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                   <item>
+                    <widget class="QLabel" name="bulletCharLabel">
+                     <property name="text">
+                      <string>Bullet Char/String</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="bulletStrEdit"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="bulletCharTableButton">
+                     <property name="text">
+                      <string>Char Table</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="spacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <item>
+                    <widget class="QLabel" name="bulletFirstLabel">
+                     <property name="text">
+                      <string>First Line Indent</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="bulletFirstSpin"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="bulletIndentLabel">
+                     <property name="text">
+                      <string>Indent</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="bulletIndentSpin"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="bulletTabLabel">
+                     <property name="text">
+                      <string>Tab Position</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="bulletTabSpin"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_15">
+                   <item>
+                    <widget class="QLabel" name="bulletChStyleLabel">
+                     <property name="text">
+                      <string>Character Style for Bullets:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScComboBox" name="bulletChStyleCombo"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
                </widget>
               </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="bulletBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Bullets</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_9">
-                <item>
-                 <widget class="QLabel" name="bulletStyleLabel">
-                  <property name="text">
-                   <string>Bullet Style</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>bulletsListCombo</cstring>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="SMScComboBox" name="bulletsListCombo">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
+               <widget class="QGroupBox" name="numBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="title">
+                 <string>Numeration</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <item>
+                    <widget class="QLabel" name="numStyleLabel">
+                     <property name="text">
+                      <string>Numbering Style</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>numStyleCombo</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScComboBox" name="numStyleCombo">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numLevelLabel">
+                     <property name="text">
+                      <string>Level</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMSpinBox" name="numLevelSpin"/>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numPrefixLabel">
+                     <property name="text">
+                      <string>Prefix</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="numPrefix"/>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numSuffixLabel">
+                     <property name="text">
+                      <string>Suffix</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="numSuffix"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_11">
+                   <item>
+                    <widget class="QLabel" name="numFirstLabel">
+                     <property name="text">
+                      <string>First Line Indent</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="numFirstSpin"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_8">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numIndentLabel">
+                     <property name="text">
+                      <string>Indent</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="numIndentSpin"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_7">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numTabLabel">
+                     <property name="text">
+                      <string>Tab Position</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="numTabSpin"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_14">
+                   <item>
+                    <widget class="QLabel" name="numChStyleLabel">
+                     <property name="text">
+                      <string>Character Style for Numbers:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScComboBox" name="numChStyleCombo"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_9">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_7">
-                <item>
-                 <widget class="QLabel" name="bulletCharLabel">
-                  <property name="text">
-                   <string>Bullet Char/String</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="bulletStrEdit"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_5">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="chartableButton">
-                  <property name="text">
-                   <string>Char Table</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="firstLineLabel">
-                  <property name="text">
-                   <string>First Line Indent</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="firstLineSpin"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_7">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="indentLabel">
-                  <property name="text">
-                   <string>Indent</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="indentSpin"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_8">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="tabLabel">
-                  <property name="text">
-                   <string>Tab Position</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="tabSpin"/>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="numberingBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Numeration</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_5">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <item>
-                 <widget class="QLabel" name="numberingLabel">
-                  <property name="text">
-                   <string>Numbering Style</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>numberingListCombo</cstring>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="SMScComboBox" name="numberingListCombo">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="levelLabel">
-                  <property name="text">
-                   <string>Level</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="SMSpinBox" name="levelSpin"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_4">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_11">
-                <item>
-                 <widget class="QLabel" name="firstLineLabel_NUM">
-                  <property name="text">
-                   <string>First Line Indent</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="firstLineSpin_NUM"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_9">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="indentLabel_NUM">
-                  <property name="text">
-                   <string>Indent</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="indentSpin_NUM"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_10">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="tabLabel_NUM">
-                  <property name="text">
-                   <string>Tab Position</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="tabSpin_NUM"/>
-                </item>
-               </layout>
+               <widget class="QGroupBox" name="dropCapsBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="title">
+                 <string>Drop Caps</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <layout class="QVBoxLayout">
+                 <item>
+                  <layout class="QHBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="dropCapsLineLabel">
+                     <property name="text">
+                      <string>&amp;Lines:</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>dropCapLines_</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMSpinBox" name="dropCapLines_">
+                     <property name="minimum">
+                      <number>2</number>
+                     </property>
+                     <property name="maximum">
+                      <number>20</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="distFromTextLabel">
+                     <property name="text">
+                      <string>Distance from Text:</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>dropCapOffset_</cstring>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScrSpinBox" name="dropCapOffset_">
+                     <property name="minimum">
+                      <number>-3000</number>
+                     </property>
+                     <property name="maximum">
+                      <number>3000</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_13">
+                   <item>
+                    <widget class="QLabel" name="dropCapCharStyleComboLabel">
+                     <property name="text">
+                      <string>Character Style for Drop Cap:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScComboBox" name="dropCapCharStyleCombo"/>
+                   </item>
+                   <item>
+                    <spacer name="spacer_6">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -870,7 +927,7 @@
             </widget>
            </item>
            <item>
-            <widget class="Line" name="line_2">
+            <widget class="Line" name="line">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>

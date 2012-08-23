@@ -1337,7 +1337,7 @@ void ScribusMainWindow::inputMethodEvent ( QInputMethodEvent * event )
 
 QVariant ScribusMainWindow::inputMethodQuery ( Qt::InputMethodQuery query ) const
 {
-	qDebug() << "IMQmw" << query;
+	//qDebug() << "IMQmw" << query;
 	return QVariant();
 }
 

@@ -111,15 +111,16 @@ public:
 	float PDx;
 	int embedded;
 	QChar ch;
+	ScText* prefix;
 	ScText() : 
 		CharStyle(),
 		parstyle(NULL), glyph(), 
-		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), ch() {}
+		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), ch(), prefix(NULL) {}
 	ScText(const ScText& other) : 
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), ch(other.ch)
+		embedded(other.embedded), ch(other.ch), prefix(other.prefix)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;

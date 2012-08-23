@@ -1620,11 +1620,6 @@ public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();
 	void itemSelection_EditWeld();
-public:
-//for bullets and numbering
-	QList<Bullet> bulletsList;
-	Bullet getBullet(QString bName);
-	QList<Numeration> numerationsList;
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);
