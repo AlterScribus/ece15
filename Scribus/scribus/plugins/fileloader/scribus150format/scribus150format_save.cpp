@@ -630,14 +630,22 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("VOR", style.gapBefore());
 	if ( ! style.isInhGapAfter())
 		docu.writeAttribute("NACH", style.gapAfter());
+	if ( ! style.isInhPeCharStyleName())
+		docu.writeAttribute("PECHSTYLE", style.peCharStyleName());
+	if ( ! style.isInhParEffectOffset())
+		docu.writeAttribute("PEDIST", style.parEffectOffset());
 	if ( ! style.isInhHasDropCap())
 		docu.writeAttribute("DROP", static_cast<int>(style.hasDropCap()));
-	if ( ! style.isInhDcCharStyleName())
-		docu.writeAttribute("DROPCHSTYLE", style.dcCharStyleName());
 	if ( ! style.isInhDropCapLines())
 		docu.writeAttribute("DROPLIN", style.dropCapLines());
-	if ( ! style.isInhDropCapOffset())
-		docu.writeAttribute("DROPDIST", style.dropCapOffset());
+	if ( ! style.isInhHasBullet())
+		docu.writeAttribute("BULLET", static_cast<int>(style.hasBullet()));
+	if ( ! style.isInhBulletStr())
+		docu.writeAttribute("BULLETSTR", style.bulletStr());
+	if ( ! style.isInhHasNum())
+		docu.writeAttribute("NUMERATION", static_cast<int>(style.hasNum()));
+	if ( ! style.isInhNumStyle())
+		docu.writeAttribute("NUMSTYLE", style.numStyle());
 	if ( ! style.isInhOpticalMargins())
 		docu.writeAttribute("OpticalMargins", style.opticalMargins());
 	if ( ! style.isInhHyphenationMode())

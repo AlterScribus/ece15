@@ -1906,8 +1906,8 @@ namespace {
 			pstyle.resetGapAfter();
 		if (pstyle.dropCapLines() < 0)
 			pstyle.resetDropCapLines();
-		if (pstyle.dropCapOffset() <= -16000)
-			pstyle.resetDropCapOffset();
+		if (pstyle.parEffectOffset() <= -16000)
+			pstyle.resetParEffectOffset();
 		fixLegacyCharStyle(pstyle.charStyle());
 	}
 	
@@ -2458,13 +2458,21 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(NACH))
 		newStyle.setGapAfter(attrs.valueAsDouble(NACH));
 
+	static const QString PECHSTYLE("PECHSTYLE");
+	if (attrs.hasAttribute(PECHSTYLE))
+		newStyle.setPeCharStyleName(attrs.valueAsString(PECHSTYLE));
+
+	static const QString PEDIST("PEDIST");
+	if (attrs.hasAttribute(PEDIST))
+		newStyle.setParEffectOffset(attrs.valueAsDouble(PEDIST));
+
 	static const QString DROP("DROP");
 	if (attrs.hasAttribute(DROP))
 		newStyle.setHasDropCap(static_cast<bool>(attrs.valueAsInt(DROP)));
 
 	static const QString DROPCHSTYLE("DROPCHSTYLE");
 	if (attrs.hasAttribute(DROPCHSTYLE))
-		newStyle.setDcCharStyleName(attrs.valueAsString(DROPCHSTYLE));
+		newStyle.setPeCharStyleName(attrs.valueAsString(DROPCHSTYLE));
 
 	static const QString DROPLIN("DROPLIN");
 	if (attrs.hasAttribute(DROPLIN))
@@ -2472,7 +2480,23 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 
 	static const QString DROPDIST("DROPDIST");
 	if (attrs.hasAttribute(DROPDIST))
-		newStyle.setDropCapOffset(attrs.valueAsDouble(DROPDIST));
+		newStyle.setParEffectOffset(attrs.valueAsDouble(DROPDIST));
+
+	static const QString BULLET("BULLET");
+	if (attrs.hasAttribute(BULLET))
+		newStyle.setHasBullet(static_cast<bool>(attrs.valueAsInt(BULLET)));
+
+	static const QString BULLETSTR("BULLETSTR");
+	if (attrs.hasAttribute(BULLETSTR))
+		newStyle.setBulletStr(attrs.valueAsString(BULLETSTR));
+
+	static const QString NUMERATION("NUMERATION");
+	if (attrs.hasAttribute(NUMERATION))
+		newStyle.setHasNum(static_cast<bool>(attrs.valueAsInt(NUMERATION)));
+
+	static const QString NUMSTYLE("NUMSTYLE");
+	if (attrs.hasAttribute(NUMSTYLE))
+		newStyle.setNumStyle(static_cast<bool>(attrs.valueAsInt(NUMSTYLE)));
 
 	static const QString PSHORTCUT("PSHORTCUT");
 	if (attrs.hasAttribute(PSHORTCUT))

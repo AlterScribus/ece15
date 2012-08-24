@@ -240,6 +240,66 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_13">
+                <item>
+                 <widget class="QLabel" name="parEffectCharStyleComboLabel">
+                  <property name="text">
+                   <string>Character Style for Effect:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="SMScComboBox" name="parEffectCharStyleCombo"/>
+                </item>
+                <item>
+                 <spacer name="spacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="distFromTextLabel">
+                  <property name="text">
+                   <string>Distance from Text:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>parEffectOffset_</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="SMScrSpinBox" name="parEffectOffset_">
+                  <property name="minimum">
+                   <number>-3000</number>
+                  </property>
+                  <property name="maximum">
+                   <number>3000</number>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_12">
                 <item>
                  <spacer name="spacer_10">
@@ -294,7 +354,11 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="bulletStrEdit"/>
+                    <widget class="SMScComboBox" name="bulletStrEdit">
+                     <property name="editable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
                    </item>
                    <item>
                     <spacer name="spacer">
@@ -318,93 +382,6 @@
                    </item>
                    <item>
                     <spacer name="spacer_2">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_8">
-                   <item>
-                    <widget class="QLabel" name="bulletFirstLabel">
-                     <property name="text">
-                      <string>First Line Indent</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="bulletFirstSpin"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_3">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="bulletIndentLabel">
-                     <property name="text">
-                      <string>Indent</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="bulletIndentSpin"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_4">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="bulletTabLabel">
-                     <property name="text">
-                      <string>Tab Position</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="bulletTabSpin"/>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_15">
-                   <item>
-                    <widget class="QLabel" name="bulletChStyleLabel">
-                     <property name="text">
-                      <string>Character Style for Bullets:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScComboBox" name="bulletChStyleCombo"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_5">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
                      </property>
@@ -493,93 +470,6 @@
                    </item>
                   </layout>
                  </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_11">
-                   <item>
-                    <widget class="QLabel" name="numFirstLabel">
-                     <property name="text">
-                      <string>First Line Indent</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="numFirstSpin"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_8">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="numIndentLabel">
-                     <property name="text">
-                      <string>Indent</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="numIndentSpin"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_7">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="numTabLabel">
-                     <property name="text">
-                      <string>Tab Position</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="numTabSpin"/>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_14">
-                   <item>
-                    <widget class="QLabel" name="numChStyleLabel">
-                     <property name="text">
-                      <string>Character Style for Numbers:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScComboBox" name="numChStyleCombo"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_9">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
-                 </item>
                 </layout>
                </widget>
               </item>
@@ -625,66 +515,6 @@
                    </item>
                    <item>
                     <spacer name="horizontalSpacer_2">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="distFromTextLabel">
-                     <property name="text">
-                      <string>Distance from Text:</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>dropCapOffset_</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScrSpinBox" name="dropCapOffset_">
-                     <property name="minimum">
-                      <number>-3000</number>
-                     </property>
-                     <property name="maximum">
-                      <number>3000</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer>
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_13">
-                   <item>
-                    <widget class="QLabel" name="dropCapCharStyleComboLabel">
-                     <property name="text">
-                      <string>Character Style for Drop Cap:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="SMScComboBox" name="dropCapCharStyleCombo"/>
-                   </item>
-                   <item>
-                    <spacer name="spacer_6">
                      <property name="orientation">
                       <enum>Qt::Horizontal</enum>
                      </property>

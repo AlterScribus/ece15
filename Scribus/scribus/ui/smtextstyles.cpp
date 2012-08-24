@@ -514,11 +514,12 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	connect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	connect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	connect(pwidget_->dropCapOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
-	connect(pwidget_->dropCapCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
+	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
+	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
 	connect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	connect(pwidget_->bulletStrEdit, SIGNAL(textEdited(QString)), this, SLOT(slotBulletStr(QString)));
+	connect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
 	connect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	connect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumerationLevel(int)));
 	connect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumerationStyle(int)));
@@ -598,11 +599,12 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	disconnect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	disconnect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	disconnect(pwidget_->dropCapOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
-	disconnect(pwidget_->dropCapCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
+	disconnect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
+	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	disconnect(pwidget_->bulletStrEdit, SIGNAL(textEdited(QString)), this, SLOT(slotBulletStr(QString)));
+	disconnect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	disconnect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumerationStyle(int)));
 	disconnect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumerationLevel(int)));
@@ -915,18 +917,18 @@ void SMParagraphStyle::slotDropCapLines(int lines)
 
 void SMParagraphStyle::slotDropCapOffset()
 {
-	if (pwidget_->dropCapOffset_->useParentValue())
+	if (pwidget_->parEffectOffset_->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->resetDropCapOffset();
+			selection_[i]->resetParEffectOffset();
 	else 
 	{
 		double a, b, value;
 		int c;
 
-		pwidget_->dropCapOffset_->getValues(&a, &b, &c, &value);
+		pwidget_->parEffectOffset_->getValues(&a, &b, &c, &value);
 		value = value / unitRatio_;
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setDropCapOffset(value);
+			selection_[i]->setParEffectOffset(value);
 	}
 	
 	if (!selectionIsDirty_)
@@ -938,12 +940,12 @@ void SMParagraphStyle::slotDropCapOffset()
 
 void SMParagraphStyle::slotDropCapCharStyle(const QString& name)
 {
-	if (pwidget_->dropCapCharStyleCombo->useParentValue())
+	if (pwidget_->parEffectCharStyleCombo->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->resetDcCharStyleName();
+			selection_[i]->resetPeCharStyleName();
 	else
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setDcCharStyleName(name);
+			selection_[i]->setPeCharStyleName(name);
 
 	if (!selectionIsDirty_)
 	{

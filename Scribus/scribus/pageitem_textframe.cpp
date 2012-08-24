@@ -1477,9 +1477,11 @@ void PageItem_TextFrame::layout()
 				style = itemText.paragraphStyle(a);
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
+			if (hl->prefix && !style.hasBullet() && !style.hasNum())
+				delete hl->prefix;
 			
 			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
+			if (!BulNumMode && (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
 			{
 				BulNumMode = true;
 				if (style.hasBullet())
@@ -1492,7 +1494,11 @@ void PageItem_TextFrame::layout()
 			{
 				BulNumMode = false;
 				if (hl->prefix)
+				{
 					delete hl->prefix;
+					hl->prefix = NULL;
+				}
+				
 			}
 			chstr = ExpandToken(a);
 
@@ -1521,23 +1527,26 @@ void PageItem_TextFrame::layout()
 			}
 			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
-				if (style.hasDropCap())
+				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
 				{
-					if (style.dcCharStyleName() == tr("No Style") || style.dcCharStyleName().isEmpty())
+					if (style.peCharStyleName() == tr("No Style") || style.peCharStyleName().isEmpty())
 					{
 						const QString& curParent(style.hasParent() ? style.parent() : style.name());
 						CharStyle newStyle;
 						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
 						charStyle.setStyle(newStyle);
 					}
-					else if (charStyle.name() != style.dcCharStyleName())
-						charStyle.setStyle(m_Doc->charStyle(style.dcCharStyleName()));
-					itemText.setCharStyle(a, chstr.length(),charStyle);
+					else if (charStyle.name() != style.peCharStyleName())
+						charStyle.setStyle(m_Doc->charStyle(style.peCharStyleName()));
+					if (style.hasDropCap())
+						itemText.setCharStyle(a, chstr.length(),charStyle);
+					else
+						hl->prefix->setStyle(charStyle);
 				}
 				else
 				{
-					if (style.dcCharStyleName() != tr("No Style") && !style.dcCharStyleName().isEmpty())
-						//hasDropCap is cleared but is set dcCharStyleName = clear drop cap char style
+					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
+						//hasDropCap is cleared but is set peCharStyleName = clear parEffect char style
 					{
 						const QString& curParent(style.hasParent() ? style.parent() : style.name());
 						CharStyle newStyle;
@@ -1548,7 +1557,7 @@ void PageItem_TextFrame::layout()
 				}
 			}
 
-			const ScFace font = charStyle.font();
+			const ScFace* font = &charStyle.font();
 
 			{  // local block for 'fl'
 				StyleFlag fl = hl->effects();
@@ -1627,11 +1636,11 @@ void PageItem_TextFrame::layout()
 				// FIXME : we should ensure that fonts are loaded before calls to layout()
 				// ScFace::realCharHeight()/Ascent() ensure font is loaded thanks to an indirect call to char2CMap()
 				// ScFace::ascent() can be called safely afterwards
-				double realCharHeight = font.realCharHeight(chstr[0], 1);
-				double realCharAscent = font.realCharAscent(chstr[0], 1);
-				double fontAscent     = font.ascent(style.charStyle().fontSize() / 10.0);
+				double realCharHeight = font->realCharHeight(chstr[0], 1);
+				double realCharAscent = font->realCharAscent(chstr[0], 1);
+				double fontAscent     = font->ascent(style.charStyle().fontSize() / 10.0);
 				if (realCharHeight == 0.0)
-					realCharHeight = font.height(style.charStyle().fontSize() / 10.0);
+					realCharHeight = font->height(style.charStyle().fontSize() / 10.0);
 				if (realCharAscent == 0.0)
 					realCharAscent = fontAscent;
 				chsd = (10 * ((DropCapDrop + fontAscent) / realCharHeight));
@@ -1669,7 +1678,14 @@ void PageItem_TextFrame::layout()
 				hl->prefix->glyph.yadvance = 0;
 				hl->prefix->ch = prefixStr[0];
 				layoutGlyphs(*hl, prefixStr, hl->prefix->glyph);
-				hl->glyph.xadvance += hl->prefix->glyph.wide();
+				double xoff = hl->prefix->glyph.wide() + style.parEffectOffset();
+				hl->prefix->glyph.xoffset -= xoff;
+				GlyphLayout* moreGL = hl->prefix->glyph.more;
+				while (moreGL)
+				{
+					moreGL->xoffset -= xoff;
+					moreGL = moreGL->more;
+				}
 			}
 			// find out width, ascent and descent of char
 			if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
@@ -1683,8 +1699,8 @@ void PageItem_TextFrame::layout()
 				// apply kerning
 				if (a+1 < itemText.length())
 				{
-					uint glyph2 = font.char2CMap(itemText.text(a+1));
-					double kern= font.glyphKerning(hl->glyph.glyph, glyph2, chs / 10.0) * hl->glyph.scaleH;
+					uint glyph2 = font->char2CMap(itemText.text(a+1));
+					double kern= font->glyphKerning(hl->glyph.glyph, glyph2, chs / 10.0) * hl->glyph.scaleH;
 					wide += kern;
 					hl->glyph.xadvance += kern;
 					// change xadvance, xoffset according to JIS X4051
@@ -1772,7 +1788,7 @@ void PageItem_TextFrame::layout()
 				{
 					double itemHeight = hl->getItem(m_Doc)->height() + hl->getItem(m_Doc)->lineWidth();
 					if (itemHeight == 0)
-						itemHeight = font.height(style.charStyle().fontSize() / 10.0);
+						itemHeight = font->height(style.charStyle().fontSize() / 10.0);
 					wide = hl->getItem(m_Doc)->width() + hl->getItem(m_Doc)->lineWidth();
 					asce = hl->getItem(m_Doc)->height() + hl->getItem(m_Doc)->lineWidth();
 					realAsce = calculateLineSpacing (style, this) * DropLines;
@@ -1782,12 +1798,12 @@ void PageItem_TextFrame::layout()
 				}
 				else
 				{
-					double realCharHeight = font.realCharHeight(chstr[0], charStyle.fontSize() / 10.0);
+					double realCharHeight = font->realCharHeight(chstr[0], charStyle.fontSize() / 10.0);
 					if (realCharHeight == 0)
-						realCharHeight = font.height(style.charStyle().fontSize() / 10.0);
-					wide = (font.realCharWidth(chstr[0], chsd / 10.0) * scaleH) + (1 - scaleH); //dropcaps are to close to next glyphs if glyphs are hard scaled
-					realAsce = font.realCharHeight(chstr[0], chsd / 10.0) * scaleV + offset;
-					asce = font.ascent(hlcsize10);
+						realCharHeight = font->height(style.charStyle().fontSize() / 10.0);
+					wide = (font->realCharWidth(chstr[0], chsd / 10.0) * scaleH) + (1 - scaleH); //dropcaps are to close to next glyphs if glyphs are hard scaled
+					realAsce = font->realCharHeight(chstr[0], chsd / 10.0) * scaleV + offset;
+					asce = font->ascent(hlcsize10);
 					// qDebug() QString("dropcaps pre: chsd=%1 realCharHeight = %2 chstr=%3").arg(chsd).arg(asce).arg(chstr2[0]);
 					hl->glyph.scaleH /= hl->glyph.scaleV;
 					hl->glyph.scaleV = (realAsce / realCharHeight);
@@ -1810,8 +1826,8 @@ void PageItem_TextFrame::layout()
 					desc = realDesc = 0;
 				else
 				{
-					desc = -font.descent(hlcsize10);
-					realDesc = font.realCharDescent(chstr[0], hlcsize10) * scaleV - offset;
+					desc = -font->descent(hlcsize10);
+					realDesc = font->realCharDescent(chstr[0], hlcsize10) * scaleV - offset;
 					current.rememberShrinkStretch(hl->ch, wide, style);
 				}
 				if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
@@ -1821,8 +1837,8 @@ void PageItem_TextFrame::layout()
 				}
 				else
 				{
-					asce = font.ascent(hlcsize10);
-					realAsce = font.realCharAscent(chstr[0], hlcsize10) * scaleV + offset;
+					asce = font->ascent(hlcsize10);
+					realAsce = font->realCharAscent(chstr[0], hlcsize10) * scaleV + offset;
 				}
 			}
 
@@ -1881,18 +1897,16 @@ void PageItem_TextFrame::layout()
 				}
 				//set left indentation
 				current.leftIndent = 0.0;
-				if (current.addLeftIndent && (maxDX == 0 || DropCmode))
+				if (current.addLeftIndent && (maxDX == 0 || DropCmode || BulNumMode))
 				{
 					current.leftIndent = style.leftMargin();
-					if (BulNumMode)
-						current.leftIndent += style.bulletIndent() + hl->prefix->glyph.wide();
 					if (current.hasDropCap)
 						current.leftIndent = 0;
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
 						if (BulNumMode)
-							current.leftIndent += style.bulletFirst();
+							current.leftIndent += style.parEffectOffset() + hl->prefix->glyph.wide();
 					}
 					current.addLeftIndent = false;
 				}
@@ -2056,7 +2070,7 @@ void PageItem_TextFrame::layout()
 					if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
 						diff = (hl->getItem(m_Doc)->height() + hl->getItem(m_Doc)->lineWidth()) * scaleV + offset - (current.yPos - lastLineY);
 					else
-						diff = font.realCharAscent(QChar('l'), hlcsize10) * scaleV + offset - (current.yPos - lastLineY);
+						diff = font->realCharAscent(QChar('l'), hlcsize10) * scaleV + offset - (current.yPos - lastLineY);
 				}
 				else
 				{
@@ -2157,7 +2171,7 @@ void PageItem_TextFrame::layout()
 							if (tglyph)
 							{
 								tglyph->fillChar = tabs.fillChar;
-								tglyph->glyph    = font.char2CMap(tabs.fillChar);
+								tglyph->glyph    = font->char2CMap(tabs.fillChar);
 								tglyph->yoffset  = hl->glyph.yoffset;
 								tglyph->scaleV   = tglyph->scaleH = chs / charStyle.fontSize();
 								tglyph->xadvance = 0;
@@ -2173,7 +2187,7 @@ void PageItem_TextFrame::layout()
 			
 			// remember y pos
 			if (DropCmode)
-				hl->glyph.yoffset -= font.realCharHeight(chstr[0], chsd / 10.0) - font.realCharAscent(chstr[0], chsd / 10.0);
+				hl->glyph.yoffset -= font->realCharHeight(chstr[0], chsd / 10.0) - font->realCharAscent(chstr[0], chsd / 10.0);
 
 			// remember x pos
 			double breakPos = current.xPos;
@@ -2229,7 +2243,7 @@ void PageItem_TextFrame::layout()
 			double hyphWidth = 0.0;
 			bool inOverflow = false;
 			if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
-				hyphWidth = font.charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
+				hyphWidth = font->charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
 			{
 				//end of row reached - right column, end of column, break char or line must end
@@ -2457,21 +2471,23 @@ void PageItem_TextFrame::layout()
 					tabs.status = TabNONE;
 				}
 			}
-			
-			if (DropCmode && !outs)
+			if (!outs)
 			{
-				DropCmode = false;
-				DropLinesCount = 0;
-				maxDY = current.yPos;
-				current.hasDropCap = true;
-				current.xPos += style.dropCapOffset();
-				hl->glyph.xadvance += style.dropCapOffset();
-				maxDX = current.xPos;
-				double spacing = calculateLineSpacing (style, this);
-				current.yPos -= spacing * (DropLines-1);
-				if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
-					current.yPos = adjustToBaselineGrid (current, this, OwnPage);
-				current.recalculateY = false;
+				if (DropCmode)
+				{
+					DropCmode = false;
+					DropLinesCount = 0;
+					maxDY = current.yPos;
+					current.hasDropCap = true;
+					current.xPos += style.parEffectOffset();
+					hl->glyph.xadvance += style.parEffectOffset();
+					maxDX = current.xPos;
+					double spacing = calculateLineSpacing (style, this);
+					current.yPos -= spacing * (DropLines-1);
+					if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+						current.yPos = adjustToBaselineGrid (current, this, OwnPage);
+					current.recalculateY = false;
+				}
 			}
 			// end of line
 			if (outs)
@@ -2547,7 +2563,7 @@ void PageItem_TextFrame::layout()
 						// go back to last break position
 						style = itemText.paragraphStyle(a);
 						if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
-							style.setLineSpacing(font.height(hlcsize10) * autoLS);
+							style.setLineSpacing(font->height(hlcsize10) * autoLS);
 						else if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
 							style.setLineSpacing(m_Doc->guidesPrefs().valueBaselineGrid);
 						
@@ -2571,8 +2587,8 @@ void PageItem_TextFrame::layout()
 								current.hyphenCount++;
 							hl->setEffects(hl->effects() | ScStyle_SoftHyphenVisible);
 							hl->glyph.grow();
-							hl->glyph.more->glyph = font.char2CMap(QChar('-'));
-							hl->glyph.more->xadvance = font.charWidth('-', itemText.charStyle(a).fontSize() / 10.0) * scaleH; //FIX ME - hyphen is not rendered with proper width - check yhis with large glyphs horizontal scaling eg. 20%
+							hl->glyph.more->glyph = font->char2CMap(QChar('-'));
+							hl->glyph.more->xadvance = font->charWidth('-', itemText.charStyle(a).fontSize() / 10.0) * scaleH; //FIX ME - hyphen is not rendered with proper width - check yhis with large glyphs horizontal scaling eg. 20%
 							hyphWidth = hl->glyph.more->xadvance;
 						}
 						else
@@ -3060,10 +3076,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 									xcoZli -= hls->glyph.xoffset;
 								}
 							}
-							const ScFace font = charStyleS.font();
+							const ScFace* font = &charStyleS.font();
 							double fontSize = charStyleS.fontSize() / 10.0;
-							desc = - font.descent(fontSize);
-							asce = font.ascent(fontSize);
+							desc = - font->descent(fontSize);
+							asce = font->ascent(fontSize);
 							wide = hls->glyph.wide();
 							QRectF scr;
 							if ((hls->ch == SpecialChars::OBJECT)  && (hls->hasObject(m_Doc)))
@@ -3129,10 +3145,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 
 				if (!m_Doc->RePos)
 				{
-					const ScFace font = charStyle.font();
+					const ScFace* font = &charStyle.font();
 					double fontSize = charStyle.fontSize() / 10.0;
-					desc = - font.descent(fontSize);
-					asce = font.ascent(fontSize);
+					desc = - font->descent(fontSize);
+					asce = font->ascent(fontSize);
 					if (((selected && Select) || ((NextBox != 0 || BackBox != 0) && selected)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
@@ -3163,9 +3179,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							DrawObj_Embedded(p, cullingArea, charStyle, hl->getItem(m_Doc));
 						else
 						{
+							drawGlyphs(p, charStyle, hl->glyph);
 							if (hl->prefix)
 								drawGlyphs(p, charStyle, hl->prefix->glyph);
-							drawGlyphs(p, charStyle, hl->glyph);
 						}
 						p->restore();//RE4
 					}

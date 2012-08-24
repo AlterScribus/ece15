@@ -120,7 +120,7 @@ public:
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), ch(other.ch), prefix(other.prefix)
+		embedded(other.embedded), ch(other.ch), prefix(NULL)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;
@@ -133,6 +133,8 @@ public:
 		}
 		if (other.parstyle)
 			parstyle = new ParagraphStyle(*other.parstyle);
+		if (other.prefix)
+			prefix = new ScText(*other.prefix);
 	}
 	~ScText();
 

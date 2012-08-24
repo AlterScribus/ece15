@@ -48,7 +48,7 @@ SMPStyleWidget::SMPStyleWidget() : QWidget()
 //	optMarginCombo->addItem(tr("Right Hanging Punctuation"), ParagraphStyle::OM_RightHangingPunct);
 //	optMarginCombo->addItem(tr("Default"), ParagraphStyle::OM_Default);
 
-	dropCapOffset_->setSuffix(unitGetSuffixFromIndex(0));
+	parEffectOffset_->setSuffix(unitGetSuffixFromIndex(0));
 	
 	numStyleCombo->clear();
 	numStyleCombo->addItem("1_2_3");
@@ -58,6 +58,20 @@ SMPStyleWidget::SMPStyleWidget() : QWidget()
 	numStyleCombo->addItem("i_ii_iii");
 	numStyleCombo->addItem("A_B_C");
 	numStyleCombo->addItem("*");
+
+	bulletStrEdit->addItem(QChar(0x2022));
+	bulletStrEdit->addItem(QChar(0x2023));
+	bulletStrEdit->addItem(QChar(0x25E6));
+	bulletStrEdit->addItem("*");
+	bulletStrEdit->addItem("<");
+	bulletStrEdit->addItem(">");
+	bulletStrEdit->addItem("-");
+	bulletStrEdit->addItem("");
+	bulletStrEdit->addItem(QChar(0x261A));
+	bulletStrEdit->addItem(QChar(0x261B));
+	bulletStrEdit->addItem(QChar(0x261C));
+	bulletStrEdit->addItem(QChar(0x261D));
+	bulletStrEdit->setMinimumWidth(10);
 
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 	minGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
@@ -101,8 +115,8 @@ void SMPStyleWidget::languageChange()
 	//CB Unneeded, gets in the way of single widget tooltips
 	//dropCapsBox->setToolTip(      tr("Enable or disable drop cap"));
 	dropCapLines_->setToolTip(    tr("Drop Cap Lines"));
-	dropCapOffset_->setToolTip(   tr("Drop Cap Offset"));
-	dropCapCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
+	parEffectOffset_->setToolTip(   tr("Drop Cap Offset"));
+	parEffectCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
 	alignement_->setToolTip(      tr("Alignment"));
 	tabList_->first_->setToolTip( tr("First Line Indent"));
 	tabList_->left_->setToolTip(  tr("Left Indent"));
@@ -123,6 +137,9 @@ void SMPStyleWidget::languageChange()
 	keepLabelEnd->setToolTip (keepLinesEnd->toolTip());
 	keepTogether->setToolTip ("<qt>" + tr ("If checked, ensures that the paragraph won't be split across multiple pages or columns") + "</qt>");
 	keepWithNext->setToolTip ("<qt>" + tr ("If checked, automatically moves the paragraph to the next column or page if the next paragraph isn't on the same page or column") + "</qt>");
+	
+	numBox->setToolTip("<qt>Not implemented yet</qt>");
+	bulletCharTableButton->setToolTip("<qt>Not implemented yet</qt>");
 
 
 /***********************************/
@@ -174,7 +191,7 @@ void SMPStyleWidget::languageChange()
 
 void SMPStyleWidget::unitChange(double oldRatio, double newRatio, int unitIndex)
 {
-	dropCapOffset_->setNewUnit(unitIndex);
+	parEffectOffset_->setNewUnit(unitIndex);
 	tabList_->unitChange(unitIndex);
 }
 
@@ -211,6 +228,19 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	numStyleCombo->addItem("i_ii_iii");
 	numStyleCombo->addItem("A_B_C");
 	numStyleCombo->addItem("*");
+
+	bulletStrEdit->addItem(QChar(0x2022));
+	bulletStrEdit->addItem(QChar(0x2023));
+	bulletStrEdit->addItem(QChar(0x25E6));
+	bulletStrEdit->addItem("*");
+	bulletStrEdit->addItem("<");
+	bulletStrEdit->addItem(">");
+	bulletStrEdit->addItem("-");
+	bulletStrEdit->addItem("");
+	bulletStrEdit->addItem(QChar(0x261A));
+	bulletStrEdit->addItem(QChar(0x261B));
+	bulletStrEdit->addItem(QChar(0x261C));
+	bulletStrEdit->addItem(QChar(0x261D));
 
 	if (hasParent_)
 	{
@@ -285,28 +315,16 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		dropCapLines_->setValue(pstyle->dropCapLines(), pstyle->isInhDropCapLines());
 		dropCapLines_->setParentValue(parent->dropCapLines());
 
-		dropCapOffset_->setValue(pstyle->dropCapOffset() * unitRatio, pstyle->isInhDropCapOffset());
-		dropCapOffset_->setParentValue(parent->dropCapOffset() * unitRatio);
+		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio, pstyle->isInhParEffectOffset());
+		parEffectOffset_->setParentValue(parent->parEffectOffset() * unitRatio);
 
 		bulletBox->setChecked(pstyle->hasBullet());
-		//setWidgetBoldFont(bulletBox, pstyle->isInhHasBullet());
-		bulletStrEdit->setText(pstyle->bulletStr());
+		bulletStrEdit->setEditText(pstyle->bulletStr());
+		bulletStrEdit->setCurrentItem(0, pstyle->isInhBulletStr());
 		//setWidgetBoldFont(bulletStrEdit, pstyle->isInhBulletStr());
-		bulletFirstSpin->setValue(pstyle->bulletFirst() * unitRatio, pstyle->isInhBulletFirst());
-		bulletFirstSpin->setParentValue(parent->bulletFirst());
-		bulletIndentSpin->setValue(pstyle->bulletIndent() * unitRatio, pstyle->isInhBulletIndent());
-		bulletIndentSpin->setParentValue(parent->bulletIndent());
-		bulletTabSpin->setValue(pstyle->bulletTab() * unitRatio, pstyle->isInhBulletTab());
-		bulletTabSpin->setParentValue(parent->bulletTab());
 
 		numBox->setChecked(pstyle->hasNum());
-		//setWidgetBoldFont(numBox, pstyle->isInhHasNum());
-		numFirstSpin->setValue(pstyle->numFirst() * unitRatio, pstyle->isInhNumFirst());
-		numFirstSpin->setParentValue(parent->numFirst());
-		numIndentSpin->setValue(pstyle->numIndent() * unitRatio, pstyle->isInhNumIndent());
-		numIndentSpin->setParentValue(parent->numIndent());
-		numTabSpin->setValue(pstyle->numTab() * unitRatio, pstyle->isInhNumTab());
-		numTabSpin->setParentValue(parent->numTab());
+		setWidgetBoldFont(numBox, pstyle->isInhHasNum());
 	}
 	else
 	{
@@ -324,7 +342,10 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		parentParEffectsButton->hide();
 		disconnect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 		dropCapLines_->setValue(pstyle->dropCapLines());
-		dropCapOffset_->setValue(pstyle->dropCapOffset() * unitRatio);
+		bulletBox->setChecked(pstyle->hasBullet());
+		bulletStrEdit->setEditText(pstyle->bulletStr());
+		numBox->setChecked(pstyle->hasNum());
+		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio);
 		alignement_->setStyle(pstyle->alignment());
 		tabList_->setTabs(pstyle->tabValues(), unitIndex);
 		tabList_->setLeftIndentValue(pstyle->leftMargin() * unitRatio);
@@ -339,13 +360,21 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 
 	lineSpacing_->setEnabled(pstyle->lineSpacingMode() == ParagraphStyle::FixedLineSpacing);
 	dropCapLines_->setEnabled(pstyle->hasDropCap());
-	dropCapOffset_->setEnabled(pstyle->hasDropCap());
-	dropCapCharStyleCombo->setEnabled(pstyle->hasDropCap());
-	dropCapCharStyleCombo->clear();
-	dropCapCharStyleCombo->addItem(tr("No Style"));
+//	parEffectOffset_->setEnabled(pstyle->hasDropCap());
+//	parEffectCharStyleCombo->setEnabled(pstyle->hasDropCap());
+//	parEffectCharStyleCombo->clear();
+//	parEffectCharStyleCombo->addItem(tr("No Style"));
+//	for (int i =0; i < cstyles.count(); i++)
+//		parEffectCharStyleCombo->addItem(cstyles.at(i).name());
+//	setCurrentComboItem(parEffectCharStyleCombo, pstyle->dcCharStyleName().isEmpty() ? tr("No Style") : pstyle->dcCharStyleName());
+
+	parEffectOffset_->setEnabled(pstyle->hasDropCap() || pstyle->hasBullet() || pstyle->hasNum());
+	parEffectCharStyleCombo->setEnabled(pstyle->hasDropCap() || pstyle->hasBullet() || pstyle->hasNum());
+	parEffectCharStyleCombo->clear();
+	parEffectCharStyleCombo->addItem(tr("No Style"));
 	for (int i =0; i < cstyles.count(); i++)
-		dropCapCharStyleCombo->addItem(cstyles.at(i).name());
-	setCurrentComboItem(dropCapCharStyleCombo, pstyle->dcCharStyleName().isEmpty() ? tr("No Style") : pstyle->dcCharStyleName());
+		parEffectCharStyleCombo->addItem(cstyles.at(i).name());
+	setCurrentComboItem(parEffectCharStyleCombo, pstyle->peCharStyleName().isEmpty() ? tr("No Style") : pstyle->peCharStyleName());
 
 	QFont f(font());
 	f.setBold(true);
@@ -505,7 +534,7 @@ void SMPStyleWidget::showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex)
 
 void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
 {
-	double unitRatio = unitGetRatioFromIndex(unitIndex);
+//	double unitRatio = unitGetRatioFromIndex(unitIndex);
 
 	bool dc = pstyles[0]->hasDropCap();
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -534,38 +563,38 @@ void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyl
 	else
 		dropCapLines_->setValue(lines);
 
-	double dco = -4000.0;
-	for (int i = 0; i < pstyles.count(); ++i)
-	{
-		if (dco > -3980.0 && !isEqual(pstyles[i]->dropCapOffset(), dco))
-		{
-			dco = -4000.0;
-			break;
-		}
-		else
-			dco = pstyles[i]->dropCapOffset();
-	}
+//	double dco = -4000.0;
+//	for (int i = 0; i < pstyles.count(); ++i)
+//	{
+//		if (dco > -3980.0 && !isEqual(pstyles[i]->parEffectOffset(), dco))
+//		{
+//			dco = -4000.0;
+//			break;
+//		}
+//		else
+//			dco = pstyles[i]->parEffectOffset();
+//	}
 
-	if (dco < -3800.0)
-		dropCapOffset_->clear();
-	else
-		dropCapOffset_->setValue(dco * unitRatio);
+//	if (dco < -3800.0)
+//		parEffectOffset_->clear();
+//	else
+//		parEffectOffset_->setValue(dco * unitRatio);
 
-	dropCapCharStyleCombo->clear();
-	dropCapCharStyleCombo->addItem(tr("No Style"));
-	for (int i=0; i < cstyles.count(); i++)
-		dropCapCharStyleCombo->addItem(cstyles.at(i).name());
+//	parEffectCharStyleCombo->clear();
+//	parEffectCharStyleCombo->addItem(tr("No Style"));
+//	for (int i=0; i < cstyles.count(); i++)
+//		parEffectCharStyleCombo->addItem(cstyles.at(i).name());
 
 	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	dropCapsBox->setEnabled(true);
 	dropCapLines_->setEnabled(true);
-	dropCapOffset_->setEnabled(true);
-	dropCapCharStyleCombo->setEnabled(true);
+//	parEffectOffset_->setEnabled(true);
+//	parEffectCharStyleCombo->setEnabled(true);
 }
 
 void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
 {
-	double unitRatio = unitGetRatioFromIndex(unitIndex);
+//	double unitRatio = unitGetRatioFromIndex(unitIndex);
 
 	bool hb = pstyles[0]->hasBullet();
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -578,53 +607,53 @@ void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyl
 	}
 	bulletBox->setChecked(hb);
 
-	double val = -4000.0;
-	for (int i = 0; i < pstyles.count(); ++i)
-	{
-		if (val > -3980.0 && !isEqual(pstyles[i]->bulletFirst(), val))
-		{
-			val = -4000.0;
-			break;
-		}
-		else
-			val = pstyles[i]->bulletFirst();
-	}
-	if (val < -3800.0)
-		bulletFirstSpin->clear();
-	else
-		bulletFirstSpin->setValue(val * unitRatio);
+//	double val = -4000.0;
+//	for (int i = 0; i < pstyles.count(); ++i)
+//	{
+//		if (val > -3980.0 && !isEqual(pstyles[i]->bulletFirst(), val))
+//		{
+//			val = -4000.0;
+//			break;
+//		}
+//		else
+//			val = pstyles[i]->bulletFirst();
+//	}
+//	if (val < -3800.0)
+//		bulletFirstSpin->clear();
+//	else
+//		bulletFirstSpin->setValue(val * unitRatio);
 
-	val = -4000.0;
-	for (int i = 0; i < pstyles.count(); ++i)
-	{
-		if (val > -3980.0 && !isEqual(pstyles[i]->bulletIndent(), val))
-		{
-			val = -4000.0;
-			break;
-		}
-		else
-			val = pstyles[i]->bulletIndent();
-	}
-	if (val < -3800.0)
-		bulletIndentSpin->clear();
-	else
-		bulletIndentSpin->setValue(val * unitRatio);
+//	val = -4000.0;
+//	for (int i = 0; i < pstyles.count(); ++i)
+//	{
+//		if (val > -3980.0 && !isEqual(pstyles[i]->bulletIndent(), val))
+//		{
+//			val = -4000.0;
+//			break;
+//		}
+//		else
+//			val = pstyles[i]->bulletIndent();
+//	}
+//	if (val < -3800.0)
+//		bulletIndentSpin->clear();
+//	else
+//		bulletIndentSpin->setValue(val * unitRatio);
 
-	val = -4000.0;
-	for (int i = 0; i < pstyles.count(); ++i)
-	{
-		if (val > -3980.0 && !isEqual(pstyles[i]->bulletTab(), val))
-		{
-			val = -4000.0;
-			break;
-		}
-		else
-			val = pstyles[i]->bulletTab();
-	}
-	if (val < -3800.0)
-		bulletTabSpin->clear();
-	else
-		bulletTabSpin->setValue(val * unitRatio);
+//	val = -4000.0;
+//	for (int i = 0; i < pstyles.count(); ++i)
+//	{
+//		if (val > -3980.0 && !isEqual(pstyles[i]->bulletTab(), val))
+//		{
+//			val = -4000.0;
+//			break;
+//		}
+//		else
+//			val = pstyles[i]->bulletTab();
+//	}
+//	if (val < -3800.0)
+//		bulletTabSpin->clear();
+//	else
+//		bulletTabSpin->setValue(val * unitRatio);
 
 	QString chStr = pstyles[0]->bulletStr();
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -637,19 +666,19 @@ void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyl
 		else
 			chStr = pstyles[i]->bulletStr();
 	}
-	bulletStrEdit->setText(chStr);
+	bulletStrEdit->setEditText(chStr);
 	
-	bulletChStyleCombo->clear();
-	bulletChStyleCombo->addItem(tr("No Style"));
-	for (int i=0; i < cstyles.count(); i++)
-		bulletChStyleCombo->addItem(cstyles.at(i).name());
+//	bulletChStyleCombo->clear();
+//	bulletChStyleCombo->addItem(tr("No Style"));
+//	for (int i=0; i < cstyles.count(); i++)
+//		bulletChStyleCombo->addItem(cstyles.at(i).name());
 
 	connect(bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
 	bulletCharTableButton->setEnabled(true);
-	bulletFirstSpin->setEnabled(true);
-	bulletIndentSpin->setEnabled(true);
-	bulletTabSpin->setEnabled(true);
-	bulletChStyleCombo->setEnabled(true);
+//	bulletFirstSpin->setEnabled(true);
+//	bulletIndentSpin->setEnabled(true);
+//	bulletTabSpin->setEnabled(true);
+//	bulletChStyleCombo->setEnabled(true);
 }
 
 void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
@@ -684,10 +713,10 @@ void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Char
 	connect(numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumbering(bool)));
 	numStyleCombo->setEnabled(true);
 	numLevelSpin->setEnabled(true);
-	numFirstSpin->setEnabled(true);
-	numIndentSpin->setEnabled(true);
-	numTabSpin->setEnabled(true);
-	numChStyleCombo->setEnabled(true);
+//	numFirstSpin->setEnabled(true);
+//	numIndentSpin->setEnabled(true);
+//	numTabSpin->setEnabled(true);
+//	numChStyleCombo->setEnabled(true);
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
@@ -1039,33 +1068,35 @@ void SMPStyleWidget::slotDropCap(bool isOn)
 	if (isOn)
 	{
 		dropCapLines_->setEnabled(true);
-		dropCapOffset_->setEnabled(true);
-		dropCapCharStyleCombo->setEnabled(true);
+//		parEffectOffset_->setEnabled(true);
+//		parEffectCharStyleCombo->setEnabled(true);
 
 		bulletBox->setChecked(false);
 		bulletStrEdit->setEnabled(false);
 		bulletCharTableButton->setEnabled(false);
-		bulletFirstSpin->setEnabled(false);
-		bulletIndentSpin->setEnabled(false);
-		bulletTabSpin->setEnabled(false);
-		bulletChStyleCombo->setEnabled(false);
+//		bulletFirstSpin->setEnabled(false);
+//		bulletIndentSpin->setEnabled(false);
+//		bulletTabSpin->setEnabled(false);
+//		bulletChStyleCombo->setEnabled(false);
 
 		numBox->setChecked(false);
 		numStyleCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
-		numFirstSpin->setEnabled(false);
-		numIndentSpin->setEnabled(false);
-		numTabSpin->setEnabled(false);
-		numChStyleCombo->setEnabled(false);
+//		numFirstSpin->setEnabled(false);
+//		numIndentSpin->setEnabled(false);
+//		numTabSpin->setEnabled(false);
+//		numChStyleCombo->setEnabled(false);
 	}
 	else
 	{
 		dropCapLines_->setEnabled(false);
-		dropCapOffset_->setEnabled(false);
-		dropCapCharStyleCombo->setEnabled(false);
+//		parEffectOffset_->setEnabled(false);
+//		parEffectCharStyleCombo->setEnabled(false);
 	}
 	if (hasParent_)
 		parentParEffectsButton->show();
+	parEffectOffset_->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
+	parEffectCharStyleCombo->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 }
 
 void SMPStyleWidget::slotBullets(bool isOn)
@@ -1074,35 +1105,37 @@ void SMPStyleWidget::slotBullets(bool isOn)
 	{
 		bulletStrEdit->setEnabled(true);
 		bulletCharTableButton->setEnabled(true);
-		bulletFirstSpin->setEnabled(true);
-		bulletIndentSpin->setEnabled(true);
-		bulletTabSpin->setEnabled(true);
-		bulletChStyleCombo->setEnabled(true);
+//		bulletFirstSpin->setEnabled(true);
+//		bulletIndentSpin->setEnabled(true);
+//		bulletTabSpin->setEnabled(true);
+//		bulletChStyleCombo->setEnabled(true);
 
 		numBox->setChecked(false);
 		numStyleCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
-		numFirstSpin->setEnabled(false);
-		numIndentSpin->setEnabled(false);
-		numTabSpin->setEnabled(false);
-		numChStyleCombo->setEnabled(false);
+//		numFirstSpin->setEnabled(false);
+//		numIndentSpin->setEnabled(false);
+//		numTabSpin->setEnabled(false);
+//		numChStyleCombo->setEnabled(false);
 
 		dropCapsBox->setChecked(false);
 		dropCapLines_->setEnabled(false);
-		dropCapOffset_->setEnabled(false);
-		dropCapCharStyleCombo->setEnabled(false);
+//		parEffectOffset_->setEnabled(false);
+//		parEffectCharStyleCombo->setEnabled(false);
 	}
 	else
 	{
 		bulletStrEdit->setEnabled(false);
 		bulletCharTableButton->setEnabled(false);
-		bulletFirstSpin->setEnabled(false);
-		bulletIndentSpin->setEnabled(false);
-		bulletTabSpin->setEnabled(false);
-		bulletChStyleCombo->setEnabled(false);
+//		bulletFirstSpin->setEnabled(false);
+//		bulletIndentSpin->setEnabled(false);
+//		bulletTabSpin->setEnabled(false);
+//		bulletChStyleCombo->setEnabled(false);
 	}
 	if (hasParent_)
 		parentParEffectsButton->show();
+	parEffectOffset_->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
+	parEffectCharStyleCombo->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 }
 
 void SMPStyleWidget::slotNumbering(bool isOn)
@@ -1111,35 +1144,37 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 	{
 		numStyleCombo->setEnabled(true);
 		numLevelSpin->setEnabled(true);
-		numFirstSpin->setEnabled(true);
-		numIndentSpin->setEnabled(true);
-		numTabSpin->setEnabled(true);
-		numChStyleCombo->setEnabled(true);
+//		numFirstSpin->setEnabled(true);
+//		numIndentSpin->setEnabled(true);
+//		numTabSpin->setEnabled(true);
+//		numChStyleCombo->setEnabled(true);
 
 		bulletBox->setChecked(false);
 		bulletStrEdit->setEnabled(false);
 		bulletCharTableButton->setEnabled(false);
-		bulletFirstSpin->setEnabled(false);
-		bulletIndentSpin->setEnabled(false);
-		bulletTabSpin->setEnabled(false);
-		bulletChStyleCombo->setEnabled(false);
+//		bulletFirstSpin->setEnabled(false);
+//		bulletIndentSpin->setEnabled(false);
+//		bulletTabSpin->setEnabled(false);
+//		bulletChStyleCombo->setEnabled(false);
 
 		dropCapsBox->setChecked(false);
 		dropCapLines_->setEnabled(false);
-		dropCapOffset_->setEnabled(false);
-		dropCapCharStyleCombo->setEnabled(false);
+//		parEffectOffset_->setEnabled(false);
+//		parEffectCharStyleCombo->setEnabled(false);
 	}
 	else
 	{
 		numStyleCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
-		numFirstSpin->setEnabled(false);
-		numIndentSpin->setEnabled(false);
-		numTabSpin->setEnabled(false);
-		numChStyleCombo->setEnabled(false);
+//		numFirstSpin->setEnabled(false);
+//		numIndentSpin->setEnabled(false);
+//		numTabSpin->setEnabled(false);
+//		numChStyleCombo->setEnabled(false);
 	}
 	if (hasParent_)
 		parentParEffectsButton->show();
+	parEffectOffset_->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
+	parEffectCharStyleCombo->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 }
 
 void SMPStyleWidget::slotParentParEffects()

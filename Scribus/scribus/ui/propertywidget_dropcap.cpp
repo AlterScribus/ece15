@@ -128,8 +128,8 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 	disconnectSignals ();
 	dropCapBox->setChecked(newCurrent.hasDropCap());
 	dropCapLines->setValue(newCurrent.dropCapLines());
-	dropCapOffset->setValue(newCurrent.dropCapOffset() * m_unitRatio);
-	displayCharStyle(newCurrent.dcCharStyleName());
+	dropCapOffset->setValue(newCurrent.parEffectOffset() * m_unitRatio);
+	displayCharStyle(newCurrent.peCharStyleName());
 	connectSignals ();
 }
 
@@ -231,7 +231,7 @@ void PropertyWidget_DropCap::handleDropCapOffset()
 	if (!m_doc || !m_item)
 		return;
 	ParagraphStyle newStyle;
-	newStyle.setDropCapOffset(dropCapOffset->value());
+	newStyle.setParEffectOffset(dropCapOffset->value());
 	newStyle.setHasDropCap(dropCapBox->isChecked());
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
@@ -251,7 +251,7 @@ void PropertyWidget_DropCap::handleDropCapCharStyle()
 	ParagraphStyle newStyle;
 	QString name = dropCapCharStyleCombo->currentText();
 	if (!name.isEmpty())
-		newStyle.setDcCharStyleName(name);
+		newStyle.setPeCharStyleName(name);
 	newStyle.setHasDropCap(dropCapBox->isChecked());
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
