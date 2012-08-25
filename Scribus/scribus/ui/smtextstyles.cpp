@@ -44,7 +44,7 @@ SMParagraphStyle::SMParagraphStyle(StyleSet<CharStyle> *cstyles) : StyleItem(),
 pwidget_(0), doc_(0), selectionIsDirty_(false), unitRatio_(1.0), cstyles_(cstyles)
 {
 	Q_ASSERT(cstyles_);
-	pwidget_ = new SMPStyleWidget();
+	pwidget_ = new SMPStyleWidget(doc_);
 	Q_CHECK_PTR(pwidget_);
 }
 
@@ -84,6 +84,8 @@ void SMParagraphStyle::setCurrentDoc(ScribusDoc *doc)
 		tmpStyles_.clear();
 		deleted_.clear();
 	}
+	if (pwidget_)
+		pwidget_->setDoc(doc);
 }
 
 StyleSet<ParagraphStyle>* SMParagraphStyle::tmpStyles()
@@ -518,8 +520,8 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
 	connect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
-	connect(pwidget_->bulletStrEdit, SIGNAL(textEdited(QString)), this, SLOT(slotBulletStr(QString)));
-	connect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
+	connect(pwidget_->bulletStrEdit, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
+	//connect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
 	connect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	connect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumerationLevel(int)));
 	connect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumerationStyle(int)));
@@ -603,8 +605,8 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
 
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
-	disconnect(pwidget_->bulletStrEdit, SIGNAL(textEdited(QString)), this, SLOT(slotBulletStr(QString)));
-	disconnect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
+	disconnect(pwidget_->bulletStrEdit, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
+//	disconnect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	disconnect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumerationStyle(int)));
 	disconnect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumerationLevel(int)));
