@@ -3076,11 +3076,15 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 									xcoZli -= hls->glyph.xoffset;
 								}
 							}
+							if (hls->prefix)
+								xcoZli += hls->prefix->glyph.xoffset;
 							const ScFace* font = &charStyleS.font();
 							double fontSize = charStyleS.fontSize() / 10.0;
 							desc = - font->descent(fontSize);
 							asce = font->ascent(fontSize);
 							wide = hls->glyph.wide();
+							if (hls->prefix)
+								wide += hls->prefix->glyph.wide();
 							QRectF scr;
 							if ((hls->ch == SpecialChars::OBJECT)  && (hls->hasObject(m_Doc)))
 							{
@@ -3178,19 +3182,71 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
 							DrawObj_Embedded(p, cullingArea, charStyle, hl->getItem(m_Doc));
 						else
-						{
 							drawGlyphs(p, charStyle, hl->glyph);
-							if (hl->prefix)
-								drawGlyphs(p, charStyle, hl->prefix->glyph);
-						}
 						p->restore();//RE4
 					}
-					// Unneeded now that glyph xadvance is set appropriately for inline objects by layout() - JG
-					/*if ((hl->ch == SpecialChars::OBJECT) && (hl->embedded.hasItem()))
-						CurX += (hl->embedded.getItem()->gWidth + hl->embedded.getItem()->lineWidth()) * hl->glyph.scaleH;
-					else*/
-					CurX += hl->glyph.wide();
 				}
+				if (hl->prefix)
+				{
+					const CharStyle& prefCharStyle(dynamic_cast<const CharStyle&>(*hl->prefix));
+					actFill = prefCharStyle.fillColor();
+					actFillShade = prefCharStyle.fillShade();
+					if (actFill != CommonStrings::None)
+					{
+						p->setFillMode(ScPainter::Solid);
+						if ((cachedFillShade != actFillShade) || (cachedFill != actFill))
+						{
+							SetQColor(&tmp, actFill, actFillShade);
+							p->setBrush(tmp);
+							cachedFillQ = tmp;
+							cachedFill = actFill;
+							cachedFillShade = actFillShade;
+						}
+						else
+							p->setBrush(cachedFillQ);
+					}
+					else
+						p->setFillMode(ScPainter::None);
+	
+					if (!m_Doc->RePos)
+					{
+						const ScFace* font = &prefCharStyle.font();
+						double fontSize = prefCharStyle.fontSize() / 10.0;
+						desc = - font->descent(fontSize);
+						asce = font->ascent(fontSize);
+						if (((selected && Select) || ((NextBox != 0 || BackBox != 0) && selected)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
+						{
+							// set text color to highlight if its selected
+							p->setBrush(qApp->palette().color(QPalette::Active, QPalette::HighlightedText));
+						}
+	
+						actStroke = prefCharStyle.strokeColor();
+						actStrokeShade = prefCharStyle.strokeShade();
+						if (actStroke != CommonStrings::None)
+						{
+							if ((cachedStrokeShade != actStrokeShade) || (cachedStroke != actStroke))
+							{
+								SetQColor(&tmp, actStroke, actStrokeShade);
+								p->setPen(tmp, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+								cachedStrokeQ = tmp;
+								cachedStroke = actStroke;
+								cachedStrokeShade = actStrokeShade;
+							}
+							else
+								p->setPen(cachedStrokeQ, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+						}
+						// paint glyphs
+						if (cullingArea.intersects(pf2.mapRect(QRect(qRound(CurX + hl->prefix->glyph.xoffset),qRound(ls.y + hl->prefix->glyph.yoffset-asce), qRound(hl->prefix->glyph.xadvance+1), qRound(asce+desc)))))
+						{
+							p->save();//SA4
+							p->translate(CurX, ls.y);
+							drawGlyphs(p, prefCharStyle, hl->prefix->glyph);
+							p->restore();//RE4
+						}
+					}
+				}
+				if (!m_Doc->RePos)
+					CurX += hl->glyph.wide();
 			}
 		}
 	//	else {
