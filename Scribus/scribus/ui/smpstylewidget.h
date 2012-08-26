@@ -74,7 +74,9 @@ private slots:
 	void slotParentOpticalMargins();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
 
-	void on_bulletCharTableButton_clicked();
+//	void on_bulletCharTableButton_clicked();
+	
+	void on_bulletCharTableButton_toggled(bool checked);
 	
 signals:
 	void useParentParaEffects();

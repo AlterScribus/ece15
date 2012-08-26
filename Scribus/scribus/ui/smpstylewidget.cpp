@@ -52,6 +52,7 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	parEffectOffset_->setSuffix(unitGetSuffixFromIndex(0));
 	
 	fillBulletStrEditCombo();
+	bulletCharTableButton->setIcon(loadIcon("22/insert-table.png"));
 	fillNumStyleCombo();
 
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
@@ -121,7 +122,7 @@ void SMPStyleWidget::languageChange()
 	keepWithNext->setToolTip ("<qt>" + tr ("If checked, automatically moves the paragraph to the next column or page if the next paragraph isn't on the same page or column") + "</qt>");
 	
 	numBox->setToolTip("<qt>Not implemented yet</qt>");
-	bulletCharTableButton->setToolTip("<qt>Not implemented yet</qt>");
+	bulletCharTableButton->setToolTip("<qt>"+ tr("Show table of ") +"/qt>");
 
 
 /***********************************/
@@ -1024,13 +1025,13 @@ SMPStyleWidget::~SMPStyleWidget()
 	
 }
 
-void SMPStyleWidget::on_bulletCharTableButton_clicked()
-{
-	if (m_enhanced)
-		closeEnhanced();
-	else
-		openEnhanced();
-}
+//void SMPStyleWidget::on_bulletCharTableButton_clicked()
+//{
+//	if (m_enhanced)
+//		closeEnhanced();
+//	else
+//		openEnhanced();
+//}
 
 void SMPStyleWidget::openEnhanced()
 {
@@ -1041,6 +1042,7 @@ void SMPStyleWidget::openEnhanced()
 	m_enhanced = new CharSelectEnhanced(this);
 	m_enhanced->setModal(true);
 	connect(m_enhanced, SIGNAL(insertSpecialChars(const QString &)), this, SLOT(insertSpecialChars(const QString &)));
+	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
 	m_enhanced->setDoc(m_Doc);
 	m_enhanced->setEnabled(true);
 	QString styleName = parEffectCharStyleCombo->currentText();
@@ -1060,7 +1062,16 @@ void SMPStyleWidget::closeEnhanced(bool show)
 	if (!m_enhanced || show)
 		return;
 	disconnect(m_enhanced, SIGNAL(insertSpecialChars(const QString &)), this, SLOT(insertSpecialChars(const QString &)));
+	disconnect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
 	m_enhanced->close();
 	delete m_enhanced;
 	m_enhanced = NULL;
+}
+
+void SMPStyleWidget::on_bulletCharTableButton_toggled(bool checked)
+{
+	if (m_enhanced && !checked)
+		closeEnhanced();
+	else if (!m_enhanced && checked)
+		openEnhanced();
 }
