@@ -134,8 +134,6 @@ StyleReader::StyleReader(QString documentName, gtWriter *w,
 				prefix = attrs.value(i);
 			else if (attrs.localName(i) == "style:num-suffix")
 				suffix = attrs.value(i);
-			/*else if (attrs.localName(i) == "text:bullet-char")
-				bullet = attrs.value(i);*/
 			else if (attrs.localName(i) == "style:num-format") {
 				QString tmp = attrs.value(i);
 				if (tmp == "i")
@@ -498,6 +496,12 @@ StyleReader::StyleReader(QString documentName, gtWriter *w,
  			  (name == "text:list-level-style-number") ||
 			  (name == "text:list-level-style-image")) && (currentStyle != NULL))
  	{
+		if ((name == "text:list-level-style-bullet"))
+		{
+			gtParagraphStyle* s = dynamic_cast<gtParagraphStyle*>(currentStyle);
+			if (s)
+				s->setBullet(true);
+		}
  		setStyle(currentStyle->getName(), currentStyle);
  		currentStyle = NULL;
  		parentStyle = NULL;
@@ -572,6 +576,7 @@ StyleReader::StyleReader(QString documentName, gtWriter *w,
  		nameByAttrs += QString("%1-").arg(s->getFirstLineIndent());
  		nameByAttrs += QString("%1-").arg(s->getAlignment());
  		nameByAttrs += QString("%1-").arg(s->hasDropCap());
+		nameByAttrs += QString("%1-").arg(s->hasBullet());
  		nameByAttrs += QString("%1-").arg(s->getFont()->getColor());
  		nameByAttrs += QString("%1-").arg(s->getFont()->getStrokeColor());
 // TODO is this important ??

@@ -42,6 +42,8 @@ gtParagraphStyle::gtParagraphStyle(const gtParagraphStyle& p) : gtStyle(p)
 	spaceAbove      = p.spaceAbove;
 	spaceBelow      = p.spaceBelow;
 	dropCap         = p.dropCap;
+	bullet          = p.bullet;
+	bulletStr       = p.bulletStr;
 	dropCapHeight   = p.dropCapHeight;
 	adjToBaseline   = p.adjToBaseline;
 	autoLineSpacing = p.autoLineSpacing;
@@ -192,15 +194,31 @@ void gtParagraphStyle::setTabValue(double newTabValue, TabType ttype)
 	flags |= tabValueWasSet;
 }
 
-bool gtParagraphStyle::hasDropCap()
+bool gtParagraphStyle::hasBullet()
 {
-	return dropCap;
+	return bullet;
+}
+QString  gtParagraphStyle::getBullet()
+{
+	return bulletStr;
 }
 
 void gtParagraphStyle::setDropCap(bool newDropCap)
 {
 	dropCap = newDropCap;
 	flags |= dropCapWasSet;
+}
+
+void gtParagraphStyle::setBullet(bool newBullet, QString str)
+{
+	bullet = newBullet;
+	bulletStr = str;
+	flags |= bulletWasSet;
+}
+
+bool gtParagraphStyle::hasDropCap()
+{
+	return dropCap;
 }
 
 void gtParagraphStyle::setDropCap(int newHeight)

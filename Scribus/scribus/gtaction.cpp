@@ -394,6 +394,8 @@ void gtAction::getFrameStyle(gtFrameStyle *fstyle)
 		fstyle->setDropCap(vg.hasDropCap());
 	if (!vg.isInhDropCapLines())
 		fstyle->setDropCapHeight(vg.dropCapLines());
+	if (!vg.isInhHasBullet())
+		fstyle->setBullet(vg.hasBullet(), vg.bulletStr());
 
 	gtFont font;
 	getFrameFont(&font);
@@ -490,6 +492,11 @@ void gtAction::setParaStyleAttributes(gtParagraphStyle *pstyle, ParagraphStyle& 
 		style.setHasDropCap(pstyle->hasDropCap());
 	if (flags & gtParagraphStyle::dropCapHeightWasSet)
 		style.setDropCapLines(pstyle->getDropCapHeight());
+	if (flags & gtParagraphStyle::bulletWasSet)
+	{
+		style.setHasBullet(pstyle->hasBullet());
+		style.setBulletStr(pstyle->getBullet());
+	}
 	/*vg.setDropCapOffset(0);*/
 }
 
