@@ -98,7 +98,8 @@ void SMPStyleWidget::languageChange()
 	//CB Unneeded, gets in the way of single widget tooltips
 	//dropCapsBox->setToolTip(      tr("Enable or disable drop cap"));
 	dropCapLines_->setToolTip(    tr("Drop Cap Lines"));
-	parEffectOffset_->setToolTip(   tr("Drop Cap Offset"));
+	bulletCharTableButton->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
+	parEffectOffset_->setToolTip(   tr("Paragraph Effects Chars Offset"));
 	parEffectCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
 	alignement_->setToolTip(      tr("Alignment"));
 	tabList_->first_->setToolTip( tr("First Line Indent"));
@@ -120,10 +121,6 @@ void SMPStyleWidget::languageChange()
 	keepLabelEnd->setToolTip (keepLinesEnd->toolTip());
 	keepTogether->setToolTip ("<qt>" + tr ("If checked, ensures that the paragraph won't be split across multiple pages or columns") + "</qt>");
 	keepWithNext->setToolTip ("<qt>" + tr ("If checked, automatically moves the paragraph to the next column or page if the next paragraph isn't on the same page or column") + "</qt>");
-	
-	numBox->setToolTip("<qt>Not implemented yet</qt>");
-	bulletCharTableButton->setToolTip("<qt>"+ tr("Show table of ") +"/qt>");
-
 
 /***********************************/
 /*      End Tooltips               */
@@ -144,14 +141,32 @@ void SMPStyleWidget::languageChange()
 //
 //	optMarginLabel->setText(tr("Optical Margins:"));
 
-	dropCapsLineLabel->setText( tr("Lines:"));
-	distFromTextLabel->setText( tr("Distance from Text:"));
 	lineSpacing_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
 	parentLabel->setText( tr("Based On:"));
 	distancesBox->setTitle( tr("Distances and Alignment"));
+
+	parEffectsBox->setTitle(tr("Paragraph Effects"));
 	dropCapsBox->setTitle( tr("Drop Caps"));
+	bulletBox->setTitle(tr("Bullets"));
+	numBox->setTitle(tr("Numeration"));
+	dropCapsLineLabel->setText( tr("Lines:"));
+	bulletCharLabel->setText(tr("Bullet Char/String"));
+	bulletCharTableButton->setText(tr("Char Table"));
+	numStyleLabel->setText(tr("Numbering Style"));
+	numLevelLabel->setText(tr("Level"));
+	numPrefixLabel->setText(tr("Prefix"));
+	numSuffixLabel->setText(tr("Suffix"));
+
+	parEffectCharStyleComboLabel->setText(tr("Character Style for Effect:"));
+	distFromTextLabel->setText(tr("Distance from Text:"));
+	parentParEffectsButton->setText(tr("Use Parent`s Values"));
+	
+	QFont font1;
+	font1.setPointSize(13);
+	((QComboBox*) bulletStrEdit)->setFont(font1);
+
 	tabsBox->setTitle( tr("Tabulators and Indentation"));
 	tabWidget->setTabText(0, tr("Properties"));
 	tabWidget->setTabText(1, tr("Character Style"));
