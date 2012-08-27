@@ -1484,7 +1484,7 @@ void PageItem_TextFrame::layout()
 			}
 			
 			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
-			if (!BulNumMode && (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
 			{
 				BulNumMode = true;
 				if (style.hasBullet())
@@ -1534,29 +1534,40 @@ void PageItem_TextFrame::layout()
 			{
 				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
 				{
-					const QString& curParent(style.hasParent() ? style.parent() : style.name());
-					CharStyle newStyle;
-					newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
 					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-						newStyle.applyCharStyle(m_Doc->charStyle(style.peCharStyleName()));
-					charStyle.setStyle(newStyle);
+					{
+						charStyle.applyCharStyle(m_Doc->charStyle(style.peCharStyleName()));
+//						const QString& curParent(style.hasParent() ? style.parent() : style.name());
+//						CharStyle newStyle;
+//						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+//						if (curParent == "")
+//							newStyle.setCharStyle(charStyle);
+//						newStyle.applyCharStyle(m_Doc->charStyle(style.peCharStyleName()));
+//						charStyle.setStyle(newStyle);
+					}
+					else
+					{
+						const QString& curParent(style.hasParent() ? style.parent() : style.name());
+						CharStyle newStyle;
+						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+						charStyle.setStyle(newStyle);
+					}
 					if (style.hasDropCap())
 						itemText.setCharStyle(a, chstr.length(), charStyle);
 					else if (hl->prefix)
 						hl->prefix->setStyle(charStyle);
 				}
-//				else
-//				{
-//					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-//						//hasDropCap is cleared but is set peCharStyleName = clear parEffect char style
-//					{
-//						const QString& curParent(style.hasParent() ? style.parent() : style.name());
-//						CharStyle newStyle;
-//						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-//						charStyle.setStyle(newStyle);
-//						itemText.setCharStyle(a, chstr.length(),charStyle);
-//					}
-//				}
+				if (!style.hasDropCap())
+				{
+					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
+					{   //hasDropCap is cleared but is set peCharStyleName = clear parEffect char style for text
+						const QString& curParent(style.hasParent() ? style.parent() : style.name());
+						CharStyle newStyle;
+						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+						charStyle.setStyle(newStyle);
+						itemText.setCharStyle(a, chstr.length(),charStyle);
+					}
+				}
 			}
 
 			const ScFace* font = &charStyle.font();
@@ -1841,6 +1852,22 @@ void PageItem_TextFrame::layout()
 				{
 					asce = font->ascent(hlcsize10);
 					realAsce = font->realCharAscent(chstr[0], hlcsize10) * scaleV + offset;
+				}
+				if (BulNumMode)
+				{
+					const ScFace* PEfont = &(*(hl->prefix)).font();
+					double PEhlcsize10 = hl->prefix->fontSize() / 10.0;
+					double PEscaleV = hl->prefix->scaleV() / 1000.0;
+					double PEoffset = PEhlcsize10 * (hl->prefix->baselineOffset() / 1000.0);
+					
+					if (PEfont->descent(PEhlcsize10) > font->descent(hlcsize10))
+						desc -= PEfont->descent(PEhlcsize10) - font->descent(hlcsize10);
+					asce = qMax(asce, PEfont->ascent(PEhlcsize10));
+					for (int i=0; i < prefixStr.length(); ++i)
+					{
+						realDesc = qMax(realDesc, PEfont->realCharDescent(prefixStr[i], PEhlcsize10) * PEscaleV - PEoffset);
+						realAsce = qMax(realAsce, PEfont->realCharAscent(prefixStr[i], PEhlcsize10) * PEscaleV + PEoffset);
+					}
 				}
 			}
 

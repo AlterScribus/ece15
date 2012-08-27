@@ -195,7 +195,18 @@ void PropertyWidget_DropCap::handleDropCapUse()
 	if (!m_doc || !m_item)
 		return;
 	ParagraphStyle newStyle;
-	newStyle.setHasDropCap(dropCapBox->isChecked());
+	if (dropCapBox->isChecked())
+	{
+		newStyle.setHasDropCap(true);
+		newStyle.setHasBullet(false);
+		newStyle.setHasNum(false);
+	}
+	else
+	{
+		newStyle.setHasDropCap(false);
+		newStyle.setHasBullet(m_doc->paragraphStyle(newStyle.parent()).hasBullet());
+		newStyle.setHasNum(m_doc->paragraphStyle(newStyle.parent()).hasNum());
+	}
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();
@@ -214,7 +225,18 @@ void PropertyWidget_DropCap::handleDropCapLines()
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setDropCapLines(static_cast<int>(dropCapLines->value()));
-	newStyle.setHasDropCap(dropCapBox->isChecked());
+	if (dropCapBox->isChecked())
+	{
+		newStyle.setHasDropCap(true);
+		newStyle.setHasBullet(false);
+		newStyle.setHasNum(false);
+	}
+	else
+	{
+		newStyle.setHasDropCap(false);
+		newStyle.setHasBullet(m_doc->paragraphStyle(newStyle.parent()).hasBullet());
+		newStyle.setHasNum(m_doc->paragraphStyle(newStyle.parent()).hasNum());
+	}
 	PageItem *item = m_doc->m_Selection->itemAt(0);
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();
@@ -232,7 +254,18 @@ void PropertyWidget_DropCap::handleDropCapOffset()
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setParEffectOffset(dropCapOffset->value());
-	newStyle.setHasDropCap(dropCapBox->isChecked());
+	if (dropCapBox->isChecked())
+	{
+		newStyle.setHasDropCap(true);
+		newStyle.setHasBullet(false);
+		newStyle.setHasNum(false);
+	}
+	else
+	{
+		newStyle.setHasDropCap(false);
+		newStyle.setHasBullet(m_doc->paragraphStyle(newStyle.parent()).hasBullet());
+		newStyle.setHasNum(m_doc->paragraphStyle(newStyle.parent()).hasNum());
+	}
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();
@@ -252,7 +285,18 @@ void PropertyWidget_DropCap::handleDropCapCharStyle()
 	QString name = dropCapCharStyleCombo->currentText();
 	if (!name.isEmpty())
 		newStyle.setPeCharStyleName(name);
-	newStyle.setHasDropCap(dropCapBox->isChecked());
+	if (dropCapBox->isChecked())
+	{
+		newStyle.setHasDropCap(true);
+		newStyle.setHasBullet(false);
+		newStyle.setHasNum(false);
+	}
+	else
+	{
+		newStyle.setHasDropCap(false);
+		newStyle.setHasBullet(m_doc->paragraphStyle(newStyle.parent()).hasBullet());
+		newStyle.setHasNum(m_doc->paragraphStyle(newStyle.parent()).hasNum());
+	}
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();
