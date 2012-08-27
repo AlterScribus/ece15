@@ -1,0 +1,71 @@
+--- Scribus/Scribus.pro
++++ Scribus/Scribus.pro
+@@ -1078,13 +1050,9 @@
+            scribus/main_nix.cpp \
+            scribus/main_win32.cpp \
+            scribus/styles/linestyle.attrdefs.cxx \
+-    scribus/plugins/scripter/utils.h \
+-    scribus/plugins/scripter/new_api.py \
+-    scribus/plugins/scripter/api_textitem.h \
+-    scribus/plugins/scripter/api_printer.h \
+-    scribus/plugins/scripter/api_layer.h \
+-    scribus/plugins/scripter/api_imageitem.h \
+-    scribus/plugins/scripter/api_imageexport.h
++    scribus/numeration.h \
++    scribus/ui/numerationwidget.h \
++    scribus/styles/smbulettwidget.h
+ FORMS += scribus/ui/aboutplugins.ui \
+          scribus/ui/aligndistribute.ui \
+          scribus/ui/arcvectorbase.ui \
+@@ -1202,14 +1167,15 @@
+          scribus/plugins/short-words/swdialog.ui \
+          scribus/plugins/scripter/python/excepthook.ui \
+          scribus/plugins/scripter/python/permitdlg.ui \
+-         scribus/plugins/tools/hunspellcheck/hunspelldialogbase.ui \
+          scribus/plugins/tools/lenseffects/lensdialogbase.ui \
+          scribus/plugins/tools/pathconnect/pathconnectdialogbase.ui \
+          scribus/plugins/tools/pathfinder/pathfinderbase.ui \
+          scribus/plugins/tools/spellcheck/aspellpluginbase.ui \
+          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
+          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
+-         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui
++         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
++    scribus/ui/numerationwidget.ui \
++    scribus/styles/smbulettwidget.ui
+ SOURCES += scribus/actionmanager.cpp \
+            scribus/canvas.cpp \
+            scribus/canvasgesture_cellselect.cpp \
+@@ -2083,12 +2028,9 @@
+            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.cpp \
+            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.cpp \
+            scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp \
+-    scribus/plugins/scripter/utils.cpp \
+-    scribus/plugins/scripter/api_textitem.cpp \
+-    scribus/plugins/scripter/api_printer.cpp \
+-    scribus/plugins/scripter/api_layer.cpp \
+-    scribus/plugins/scripter/api_imageitem.cpp \
+-    scribus/plugins/scripter/api_imageexport.cpp
++    scribus/numeration.cpp \
++    scribus/ui/numerationwidget.cpp \
++    scribus/styles/smbulettwidget.cpp
+ RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
+ TRANSLATIONS += resources/translations/po/scribus.af.ts \
+                 resources/translations/po/scribus.ar.ts \
+@@ -2134,17 +2076,3 @@
+                 resources/translations/po/scribus.uk.ts \
+                 resources/translations/po/scribus.zh_CN.ts \
+                 resources/translations/po/scribus.zh_TW.ts
+-
+-OTHER_FILES += \
+-    scribus/plugins/scripter/README.txt \
+-    scribus/plugins/scripter/dynapidocs.spy \
+-    scribus/plugins/scripter/CMakeLists.txt \
+-    scribus/plugins/scripter/apidocs.py \
+-    scribus/plugins/scripter/api_Scripter.dialogs.scrapbook.api \
+-    scribus/plugins/scripter/api_Scripter.dialogs.properties.api \
+-    scribus/plugins/scripter/api_Scripter.dialogs.pages.api \
+-    scribus/plugins/scripter/api_Scripter.dialogs.outline.api \
+-    scribus/plugins/scripter/api_Scripter.dialogs.nodes.api \
+-    scribus/plugins/scripter/api_Scripter.dialogs.mainWindow.api \
+-    scribus/plugins/scripter/api_Scripter.dialogs.layers.api \
+-    scribus/plugins/scripter/api_Scripter.activeDocument.activePage.items.api

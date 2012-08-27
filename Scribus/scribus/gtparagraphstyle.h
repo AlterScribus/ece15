@@ -63,6 +63,8 @@ protected:
 	double spaceBelow;
 	QList<ParagraphStyle::TabRecord> tabValues;
 	bool dropCap;
+	bool bullet;
+	QString bulletStr;
 	int  dropCapHeight;
 	bool adjToBaseline;
 	bool autoLineSpacing;
@@ -83,6 +85,7 @@ public:
 		dropCapHeightWasSet = 512,
 		adjToBaselineWasSet = 1024,
 		autoLineSpacingWasSet  = 2048,
+		bulletWasSet = 4096
 	} wasSetFlags;
 
 	int    getFlags();
@@ -118,6 +121,9 @@ public:
 	gtParagraphStyle(const gtStyle& s);
 	~gtParagraphStyle();
 	QString target();
+	bool hasBullet();
+	void setBullet(bool newBullet, QString str = "*");
+	QString getBullet();
 };
 
 #endif // GTPARAGRAPHSTYLE_H

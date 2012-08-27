@@ -1371,7 +1371,7 @@ void Scribus13Format::readParagraphStyle(ParagraphStyle& vg, const QDomElement& 
 	vg.charStyle().setFontSize(qRound(ScCLocale::toDoubleC(pg.attribute("FONTSIZE"), 12.0) * 10.0));
 	vg.setHasDropCap(static_cast<bool>(pg.attribute("DROP", "0").toInt()));
 	vg.setDropCapLines(pg.attribute("DROPLIN", "2").toInt());
-	vg.setDropCapOffset(ScCLocale::toDoubleC(pg.attribute("DROPDIST"), 0.0));
+	vg.setParEffectOffset(ScCLocale::toDoubleC(pg.attribute("DROPDIST"), 0.0));
 	vg.charStyle().setFeatures(static_cast<StyleFlag>(pg.attribute("EFFECT", "0").toInt()).featureList());
 	QString fColor = pg.attribute("FCOLOR", doc->itemToolPrefs().shapeFillColor);
 	int fShade = pg.attribute("FSHADE", "100").toInt();

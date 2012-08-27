@@ -1144,3 +1144,11 @@ void getUniqueName(QString &name, QStringList list, QString separator, bool prep
 	} while (list.contains(newName));
 	name = newName;
 }
+
+void setWidgetBoldFont(QWidget* w, bool wantBold)
+{
+	QFont f(w->font());
+	f.setBold(wantBold);
+	w->setFont(f);
+}
+

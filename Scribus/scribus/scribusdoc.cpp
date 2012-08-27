@@ -482,8 +482,10 @@ void ScribusDoc::init()
 	pstyle.setGapBefore(0);
 	pstyle.setGapAfter(0);
 	pstyle.setHasDropCap(false);
+	pstyle.setHasBullet(false);
+	pstyle.setHasNum(false);
 	pstyle.setDropCapLines(2);
-	pstyle.setDropCapOffset(0);
+	pstyle.setParEffectOffset(0);
 	pstyle.charStyle().setParent("");
 	if (docPrefsData.hyphPrefs.Automatic)
 		pstyle.setHyphenationMode(ParagraphStyle::AutomaticHyphenation);
@@ -1872,7 +1874,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				NS->setName(ss->get("name"));
 				NS->setStart(ss->getInt("start"));
 				NS->setEndNotes(ss->getBool("endNotes"));
-				NS->setType((NumerationType) ss->getInt("numStyle"));
+				NS->setFormat((NumFormat) ss->getInt("numStyle"));
 				NS->setRange((NumerationRange) ss->getInt("range"));
 				NS->setPrefix(ss->get("prefix"));
 				NS->setSuffix(ss->get("suffix"));
@@ -1912,7 +1914,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					NS->setStart(ss->getInt("start"));
 					NS->setRange((NumerationRange) ss->getInt("range"));
 					NS->setEndNotes(ss->getBool("endNotes"));
-					NS->setType((NumerationType) ss->getInt("numStyle"));
+					NS->setFormat((NumFormat) ss->getInt("numStyle"));
 					NS->setPrefix(ss->get("prefix"));
 					NS->setSuffix(ss->get("suffix"));
 					NS->setAutoNotesHeight(ss->getBool("autoH"));
@@ -1930,7 +1932,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					NS->setStart(ss->getInt("NEWstart"));
 					NS->setRange((NumerationRange) ss->getInt("NEWrange"));
 					NS->setEndNotes(ss->getBool("NEWendNotes"));
-					NS->setType((NumerationType) ss->getInt("NEWnumStyle"));
+					NS->setFormat((NumFormat) ss->getInt("NEWnumStyle"));
 					NS->setPrefix(ss->get("NEWprefix"));
 					NS->setSuffix(ss->get("NEWsuffix"));
 					NS->setAutoNotesHeight(ss->getBool("NEWautoH"));
@@ -4395,10 +4397,25 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 	int stop  = it->isTextFrame() ? it->lastInFrame() + 1 : it->itemText.length();
 	for (int e = start; e < stop; ++e)
 	{
-		if (! Really.contains(it->itemText.charStyle(e).font().replacementName()) )
+		const ScFace* font = &it->itemText.charStyle(e).font();
+		if (it->itemText.item(e)->prefix)
 		{
-			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
-				Really.insert(it->itemText.charStyle(e).font().replacementName(), QMap<uint, FPointArray>());
+			QString prefStr = it->itemText.paragraphStyle(e).bulletStr();
+			for (int i=0;i<prefStr.length(); ++i)
+			{
+				if (font->canRender(prefStr[i].unicode()))
+				{
+					uint gl = font->char2CMap(prefStr[i]);
+					FPointArray gly(font->glyphOutline(gl));
+					if (!font->replacementName().isEmpty())
+						Really[font->replacementName()].insert(gl, gly);
+				}
+			}
+		}
+		if (! Really.contains(font->replacementName()) )
+		{
+			if (!font->replacementName().isEmpty())
+				Really.insert(font->replacementName(), QMap<uint, FPointArray>());
 		}
 		uint chr = it->itemText.text(e).unicode();
 		if ((chr == 13) || (chr == 32) || ((chr >= 26) && (chr <= 29)))
@@ -4416,10 +4433,10 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 						chstr = chstr.toUpper();
 				}
 				chr = chstr.unicode();
-				uint gl = it->itemText.charStyle(e).font().char2CMap(chstr);
-				gly = it->itemText.charStyle(e).font().glyphOutline(gl);
-				if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
-					Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
+				uint gl = font->char2CMap(chstr);
+				gly = font->glyphOutline(gl);
+				if (!font->replacementName().isEmpty())
+					Really[font->replacementName()].insert(gl, gly);
 			}
 			for (int t1 = 0; t1 < it->itemText.defaultStyle().tabValues().count(); t1++)
 			{
@@ -4432,10 +4449,10 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 						chstr = chstr.toUpper();
 				}
 				chr = chstr.unicode();
-				uint gl = it->itemText.charStyle(e).font().char2CMap(chstr);
-				gly = it->itemText.charStyle(e).font().glyphOutline(gl);
-				if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
-					Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
+				uint gl = font->char2CMap(chstr);
+				gly = font->glyphOutline(gl);
+				if (!font->replacementName().isEmpty())
+					Really[font->replacementName()].insert(gl, gly);
 			}
 			continue;
 		}
@@ -4511,22 +4528,23 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 			for (int pnti=0;pnti<pageNumberText.length(); ++pnti)
 			{
 				uint chr = pageNumberText[pnti].unicode();
-				if (it->itemText.charStyle(e).font().canRender(chr))
+				if (font->canRender(chr))
 				{
-					uint gl = it->itemText.charStyle(e).font().char2CMap(pageNumberText[pnti]);
-					FPointArray gly(it->itemText.charStyle(e).font().glyphOutline(gl));
-					if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
-						Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
+					uint gl = font->char2CMap(pageNumberText[pnti]);
+					FPointArray gly(font->glyphOutline(gl));
+					if (!font->replacementName().isEmpty())
+						Really[font->replacementName()].insert(gl, gly);
 				}
 			}
 			continue;
 		}
+
 		if (it->itemText.charStyle(e).effects() & ScStyle_SoftHyphenVisible)
 		{
-			uint gl = it->itemText.charStyle(e).font().char2CMap(QChar('-'));
-			FPointArray gly(it->itemText.charStyle(e).font().glyphOutline(gl));
-			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
-				Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
+			uint gl = font->char2CMap(QChar('-'));
+			FPointArray gly(font->glyphOutline(gl));
+			if (!font->replacementName().isEmpty())
+				Really[font->replacementName()].insert(gl, gly);
 		}
 		if ((it->itemText.charStyle(e).effects() & ScStyle_SmallCaps) || (it->itemText.charStyle(e).effects() & ScStyle_AllCaps))
 		{
@@ -4535,12 +4553,12 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 				chstr = chstr.toUpper();
 			chr = chstr.unicode();
 		}
-		if (it->itemText.charStyle(e).font().canRender(chr))
+		if (font->canRender(chr))
 		{
-			uint gl = it->itemText.charStyle(e).font().char2CMap(chr);
-			gly = it->itemText.charStyle(e).font().glyphOutline(gl);
-			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
-				Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
+			uint gl = font->char2CMap(chr);
+			gly = font->glyphOutline(gl);
+			if (!font->replacementName().isEmpty())
+				Really[font->replacementName()].insert(gl, gly);
 		}
 	}
 }
@@ -16137,6 +16155,7 @@ Serializer *ScribusDoc::textSerializer()
 }
 
 
+
 void ScribusDoc::RotMode(const int& val)
 {
 	rotMode = val;
@@ -16901,7 +16920,7 @@ void ScribusDoc::undoSetNotesStyle(SimpleState* ss, NotesStyle *NS)
 		ss->set("name", NS->name());
 		ss->set("start", NS->start());
 		ss->set("endNotes", NS->isEndNotes());
-		ss->set("numStyle", (int) NS->getType());
+		ss->set("numStyle", (int) NS->getFormat());
 		ss->set("range", (int) NS->range());
 		ss->set("prefix", NS->prefix());
 		ss->set("suffix", NS->suffix());
@@ -17685,7 +17704,7 @@ bool ScribusDoc::validateNSet(NotesStyle NS, QString newName)
 			continue;
 		if (NS.range() == NS2->range())
 		{
-				if ((NS.getType() == NS2->getType()) && (NS.prefix() == NS2->prefix()) && (NS.suffix() == NS2->suffix()))
+				if ((NS.getFormat() == NS2->getFormat()) && (NS.prefix() == NS2->prefix()) && (NS.suffix() == NS2->suffix()))
 					errStr.append(NS.name() + tr("Notes style has document as range and provide same numbering style as set ") + NS2->name() + "\n");
 		}
 	}

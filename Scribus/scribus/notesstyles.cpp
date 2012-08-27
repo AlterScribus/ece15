@@ -12,7 +12,7 @@ void NotesStyle::setEndNotes(bool setendnotes)
 bool NotesStyle::operator!=(const NotesStyle& n2)
 {
 	return ((nameStr != n2.nameStr) || (startNum != n2.startNum) || (m_endNotesStyle != n2.m_endNotesStyle) ||
-			(getType() != static_cast<NotesStyle>(n2).getType()) || (numRange != n2.numRange) ||
+			(getFormat() != static_cast<NotesStyle>(n2).getFormat()) || (numRange != n2.numRange) ||
 			(prefixStr != n2.prefixStr) || (suffixStr != n2.suffixStr) ||
 			(autoNotesHeight != n2.autoNotesHeight) || (autoNotesWidth != n2.autoNotesWidth) ||
 			(autoRemoveEmptyNotesFrames != n2.autoRemoveEmptyNotesFrames) || (autoWeldNotesFrames != n2.autoWeldNotesFrames) ||

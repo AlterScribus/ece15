@@ -187,7 +187,7 @@ void NotesStylesEditor::setNotesStyle(NotesStyle * NS)
 	else
 		EndRadio->setEnabled(true);
 	EndRadio->setChecked(NS->isEndNotes());
-	NumberingBox->setCurrentIndex((int) NS->getType());
+	NumberingBox->setCurrentIndex((int) NS->getFormat());
 	RangeBox->setCurrentIndex((int) NS->range());
 	StartSpinBox->setValue(NS->start());
 	PrefixEdit->setText(NS->prefix());
@@ -334,7 +334,7 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 					ss->set("NEWname", NS->name());
 					ss->set("NEWstart", NS->start());
 					ss->set("NEWendNotes", NS->isEndNotes());
-					ss->set("NEWnumStyle", (int) NS->getType());
+					ss->set("NEWnumStyle", (int) NS->getFormat());
 					ss->set("NEWrange", (int) NS->range());
 					ss->set("NEWprefix", NS->prefix());
 					ss->set("NEWsuffix", NS->suffix());
@@ -494,7 +494,7 @@ void NotesStylesEditor::on_EndRadio_toggled(bool checked)
 void NotesStylesEditor::on_NumberingBox_currentIndexChanged(int index)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
-	ns.setType((NumerationType) index);
+	ns.setFormat((NumFormat) index);
 
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);

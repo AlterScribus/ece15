@@ -1754,10 +1754,10 @@ bool Scribus12Format::loadPage(const QString & fileName, int pageNumber, bool Mp
 	groupRemap.clear();
 	itemRemap.clear();
 	itemNext.clear();
-	QString tmV, tmp, tmpf, tmp2, tmp3, tmp4, PgNam, Defont, tmf;
+	QString tmp, tmpf;
 	QMap<int,int> TableID;
 	QList<PageItem*> TableItems;
-	int x, a, counter, baseobj;
+	int x, a, counter;
 	bool newVersion = false;
 	bool VorLFound = false;
 	QMap<int,int> layerTrans;
@@ -1801,7 +1801,7 @@ bool Scribus12Format::loadPage(const QString & fileName, int pageNumber, bool Mp
 	QDomNode DOC=elem.firstChild();
 	while(!DOC.isNull())
 	{
-		QDomElement dc=DOC.toElement();
+		//QDomElement dc=DOC.toElement();
 	/*
 	* Attribute von DOCUMENT auslesen
 	*/
@@ -1926,7 +1926,6 @@ bool Scribus12Format::loadPage(const QString & fileName, int pageNumber, bool Mp
 
 				QDomNode OBJ=PAGE.firstChild();
 				counter = m_Doc->Items->count();
-				baseobj = counter;
 				int pageItem = 0;
 				while(!OBJ.isNull())
 				{
@@ -2207,7 +2206,7 @@ void Scribus12Format::GetStyle(QDomElement *pg, ParagraphStyle *vg, StyleSet<Par
 	vg->charStyle().setFontSize(qRound(ScCLocale::toDoubleC(pg->attribute("FONTSIZE"), 12.0) * 10.0));
 	vg->setHasDropCap(static_cast<bool>(pg->attribute("DROP", "0").toInt()));
 	vg->setDropCapLines(pg->attribute("DROPLIN", "2").toInt());
-	vg->setDropCapOffset(ScCLocale::toDoubleC(pg->attribute("DROPDIST"), 0.0));
+	vg->setParEffectOffset(ScCLocale::toDoubleC(pg->attribute("DROPDIST"), 0.0));
 	vg->charStyle().setFeatures(static_cast<StyleFlag>((pg->attribute("EFFECT", "0").toInt())).featureList());
 	fColor = pg->attribute("FCOLOR", doc->itemToolPrefs().shapeFillColor);
 	fShade = pg->attribute("FSHADE", "100").toInt();

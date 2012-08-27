@@ -1979,8 +1979,8 @@ namespace {
 			pstyle.resetGapAfter();
 		if (pstyle.dropCapLines() < 0)
 			pstyle.resetDropCapLines();
-		if (pstyle.dropCapOffset() <= -16000)
-			pstyle.resetDropCapOffset();
+		if (pstyle.parEffectOffset() <= -16000)
+			pstyle.resetParEffectOffset();
 		fixLegacyCharStyle(pstyle.charStyle());
 	}
 	
@@ -2532,13 +2532,21 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(NACH))
 		newStyle.setGapAfter(attrs.valueAsDouble(NACH));
 
+	static const QString PECHSTYLE("PECHSTYLE");
+	if (attrs.hasAttribute(PECHSTYLE))
+		newStyle.setPeCharStyleName(attrs.valueAsString(PECHSTYLE));
+
+	static const QString PEDIST("PEDIST");
+	if (attrs.hasAttribute(PEDIST))
+		newStyle.setParEffectOffset(attrs.valueAsDouble(PEDIST));
+
 	static const QString DROP("DROP");
 	if (attrs.hasAttribute(DROP))
 		newStyle.setHasDropCap(static_cast<bool>(attrs.valueAsInt(DROP)));
 
 	static const QString DROPCHSTYLE("DROPCHSTYLE");
 	if (attrs.hasAttribute(DROPCHSTYLE))
-		newStyle.setDcCharStyleName(attrs.valueAsString(DROPCHSTYLE));
+		newStyle.setPeCharStyleName(attrs.valueAsString(DROPCHSTYLE));
 
 	static const QString DROPLIN("DROPLIN");
 	if (attrs.hasAttribute(DROPLIN))
@@ -2546,7 +2554,23 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 
 	static const QString DROPDIST("DROPDIST");
 	if (attrs.hasAttribute(DROPDIST))
-		newStyle.setDropCapOffset(attrs.valueAsDouble(DROPDIST));
+		newStyle.setParEffectOffset(attrs.valueAsDouble(DROPDIST));
+
+	static const QString BULLET("BULLET");
+	if (attrs.hasAttribute(BULLET))
+		newStyle.setHasBullet(static_cast<bool>(attrs.valueAsInt(BULLET)));
+
+	static const QString BULLETSTR("BULLETSTR");
+	if (attrs.hasAttribute(BULLETSTR))
+		newStyle.setBulletStr(attrs.valueAsString(BULLETSTR));
+
+	static const QString NUMERATION("NUMERATION");
+	if (attrs.hasAttribute(NUMERATION))
+		newStyle.setHasNum(static_cast<bool>(attrs.valueAsInt(NUMERATION)));
+
+	static const QString NUMSTYLE("NUMSTYLE");
+	if (attrs.hasAttribute(NUMSTYLE))
+		newStyle.setNumStyle(static_cast<bool>(attrs.valueAsInt(NUMSTYLE)));
 
 	static const QString PSHORTCUT("PSHORTCUT");
 	if (attrs.hasAttribute(PSHORTCUT))
@@ -3172,19 +3196,19 @@ bool Scribus150Format::readNotesStyles(ScribusDoc* doc, ScXmlStreamReader& reade
 			NS.setEndNotes(attrs.valueAsBool("Endnotes"));
 			QString type = attrs.valueAsString("Type");
 			if (type == "Type_1_2_3")
-				NS.setType(Type_1_2_3);
+				NS.setFormat(Type_1_2_3);
 			else if (type == "Type_i_ii_iii")
-				NS.setType(Type_i_ii_iii);
+				NS.setFormat(Type_i_ii_iii);
 			else if (type == "Type_I_II_III")
-				NS.setType(Type_I_II_III);
+				NS.setFormat(Type_I_II_III);
 			else if (type == "Type_a_b_c")
-				NS.setType(Type_a_b_c);
+				NS.setFormat(Type_a_b_c);
 			else if (type == "Type_A_B_C")
-				NS.setType(Type_A_B_C);
+				NS.setFormat(Type_A_B_C);
 			else if (type == "Type_asterix")
-				NS.setType(Type_asterix);
+				NS.setFormat(Type_asterix);
 			else //if (type == "Type_None")
-				NS.setType(Type_None);
+				NS.setFormat(Type_None);
 			NS.setRange((NumerationRange) attrs.valueAsInt("Range"));
 			NS.setPrefix(attrs.valueAsString("Prefix"));
 			NS.setSuffix(attrs.valueAsString("Suffix"));
