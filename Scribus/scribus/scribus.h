@@ -636,6 +636,8 @@ private:
 //for styles shortcuts
 public:
 	bool stylesShortcutKeyEvent(const QKeyEvent*);
+	//! \brief check for missing externals files (images for now)
+	void checkExternals();
 };
 
 #endif

@@ -1488,6 +1488,7 @@ void CanvasMode_Normal::importToPage()
 		m_doc->useRaster = savedAlignGrid;
 		m_doc->SnapGuides = savedAlignGuides;
 		m_doc->SnapElement = savedAlignElement;
+		m_ScMW->checkExternals();
 		m_doc->setLoading(false);
 		m_doc->view()->DrawNew();
 		if (m_doc->m_Selection->count() > 0)

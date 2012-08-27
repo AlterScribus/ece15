@@ -4262,6 +4262,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			Apply_MasterPage(doc->DocPages.at(p)->MPageNam, p, false);
 		}
 		view->reformPages(false);
+		checkExternals();
 		doc->setLoading(false);
 /*		if (fileLoader->FileType > FORMATID_NATIVEIMPORTEND)
 		{
@@ -11267,3 +11268,75 @@ bool ScribusMainWindow::stylesShortcutKeyEvent(const QKeyEvent* k)
 	}
 	return false;
 }
+void ScribusMainWindow::checkExternals()
+{
+	QString searchPath = QString();
+	bool reUsePath = false;
+	for (int a = 0; a < doc->Items->count(); ++a)
+	{
+		PageItem *currItem = doc->Items->at(a);
+		if (!currItem->Pfile.isEmpty())
+		{
+			QFileInfo fi = QFileInfo(currItem->Pfile);
+			if (!fi.exists())
+			{
+				if (!searchPath.isEmpty())
+				{
+					QFile f(searchPath + "/" + fi.fileName());
+					if (f.exists())
+					{
+						fi.setFile(f);
+						currItem->Pfile = fi.absoluteFilePath();
+						currItem->PictureIsAvailable = true;
+						continue;
+					}
+					else
+						searchPath.clear();
+				}
+				QString wdir = QDir::fromNativeSeparators( fi.path() );
+				QString fname = fi.fileName();
+				
+				CustomFDialog *dia = new CustomFDialog(qApp->activeWindow(), wdir, tr("Find Missing External File: ") + fi.filePath(), QString(), fdShowPreview + fdExistingFiles);
+				QCheckBox* usePath = new QCheckBox(dia);
+				usePath->setText( tr("Search other missing files in selected directory"));
+				usePath->setToolTip( tr("If other missing files were found then first they will searched in that directory and dialog does not appear."));
+				usePath->setChecked(reUsePath);
+				dia->addWidgets(usePath);
+				QCheckBox* stopSearch = new QCheckBox(dia);
+				stopSearch->setText( tr("Stop searching of missing files"));
+				stopSearch->setChecked(false);
+				dia->addWidgets(stopSearch);
+				dia->setSelection(fname);
+				
+				if (dia->exec() == QDialog::Accepted)
+				{
+					fname = dia->selectedFile();
+					if (!fname.isEmpty())
+					{
+						fi = QFileInfo(fname);
+						currItem->loadImage(fi.absoluteFilePath(), false);
+						if (usePath->isChecked())
+						{
+							searchPath = fi.absolutePath();
+							reUsePath = true;
+						}
+						else
+						{
+							searchPath.clear();
+							reUsePath = false;
+						}
+					}
+				}
+				if (stopSearch->isChecked())
+				{
+					delete dia;
+					doc->updatePic();
+					return;
+				}
+				delete dia;
+			}
+		}
+	}
+	doc->updatePic();
+}
+
