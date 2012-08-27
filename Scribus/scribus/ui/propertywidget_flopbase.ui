@@ -51,7 +51,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QRadioButton" name="flopBaseGrid">
+    <widget class="QRadioButton" name="flopBaselineGrid">
      <property name="text">
       <string>Baseline Grid</string>
      </property>

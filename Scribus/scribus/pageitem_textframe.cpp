@@ -1378,8 +1378,8 @@ void PageItem_TextFrame::layout()
 	QList<ParagraphStyle::TabRecord> tTabValues;
 	tTabValues.clear();
 	
-	bool DropCmode = false;
-	double desc=0, asce=0, realAsce=0, realDesc = 0, offset = 0;
+	bool   DropCmode = false, FlopBaseline = false;
+	double desc=0, asce=0, realAsce=0, realDesc = 0;
 	double maxDY=0, maxDX=0;
 	double DropCapDrop = 0;
 	int    DropLines = 0;
@@ -1494,7 +1494,7 @@ void PageItem_TextFrame::layout()
 		{
 			hl = itemText.item(firstInFrame());
 			style = itemText.paragraphStyle(firstInFrame());
-			if (firstLineOffset() == FLOPBaseGrid)
+			if (firstLineOffset() == FLOPBaselineGrid)
 				style.setLineSpacingMode(ParagraphStyle::BaselineGridLineSpacing);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 
@@ -1632,7 +1632,7 @@ void PageItem_TextFrame::layout()
 			scaleV = charStyle.scaleV() / 1000.0;
 			scaleH = charStyle.scaleH() / 1000.0;
 			offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
-			if (current.startOfCol && firstLineOffset() == FLOPBaseGrid)
+			if (current.startOfCol && firstLineOffset() == FLOPBaselineGrid)
 				style.setLineSpacingMode(ParagraphStyle::BaselineGridLineSpacing);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 			//avoid hyphenation for words with softhyphen at it beginning
@@ -1643,6 +1643,8 @@ void PageItem_TextFrame::layout()
 			}
 			else if (disableHyph && !hl->ch.isLetterOrNumber())
 				disableHyph = false;
+			FlopBaseline = (current.startOfCol && firstLineOffset() == FLOPBaselineGrid);
+
 			// find out about par gap and dropcap
 			if (a == firstInFrame())
 			{
@@ -1989,7 +1991,18 @@ void PageItem_TextFrame::layout()
 						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
-						else if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
+						else if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
+						{
+							if (current.yPos <= lastLineY)
+								current.yPos = lastLineY +1;
+							double by = Ypos;
+							if (OwnPage != -1)
+								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
+							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
+							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
+						}
+						else if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
 						{
 							if (firstLineOffset() == FLOPRealGlyphHeight)
 							{
@@ -2002,17 +2015,6 @@ void PageItem_TextFrame::layout()
 								current.yPos += style.lineSpacing();
 							else
 								current.yPos += asce;
-						}
-						else if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (firstLineOffset() == FLOPBaseGrid))
-						{
-							if (current.yPos <= lastLineY)
-								current.yPos = lastLineY +1;
-							double by = Ypos;
-							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
-							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
-							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
-							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
 						}
 					}
 					else
@@ -2054,7 +2056,7 @@ void PageItem_TextFrame::layout()
 					addAsce = qMax(realAsce, asce + offset);
 				else
 					addAsce = asce + offset;
-				if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
+				if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaselineGrid))
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;
@@ -2121,7 +2123,7 @@ void PageItem_TextFrame::layout()
 					{
 						// new line
 						current.xPos = qMax(current.colLeft, maxDX);
-						if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (current.startOfCol && (firstLineOffset() == FLOPBaseGrid)))
+						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
 						{
 							current.yPos++;
 							double by = Ypos;
@@ -2143,7 +2145,7 @@ void PageItem_TextFrame::layout()
 								addAsce = qMax(realAsce, asce + offset);
 							else
 								addAsce = asce + offset;
-							if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
+							if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaselineGrid))
 							{
 								if (firstLineOffset() == FLOPRealGlyphHeight)
 									addAsce = realAsce;
@@ -2224,7 +2226,7 @@ void PageItem_TextFrame::layout()
 						maxDX = 0;
 					}
 					int linesDrop = 0;
-					if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+					if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
 					{
 						linesDrop = ceil(diff / m_Doc->guidesPrefs().valueBaselineGrid);
 						current.yPos += m_Doc->guidesPrefs().valueBaselineGrid * linesDrop;
@@ -2630,7 +2632,7 @@ void PageItem_TextFrame::layout()
 				hl->glyph.xadvance += style.dropCapOffset();
 				maxDX = current.xPos;
 				current.yPos -= calculateLineSpacing (style, this) * (DropLines-1);
-				if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (firstLineOffset() == FLOPBaseGrid))
+				if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (firstLineOffset() == FLOPBaselineGrid))
 					current.yPos = adjustToBaselineGrid (current, this, OwnPage);
 				current.recalculateY = false;
 			}
@@ -2950,7 +2952,7 @@ void PageItem_TextFrame::layout()
 					addAsce = qMax(realAsce, asce + offset);
 				else
 					addAsce = asce + offset;
-				if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaseGrid))
+				if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;

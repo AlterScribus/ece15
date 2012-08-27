@@ -1396,12 +1396,12 @@ bool ScribusMainWindow::eventFilter( QObject* /*o*/, QEvent *e )
 
 void ScribusMainWindow::inputMethodEvent ( QInputMethodEvent * event )
 {
-	qDebug() << "IMEmw" << event->commitString() << event->preeditString() << "attributes:" << event->attributes().count();
+	//qDebug() << "IMEmw" << event->commitString() << event->preeditString() << "attributes:" << event->attributes().count();
 }
 
 QVariant ScribusMainWindow::inputMethodQuery ( Qt::InputMethodQuery query ) const
 {
-	qDebug() << "IMQmw" << query;
+	//qDebug() << "IMQmw" << query;
 	return QVariant();
 }
 
@@ -4003,9 +4003,17 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			is12doc=true;
 		}
 
+		QDir docProfileDir(fi.absolutePath() + "/profiles");
 		ScCore->getCMSProfilesDir(fi.absolutePath()+"/", false, false);
+		if (docProfileDir.exists())
+			ScCore->getCMSProfilesDir(fi.absolutePath()+"/profiles", false, false);
+
+		QDir docFontDir(fi.absolutePath() + "/fonts");
 		prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/", FName);
+		if (docFontDir.exists())
+			prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/fonts", FName);
 		prefsManager->appPrefs.fontPrefs.AvailFonts.updateFontMap();
+
 		doc=new ScribusDoc();
 		doc->is12doc=is12doc;
 		doc->appMode = modeNormal;

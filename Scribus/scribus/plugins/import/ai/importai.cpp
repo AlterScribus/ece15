@@ -1283,7 +1283,7 @@ void AIPlug::getCommands(QString data, QStringList &commands)
 	QString tmp2;
 	QString tmp3;
 	bool paran = false;
-	bool arra = false;
+	//bool arra = false;
 	bool skip = false;
 	for (int a = 0; a < data.count(); a++)
 	{
@@ -1308,13 +1308,13 @@ void AIPlug::getCommands(QString data, QStringList &commands)
 		}
 		if (tmp == "[")
 		{
-			arra = true;
+			//arra = true;
 			tmp2 += tmp;
 			continue;
 		}
 		if (tmp == "]")
 		{
-			arra = false;
+			//arra = false;
 			tmp2 += tmp;
 			continue;
 		}
@@ -2971,13 +2971,13 @@ void AIPlug::processRaster(QDataStream &ts)
 //	qDebug() << QString("Encoding: %1").arg(bin);
 	uint dataSize = w * h * (type + alpha);
 	uint alphaData = w * h * type;
-	bool cmyk = false;
-	if (type == 4)
-		cmyk = true;
+//	bool cmyk = false;
+//	if (type == 4)
+//		cmyk = true;
 	if (tmp.startsWith("%%BeginData"))
 	{
-		QString dummyS;
-		ScTextStream gVals2(&tmp, QIODevice::ReadOnly);
+		//QString dummyS;
+		//ScTextStream gVals2(&tmp, QIODevice::ReadOnly);
 		tmp = readLinefromDataStream(ts);
 	}
 	QByteArray psdata;
