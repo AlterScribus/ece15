@@ -164,8 +164,12 @@ void SMPStyleWidget::languageChange()
 	parentParEffectsButton->setText(tr("Use Parent`s Values"));
 	
 	QFont font1;
-	font1.setPointSize(13);
+	if (font1.pointSize())
+		font1.setPointSize(font1.pointSize() *2);
+	else if (font1.pixelSize())
+		font1.setPixelSize(font1.pixelSize() *2);
 	((QComboBox*) bulletStrEdit)->setFont(font1);
+	(bulletStrEdit->lineEdit())->setFont(font1);
 
 	tabsBox->setTitle( tr("Tabulators and Indentation"));
 	tabWidget->setTabText(0, tr("Properties"));
@@ -199,6 +203,19 @@ void SMPStyleWidget::fillBulletStrEditCombo()
 	bulletStrEdit->addItem(QChar(0x2022));
 	bulletStrEdit->addItem(QChar(0x2023));
 	bulletStrEdit->addItem(QChar(0x25E6));
+	bulletStrEdit->addItem(QChar(0x2611));
+	bulletStrEdit->addItem(QChar(0x2612));
+	bulletStrEdit->addItem(QChar(0x25C6));
+	bulletStrEdit->addItem(QChar(0x25C7));
+	bulletStrEdit->addItem(QChar(0x25C8));
+	bulletStrEdit->addItem(QChar(0x25C9));
+	bulletStrEdit->addItem(QChar(0x25D6));
+	bulletStrEdit->addItem(QChar(0x2605));
+	bulletStrEdit->addItem(QChar(0x2606));
+	bulletStrEdit->addItem(QChar(0x2713));
+	bulletStrEdit->addItem(QChar(0x2717));
+	bulletStrEdit->addItem(QChar(0x274D));
+	bulletStrEdit->addItem(QChar(0x274F));
 	bulletStrEdit->addItem("*");
 	bulletStrEdit->addItem("<");
 	bulletStrEdit->addItem(">");
@@ -208,6 +225,10 @@ void SMPStyleWidget::fillBulletStrEditCombo()
 	bulletStrEdit->addItem(QChar(0x261B));
 	bulletStrEdit->addItem(QChar(0x261C));
 	bulletStrEdit->addItem(QChar(0x261D));
+	bulletStrEdit->addItem(QChar(0x2539));
+	bulletStrEdit->addItem(QChar(0x253A));
+	bulletStrEdit->addItem(QChar(0x253B));
+	bulletStrEdit->addItem(QChar(0x253C));
 	bulletStrEdit->setMinimumWidth(50);
 }
 
@@ -1068,6 +1089,7 @@ void SMPStyleWidget::openEnhanced()
 	}
 	else if (currPStyle)
 		setCurrentComboItem(m_enhanced->fontSelector, currPStyle->charStyle().font().scName());
+	m_enhanced->newFont(m_enhanced->fontSelector->currentIndex());
 	m_enhanced->show();
 	QApplication::changeOverrideCursor(Qt::ArrowCursor);
 }

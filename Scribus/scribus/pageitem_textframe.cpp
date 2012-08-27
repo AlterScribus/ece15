@@ -1679,7 +1679,7 @@ void PageItem_TextFrame::layout()
 			{
 				hl->prefix->glyph.yadvance = 0;
 				hl->prefix->ch = prefixStr[0];
-				layoutGlyphs(*hl, prefixStr, hl->prefix->glyph);
+				layoutGlyphs(*(hl->prefix), prefixStr, hl->prefix->glyph);
 				double xoff = hl->prefix->glyph.wide() + style.parEffectOffset();
 				hl->prefix->glyph.xoffset -= xoff;
 				GlyphLayout* moreGL = hl->prefix->glyph.more;
