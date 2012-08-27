@@ -15579,6 +15579,7 @@ Serializer *ScribusDoc::textSerializer()
 	return m_tserializer;
 }
 
+
 void ScribusDoc::RotMode(const int& val)
 {
 	rotMode = val;
