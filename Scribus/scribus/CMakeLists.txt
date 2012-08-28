@@ -220,6 +220,7 @@ SET(SCRIBUS_MOC_CLASSES
 marks.h
   navigator.h
 notesstyles.h
+numeration.h
   observable.h
   pageitem.h
   pageitem_arc.h
@@ -584,6 +585,7 @@ SET(SCRIBUS_SOURCES
   nftsettings.cpp
   nfttemplate.cpp
 notesstyles.cpp
+numeration.cpp
   pageitem.cpp
   pageitem_arc.cpp
   pageitem_group.cpp
