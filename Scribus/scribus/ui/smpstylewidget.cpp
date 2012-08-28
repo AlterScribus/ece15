@@ -575,33 +575,9 @@ void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyl
 	else
 		dropCapLines_->setValue(lines);
 
-//	double dco = -4000.0;
-//	for (int i = 0; i < pstyles.count(); ++i)
-//	{
-//		if (dco > -3980.0 && !isEqual(pstyles[i]->parEffectOffset(), dco))
-//		{
-//			dco = -4000.0;
-//			break;
-//		}
-//		else
-//			dco = pstyles[i]->parEffectOffset();
-//	}
-
-//	if (dco < -3800.0)
-//		parEffectOffset_->clear();
-//	else
-//		parEffectOffset_->setValue(dco * unitRatio);
-
-//	parEffectCharStyleCombo->clear();
-//	parEffectCharStyleCombo->addItem(tr("No Style"));
-//	for (int i=0; i < cstyles.count(); i++)
-//		parEffectCharStyleCombo->addItem(cstyles.at(i).name());
-
 	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	dropCapsBox->setEnabled(true);
 	dropCapLines_->setEnabled(true);
-//	parEffectOffset_->setEnabled(true);
-//	parEffectCharStyleCombo->setEnabled(true);
 }
 
 void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
@@ -668,10 +644,6 @@ void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Char
 	connect(numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumbering(bool)));
 	numStyleCombo->setEnabled(true);
 	numLevelSpin->setEnabled(true);
-//	numFirstSpin->setEnabled(true);
-//	numIndentSpin->setEnabled(true);
-//	numTabSpin->setEnabled(true);
-//	numChStyleCombo->setEnabled(true);
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
@@ -706,25 +678,6 @@ void SMPStyleWidget::showOpticalMargin(QList< ParagraphStyle * > & pstyles)
 		return;
 	}
 	
-//	optMarginCombo->clear();
-//	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
-//	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
-//	optMarginCombo->addItem(tr("Right Protruding"), ParagraphStyle::OM_RightProtruding);
-//	optMarginCombo->addItem(tr("Left Hanging Punctuation"), ParagraphStyle::OM_LeftHangingPunct);
-//	optMarginCombo->addItem(tr("Right Hanging Punctuation"), ParagraphStyle::OM_RightHangingPunct);
-//	optMarginCombo->addItem(tr("Default"), ParagraphStyle::OM_Default);
-//
-//	// the static cast should not be required if opticalMargins() would return OpticalMarginType. Why it does not? mystery
-//	ParagraphStyle::OpticalMarginType o( static_cast<ParagraphStyle::OpticalMarginType>(pstyles[0]->opticalMargins()) );
-//	for (int i = 0; i < pstyles.count(); ++i)
-//	{
-//		if (o != pstyles[i]->opticalMargins())
-//		{
-//			optMarginCombo->setCurrentItem(0);
-//			return;
-//		}
-//	}
-//	optMarginCombo->setCurrentItemByData(o);
 	setOpticalMargins(pstyles[0]->opticalMargins());
 }
 
@@ -876,30 +829,6 @@ void SMPStyleWidget::showCStyle(QList<ParagraphStyle*> &pstyles, QList<CharStyle
 void SMPStyleWidget::showParent(QList<ParagraphStyle*> &pstyles)
 {
 	parentCombo->setEnabled(false);
-
-// 	parentCombo->clear();
-// 	parentCombo->insertItem("");
-// 	for (uint i = 0; i < pstyles.count(); ++i)
-// 	{
-// 		if (pstyles[i].hasName() && pstyles[i].name() != pstyle->name())
-// 			parentCombo->insertItem(pstyles[i].name());
-// 	}
-// 
-// 	if (hasParent_)
-// 	{
-// 		int index = 0;
-// 		for (int i = 0; i < parentCombo->count(); ++i)
-// 		{
-// 			if (parentCombo->text(i) == parent->name())
-// 			{
-// 				index = i;
-// 				break;
-// 			}
-// 		}
-// 		parentCombo->setCurrentItem(index);
-// 	}
-// 	else
-// 		parentCombo->setCurrentItem(0);
 }
 
 void SMPStyleWidget::setOpticalMargins(int o, bool inhO, const ParagraphStyle *parent)
@@ -1060,14 +989,6 @@ SMPStyleWidget::~SMPStyleWidget()
 {
 	
 }
-
-//void SMPStyleWidget::on_bulletCharTableButton_clicked()
-//{
-//	if (m_enhanced)
-//		closeEnhanced();
-//	else
-//		openEnhanced();
-//}
 
 void SMPStyleWidget::openEnhanced()
 {

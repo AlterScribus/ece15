@@ -1,5 +1,0 @@
-In this branch I try to setup common interface and classes to setup and use various numeration styles.
-
-Further I will try to implement:
-- autonumbering for paragraphs
-- autonumbering for items (images, tables, etc.)

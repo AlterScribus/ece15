@@ -198,6 +198,12 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 	#endif
 			{
 
+				// check image vs. frame sizes
+				if (checkerSettings.checkPartFilledImageFrames && isPartFilledImageFrame(currItem))
+				{
+					itemError.insert(PartFilledImageFrame, 0);
+				}
+
 				if ((!currItem->PictureIsAvailable) && (checkerSettings.checkPictures))
 					itemError.insert(MissingImage, 0);
 				else
@@ -220,6 +226,10 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 					if  (((qRound(72.0 / currItem->imageXScale()) > checkerSettings.maxResolution) || (qRound(72.0 / currItem->imageYScale()) > checkerSettings.maxResolution))
 							&& (currItem->isRaster) && (checkerSettings.checkResolution))
 						itemError.insert(ImageDPITooHigh, 0);
+					QFileInfo fi = QFileInfo(currItem->Pfile);
+					QString ext = fi.suffix().toLower();
+					if (extensionIndicatesPDF(ext) && (checkerSettings.checkRasterPDF))
+						itemError.insert(PlacedPDF, 0);
 					if ((ext == "gif") && (checkerSettings.checkForGIF))
 						itemError.insert(ImageIsGIF, 0);
 					}
@@ -488,6 +498,12 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 	#endif
 			{
 
+				// check image vs. frame sizes
+				if (checkerSettings.checkPartFilledImageFrames && isPartFilledImageFrame(currItem))
+				{
+					itemError.insert(PartFilledImageFrame, 0);
+				}
+
 				if ((!currItem->PictureIsAvailable) && (checkerSettings.checkPictures))
 					itemError.insert(MissingImage, 0);
 				else
@@ -510,6 +526,10 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 					if  (((qRound(72.0 / currItem->imageXScale()) > checkerSettings.maxResolution) || (qRound(72.0 / currItem->imageYScale()) > checkerSettings.maxResolution))
 							&& (currItem->isRaster) && (checkerSettings.checkResolution))
 						itemError.insert(ImageDPITooHigh, 0);
+					QFileInfo fi = QFileInfo(currItem->Pfile);
+					QString ext = fi.suffix().toLower();
+					if (extensionIndicatesPDF(ext) && (checkerSettings.checkRasterPDF))
+						itemError.insert(PlacedPDF, 0);
 					if ((ext == "gif") && (checkerSettings.checkForGIF))
 						itemError.insert(ImageIsGIF, 0);
 					}

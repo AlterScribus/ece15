@@ -265,6 +265,7 @@ void SMCStyleWidget::show(CharStyle *cstyle, QList<CharStyle> &cstyles, const QS
 	QString tl;
 	for (int i = 0; i < language_->count(); ++i)
 	{
+		QString l = language_->itemText(i);
 		if (language_->itemText(i) == langMap_[clang])
 			ci = i;
 		

@@ -41,7 +41,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QRadioButton" name="flopLineSpacing">(firstLineOffset() != FLOPBaseGrid)
+    <widget class="QRadioButton" name="flopLineSpacing">
      <property name="text">
       <string>Line Spacing</string>
      </property>

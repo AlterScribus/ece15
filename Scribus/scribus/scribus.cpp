@@ -9572,7 +9572,7 @@ void ScribusMainWindow::initHyphenator()
 	{
 // 		LanguageManager langmgr;
 // 		langmgr.init(false);
-		QString languageOfHyphFile;
+		//QString languageOfHyphFile;
 		for (uint dc = 0; dc < hyphDir.count(); ++dc)
 		{
 			QFileInfo fi(hyphDir[dc]);
@@ -9625,9 +9625,9 @@ void ScribusMainWindow::initHyphenator()
 			QFileInfo fi(hyphDir[dc]);
 			QString fileLangAbbrev=fi.baseName().section('_', 1);
 			datein = langmgr->getLangFromAbbrev(fileLangAbbrev);
-			QString tDatein = datein;
-			datein = GetLang(datein);
-			LangTransl.insert(datein, tDatein);
+//			QString tDatein = datein;
+//			datein = GetLang(datein);
+			LangTransl.insert(fileLangAbbrev, datein);
 			langmgr->addHyphLang(fileLangAbbrev, hyphDir[dc]);
 // 			Sprachen.insert(datein, hyphDir[dc]);
 			if (fileLangAbbrev == lang)
