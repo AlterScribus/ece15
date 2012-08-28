@@ -1,12 +1,12 @@
 #include "numeration.h"
 #include "util.h"
 
-const QString Numeration::numString(uint num)
+const QString Numeration::numString(uint num, uint l)
 {
 	if (numFormat == Type_asterix)
-		return getAsterixStringFromNum(num, asterix, lead, len);
+		return getAsterixStringFromNum(num, asterix, lead, l);
 
-	return getStringFromNum(numFormat, num, lead, len);
+	return getStringFromNum(numFormat, num, lead, l);
 }
 
 

@@ -1628,7 +1628,7 @@ void PageItem_TextFrame::layout()
 				delete hl->prefix;
 				hl->prefix = NULL;
 			}
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()) && !isNoteFrame())
 			{
 				BulNumMode = true;
 				if (style.hasBullet())
@@ -1678,7 +1678,7 @@ void PageItem_TextFrame::layout()
 						DropCmode = false;
 				}
 			}
-			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && !isNoteFrame())
 			{
 				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
 				{
@@ -1774,6 +1774,11 @@ void PageItem_TextFrame::layout()
 						DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
 //						qDebug() << QString("dropcapdrop: y=%1+%2").arg(current.yPos).arg(DropCapDrop);
 					}
+				}
+				if (isNoteFrame())
+				{
+					DropCmode = false;
+					BulNumMode = false;
 				}
 			}
 			// find charsize factors

@@ -25,11 +25,11 @@ typedef enum {
 class Numeration
 {
 public:
-	Numeration() : name(""), numFormat(Type_1_2_3) {}
-	Numeration(QString n, NumFormat f) : name(n), numFormat(f), asterix("*") {}
+	Numeration() : name(""), numFormat(Type_1_2_3), len(0) {}
+	Numeration(QString n, NumFormat f) : name(n), numFormat(f), asterix("*"), len(0) {}
 	void setFormat(NumFormat format) { numFormat = format; }
 	const NumFormat format() { return numFormat; }
-	const QString numString(uint num); 
+	const QString numString(uint num, uint l = 0); 
 
 	QString name;
 private:
