@@ -316,8 +316,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	NrItems(0),
 	First(1), Last(0),
 	viewCount(0), viewID(0),
-	SnapElement(false),
-	SnapGuides(false), GuideLock(false),
+	SnapGuides(false), SnapElement(false), GuideLock(false),
 	minCanvasCoordinate(FPoint(0, 0)),
 	rulerXoffset(0.0), rulerYoffset(0.0),
 	Pages(0), MasterPages(), DocPages(),
@@ -8964,7 +8963,7 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 			if (currItem->isNoteFrame())
 				setNotesChanged(true);
 			else if (currItem->isTextFrame())
-				updateItemNotesFramesStyles(currItem, newStyle);
+				updateItemNotesFramesStyles(currItem);
 			else 
 				currItem->itemText.setDefaultStyle(newStyle);
 		}
@@ -9108,7 +9107,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			if (currItem->isNoteFrame())
 				setNotesChanged(true);
 			else if (currItem->isTextFrame())
-				updateItemNotesFramesStyles(currItem, dstyle);
+				updateItemNotesFramesStyles(currItem);
 		}
 		if (currItemTextCount > 0)
 		{
@@ -9279,7 +9278,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 			if (currItem->isNoteFrame())
 				setNotesChanged(true);
 			else if (currItem->isTextFrame())
-				updateItemNotesFramesStyles(currItem, dstyle);
+				updateItemNotesFramesStyles(currItem);
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
@@ -9367,7 +9366,7 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 			if (currItem->isNoteFrame())
 				setNotesChanged(true);
 			else if (currItem->isTextFrame())
-				updateItemNotesFramesStyles(currItem, dstyle);
+				updateItemNotesFramesStyles(currItem);
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
@@ -9479,7 +9478,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 			if (currItem->isNoteFrame())
 				setNotesChanged(true);
 			else if (currItem->isTextFrame())
-				updateItemNotesFramesStyles(currItem, defStyle);
+				updateItemNotesFramesStyles(currItem);
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
@@ -17360,7 +17359,7 @@ void ScribusDoc::updateNotesFramesStyles(NotesStyle *nStyle)
 	}
 }
 
-void ScribusDoc::updateItemNotesFramesStyles(PageItem* item, ParagraphStyle newStyle)
+void ScribusDoc::updateItemNotesFramesStyles(PageItem* item)
 {
 	if (item->isTextFrame() && !item->isNoteFrame())
 	{
@@ -17370,14 +17369,18 @@ void ScribusDoc::updateItemNotesFramesStyles(PageItem* item, ParagraphStyle newS
 		{
 			foreach (PageItem_NoteFrame* nF, item->asTextFrame()->notesFramesList())
 			{
-				NotesStyle* nSet = nF->notesStyle();
-				if (nSet->isEndNotes())
+				NotesStyle* nStyle = nF->notesStyle();
+				if (nStyle->isEndNotes())
 					continue;
-				if (nSet->notesParStyle().isEmpty() || (nSet->notesParStyle() == tr("No Style")))
+				ParagraphStyle newStyle;
+				if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
 				{
-					nF->itemText.setDefaultStyle(newStyle);
-					//nF->itemText.applyCharStyle(0, nF->itemText.length(), newStyle.charStyle());
+					newStyle.setParent(item->itemText.defaultStyle().parent());
+					newStyle.applyStyle(item->currentStyle());
 				}
+				else
+					newStyle.setParent(nStyle->notesParStyle());
+				nF->itemText.setDefaultStyle(newStyle);
 				setNotesChanged(true);
 			}
 			item = item->nextInChain();
