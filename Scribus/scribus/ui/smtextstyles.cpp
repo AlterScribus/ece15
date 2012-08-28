@@ -516,8 +516,8 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	connect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	connect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
-	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
+	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParEffectOffset()));
+	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	connect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	connect(pwidget_->bulletStrEdit, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
@@ -569,8 +569,8 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->cpage->widthSpaceSpin, SIGNAL(valueChanged(double)), this, SLOT(slotWordTracking()));
 	connect(pwidget_->cpage->baselineOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotBaselineOffset()));
 	connect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
-	connect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)),
-			this, SLOT(slotCharParentChanged(const QString&)));
+	connect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
+	connect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
 }
 
 void SMParagraphStyle::removeConnections()
@@ -601,8 +601,8 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	disconnect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	disconnect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	disconnect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotDropCapOffset()));
-	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotDropCapCharStyle(const QString&)));
+	disconnect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParEffectOffset()));
+	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	disconnect(pwidget_->bulletStrEdit, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
@@ -652,8 +652,8 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->cpage->widthSpaceSpin, SIGNAL(valueChanged(double)), this, SLOT(slotWordTracking()));
 	disconnect(pwidget_->cpage->baselineOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotBaselineOffset()));
 	disconnect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
-	disconnect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)),
-			this, SLOT(slotCharParentChanged(const QString&)));
+	disconnect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
+	disconnect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
 }
 
 void SMParagraphStyle::slotLineSpacingMode(int mode)
@@ -917,7 +917,7 @@ void SMParagraphStyle::slotDropCapLines(int lines)
 	}
 }
 
-void SMParagraphStyle::slotDropCapOffset()
+void SMParagraphStyle::slotParEffectOffset()
 {
 	if (pwidget_->parEffectOffset_->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
@@ -940,7 +940,7 @@ void SMParagraphStyle::slotDropCapOffset()
 	}
 }
 
-void SMParagraphStyle::slotDropCapCharStyle(const QString& name)
+void SMParagraphStyle::slotParEffectCharStyle(const QString& name)
 {
 	if (pwidget_->parEffectCharStyleCombo->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
@@ -2534,6 +2534,18 @@ void SMCharacterStyle::slotParentChanged(const QString &parent)
 		QMessageBox::warning(this->widget(), CommonStrings::trWarning, tr("Setting that style as parent would create an infinite loop."), CommonStrings::tr_OK);
 
 	selected(sel);
+
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
+void SMParagraphStyle::slotHyphenationMode(int mh)
+{
+	for (int i = 0; i < selection_.count(); ++i)
+		selection_[i]->setHyphenationMode(mh);
 
 	if (!selectionIsDirty_)
 	{

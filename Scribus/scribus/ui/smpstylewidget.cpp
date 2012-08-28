@@ -8,6 +8,7 @@ for which a new license (GPL+exception) is in place.
 #include <QEvent>
 
 #include "numeration.h"
+#include "styles/paragraphstyle.h"
 #include "smpstylewidget.h"
 #include "units.h"
 #include "util.h"
@@ -42,6 +43,11 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
 
+	hyphenationMode->addItem(tr("No Hyphenation"));
+	hyphenationMode->addItem(tr("Manual Hyphenation"));
+	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+
+	
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
 //	optMarginCombo->addItem(tr("Right Protruding"), ParagraphStyle::OM_RightProtruding);
@@ -90,6 +96,7 @@ void SMPStyleWidget::languageChange()
 	lineSpacing_->setToolTip(     tr("Line Spacing"));
 	spaceAbove_->setToolTip(      tr("Space Above"));
 	spaceBelow_->setToolTip(      tr("Space Below"));
+	hyphenationMode->setToolTip(  tr("Hyphenation Mode"));
 	lineSpacingLabel->setToolTip(lineSpacing_->toolTip());
 	spaceAboveLabel->setToolTip(spaceAbove_->toolTip());
 	spaceBelowLabel->setToolTip(spaceBelow_->toolTip());
@@ -131,6 +138,11 @@ void SMPStyleWidget::languageChange()
 	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
 	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
 	
+	hyphenationMode->addItem(tr("No Hyphenation"));
+	hyphenationMode->addItem(tr("Manual Hyphenation"));
+	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+	hyphenationModeLabel->setText(tr("Hyphenation Mode"));
+
 //	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -257,6 +269,11 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
 	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
 	
+	hyphenationMode->clear();
+	hyphenationMode->addItem(tr("No Hyphenation"));
+	hyphenationMode->addItem(tr("Manual Hyphenation"));
+	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+
 //	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -299,6 +316,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		spaceBelow_->setValue(pstyle->gapAfter(), pstyle->isInhGapAfter());
 		spaceBelow_->setParentValue(parent->gapAfter());
 
+		hyphenationMode->setCurrentItem(pstyle->hyphenationMode(), pstyle->isInhHyphenationMode());
 
 		alignement_->setStyle(pstyle->alignment(), pstyle->isInhAlignment());
 		alignement_->setParentItem(parent->alignment());
@@ -382,6 +400,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		bulletStrEdit->setEditText(pstyle->bulletStr());
 		numBox->setChecked(pstyle->hasNum());
 		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio);
+		hyphenationMode->setCurrentItem(pstyle->hyphenationMode());
 		alignement_->setStyle(pstyle->alignment());
 		tabList_->setTabs(pstyle->tabValues(), unitIndex);
 		tabList_->setLeftIndentValue(pstyle->leftMargin() * unitRatio);
@@ -1032,4 +1051,23 @@ void SMPStyleWidget::on_bulletCharTableButton_toggled(bool checked)
 		closeEnhanced();
 	else if (!m_enhanced && checked)
 		openEnhanced();
+}
+
+void SMPStyleWidget::showHyphenationMode(QList<ParagraphStyle*> &pstyles)
+{
+	if(pstyles.isEmpty())
+	{
+		qDebug()<<"Warning showHyphenationMode called with an empty list of styles";
+		return;
+	}
+	int hm = (pstyles[0]->hyphenationMode());
+	for (int i = 0; i < pstyles.count(); ++i)
+	{
+		if (hm != (pstyles[i]->hyphenationMode()))
+		{
+			hyphenationMode->setCurrentItem(pstyles[i]->hyphenationMode());
+			return;
+		}
+	}
+	hyphenationMode->setCurrentItem(hm);
 }
