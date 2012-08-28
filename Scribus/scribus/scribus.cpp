@@ -276,7 +276,7 @@ ScribusMainWindow::ScribusMainWindow()
 	formatsManager=0;
 	UrlLauncher::instance();
 	mainWindowStatusLabel=0;
-	ExternalApp=0;
+	ExternalImageEditor=0;
 #ifdef Q_WS_MAC
 	noIcon = loadIcon("noicon.xpm");
 #endif
@@ -9802,10 +9802,10 @@ void ScribusMainWindow::SearchText()
 
 void ScribusMainWindow::imageEditorExited(int /*exitCode*/, QProcess::ExitStatus /*exitStatus*/)
 {
-	if ( ExternalApp != 0 )
+	if ( ExternalImageEditor != 0 )
 	{
-		delete ExternalApp;
-		ExternalApp = 0;
+		delete ExternalImageEditor;
+		ExternalImageEditor = 0;
 	}
 }
 
@@ -9835,17 +9835,21 @@ void ScribusMainWindow::callImageEditor()
 		}
 #endif
 		QString imageEditorExecutable=prefsManager->imageEditorExecutable();
-		if (ExternalApp != 0)
-		{
-			QString ieExe = QDir::toNativeSeparators(imageEditorExecutable);
-			QMessageBox::information(this, tr("Information"), "<qt>" + tr("The program %1 is already running!").arg(ieExe) + "</qt>", 1, 0, 0);
-			return;
-		}
 		if (currItem->PictureIsAvailable)
 		{
 			int index;
 			QString imEditor;
-			ExternalApp = new QProcess(NULL);
+//			if (ExternalImageEditor != NULL)
+//			{
+//				ExternalImageEditor->terminate();
+//				if (!ExternalImageEditor->waitForFinished())
+//				{
+//					delete ExternalImageEditor;
+//					ExternalImageEditor = NULL;
+//				}
+//			}
+			if (ExternalImageEditor == NULL)
+				ExternalImageEditor = new QProcess(NULL);
 			QStringList cmd;
 		#if defined(_WIN32)
 			index = imageEditorExecutable.indexOf( ".exe" );
@@ -9869,18 +9873,18 @@ void ScribusMainWindow::callImageEditor()
 			if (index > -1 )
 			{
 				QString imEditorDir = imEditor.left( index + 1 );
-				ExternalApp->setWorkingDirectory( imEditorDir );
+				ExternalImageEditor->setWorkingDirectory( imEditorDir );
 			}
 			cmd.append(QDir::toNativeSeparators(currItem->Pfile));
-			ExternalApp->start(imEditor, cmd);
-			if (!ExternalApp->waitForStarted())
-			{
-				delete ExternalApp;
-				ExternalApp = 0;
-				QMessageBox::critical(this, CommonStrings::trWarning, "<qt>" + tr("The program %1 is missing!").arg(imageEditorExecutable) + "</qt>", 1, 0, 0);
-				return;
-			}
-			connect(ExternalApp, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(imageEditorExited(int, QProcess::ExitStatus)));
+			ExternalImageEditor->startDetached(imEditor, cmd);
+//			if (!ExternalImageEditor->waitForStarted())
+//			{
+//				delete ExternalImageEditor;
+//				ExternalImageEditor = 0;
+//				QMessageBox::critical(this, CommonStrings::trWarning, "<qt>" + tr("The program %1 is missing!").arg(imageEditorExecutable) + "</qt>", 1, 0, 0);
+//				return;
+//			}
+			connect(ExternalImageEditor, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(imageEditorExited(int, QProcess::ExitStatus)));
 		}
 	}
 }

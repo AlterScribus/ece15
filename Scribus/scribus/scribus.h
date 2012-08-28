@@ -234,7 +234,7 @@ public:
 	QMap<QString, QStringList> InstLang;
 	QMap<QString,QString> LangTransl;
 
-	QProcess *ExternalApp;
+	QProcess *ExternalImageEditor;
 
 	QMap<QString, QPointer<ScrAction> > scrActions;
 	QMap<QString, QPointer<ScrAction> > scrRecentFileActions;
