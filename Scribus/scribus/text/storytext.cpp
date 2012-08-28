@@ -671,11 +671,10 @@ QString StoryText::plainText() const
 	QChar   ch;
 	QString result;
 
-	uint len = length();
-	result.reserve(len);
+	result.reserve(length());
 
 	StoryText* that(const_cast<StoryText*>(this));
-	for (int i = 0; i < len; ++i) {
+	for (int i = 0; i < length(); ++i) {
 		ch = that->d->at(i)->ch;
 		if (ch == SpecialChars::PARSEP)
 			ch = QLatin1Char('\n');
@@ -2139,7 +2138,7 @@ public:
 			Xml_attr::iterator iIt = attr.find("item");
 			Xml_attr::iterator m_lIt = attr.find("mark_l");
 			Xml_attr::iterator m_tIt = attr.find("mark_t");
-			Xml_attr::iterator nf_It = attr.find("noteframe");
+			//Xml_attr::iterator nf_It = attr.find("noteframe");
 			if (lIt != attr.end())
 				l = Xml_data(lIt);
 			if (tIt != attr.end())

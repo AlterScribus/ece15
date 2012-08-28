@@ -27,16 +27,16 @@ class Numeration
 public:
 	Numeration() : name(""), numFormat(Type_1_2_3), len(0) {}
 	Numeration(QString n, NumFormat f) : name(n), numFormat(f), asterix("*"), len(0) {}
-	void setFormat(NumFormat format) { numFormat = format; }
+	void setFormat(NumFormat format, QChar leading = QChar(), uint l=0) { numFormat = format; lead = leading; len = l; }
 	const NumFormat format() { return numFormat; }
-	const QString numString(uint num, uint l = 0); 
+	const QString numString(int num, int l = -1); 
 
 	QString name;
 private:
 	NumFormat numFormat;
 	QString asterix;
 	QChar lead;
-	uint len;
+	int len;
 	NumerationRange range;
 	QString prefix;
 	QString suffix;
@@ -44,8 +44,8 @@ private:
 
 //util functions for use without Numeration class
 //convert passed num to string using numeration style
-const QString getStringFromNum(NumFormat format, uint num, const QChar leadingChar='0', const ushort charsLen=0);
+const QString getStringFromNum(NumFormat format, int num, const QChar leadingChar='0', const int charsLen=0);
 //convert passed num to string with custom chars
-const QString getAsterixStringFromNum(uint num, QString asterix, const QChar leadingChar='_', const ushort charsLen=0);
+const QString getAsterixStringFromNum(int num, QString asterix, const QChar leadingChar='_', const int charsLen=0);
 
 #endif // NUMERATION_H

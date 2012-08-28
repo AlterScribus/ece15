@@ -1624,10 +1624,6 @@ void PageItem_TextFrame::layout()
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
 			
-			{
-				delete hl->prefix;
-				hl->prefix = NULL;
-			}
 			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()) && !isNoteFrame())
 			{
 				BulNumMode = true;
@@ -1835,6 +1831,7 @@ void PageItem_TextFrame::layout()
 			layoutGlyphs(*hl, chstr, hl->glyph);
 			if (BulNumMode)
 			{
+				Q_ASSERT(!isNoteFrame());
 				hl->prefix->glyph.yadvance = 0;
 				hl->prefix->ch = prefixStr[0];
 				layoutGlyphs(*(hl->prefix), prefixStr, hl->prefix->glyph);
@@ -3572,6 +3569,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				}
 				if (hl->prefix)
 				{
+					Q_ASSERT(!isNoteFrame());
 					const CharStyle& prefCharStyle(dynamic_cast<const CharStyle&>(*hl->prefix));
 					actFill = prefCharStyle.fillColor();
 					actFillShade = prefCharStyle.fillShade();

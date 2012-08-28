@@ -126,8 +126,8 @@ bool ContentReader::startElement(const QString&, const QString&, const QString &
 	else if (name == "text:list-item")
 	{
 		bool isOrdered = false;
-		int levelIndex = listLevel - 1;
-		if (levelIndex >= 0 && levelIndex < isOrdered2.size())
+		long levelIndex = listLevel - 1;
+		if (levelIndex >= 0 && levelIndex < (long) isOrdered2.size())
 			isOrdered = isOrdered2[listLevel - 1];
 		if (isOrdered)
 		{

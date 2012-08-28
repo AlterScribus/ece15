@@ -3784,12 +3784,11 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 		{
 			if (newItem->asGroupFrame())
 			{
-				bool success = true;
 				QList<PageItem*>* DItems = doc->Items;
 				QList<PageItem*> GroupItems;
 				doc->Items = &GroupItems;
 				ItemInfo itemInfo;
-				success = readObject(doc, reader, itemInfo, baseDir, loadPage);
+				readObject(doc, reader, itemInfo, baseDir, loadPage);
 				for (int as = 0; as < GroupItems.count(); ++as)
 				{
 					PageItem* currItem = GroupItems.at(as);
@@ -6203,7 +6202,7 @@ bool Scribus150Format::readCharStyles(const QString& fileName, ScribusDoc* doc, 
 			docCharStyles.create(cstyle);
 		}
 	}
-	return true;
+	return success;
 }
 
 bool Scribus150Format::readLineStyles(const QString& fileName, QHash<QString,multiLine> *styles)

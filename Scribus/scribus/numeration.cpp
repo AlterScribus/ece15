@@ -1,8 +1,10 @@
 #include "numeration.h"
 #include "util.h"
 
-const QString Numeration::numString(uint num, uint l)
+const QString Numeration::numString(int num, int l)
 {
+	if (l < 0)
+		l = len;
 	if (numFormat == Type_asterix)
 		return getAsterixStringFromNum(num, asterix, lead, l);
 
@@ -10,7 +12,7 @@ const QString Numeration::numString(uint num, uint l)
 }
 
 
-const QString getStringFromNum(NumFormat format, uint num, const QChar leadingChar, const ushort charsLen)
+const QString getStringFromNum(NumFormat format, int num, const QChar leadingChar, const int charsLen)
 {
 	QString str = getStringFromSequence(format, num);
 	if (charsLen > str.length())
@@ -18,7 +20,7 @@ const QString getStringFromNum(NumFormat format, uint num, const QChar leadingCh
 	return str;
 }
 
-const QString getAsterixStringFromNum(uint num, QString asterix, const QChar leadingChar, const ushort charsLen)
+const QString getAsterixStringFromNum(int num, QString asterix, const QChar leadingChar, const int charsLen)
 {
 	QString str = getStringFromSequence(Type_asterix, num, asterix);
 	if (charsLen > str.length())
