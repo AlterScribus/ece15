@@ -116,6 +116,7 @@ private slots:
 	void slotFont(QString s);
 	void slotParentChanged(const QString &parent);
 	void slotCharParentChanged(const QString &parent);
+    void slotClearOnApply(bool isOn);
 };
 
 class SMCharacterStyle : public StyleItem

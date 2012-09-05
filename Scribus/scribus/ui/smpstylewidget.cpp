@@ -379,6 +379,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 
 		numBox->setChecked(pstyle->hasNum());
 		setWidgetBoldFont(numBox, pstyle->isInhHasNum());
+        ClearOnApplyBox->setChecked(pstyle->clearOnApply(), pstyle->isInhClearOnApply());
 	}
 	else
 	{
@@ -411,6 +412,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		keepLinesEnd->setValue (pstyle->keepLinesEnd());
 		keepTogether->setChecked (pstyle->keepTogether());
 		keepWithNext->setChecked (pstyle->keepWithNext());
+        ClearOnApplyBox->setChecked(pstyle->clearOnApply());
 	}
 
 	lineSpacing_->setEnabled(pstyle->lineSpacingMode() == ParagraphStyle::FixedLineSpacing);

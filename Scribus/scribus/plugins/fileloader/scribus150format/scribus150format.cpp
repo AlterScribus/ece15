@@ -3312,8 +3312,8 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 				mark->label=attrs.valueAsString("label");
 				mark->setType(type);
 
-				if (type == MARKVariableTextType && attrs.hasAttribute("str"))
-					mark->setString(attrs.valueAsString("str"));
+                if (type == MARKVariableTextType && attrs.hasAttribute("strtxt"))
+                    mark->setString(attrs.valueAsString("strtxt"));
 				if (type == MARK2ItemType && attrs.hasAttribute("ItemID"))
 				{
 					//QString itemName = attrs.valueAsString("itemName");
@@ -6202,7 +6202,7 @@ bool Scribus150Format::readCharStyles(const QString& fileName, ScribusDoc* doc, 
 			docCharStyles.create(cstyle);
 		}
 	}
-	return success;
+    return true;
 }
 
 bool Scribus150Format::readLineStyles(const QString& fileName, QHash<QString,multiLine> *styles)
@@ -6234,6 +6234,7 @@ bool Scribus150Format::readLineStyles(const QString& fileName, QHash<QString,mul
 		if (tagName == "MultiLine")
 		{
 			multiLine ml;
+
 			attrs = reader.scAttributes();
 			QString mlName  = attrs.valueAsString("Name");
 			QString mlName2 = mlName;

@@ -571,6 +571,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
 	connect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
 	connect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+    connect(pwidget_->ClearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 }
 
 void SMParagraphStyle::removeConnections()
@@ -654,6 +655,7 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
 	disconnect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
 	disconnect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+    disconnect(pwidget_->ClearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 }
 
 void SMParagraphStyle::slotLineSpacingMode(int mode)
@@ -2562,6 +2564,14 @@ SMCharacterStyle::~SMCharacterStyle()
 	widget_ = 0;
 }
 
+void SMParagraphStyle::slotClearOnApply(bool isOn)
+{
+    for (int i = 0; i < selection_.count(); ++i)
+        selection_[i]->setClearOnApply(isOn);
 
-
-
+    if (!selectionIsDirty_)
+    {
+        selectionIsDirty_ = true;
+        emit selectionDirty();
+    }
+}
