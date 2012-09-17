@@ -72,7 +72,7 @@ void Prefs_Hyphenator::saveGuiToPrefs(struct ApplicationPrefs *prefsData) const
 	prefsData->hyphPrefs.MinWordLen = smallestWordSpinBox->value();
 	 //FIXME: remove this ScCore call
 	QString langFromCombo(ScCore->primaryMainWindow()->GetLang(hyphLanguageComboBox->itemData(hyphLanguageComboBox->currentIndex()).toString()));
-	prefsData->hyphPrefs.Language = LanguageManager::instance()->getAbbrevFromLang(langFromCombo, true, false);
+	prefsData->hyphPrefs.Language = LanguageManager::instance()->getAbbrevFromLang(langFromCombo, false, false);
 	prefsData->hyphPrefs.Automatic = !hyphSuggestionsCheckBox->isChecked();
 	prefsData->hyphPrefs.AutoCheck = hyphAutoCheckBox->isChecked();
 	prefsData->hyphPrefs.HyCount = maxConsecutiveCountSpinBox->value();
