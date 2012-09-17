@@ -5003,6 +5003,7 @@ void PageItem_TextFrame::applicableActions(QStringList & actionList)
 	actionList << "toolsEditWithStoryEditor";
 	actionList << "insertSampleText";
 	actionList << "itemPDFIsAnnotation";
+	actionList << "itemClearPStyle";
 	if (doc()->currentPage()->pageName().isEmpty())
 		actionList << "itemPDFIsBookmark";
 	if (isAnnotation())
@@ -5022,6 +5023,7 @@ void PageItem_TextFrame::applicableActions(QStringList & actionList)
 	{
 		actionList << "editClearContents";
 		actionList << "itemAdjustFrameHeightToText";
+		actionList << "itemClearPStyle";
 	}
 }
 

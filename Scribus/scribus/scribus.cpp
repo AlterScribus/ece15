@@ -827,6 +827,7 @@ void ScribusMainWindow::initMenuBar()
 	// End Table submenu.
 	scrMenuMgr->addMenuSeparator("Item");
 	scrMenuMgr->addMenuItem(scrActions["itemAdjustFrameHeightToText"], "Item", false);
+	scrMenuMgr->addMenuItem(scrActions["itemClearPStyle"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemAdjustFrameToImage"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemAdjustImageToFrame"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemUpdateImage"], "Item", false);
@@ -1176,6 +1177,7 @@ void ScribusMainWindow::setStatusBarInfoText(QString newText)
 //AV to be replaced with Selection::update and listener in PropertiesPalette
 void ScribusMainWindow::setTBvals(PageItem *currItem)
 {
+	Q_ASSERT(currItem->isTextFrame());
 	scrActions["editMark"]->setEnabled(false);
 	scrActions["itemUpdateMarks"]->setEnabled(false);
 	if (currItem->itemText.length() != 0)
@@ -2783,6 +2785,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 	scrActions["editEditRenderSource"]->setEnabled(SelectedType==PageItem::ImageFrame && currItem && (currItem->asLatexFrame()));
 #endif
 	scrActions["itemAdjustFrameHeightToText"]->setEnabled(SelectedType==PageItem::TextFrame && currItem->itemText.length() >0);
+	scrActions["itemClearPStyle"]->setEnabled(SelectedType==PageItem::TextFrame  && currItem->itemText.length() >0);
 	if (SelectedType!=PageItem::ImageFrame)
 	{
 		scrActions["itemImageIsVisible"]->setChecked(false);
@@ -2921,6 +2924,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["editCopy"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("EditContents", true);
 		scrActions["editClearContents"]->setEnabled(true);
+		scrActions["itemClearPStyle"]->setEnabled(true);
 		scrActions["editSearchReplace"]->setEnabled(currItem->itemText.length() != 0);
 		scrActions["extrasHyphenateText"]->setEnabled(true);
 		scrActions["extrasDeHyphenateText"]->setEnabled(true);
@@ -3093,6 +3097,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			propertiesPalette->textPal->updateStyle(doc->currentStyle);
 			setStyleEffects(doc->currentStyle.charStyle().effects());
 		}
+		scrActions["itemClearPStyle"]->setEnabled(true);
 		break;
 	default:
 		scrActions["fileImportText"]->setEnabled(false);
@@ -6832,14 +6837,14 @@ void ScribusMainWindow::setAppMode(int mode)
 //					view->requestMode(modeEditClip);
 //					return;
 //				}
-				//setTBvals before placing cursor has no effect
-				currItem->itemText.setCursorPosition(0);
-				setTBvals(currItem);
 			}
 			scrActions["editPaste"]->setEnabled(false);
 			charPalette->setEnabled(true, currItem);
 			if ((currItem != NULL) && currItem->asTextFrame())
 			{
+				//setTBvals before placing cursor has no effect
+				currItem->itemText.setCursorPosition(0);
+				setTBvals(currItem);
 				enableTextActions(&scrActions, true, currItem->currentCharStyle().font().scName());
 				currItem->asTextFrame()->togleEditModeActions();
 			}

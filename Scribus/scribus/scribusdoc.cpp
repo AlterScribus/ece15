@@ -102,6 +102,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_icon.h"
 #include "util_math.h"
+#include "util_text.h"
 
 #include "colormgmt/sccolormgmtenginefactory.h"
 #include "ui/hruler.h"
@@ -9078,7 +9079,7 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 
 void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection, bool rmDirectFormatting)
 {
-	if (newStyle.clearOnApply())
+	if (newStyle.clearOnApply() || (newStyle.hasParent() && paragraphStyle(newStyle.parent()).clearOnApply()))
 		rmDirectFormatting = true;
 	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
 	assert(itemSelection!=0);
@@ -9153,6 +9154,94 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
 			setNotesChanged(true);
 		currItem->invalidateLayout();
+	}
+	if (activeTransaction)
+	{
+		activeTransaction->commit();
+		delete activeTransaction;
+		activeTransaction = NULL;
+	}
+	changed();
+	regionsChanged()->update(QRectF());
+}
+
+void ScribusDoc::itemSelection_ClearParStyle(Selection* customSelection)
+{
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	assert(itemSelection!=0);
+	
+	uint selectedItemCount=itemSelection->count();
+	if (selectedItemCount == 0)
+		return;
+	UndoTransaction* activeTransaction = NULL;
+	if (UndoManager::undoEnabled())
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::RemoveTextStyle, tr( "remove direct paragraph formatting" ), Um::IFont));
+	CharStyle emptyCStyle;
+	for (uint aa = 0; aa < selectedItemCount; ++aa)
+	{
+		PageItem *currItem = itemSelection->itemAt(aa);
+		if (currItem->itemText.length() > 0)
+		{
+			//in edit mode without selection select paragraph where cursor is
+			if ((appMode == modeEdit) || (appMode == modeEditTable))
+			{
+				if (!currItem->HasSel)
+					currItem->expandParaSelection();
+			}
+			else //select whole text
+				currItem->itemText.selectAll();
+			int start = currItem->itemText.startOfSelection();
+			int stop = currItem->itemText.endOfSelection();
+			for (int pos=start; pos < stop; ++pos)
+			{
+				if (currItem->itemText.text(pos) == SpecialChars::PARSEP)
+				{
+					ParagraphStyle newStyle;
+					newStyle.setParent(currItem->itemText.paragraphStyle(pos).parent());
+					if (UndoManager::undoEnabled())
+					{
+						ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+						is->set("SET_PARASTYLE", "set_parastyle");
+						is->set("POS",pos);
+						is->setItem(qMakePair(newStyle, currItem->itemText.paragraphStyle(pos)));
+						undoManager->action(currItem, is);
+						ScItemState<QPair<CharStyle,CharStyle> > *is2 = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
+						is2->set("SET_CHARSTYLE", "set_charstyle");
+						is2->set("START",pos);
+						is2->set("LENGTH",1);
+						is2->setItem(qMakePair(emptyCStyle, currItem->itemText.charStyle(pos)));
+						undoManager->action(currItem, is2);
+					}
+					currItem->itemText.setStyle(pos, newStyle);
+					currItem->itemText.setCharStyle(pos, 1, emptyCStyle);
+				}
+			}
+			ParagraphStyle newStyle2;
+			newStyle2.setParent(currItem->itemText.paragraphStyle(stop).parent());
+			if (UndoManager::undoEnabled())
+			{
+				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+				is->set("SET_PARASTYLE", "set_parastyle");
+				is->set("POS",stop);
+				is->setItem(qMakePair(newStyle2, currItem->itemText.paragraphStyle(stop)));
+				undoManager->action(currItem, is);
+			}
+			currItem->itemText.setStyle(stop, newStyle2);
+			currItem->invalid = true;
+			if (currItem->asPathText())
+				currItem->updatePolyClip();
+			if (currItem->isNoteFrame())
+				currItem->asNoteFrame()->updateNotesText();
+			else if (currItem->isTextFrame() && currItem->asTextFrame()->hasNoteFrame(NULL, true))
+				setNotesChanged(true);
+		}
+		if (appMode != modeEdit)
+		{
+			if (currItem->isNoteFrame())
+			setNotesChanged(true);
+			else if (currItem->isTextFrame())
+			updateItemNotesFramesStyles(currItem);
+		}
 	}
 	if (activeTransaction)
 	{

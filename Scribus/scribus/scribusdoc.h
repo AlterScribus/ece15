@@ -1036,7 +1036,6 @@ public:
 	void itemSelection_SetCharStyle(const CharStyle & newstyle, Selection* customSelection=0);
 	void itemSelection_EraseParagraphStyle(Selection* customSelection=0);
 	void itemSelection_EraseCharStyle(Selection* customSelection=0);
-
 	void itemSelection_SetNamedParagraphStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedCharStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedLineStyle(const QString & name, Selection* customSelection=0);
@@ -1431,6 +1430,7 @@ public slots:
 	void itemSelection_DoDeHyphenate();
 	void itemSelection_UnlinkTextFrameWithText(Selection *customSelection=0, bool cutText=false);
 	void itemSelection_UnlinkTextFrameWithTextCut(Selection *customSelection=0);
+	void itemSelection_ClearParStyle(Selection* customSelection=0);
 	void itemSelection_SendToLayer(int layerID);
 	void itemSelection_SetImageOffset(double x, double y, Selection* customSelection=0);
 	void itemSelection_SetImageScale(double x, double y, Selection* customSelection=0);
