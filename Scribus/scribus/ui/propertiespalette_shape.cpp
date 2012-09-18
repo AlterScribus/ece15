@@ -62,12 +62,12 @@ PropertiesPalette_Shape::PropertiesPalette_Shape( QWidget* parent) : QWidget(par
 	connect(textFlowBtnGroup, SIGNAL(buttonClicked(int)), this, SLOT(handleTextFlow()));
 	connect(editShape  , SIGNAL(clicked())                 , this, SLOT(handleShapeEdit()));
 	connect(roundRect  , SIGNAL(valueChanged(double))      , this, SLOT(handleCornerRadius()));
-	connect(evenOdd    , SIGNAL(clicked())                 , this, SLOT(handleFillRule()) );
-	connect(nonZero    , SIGNAL(clicked())                 , this, SLOT(handleFillRule()) );
+//	connect(evenOdd    , SIGNAL(clicked())                 , this, SLOT(handleFillRule()) );
+//	connect(nonZero    , SIGNAL(clicked())                 , this, SLOT(handleFillRule()) );
 	connect(customShape, SIGNAL(FormSel(int, int, qreal *)), this, SLOT(handleNewShape(int, int, qreal *)));
 
 	roundRect->showValue(0);
-	stackedWidget->setCurrentIndex(0);
+//	stackedWidget->setCurrentIndex(0);
 }
 
 void PropertiesPalette_Shape::changeEvent(QEvent *e)
@@ -340,23 +340,23 @@ void PropertiesPalette_Shape::setCurrentItem(PageItem *item)
 	roundRect->setValue(m_item->cornerRadius()*m_unitRatio);
 	displayTextFlowMode(m_item->textFlowMode());
 
-	if (m_item->asPathText())
-	{
-		stackedWidget->setCurrentIndex(0);
-	}
-	else if (m_item->asTextFrame())
-	{
-		stackedWidget->setCurrentIndex(0);
-	}
-	else
-	{
-		stackedWidget->setCurrentIndex(1);
-		fillRuleGroup->setVisible(m_item->itemType() != PageItem::ImageFrame);
-	}
+//	if (m_item->asPathText())
+//	{
+//		stackedWidget->setCurrentIndex(0);
+//	}
+//	else if (m_item->asTextFrame())
+//	{
+//		stackedWidget->setCurrentIndex(0);
+//	}
+//	else
+//	{
+//		stackedWidget->setCurrentIndex(1);
+//		fillRuleGroup->setVisible(m_item->itemType() != PageItem::ImageFrame);
+//	}
 	setLocked(m_item->locked());
 	setSizeLocked(m_item->sizeLocked());
-	nonZero->setChecked(!m_item->fillRule);
-	evenOdd->setChecked(m_item->fillRule);
+//	nonZero->setChecked(!m_item->fillRule);
+//	evenOdd->setChecked(m_item->fillRule);
 
 	// Frame type 3 is obsolete: CR 2005-02-06
 	//if (((i->itemType() == PageItem::TextFrame) || (i->itemType() == PageItem::ImageFrame) || (i->itemType() == 3)) &&  (!i->ClipEdited))
@@ -468,7 +468,7 @@ void PropertiesPalette_Shape::handleFillRule()
 {
 	if (!m_haveDoc || !m_haveItem || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
-	m_item->fillRule = evenOdd->isChecked();
+//	m_item->fillRule = evenOdd->isChecked();
 	m_item->update();
 }
 
@@ -534,12 +534,12 @@ void PropertiesPalette_Shape::languageChange()
 	editShape->setText( tr("&Edit..."));
 	roundRect->setToolTip( tr("Set radius of corner rounding"));
 	roundRectLabel->setText( tr("R&ound Corners:"));
-	fillRuleGroup->setTitle( tr("Fill Rule"));
-	evenOdd->setText( tr("Even-Odd"));
-	nonZero->setText( tr("Non Zero"));
+//	fillRuleGroup->setTitle( tr("Fill Rule"));
+//	evenOdd->setText( tr("Even-Odd"));
+//	nonZero->setText( tr("Non Zero"));
 
-	evenOdd->setToolTip( "<qt>" + tr("This rule determines the &quot;insideness&quot; of a point on the canvas by drawing a ray from that point to infinity in any direction and counting the number of path segments from the given shape that the ray crosses. If this number is odd, the point is inside, if even, the point is outside.")  + "</qt>");
-	nonZero->setToolTip( "<qt>" + tr("This rule determines the &quot;insideness&quot; of a point on the canvas by drawing a ray from that point to infinity in any direction and then examining the places where a segment of the shape crosses the ray. Starting with a count of zero, add one each time a path segment crosses the ray from left to right and subtract one each time a path segment crosses the ray from right to left. If the result is zero then the point is outside the path. Otherwise, it is inside.")  + "</qt>");
+//	evenOdd->setToolTip( "<qt>" + tr("This rule determines the &quot;insideness&quot; of a point on the canvas by drawing a ray from that point to infinity in any direction and counting the number of path segments from the given shape that the ray crosses. If this number is odd, the point is inside, if even, the point is outside.")  + "</qt>");
+//	nonZero->setToolTip( "<qt>" + tr("This rule determines the &quot;insideness&quot; of a point on the canvas by drawing a ray from that point to infinity in any direction and then examining the places where a segment of the shape crosses the ray. Starting with a count of zero, add one each time a path segment crosses the ray from left to right and subtract one each time a path segment crosses the ray from right to left. If the result is zero then the point is outside the path. Otherwise, it is inside.")  + "</qt>");
 
 	textFlowGroup->setTitle( tr("Text &Flow Around Frame"));
 	textFlowDisabled->setText( tr("Disabled"));

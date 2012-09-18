@@ -1231,7 +1231,7 @@ void ActionManager::connectNewDocActions(ScribusDoc *currDoc)
 	connect( (*scrActions)["itemRaise"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_RaiseItem()) );
 	connect( (*scrActions)["toolsUnlinkTextFrameWithTextCopy"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_UnlinkTextFrameWithText()) );
 	connect( (*scrActions)["toolsUnlinkTextFrameWithTextCut"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_UnlinkTextFrameWithTextCut()) );
-	connect( (*scrActions)["itemClearPStyle"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_ClearParStyle()) );
+	connect( (*scrActions)["itemClearPStyle"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_ClearPStyle()) );
 }
 
 void ActionManager::disconnectNewViewActions()

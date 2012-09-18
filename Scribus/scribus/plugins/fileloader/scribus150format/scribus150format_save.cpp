@@ -1245,7 +1245,7 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 			//docu.writeAttribute("itemName", item->itemName());
 		}
 		else if (mrk->isType(MARKVariableTextType) && mrk->hasString())
-			docu.writeAttribute("str", mrk->getString());
+			docu.writeAttribute("strtxt", mrk->getString());
 		else if (mrk->isType(MARK2MarkType) && mrk->hasMark())
 		{
 			QString label;

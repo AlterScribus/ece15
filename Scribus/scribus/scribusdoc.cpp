@@ -8896,30 +8896,9 @@ void ScribusDoc::itemSelection_SetLineSpacingMode(int m, Selection* customSelect
 
 void ScribusDoc::itemSelection_SetFontSize(int size, Selection* customSelection)
 {
-	//if (true || ((appMode == modeEdit) || (appMode == modeEditTable)))
-	//{
-		CharStyle newStyle;
-		newStyle.setFontSize(size);
-		itemSelection_ApplyCharStyle(newStyle, customSelection, "FONT_SIZE");
-	/*}
-	else
-	{
-		ParagraphStyle storyStyle;
-		storyStyle.charStyle().setFontSize(size);
-		if (storyStyle.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
-		{
-			storyStyle.setLineSpacing((size / 10.0) * (static_cast<double>(docPrefsData.typoPrefs.autoLineSpacing) / 100));
-		}
-		else if (storyStyle.lineSpacingMode() == ParagraphStyle::FixedLineSpacing)
-		{
-			storyStyle.setLineSpacing(storyStyle.charStyle().font().height(size));
-		}
-		else
-		{
-			storyStyle.setLineSpacing(docPrefsData.guidesPrefs.valueBaselineGrid-1);
-		}
-		itemSelection_ApplyParagraphStyle(storyStyle, customSelection);
-	}*/
+	CharStyle newStyle;
+	newStyle.setFontSize(size);
+	itemSelection_ApplyCharStyle(newStyle, customSelection, "FONT_SIZE");
 }
 
 void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection)
@@ -9034,30 +9013,6 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 				undoManager->action(currItem, is);
 			}
 			currItem->itemText.setStyle(stop, newStyle2);
-//		else
-//		{
-//			ParagraphStyle newStyle;
-//			//for notes frames apply style from master frame
-//			if (currItem->isNoteFrame() && (currItem->asNoteFrame()->masterFrame() != NULL))
-//			{
-//				newStyle.setParent(currItem->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
-//				newStyle.applyStyle(currItem->asNoteFrame()->masterFrame()->currentStyle());
-//			}
-//			else
-//				newStyle.setParent(currItem->itemText.defaultStyle().parent());
-//			if (UndoManager::undoEnabled())
-//			{
-//				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
-//				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
-//				is->setItem(qMakePair(newStyle, currItem->itemText.defaultStyle()));
-//				undoManager->action(currItem, is);
-//			}
-//			currItem->itemText.setDefaultStyle(newStyle);
-//			if (currItem->isTextFrame() && !currItem->isNoteFrame())
-//				updateItemNotesFramesStyles(currItem, newStyle);
-//			else if (currItem->isNoteFrame())
-//				setNotesChanged(true);
-//		}
 			currItem->invalid = true;
 			if (currItem->asPathText())
 				currItem->updatePolyClip();
@@ -9165,7 +9120,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 	regionsChanged()->update(QRectF());
 }
 
-void ScribusDoc::itemSelection_ClearParStyle(Selection* customSelection)
+void ScribusDoc::itemSelection_ClearPStyle(Selection* customSelection)
 {
 	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
 	assert(itemSelection!=0);
@@ -9174,9 +9129,9 @@ void ScribusDoc::itemSelection_ClearParStyle(Selection* customSelection)
 	if (selectedItemCount == 0)
 		return;
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled())
+	if (UndoManager::undoEnabled() && (selectedItemCount > 1))
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::RemoveTextStyle, tr( "remove direct paragraph formatting" ), Um::IFont));
-	CharStyle emptyCStyle;
+	//CharStyle emptyCStyle;
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
@@ -9190,43 +9145,53 @@ void ScribusDoc::itemSelection_ClearParStyle(Selection* customSelection)
 			}
 			else //select whole text
 				currItem->itemText.selectAll();
-			int start = currItem->itemText.startOfSelection();
-			int stop = currItem->itemText.endOfSelection();
-			for (int pos=start; pos < stop; ++pos)
-			{
-				if (currItem->itemText.text(pos) == SpecialChars::PARSEP)
-				{
-					ParagraphStyle newStyle;
-					newStyle.setParent(currItem->itemText.paragraphStyle(pos).parent());
-					if (UndoManager::undoEnabled())
-					{
-						ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
-						is->set("SET_PARASTYLE", "set_parastyle");
-						is->set("POS",pos);
-						is->setItem(qMakePair(newStyle, currItem->itemText.paragraphStyle(pos)));
-						undoManager->action(currItem, is);
-						ScItemState<QPair<CharStyle,CharStyle> > *is2 = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
-						is2->set("SET_CHARSTYLE", "set_charstyle");
-						is2->set("START",pos);
-						is2->set("LENGTH",1);
-						is2->setItem(qMakePair(emptyCStyle, currItem->itemText.charStyle(pos)));
-						undoManager->action(currItem, is2);
-					}
-					currItem->itemText.setStyle(pos, newStyle);
-					currItem->itemText.setCharStyle(pos, 1, emptyCStyle);
-				}
-			}
-			ParagraphStyle newStyle2;
-			newStyle2.setParent(currItem->itemText.paragraphStyle(stop).parent());
-			if (UndoManager::undoEnabled())
-			{
-				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
-				is->set("SET_PARASTYLE", "set_parastyle");
-				is->set("POS",stop);
-				is->setItem(qMakePair(newStyle2, currItem->itemText.paragraphStyle(stop)));
-				undoManager->action(currItem, is);
-			}
-			currItem->itemText.setStyle(stop, newStyle2);
+			Selection tempSelection(this, false);
+			tempSelection.addItem(currItem, true);
+			itemSelection_EraseCharStyle(&tempSelection);
+			
+//			int start = currItem->itemText.startOfSelection();
+//			int stop = currItem->itemText.endOfSelection();
+//			for (int pos=start; pos < stop; ++pos)
+//			{
+//				if (UndoManager::undoEnabled())
+//				{
+//					ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
+//					is->set("SET_CHARSTYLE", "set_charstyle");
+//					is->set("START",pos);
+//					is->set("LENGTH",1);
+//					is->setItem(qMakePair(emptyCStyle, currItem->itemText.charStyle(pos)));
+//					undoManager->action(currItem, is);
+//				}
+//				currItem->itemText.setCharStyle(pos, 1, emptyCStyle);
+//				if (currItem->itemText.text(pos) == SpecialChars::PARSEP)
+//				{
+//					ParagraphStyle newStyle;
+//					newStyle.setParent(currItem->itemText.paragraphStyle(pos).parent());
+//					if (UndoManager::undoEnabled())
+//					{
+//						ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+//						is->set("SET_PARASTYLE", "set_parastyle");
+//						is->set("POS",pos);
+//						is->setItem(qMakePair(newStyle, currItem->itemText.paragraphStyle(pos)));
+//						undoManager->action(currItem, is);
+//					}
+//					currItem->itemText.setStyle(pos, newStyle);
+//				}
+//			}
+//			if (stop == currItem->itemText.length())
+//			{
+//				ParagraphStyle newStyle2;
+//				newStyle2.setParent(currItem->itemText.paragraphStyle(stop).parent());
+//				if (UndoManager::undoEnabled())
+//				{
+//					ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
+//					is->set("SET_PARASTYLE", "set_parastyle");
+//					is->set("POS",stop);
+//					is->setItem(qMakePair(newStyle2, currItem->itemText.paragraphStyle(stop)));
+//					undoManager->action(currItem, is);
+//				}
+//				currItem->itemText.setStyle(stop, newStyle2);
+//			}
 			currItem->invalid = true;
 			if (currItem->asPathText())
 				currItem->updatePolyClip();
@@ -9238,9 +9203,9 @@ void ScribusDoc::itemSelection_ClearParStyle(Selection* customSelection)
 		if (appMode != modeEdit)
 		{
 			if (currItem->isNoteFrame())
-			setNotesChanged(true);
+				setNotesChanged(true);
 			else if (currItem->isTextFrame())
-			updateItemNotesFramesStyles(currItem);
+				updateItemNotesFramesStyles(currItem);
 		}
 	}
 	if (activeTransaction)
@@ -9486,10 +9451,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
-//		int currItemTextCount = currItem->lastInFrame() + 1 - currItem->firstInFrame();
-//		if (currItemTextCount > 0 && ( appMode == modeEdit || !FRAMESELECTION_EDITS_DEFAULTSTYLE))
-		int currItemTextCount = currItem->itemText.length();
-		if ((currItemTextCount > 0) && ((appMode == modeEdit) || (appMode == modeEditTable)))
+		if ((currItem->itemText.length() > 0))
 		{
 			int start = currItem->itemText.startOfItem(currItem->firstInFrame());
 			int length = currItem->itemText.endOfItem(currItem->lastInFrame()) - start;
@@ -9503,51 +9465,55 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 				else
 				{
 					start = qMax(currItem->firstInFrame(), currItem->itemText.cursorPosition());
-//9876					length = (start + 1) < currItem->itemText.length()? 1 : 0;
 					length = start < currItem->itemText.length() ? 1 : 0;
 				}
 			}
-			QString lastParent;
+			else
+			{
+				start = 0;
+				length = currItem->itemText.length();
+			}
 			int stop = start+length;
 			int lastPos = start;
 			for (int i=start; i < stop; ++i)
 			{
-				const QString& curParent(currItem->itemText.charStyle(i).parent());
-				if (curParent != lastParent)
+				const CharStyle defStyle = currItem->itemText.paragraphStyle(i).charStyle();
+				const CharStyle& curStyle(currItem->itemText.charStyle(i));
+				if (!curStyle.equiv(defStyle))
 				{
 					if ( i-lastPos > 0)
 					{
-						CharStyle newStyle;
-						newStyle.setParent(lastParent);
 						if (UndoManager::undoEnabled())
 						{
 							ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
 							is->set("SET_CHARSTYLE", "set_charstyle");
 							is->set("START",lastPos);
 							is->set("LENGTH",i-lastPos);
-							is->setItem(qMakePair(newStyle, currItem->itemText.charStyle(lastPos)));
+							is->setItem(qMakePair(defStyle, currItem->itemText.charStyle(lastPos)));
 							undoManager->action(currItem, is);
 						}
-						currItem->itemText.setCharStyle(lastPos, i-lastPos, newStyle);
+						currItem->itemText.setCharStyle(lastPos, i-lastPos, defStyle);
 						lastPos = i;
 					}
-					lastParent = curParent;
 				}
 			}
 			if (lastPos < stop)
 			{
-				CharStyle newStyle2;
-				newStyle2.setParent(lastParent);
-				if (UndoManager::undoEnabled())
+				CharStyle defStyle = currItem->itemText.paragraphStyle(lastPos).charStyle();
+				const CharStyle& curStyle(currItem->itemText.charStyle(lastPos));
+				if (!curStyle.equiv(defStyle))
 				{
-					ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
-					is->set("SET_CHARSTYLE", "set_charstyle");
-					is->set("START",lastPos);
-					is->set("LENGTH",stop-lastPos);
-					is->setItem(qMakePair(newStyle2, currItem->itemText.charStyle(lastPos)));
-					undoManager->action(currItem, is);
+					if (UndoManager::undoEnabled())
+					{
+						ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
+						is->set("SET_CHARSTYLE", "set_charstyle");
+						is->set("START",lastPos);
+						is->set("LENGTH",stop-lastPos);
+						is->setItem(qMakePair(defStyle, currItem->itemText.charStyle(lastPos)));
+						undoManager->action(currItem, is);
+					}
+					currItem->itemText.setCharStyle(lastPos, stop-lastPos, defStyle);
 				}
-				currItem->itemText.setCharStyle(lastPos, stop-lastPos, newStyle2);
 			}
 		}
 		else
@@ -9564,15 +9530,16 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 				undoManager->action(currItem, is);
 			}
 			currItem->itemText.setDefaultStyle(defStyle);
-			if (currItem->isNoteFrame())
-				setNotesChanged(true);
-			else if (currItem->isTextFrame())
+			if (!currItem->isNoteFrame())
 				updateItemNotesFramesStyles(currItem);
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
 		if (currItem->isNoteFrame())
+		{
+			setNotesChanged(true);
 			currItem->asNoteFrame()->updateNotesText();
+		}
 		currItem->invalidateLayout();
 	}
 	if (activeTransaction)

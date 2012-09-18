@@ -1156,7 +1156,7 @@ static double opticalRightMargin(const StoryText& itemText, const LineSpec& line
 			|| chr == QChar(0x203a)
 			|| chr == QChar(0x2032) // PRIME
 			)
-			rightCorr *= 0.7;
+			rightCorr *= 0.5;
 		else if (QString(";:\"").indexOf(chr) >= 0
 				 || chr == QChar(0x00ab)
 				 || chr == QChar(0x00bb)
@@ -1624,12 +1624,12 @@ void PageItem_TextFrame::layout()
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
 			
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()) && !isNoteFrame())
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
 			{
 				BulNumMode = true;
 				if (style.hasBullet())
 					prefixStr = style.bulletStr();
-				if (style.hasNum())
+				else if (style.hasNum())
 					prefixStr = "1. ";
 				hl->prefix = new ScText();
 			}
@@ -2697,6 +2697,7 @@ void PageItem_TextFrame::layout()
 			{
 				tabs.active = false;
 				tabs.status = TabNONE;
+				double opticalRM = opticalRightMargin(itemText, current.line);
 				if (SpecialChars::isBreak(hl->ch, Cols > 1))
 				{
 					// find end of line
@@ -2721,7 +2722,7 @@ void PageItem_TextFrame::layout()
 //					if (style.alignment() != 0)
 					{
 						if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
-							current.line.width += opticalRightMargin(itemText, current.line);
+							current.line.width += opticalRM;
 
 						OFs = 0;
 						if (style.alignment() == ParagraphStyle::Rightaligned)
@@ -2743,7 +2744,7 @@ void PageItem_TextFrame::layout()
 						else
 						{
 							if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
-								current.line.naturalWidth += opticalRightMargin(itemText, current.line);
+								current.line.naturalWidth += opticalRM;
 							double optiWidth = current.colRight - style.rightMargin() - style.lineSpacing()/2.0 - current.line.x;
 							if (current.line.naturalWidth > optiWidth)
 								current.line.width = qMax(current.line.width - current.maxShrink, optiWidth);
@@ -2804,7 +2805,7 @@ void PageItem_TextFrame::layout()
 						
 						// Justification
 						if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
-							current.line.width += opticalRightMargin(itemText, current.line);
+							current.line.width += opticalRM;
 						else
 							current.line.naturalWidth += hyphWidth;
 						
@@ -2819,7 +2820,7 @@ void PageItem_TextFrame::layout()
 						else
 						{
 							if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
-								current.line.naturalWidth += opticalRightMargin(itemText, current.line);
+								current.line.naturalWidth += opticalRM;
 							indentLine(itemText, current.line, OFs);
 						}
 						current.xPos = current.line.x + current.line.width;
@@ -5474,6 +5475,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 
 	setHeight(double(maxY + hackValue)/100.0 + BExtra);
 	updateClip();
+	checkChanges();
 	invalid = true;
 	m_Doc->changed();
 	m_Doc->regionsChanged()->update(QRect());
