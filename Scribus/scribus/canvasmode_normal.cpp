@@ -1272,10 +1272,11 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 		{
 			if (drawBleed)
 				m_doc->getBleeds(a, pageBleeds);
-			int x = static_cast<int>(m_doc->Pages->at(a)->xOffset() - pageBleeds.Left);
-			int y = static_cast<int>(m_doc->Pages->at(a)->yOffset() - pageBleeds.Top);
-			int w = static_cast<int>(m_doc->Pages->at(a)->width() + pageBleeds.Left + pageBleeds.Right);
-			int h = static_cast<int>(m_doc->Pages->at(a)->height() + pageBleeds.Bottom + pageBleeds.Top);
+			ScPage * page = m_doc->Pages->at(a);
+			int x = static_cast<int>(page->xOffset() - pageBleeds.Left);
+			int y = static_cast<int>(page->yOffset() - pageBleeds.Top);
+			int w = static_cast<int>(page->width() + pageBleeds.Left + pageBleeds.Right);
+			int h = static_cast<int>(page->height() + pageBleeds.Bottom + pageBleeds.Top);
 			if (QRect(x, y, w, h).contains(MxpS, MypS))
 			{
 				pgNum = static_cast<int>(a);
@@ -1283,10 +1284,11 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 				{
 					for (int a2 = docPageCount; a2 > -1; a2--)
 					{
-						int xn = static_cast<int>(m_doc->Pages->at(a2)->xOffset());
-						int yn = static_cast<int>(m_doc->Pages->at(a2)->yOffset());
-						int wn = static_cast<int>(m_doc->Pages->at(a2)->width());
-						int hn = static_cast<int>(m_doc->Pages->at(a2)->height());
+						ScPage * page2 = m_doc->Pages->at(a2);
+						int xn = static_cast<int>(page2->xOffset());
+						int yn = static_cast<int>(page2->yOffset());
+						int wn = static_cast<int>(page2->width());
+						int hn = static_cast<int>(page2->height());
 						if (QRect(xn, yn, wn, hn).contains(MxpS, MypS))
 						{
 							pgNum = static_cast<int>(a2);

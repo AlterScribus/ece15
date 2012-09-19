@@ -5475,7 +5475,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 
 	setHeight(double(maxY + hackValue)/100.0 + BExtra);
 	updateClip();
-	checkChanges();
+	checkChanges(true);
 	invalid = true;
 	m_Doc->changed();
 	m_Doc->regionsChanged()->update(QRect());

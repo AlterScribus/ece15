@@ -824,11 +824,12 @@ void CanvasMode_Edit::mouseReleaseEvent(QMouseEvent *m)
 			uint docCurrPageNo=m_doc->currentPageNumber();
 			for (uint i = 0; i < docPagesCount; ++i)
 			{
-				if (QRectF(m_doc->Pages->at(i)->xOffset(), m_doc->Pages->at(i)->yOffset(), m_doc->Pages->at(i)->width(), m_doc->Pages->at(i)->height()).intersects(Sele))
+				ScPage * page = m_doc->Pages->at(i);
+				if (QRectF(page->xOffset(), page->yOffset(), page->width(), page->height()).intersects(Sele))
 				{
 					if (docCurrPageNo != i)
 					{
-						m_doc->setCurrentPage(m_doc->Pages->at(i));
+						m_doc->setCurrentPage(page);
 						m_view->setMenTxt(i);
 					}
 					break;
@@ -943,10 +944,11 @@ bool CanvasMode_Edit::SeleItem(QMouseEvent *m)
 		{
 			if (drawBleed)
 				m_doc->getBleeds(a, pageBleeds);
-			int x = static_cast<int>(m_doc->Pages->at(a)->xOffset() - pageBleeds.Left);
-			int y = static_cast<int>(m_doc->Pages->at(a)->yOffset() - pageBleeds.Top);
-			int w = static_cast<int>(m_doc->Pages->at(a)->width() + pageBleeds.Left + pageBleeds.Right);
-			int h = static_cast<int>(m_doc->Pages->at(a)->height() + pageBleeds.Bottom + pageBleeds.Top);
+			ScPage * page = m_doc->Pages->at(a);
+			int x = static_cast<int>(page->xOffset() - pageBleeds.Left);
+			int y = static_cast<int>(page->yOffset() - pageBleeds.Top);
+			int w = static_cast<int>(page->width() + pageBleeds.Left + pageBleeds.Right);
+			int h = static_cast<int>(page->height() + pageBleeds.Bottom + pageBleeds.Top);
 			if (QRect(x, y, w, h).contains(MxpS, MypS))
 			{
 				pgNum = static_cast<int>(a);
@@ -954,10 +956,11 @@ bool CanvasMode_Edit::SeleItem(QMouseEvent *m)
 				{
 					for (int a2 = docPageCount; a2 > -1; a2--)
 					{
-						int xn = static_cast<int>(m_doc->Pages->at(a2)->xOffset());
-						int yn = static_cast<int>(m_doc->Pages->at(a2)->yOffset());
-						int wn = static_cast<int>(m_doc->Pages->at(a2)->width());
-						int hn = static_cast<int>(m_doc->Pages->at(a2)->height());
+						ScPage * page2 = m_doc->Pages->at(a2);
+						int xn = static_cast<int>(page2->xOffset());
+						int yn = static_cast<int>(page2->yOffset());
+						int wn = static_cast<int>(page2->width());
+						int hn = static_cast<int>(page2->height());
 						if (QRect(xn, yn, wn, hn).contains(MxpS, MypS))
 						{
 							pgNum = static_cast<int>(a2);

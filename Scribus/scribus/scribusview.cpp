@@ -854,13 +854,14 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 		Doc->m_Selection->delaySignalsOn();
 		for (int i = Doc->Items->count() - 1; i >= 0 ; --i)
 		{
-			if (Doc->Items->at(i)->LayerID==Doc->activeLayer())
+			PageItem * item = Doc->Items->at(i);
+			if (item->LayerID==Doc->activeLayer())
 			{
-				if ((m_canvas->frameHitTest(dropPosDocQ, Doc->Items->at(i)) >= Canvas::INSIDE) && (Doc->Items->at(i)->itemType() == PageItem::Symbol))
+				if ((m_canvas->frameHitTest(dropPosDocQ, item) >= Canvas::INSIDE) && (item->itemType() == PageItem::Symbol))
 				{
 					Deselect(false);
-					Doc->m_Selection->addItem(Doc->Items->at(i));
-					Doc->Items->at(i)->setPattern(patternVal);
+					Doc->m_Selection->addItem(item);
+					item->setPattern(patternVal);
 					selectedItemByDrag=true;
 					break;
 				}
@@ -923,12 +924,13 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 		Doc->m_Selection->delaySignalsOn();
 		for (int i = Doc->Items->count() - 1; i >= 0 ; --i)
 		{
-			if (Doc->Items->at(i)->LayerID==Doc->activeLayer())
+			PageItem * item = Doc->Items->at(i);
+			if (item->LayerID==Doc->activeLayer())
 			{
-				if (m_canvas->frameHitTest(dropPosDocQ, Doc->Items->at(i)) >= Canvas::INSIDE)
+				if (m_canvas->frameHitTest(dropPosDocQ, item) >= Canvas::INSIDE)
 				{
 					Deselect(false);
-					Doc->m_Selection->addItem(Doc->Items->at(i));
+					Doc->m_Selection->addItem(item);
 //					SelectItem(Doc->Items->at(i));
 					selectedItemByDrag=true;
 					break;
@@ -1249,15 +1251,16 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 			uint docCurrPageNo=Doc->currentPageNumber();
 			for (uint i = 0; i < docPagesCount; ++i)
 			{
-				double x = Doc->Pages->at(i)->xOffset();
-				double y = Doc->Pages->at(i)->yOffset();
-				double w = Doc->Pages->at(i)->width();
-				double h = Doc->Pages->at(i)->height();
+				ScPage * page = Doc->Pages->at(i);
+				double x = page->xOffset();
+				double y = page->yOffset();
+				double w = page->width();
+				double h = page->height();
 				if (QRectF(x, y, w, h).contains(dropPosDocQ))
 				{
 					if (docCurrPageNo != i)
 					{
-						Doc->setCurrentPage(Doc->Pages->at(i));
+						Doc->setCurrentPage(page);
 						setMenTxt(i);
 						DrawNew();
 					}
@@ -2183,10 +2186,11 @@ void ScribusView::setRulerPos(int x, int y)
 		uint docPageCount=Doc->Pages->count();
 		for (uint a = 0; a < docPageCount; ++a)
 		{
-			int xs = static_cast<int>(Doc->Pages->at(a)->xOffset() * m_canvas->scale());
-			int ys = static_cast<int>(Doc->Pages->at(a)->yOffset() * m_canvas->scale());
-			int ws = static_cast<int>(Doc->Pages->at(a)->width() * m_canvas->scale());
-			int hs = static_cast<int>(Doc->Pages->at(a)->height() * m_canvas->scale());
+			ScPage * page = Doc->Pages->at(a);
+			int xs = static_cast<int>(page->xOffset() * m_canvas->scale());
+			int ys = static_cast<int>(page->yOffset() * m_canvas->scale());
+			int ws = static_cast<int>(page->width() * m_canvas->scale());
+			int hs = static_cast<int>(page->height() * m_canvas->scale());
 			QRect drawRect = QRect(x, y, visibleWidth(), visibleHeight());
 //			drawRect.moveBy(qRound(-Doc->minCanvasCoordinate.x() * m_canvas->scale()), qRound(-Doc->minCanvasCoordinate.y() * m_canvas->scale()));
 			if (drawRect.intersects(QRect(xs, ys, ws, hs)))

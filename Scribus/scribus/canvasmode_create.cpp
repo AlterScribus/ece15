@@ -662,10 +662,11 @@ PageItem* CreateMode::doCreateNewObject(void)
 					z = m_doc->itemAddArea(PageItem::Polygon, PageItem::Unspecified, Rxp, Ryp, m_doc->itemToolPrefs().shapeLineWidth, m_doc->itemToolPrefs().shapeFillColor, m_doc->itemToolPrefs().shapeLineColor, true);
 				else
 					z = m_doc->itemAdd(PageItem::Polygon, PageItem::Unspecified, Rxp, Ryp, Rxpd, Rypd, m_doc->itemToolPrefs().shapeLineWidth, m_doc->itemToolPrefs().shapeFillColor, m_doc->itemToolPrefs().shapeLineColor, true);
-				m_doc->Items->at(z)->SetFrameShape(m_doc->ValCount, m_doc->ShapeValues);
-				m_doc->AdjustItemSize(m_doc->Items->at(z));
-				m_doc->setRedrawBounding(m_doc->Items->at(z));
-				m_doc->Items->at(z)->FrameType = createObjectSubMode + 2;
+				currItem = m_doc->Items->at(z);
+				currItem->SetFrameShape(m_doc->ValCount, m_doc->ShapeValues);
+				m_doc->AdjustItemSize(currItem);
+				m_doc->setRedrawBounding(currItem);
+				currItem->FrameType = createObjectSubMode + 2;
 				break;
 		}
 		break;
@@ -679,8 +680,9 @@ PageItem* CreateMode::doCreateNewObject(void)
 			rot += 360;
 		len = qMax(0.01, distance(Rxpd, Rypd));
 		z = m_doc->itemAdd(PageItem::Line, PageItem::Unspecified, Rxp, Ryp, len, 1, m_doc->itemToolPrefs().lineWidth, CommonStrings::None, m_doc->itemToolPrefs().lineColor, true);
-		m_doc->Items->at(z)->setRotation(rot);
-		m_doc->Items->at(z)->setRedrawBounding();
+		currItem = m_doc->Items->at(z);
+		currItem->setRotation(rot);
+		currItem->setRedrawBounding();
 		break;
 	case modeDrawLatex:
 		if (modifiers == Qt::ShiftModifier)
@@ -711,16 +713,18 @@ PageItem* CreateMode::doCreateNewObject(void)
 			z = m_doc->itemAddArea(PageItem::Arc, PageItem::Unspecified, Rxp, Ryp, m_doc->itemToolPrefs().shapeLineWidth, m_doc->itemToolPrefs().shapeFillColor, m_doc->itemToolPrefs().lineColor, true);
 		else
 			z = m_doc->itemAdd(PageItem::Arc, PageItem::Unspecified, Rxp, Ryp, Rxpd, Rypd, m_doc->itemToolPrefs().shapeLineWidth, m_doc->itemToolPrefs().shapeFillColor, m_doc->itemToolPrefs().lineColor, true);
-		m_doc->AdjustItemSize(m_doc->Items->at(z));
-		m_doc->setRedrawBounding(m_doc->Items->at(z));
+		currItem = m_doc->Items->at(z);
+		m_doc->AdjustItemSize(currItem);
+		m_doc->setRedrawBounding(currItem);
 		break;
 	case modeDrawSpiral:
 		if (modifiers == Qt::ShiftModifier)
 			z = m_doc->itemAddArea(PageItem::Spiral, PageItem::Unspecified, Rxp, Ryp, m_doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_doc->itemToolPrefs().lineColor, true);
 		else
 			z = m_doc->itemAdd(PageItem::Spiral, PageItem::Unspecified, Rxp, Ryp, Rxpd, Rypd, m_doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_doc->itemToolPrefs().lineColor, true);
-		m_doc->AdjustItemSize(m_doc->Items->at(z));
-		m_doc->setRedrawBounding(m_doc->Items->at(z));
+		currItem = m_doc->Items->at(z);
+		m_doc->AdjustItemSize(currItem);
+		m_doc->setRedrawBounding(currItem);
 		break;
 	case modeInsertPDFButton:
 	case modeInsertPDFTextfield:

@@ -99,7 +99,7 @@ void Hyphenator::NewDict(const QString& name)
 {
 // 	if (!ScCore->primaryMainWindow()->Sprachen.contains(name))
 // 		return;
-	if( LanguageManager::instance()->getHyphFilename(name, false).isEmpty() )
+	if( LanguageManager::instance()->getHyphFilename(name, true).isEmpty() )
 		return;
 		
 	if (Language != name) 

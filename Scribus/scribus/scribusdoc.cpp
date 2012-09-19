@@ -2814,15 +2814,16 @@ int ScribusDoc::addAutomaticTextFrame(const int pageNumber)
 							 addToPage->Margins.Top+addToPage->yOffset(), docPrefsData.docSetupPrefs.pageWidth-addToPage->Margins.Right-addToPage->Margins.Left,
 							 docPrefsData.docSetupPrefs.pageHeight-addToPage->Margins.Bottom-addToPage->Margins.Top,
 							 1, CommonStrings::None, docPrefsData.itemToolPrefs.shapeLineColor, true);
-		Items->at(z)->isAutoText = true;
-		Items->at(z)->Cols = qRound(PageSp);
-		Items->at(z)->ColGap = PageSpa;
+		PageItem * currItem = Items->at(z);
+		currItem->isAutoText = true;
+		currItem->Cols = qRound(PageSp);
+		currItem->ColGap = PageSpa;
 		if (LastAuto != 0)
-			LastAuto->link(Items->at(z));
+			LastAuto->link(currItem);
 		else
-			FirstAuto = Items->at(z);
-		LastAuto = Items->at(z);
-		Items->at(z)->setRedrawBounding();
+			FirstAuto = currItem;
+		LastAuto = currItem;
+		currItem->setRedrawBounding();
 		updateEndnotesFrames();
 		return z;
 	}
@@ -5840,10 +5841,11 @@ int ScribusDoc::OnPage(double x2, double  y2)
 		for (uint a = 0; a < docPageCount; ++a)
 		{
 			getBleeds(a, pageBleeds);
-			int x = static_cast<int>(Pages->at(a)->xOffset() - pageBleeds.Left);
-			int y = static_cast<int>(Pages->at(a)->yOffset() - pageBleeds.Top);
-			int w = static_cast<int>(Pages->at(a)->width() + pageBleeds.Left + pageBleeds.Right);
-			int h = static_cast<int>(Pages->at(a)->height() + pageBleeds.Bottom + pageBleeds.Top);
+			ScPage * page = Pages->at(a);
+			int x = static_cast<int>(page->xOffset() - pageBleeds.Left);
+			int y = static_cast<int>(page->yOffset() - pageBleeds.Top);
+			int w = static_cast<int>(page->width() + pageBleeds.Left + pageBleeds.Right);
+			int h = static_cast<int>(page->height() + pageBleeds.Bottom + pageBleeds.Top);
 			if (QRect(x, y, w, h).contains(qRound(x2), qRound(y2)))
 			{
 				retw = static_cast<int>(a);
@@ -5881,10 +5883,11 @@ int ScribusDoc::OnPage(PageItem *currItem)
 		for (uint a = 0; a < docPageCount; ++a)
 		{
 			getBleeds(a, pageBleeds);
-			double x = Pages->at(a)->xOffset() - pageBleeds.Left;
-			double y = Pages->at(a)->yOffset() - pageBleeds.Top;
-			double w = Pages->at(a)->width() + pageBleeds.Left + pageBleeds.Right;
-			double h1 = Pages->at(a)->height() + pageBleeds.Bottom + pageBleeds.Top;
+			ScPage * page = Pages->at(a);
+			double x = page->xOffset() - pageBleeds.Left;
+			double y = page->yOffset() - pageBleeds.Top;
+			double w = page->width() + pageBleeds.Left + pageBleeds.Right;
+			double h1 = page->height() + pageBleeds.Bottom + pageBleeds.Top;
 			QTransform t = currItem->getCombinedTransform();
 			double w2 = currItem->visualWidth();
 			double h2 = currItem->visualHeight();
@@ -6112,7 +6115,8 @@ void ScribusDoc::reformPages(bool moveObjects)
 				if (moveObjects)
 				{
 					oldPg = pageTable[item->OwnPage];
-					item->moveBy(-oldPg.oldXO + Pages->at(oldPg.newPg)->xOffset(), -oldPg.oldYO + Pages->at(oldPg.newPg)->yOffset());
+					ScPage * page = Pages->at(oldPg.newPg);
+					item->moveBy(-oldPg.oldXO + page->xOffset(), -oldPg.oldYO + page->yOffset());
 					item->OwnPage = static_cast<int>(oldPg.newPg);
 				}
 				else
@@ -8923,6 +8927,8 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 			int stop = currItem->itemText.endOfItem(currItem->lastInFrame());
 			if ((appMode == modeEdit) || (appMode == modeEditTable))
 			{
+				if (!currItem->HasSel)
+					currItem->expandParaSelection();
 				start = currItem->itemText.startOfSelection();
 				stop = currItem->itemText.endOfSelection();
 				if (start >= stop)
@@ -9071,6 +9077,8 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			int stop  = currItem->asPathText() ? currItem->itemText.endOfItem(currItem->lastInFrame()) :  currItemTextCount;
 			if ((appMode == modeEdit) || (appMode == modeEditTable))
 			{
+//				if (!currItem->HasSel)
+//					currItem->expandParaSelection();
 				start = currItem->itemText.startOfSelection();
 				stop = currItem->itemText.endOfSelection();
 				if (start >= stop)
@@ -13867,49 +13875,52 @@ void ScribusDoc::getClosestElementBorder(double xin, double yin, double *xout, d
 	QList<PageItem*> item = getAllItems(*Items);
 	for(int i=0;i<item.size();i++)
 	{
-		if(m_Selection->containsItem(item.at(i)) || item.at(i)->OwnPage != OnPage(xin,yin))
+		PageItem * cItem = item.at(i);
+		if(m_Selection->containsItem(cItem) || cItem->OwnPage != OnPage(xin,yin))
 			continue;
-		else if (fabs(item.at(i)->yPos() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->yPos() - yin), i*3);
-		else if (fabs(item.at(i)->yPos() + item.at(i)->height() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->yPos() + item.at(i)->height() - yin), i*3+1);
-		else if (fabs(item.at(i)->yPos() + item.at(i)->height()/2 - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->yPos() + item.at(i)->height()/2 - yin), i*3+2);
+		else if (fabs(cItem->yPos() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(cItem->yPos() - yin), i*3);
+		else if (fabs(cItem->yPos() + cItem->height() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(cItem->yPos() + cItem->height() - yin), i*3+1);
+		else if (fabs(cItem->yPos() + cItem->height()/2 - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(cItem->yPos() + cItem->height()/2 - yin), i*3+2);
 	}
 	if (tmpGuidesSel.count() != 0)
 	{
 		*GyM = tmpGuidesSel.begin().value();
+		PageItem * cItem = item.at(*GyM/3);
 		if(*GyM%3==0)
-			*yout = item.at(*GyM/3)->yPos() - page->yOffset();
+			*yout = cItem->yPos() - page->yOffset();
 		else if(*GyM%3==1)
-			*yout = item.at(*GyM/3)->yPos() + item.at(*GyM/3)->height() -page->yOffset();
+			*yout = cItem->yPos() + cItem->height() -page->yOffset();
 		else if(*GyM%3==2)
-			*yout = item.at(*GyM/3)->yPos() + item.at(*GyM/3)->height()/2 -page->yOffset();
+			*yout = cItem->yPos() + cItem->height()/2 -page->yOffset();
 	}
 	tmpGuidesSel.clear();
 	for(int i=0;i<item.size();i++)
 	{
-		if(m_Selection->containsItem(item.at(i)) || item.at(i)->OwnPage != OnPage(xin,yin))
+		PageItem * cItem = item.at(i);
+		if(m_Selection->containsItem(cItem) || cItem->OwnPage != OnPage(xin,yin))
 			continue;
-		else if (fabs(item.at(i)->xPos() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->xPos() - xin), i*3);
-		else if (fabs(item.at(i)->xPos() + item.at(i)->width() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->xPos() + item.at(i)->width() - xin), i*3+1);
-		else if (fabs(item.at(i)->xPos() + item.at(i)->width()/2 - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->xPos() + item.at(i)->width()/2 - xin), i*3+2);
+		else if (fabs(cItem->xPos() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(cItem->xPos() - xin), i*3);
+		else if (fabs(cItem->xPos() + cItem->width() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(cItem->xPos() + cItem->width() - xin), i*3+1);
+		else if (fabs(cItem->xPos() + cItem->width()/2 - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(cItem->xPos() + cItem->width()/2 - xin), i*3+2);
 	}
 	if (tmpGuidesSel.count() != 0)
 	{
 		*GxM = tmpGuidesSel.begin().value();
+		PageItem * cItem = item.at(*GxM/3);
 		if(*GxM%3==0)
-			*xout = item.at(*GxM/3)->xPos() -page->xOffset();
+			*xout = cItem->xPos() -page->xOffset();
 		else if(*GxM%3==1)
-			*xout = item.at(*GxM/3)->xPos() + item.at(*GxM/3)->width() -page->xOffset();
+			*xout = cItem->xPos() + cItem->width() -page->xOffset();
 		else if(*GxM%3==2)
-			*xout = item.at(*GxM/3)->xPos() + item.at(*GxM/3)->width()/2 -page->xOffset();
+			*xout = cItem->xPos() + cItem->width()/2 -page->xOffset();
 	}
 }
-
 
 void ScribusDoc::SnapToGuides(PageItem *currItem)
 {
@@ -16792,7 +16803,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 	}
 	
 	//update marks for foot/endnotes
-	if (updateNotesMarks)
+	if (updateNotesMarks && !notesList().isEmpty())
 	{
 		//update notes numbers
 		for (int i=0; i < m_docNotesStylesList.count(); ++i)

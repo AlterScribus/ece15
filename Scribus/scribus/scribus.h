@@ -586,7 +586,7 @@ private:
 	int viewUndoPalette;
 
 	bool palettesStatus[10];
-	bool guidesStatus[13];
+	bool guidesStatus[14];
 
 	bool keyrep;
 	/** @brief Tells if an arrow key is pressed down */
