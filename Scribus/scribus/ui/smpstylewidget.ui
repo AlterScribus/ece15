@@ -354,7 +354,7 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="SMScComboBox" name="bulletStrEdit">
+                    <widget class="SMScComboBox" name="bulletStrEdit_">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -386,7 +386,7 @@
                     </spacer>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="bulletCharTableButton">
+                    <widget class="QPushButton" name="bulletCharTableButton_">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>

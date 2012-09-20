@@ -520,7 +520,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	connect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
-	connect(pwidget_->bulletStrEdit, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
+	connect(pwidget_->bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
 	//connect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
 	connect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	connect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumerationLevel(int)));
@@ -606,7 +606,7 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
-	disconnect(pwidget_->bulletStrEdit, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
+	disconnect(pwidget_->bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
 //	disconnect(pwidget_->bulletStrEdit, SIGNAL(activated(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	disconnect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumerationStyle(int)));
@@ -965,6 +965,7 @@ void SMParagraphStyle::slotBullet(bool isOn)
 		selection_[i]->setHasBullet(isOn);
 		if (isOn)
 		{
+			selection_[i]->setBulletStr(pwidget_->bulletStrEdit_->currentText());
 			selection_[i]->setHasDropCap(false);
 			selection_[i]->setHasNum(false);
 		}
