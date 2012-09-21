@@ -1491,7 +1491,8 @@ void PageItem_TextFrame::layout()
 					prefixStr = style.bulletStr();
 				if (style.hasNum())
 					prefixStr = "1. ";
-				hl->prefix = new ScText();
+				hl->prefix = new ScText(*hl);
+				hl->prefix->embedded = 0;
 			}
 			else
 			{

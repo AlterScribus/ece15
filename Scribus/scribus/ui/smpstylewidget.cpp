@@ -52,7 +52,7 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	parEffectOffset_->setSuffix(unitGetSuffixFromIndex(0));
 	
 	fillBulletStrEditCombo();
-	bulletCharTableButton->setIcon(loadIcon("22/insert-table.png"));
+	bulletCharTableButton_->setIcon(loadIcon("22/insert-table.png"));
 	fillNumStyleCombo();
 
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
@@ -98,7 +98,7 @@ void SMPStyleWidget::languageChange()
 	//CB Unneeded, gets in the way of single widget tooltips
 	//dropCapsBox->setToolTip(      tr("Enable or disable drop cap"));
 	dropCapLines_->setToolTip(    tr("Drop Cap Lines"));
-	bulletCharTableButton->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
+	bulletCharTableButton_->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
 	parEffectOffset_->setToolTip(   tr("Paragraph Effects Chars Offset"));
 	parEffectCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
 	alignement_->setToolTip(      tr("Alignment"));
@@ -153,7 +153,7 @@ void SMPStyleWidget::languageChange()
 	numBox->setTitle(tr("Numeration"));
 	dropCapsLineLabel->setText( tr("Lines:"));
 	bulletCharLabel->setText(tr("Bullet Char/String"));
-	bulletCharTableButton->setText(tr("Char Table"));
+	bulletCharTableButton_->setText(tr("Char Table"));
 	numStyleLabel->setText(tr("Numbering Style"));
 	numLevelLabel->setText(tr("Level"));
 	numPrefixLabel->setText(tr("Prefix"));
@@ -168,8 +168,8 @@ void SMPStyleWidget::languageChange()
 		font1.setPointSize(font1.pointSize() *2);
 	else if (font1.pixelSize())
 		font1.setPixelSize(font1.pixelSize() *2);
-	((QComboBox*) bulletStrEdit)->setFont(font1);
-	(bulletStrEdit->lineEdit())->setFont(font1);
+	((QComboBox*) bulletStrEdit_)->setFont(font1);
+	(bulletStrEdit_->lineEdit())->setFont(font1);
 
 	tabsBox->setTitle( tr("Tabulators and Indentation"));
 	tabWidget->setTabText(0, tr("Properties"));
@@ -199,37 +199,13 @@ void SMPStyleWidget::unitChange(double oldRatio, double newRatio, int unitIndex)
 
 void SMPStyleWidget::fillBulletStrEditCombo()
 {
-	bulletStrEdit->clear();
-	bulletStrEdit->addItem(QChar(0x2022));
-	bulletStrEdit->addItem(QChar(0x2023));
-	bulletStrEdit->addItem(QChar(0x25E6));
-	bulletStrEdit->addItem(QChar(0x2611));
-	bulletStrEdit->addItem(QChar(0x2612));
-	bulletStrEdit->addItem(QChar(0x25C6));
-	bulletStrEdit->addItem(QChar(0x25C7));
-	bulletStrEdit->addItem(QChar(0x25C8));
-	bulletStrEdit->addItem(QChar(0x25C9));
-	bulletStrEdit->addItem(QChar(0x25D6));
-	bulletStrEdit->addItem(QChar(0x2605));
-	bulletStrEdit->addItem(QChar(0x2606));
-	bulletStrEdit->addItem(QChar(0x2713));
-	bulletStrEdit->addItem(QChar(0x2717));
-	bulletStrEdit->addItem(QChar(0x274D));
-	bulletStrEdit->addItem(QChar(0x274F));
-	bulletStrEdit->addItem("*");
-	bulletStrEdit->addItem("<");
-	bulletStrEdit->addItem(">");
-	bulletStrEdit->addItem("-");
-	bulletStrEdit->addItem("");
-	bulletStrEdit->addItem(QChar(0x261A));
-	bulletStrEdit->addItem(QChar(0x261B));
-	bulletStrEdit->addItem(QChar(0x261C));
-	bulletStrEdit->addItem(QChar(0x261D));
-	bulletStrEdit->addItem(QChar(0x2539));
-	bulletStrEdit->addItem(QChar(0x253A));
-	bulletStrEdit->addItem(QChar(0x253B));
-	bulletStrEdit->addItem(QChar(0x253C));
-	bulletStrEdit->setMinimumWidth(50);
+	bulletStrEdit_->clear();
+	bulletStrEdit_->addItem(QChar(0x2022));
+	bulletStrEdit_->addItem("*");
+	bulletStrEdit_->addItem("-");
+	bulletStrEdit_->addItem("<");
+	bulletStrEdit_->addItem(">");
+	bulletStrEdit_->setMinimumWidth(50);
 }
 
 void SMPStyleWidget::fillNumStyleCombo()
@@ -355,10 +331,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		parEffectOffset_->setParentValue(parent->parEffectOffset() * unitRatio);
 
 		bulletBox->setChecked(pstyle->hasBullet());
-		bulletStrEdit->setEditText(pstyle->bulletStr());
-		bulletStrEdit->setCurrentItem(0, pstyle->isInhBulletStr());
-		//setWidgetBoldFont(bulletStrEdit, pstyle->isInhBulletStr());
-
+		bulletStrEdit_->setEditText(pstyle->bulletStr());
 		numBox->setChecked(pstyle->hasNum());
 		setWidgetBoldFont(numBox, pstyle->isInhHasNum());
 	}
@@ -379,7 +352,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		disconnect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 		dropCapLines_->setValue(pstyle->dropCapLines());
 		bulletBox->setChecked(pstyle->hasBullet());
-		bulletStrEdit->setEditText(pstyle->bulletStr());
+		bulletStrEdit_->setEditText(pstyle->bulletStr());
 		numBox->setChecked(pstyle->hasNum());
 		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio);
 		alignement_->setStyle(pstyle->alignment());
@@ -630,10 +603,10 @@ void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyl
 		else
 			chStr = pstyles[i]->bulletStr();
 	}
-	bulletStrEdit->setEditText(chStr);
+	bulletStrEdit_->setEditText(chStr);
 
 	connect(bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
-	bulletCharTableButton->setEnabled(true);
+	bulletCharTableButton_->setEnabled(true);
 }
 
 void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
@@ -969,8 +942,8 @@ void SMPStyleWidget::slotDropCap(bool isOn)
 		dropCapLines_->setEnabled(true);
 
 		bulletBox->setChecked(false);
-		bulletStrEdit->setEnabled(false);
-		bulletCharTableButton->setEnabled(false);
+		bulletStrEdit_->setEnabled(false);
+		bulletCharTableButton_->setEnabled(false);
 
 		numBox->setChecked(false);
 		numStyleCombo->setEnabled(false);
@@ -988,8 +961,10 @@ void SMPStyleWidget::slotBullets(bool isOn)
 {
 	if (isOn)
 	{
-		bulletStrEdit->setEnabled(true);
-		bulletCharTableButton->setEnabled(true);
+		bulletStrEdit_->setEnabled(true);
+		if (bulletStrEdit_->currentText().isEmpty())
+			bulletStrEdit_->setEditText(bulletStrEdit_->itemText(0));
+		bulletCharTableButton_->setEnabled(true);
 
 		numBox->setChecked(false);
 		numStyleCombo->setEnabled(false);
@@ -1000,8 +975,8 @@ void SMPStyleWidget::slotBullets(bool isOn)
 	}
 	else
 	{
-		bulletStrEdit->setEnabled(false);
-		bulletCharTableButton->setEnabled(false);
+		bulletStrEdit_->setEnabled(false);
+		bulletCharTableButton_->setEnabled(false);
 	}
 	if (hasParent_)
 		parentParEffectsButton->show();
@@ -1011,7 +986,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 
 void SMPStyleWidget::insertSpecialChars(const QString &chars)
 {
-	bulletStrEdit->lineEdit()->insert(chars);
+	bulletStrEdit_->lineEdit()->insert(chars);
 }
 
 void SMPStyleWidget::slotNumbering(bool isOn)
@@ -1022,8 +997,8 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 		numLevelSpin->setEnabled(true);
 
 		bulletBox->setChecked(false);
-		bulletStrEdit->setEnabled(false);
-		bulletCharTableButton->setEnabled(false);
+		bulletStrEdit_->setEnabled(false);
+		bulletCharTableButton_->setEnabled(false);
 
 		dropCapsBox->setChecked(false);
 		dropCapLines_->setEnabled(false);
@@ -1078,7 +1053,7 @@ void SMPStyleWidget::openEnhanced()
 	m_enhanced = new CharSelectEnhanced(this);
 	m_enhanced->setModal(true);
 	connect(m_enhanced, SIGNAL(insertSpecialChars(const QString &)), this, SLOT(insertSpecialChars(const QString &)));
-	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
+	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton_, SLOT(setChecked(bool)));
 	m_enhanced->setDoc(m_Doc);
 	m_enhanced->setEnabled(true);
 	QString styleName = parEffectCharStyleCombo->currentText();
@@ -1099,13 +1074,13 @@ void SMPStyleWidget::closeEnhanced(bool show)
 	if (!m_enhanced || show)
 		return;
 	disconnect(m_enhanced, SIGNAL(insertSpecialChars(const QString &)), this, SLOT(insertSpecialChars(const QString &)));
-	disconnect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
+	disconnect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton_, SLOT(setChecked(bool)));
 	m_enhanced->close();
 	delete m_enhanced;
 	m_enhanced = NULL;
 }
 
-void SMPStyleWidget::on_bulletCharTableButton_toggled(bool checked)
+void SMPStyleWidget::on_bulletCharTableButton__toggled(bool checked)
 {
 	if (m_enhanced && !checked)
 		closeEnhanced();
