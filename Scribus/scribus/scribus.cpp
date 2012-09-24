@@ -11236,7 +11236,8 @@ bool ScribusMainWindow::stylesShortcutKeyEvent(const QKeyEvent* k)
 
 	QKeySequence key = QKeySequence(keyCode);
 	QString shortcut = key.toString();
-	
+	if (shortcut.isEmpty())
+		return false;
 	//check if shortcut is used by setyles
 	for (int ff = 0; ff < doc->paragraphStyles().count(); ++ff)
 	{
