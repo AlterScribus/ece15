@@ -2239,14 +2239,12 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 {
 	if (w == NULL)
 	{
-		if ( mdiArea->subWindowList().count() == 0)
+		if (mdiArea->subWindowList().count() == 0)
 			ActWin = NULL;
 		return;
 	}
 	if (w->widget() == NULL)
 		return;
-	if (doc!=0 && doc->appMode == modeEditClip)
-		view->requestMode(submodeEndNodeEdit);
 	ScribusWin* scw = dynamic_cast<ScribusWin *>(w->widget());
 	if (!scw)
 		return;
@@ -2255,14 +2253,16 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 		if (!scw->doc()->hasGUI())
 			return;
 	}
-	if(scw == ActWin)
+	if (scw == ActWin)
 		return;
 	ActWin = scw;
-	if (ActWin->doc()==NULL)
+	if (ActWin->doc() == NULL)
 		return;
 
 	if (doc != NULL)
 	{
+		if (doc->appMode == modeEditClip)
+			view->requestMode(submodeEndNodeEdit);
 		if ((HaveDoc) && (doc != ActWin->doc()))
 			outlinePalette->buildReopenVals();
 	}
