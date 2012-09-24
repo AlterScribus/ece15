@@ -1145,10 +1145,10 @@ void getUniqueName(QString &name, QStringList list, QString separator, bool prep
 	name = newName;
 }
 
-void setWidgetBoldFont(QWidget* w, bool wantBold)
+void setWidgetBoldFont(QWidget* w, bool unwantBold)
 {
 	QFont f(w->font());
-	f.setBold(wantBold);
+	f.setBold(!unwantBold);
 	w->setFont(f);
 }
 

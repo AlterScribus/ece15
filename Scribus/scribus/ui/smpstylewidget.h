@@ -70,9 +70,16 @@ private slots:
 	void slotBullets(bool isOn);
 	void insertSpecialChars(const QString &);
 	void slotNumbering(bool isOn);
+	void slotDefaultParEffects();
 	void slotParentParEffects();
+	void slotDefaultClearOnApply();
+	void slotParentClearOnApply();
 	void slotDefaultOpticalMargins();
 	void slotParentOpticalMargins();
+	void slotDefaultAdvancedSettings();
+	void slotParentAdvancedSettings();
+	void slotDefaultWidowsOrphans();
+	void slotParentWidowsOrphans();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
 
 	void on_bulletCharTableButton__toggled(bool checked);
@@ -80,6 +87,9 @@ private slots:
 signals:
 	void useParentParaEffects();
 	void useParentOptMargins();
+	void useParentAdvancedSettings();
+	void useParentWidowsOrphans();
+	void useParentClearOnApply();
 };
 
 #endif

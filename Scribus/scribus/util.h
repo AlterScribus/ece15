@@ -43,7 +43,7 @@ struct CopyPasteBuffer;
 /*! \brief Compare double values by pre-multiplying by 10000 and converting to long if possible.
 If premultiplication does not allow to store result in a long value, perform a standard comparison.
 */
-bool SCRIBUS_API compareDouble(double a, double b);
+bool SCRIBUS_API isEqual(double a, double b);
 
 /*! \brief Returns a sorted list of QStrings - sorted by locale specific rules!
 Uses compareQStrings() as rule. There is STL used!
@@ -154,7 +154,7 @@ void    SCRIBUS_API getDashArray(int dashtype, double linewidth, QVector<float> 
 void SCRIBUS_API printBacktrace(int nFrames);
 void SCRIBUS_API convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, QStack< QList<PageItem*> > *groupStackT = NULL, QList<PageItem *> *target = NULL);
 
-void SCRIBUS_API setWidgetBoldFont(QWidget* w, bool wantBold);
+void SCRIBUS_API setWidgetBoldFont(QWidget* w, bool unwantBold);
 /*!
  *\brief
  * check if name exists in list
