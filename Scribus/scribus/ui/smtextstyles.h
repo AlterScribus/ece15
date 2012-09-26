@@ -91,10 +91,12 @@ private slots:
 	void slotMinSpace();
 	void slotMinGlyphExt();
 	void slotMaxGlyphExt();
+	void slotParentAdvancedSettings();
 	void handleKeepLinesStart();
 	void handleKeepLinesEnd();
 	void handleKeepTogether();
 	void handleKeepWithNext();
+	void slotParentWidowsOrphans();
 	void slotTabRuler();
 	void slotLeftIndent();
 	void slotRightIndent();
@@ -117,6 +119,7 @@ private slots:
 	void slotParentChanged(const QString &parent);
 	void slotCharParentChanged(const QString &parent);
     void slotClearOnApply(bool isOn);
+	void slotParentClearOnApply();
 };
 
 class SMCharacterStyle : public StyleItem

@@ -24,6 +24,7 @@ void SMRadioButton::setChecked(bool val)
 {
 	hasParent_ = false;
 	pValue_ = false;
+	useParentValue_ = false;
 	setFont(false);
 
 	QRadioButton::setChecked(val);
@@ -34,6 +35,7 @@ void SMRadioButton::setChecked(bool val, bool isParentVal)
 	hasParent_ = true;
 	pValue_ = val;
 	setFont(!isParentVal);
+	useParentValue_ = isParentVal;
 
 	QRadioButton::setChecked(val);
 }

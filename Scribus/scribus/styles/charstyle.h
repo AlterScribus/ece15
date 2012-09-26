@@ -167,6 +167,12 @@ public:
 	void reset##attr_NAME() { m_##attr_NAME = attr_DEFAULT; inh_##attr_NAME = true; }
 #include "charstyle.attrdefs.cxx"
 #undef ATTRDEF
+
+	/**parentATTR - set attribute to parent value */
+#define ATTRDEF(attr_TYPE, attr_GETTER, attr_NAME, attr_DEFAULT) \
+	void parent##attr_NAME()  { if (hasParent()) { const CharStyle * parent = dynamic_cast<const CharStyle*> ( parentStyle() ); m_##attr_NAME = parent->m_##attr_NAME; } else {m_##attr_NAME = attr_DEFAULT;} inh_##attr_NAME = true; }
+#include "charstyle.attrdefs.cxx"
+#undef ATTRDEF
 	
 	/** isInherited: returns true if the attribute is inherited */
 #define ATTRDEF(attr_TYPE, attr_GETTER, attr_NAME, attr_DEFAULT) \

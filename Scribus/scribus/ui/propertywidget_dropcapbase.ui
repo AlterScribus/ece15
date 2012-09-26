@@ -6,15 +6,82 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>211</width>
-    <height>142</height>
+    <width>198</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
-   <item row="1" column="0">
+   <item row="12" column="1">
+    <widget class="SMScComboBox" name="numStyleCombo">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="23" column="0" colspan="2">
+    <widget class="CharStyleComboBox" name="peCharStyleCombo"/>
+   </item>
+   <item row="11" column="0">
+    <widget class="SMRadioButton" name="numRadio_">
+     <property name="text">
+      <string>use Numbering</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="SMRadioButton" name="bulletRadio_">
+     <property name="text">
+      <string>use Bullet</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="SMScComboBox" name="bulletStrEdit_">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>50</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="21" column="1">
+    <widget class="ScrSpinBox" name="peOffset_">
+     <property name="minimum">
+      <double>-99.989999999999995</double>
+     </property>
+    </widget>
+   </item>
+   <item row="20" column="0" colspan="2">
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0" colspan="2">
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
     <widget class="QLabel" name="dropCapLinesLabel">
      <property name="toolTip">
       <string>Ensure that first lines of a paragraph won't end up separated from the rest (known as widow/orphan control)</string>
@@ -22,52 +89,168 @@
      <property name="text">
       <string>Height</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="ScrSpinBox" name="dropCapLines">
-     <property name="suffix">
-      <string> lines</string>
-     </property>
-     <property name="maximum">
-      <number>10</number>
+     <property name="buddy">
+      <cstring>dropCapLines</cstring>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="dropCapOffsetLabel">
+   <item row="21" column="0">
+    <widget class="QLabel" name="peOffsetLabel">
      <property name="text">
       <string>Offset</string>
      </property>
+     <property name="buddy">
+      <cstring>peOffset_</cstring>
+     </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QCheckBox" name="dropCapBox">
+   <item row="17" column="0">
+    <widget class="QLineEdit" name="numPrefix"/>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="bulletCharLabel">
+     <property name="text">
+      <string>Bullet Char/String</string>
+     </property>
+     <property name="buddy">
+      <cstring>bulletStrEdit_</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="22" column="0" colspan="2">
+    <widget class="QLabel" name="peCharStyleLabel">
+     <property name="text">
+      <string>Use Character Style</string>
+     </property>
+     <property name="buddy">
+      <cstring>peCharStyleCombo</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="1">
+    <widget class="QLabel" name="numSuffixLabel">
+     <property name="text">
+      <string>Suffix</string>
+     </property>
+     <property name="buddy">
+      <cstring>numSuffix</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <widget class="QLabel" name="numPrefixLabel">
+     <property name="text">
+      <string>Prefix</string>
+     </property>
+     <property name="buddy">
+      <cstring>numPrefix</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="numStyleLabel">
+     <property name="text">
+      <string>Numbering Style</string>
+     </property>
+     <property name="buddy">
+      <cstring>numStyleCombo</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="0">
+    <widget class="QLabel" name="numLevelLabel">
+     <property name="text">
+      <string>Level</string>
+     </property>
+     <property name="buddy">
+      <cstring>numLevelSpin</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="SMRadioButton" name="dropCapRadio_">
      <property name="text">
       <string>use Drop Caps</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QLabel" name="dropCapCharStyleLabel">
+   <item row="15" column="1">
+    <widget class="SMSpinBox" name="numLevelSpin"/>
+   </item>
+   <item row="17" column="1">
+    <widget class="QLineEdit" name="numSuffix"/>
+   </item>
+   <item row="8" column="1">
+    <widget class="QPushButton" name="bulletCharTableButton_">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
-      <string>Use Character Style</string>
+      <string>Char Table</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="CharStyleComboBox" name="dropCapCharStyleCombo"/>
-   </item>
-   <item row="2" column="1">
-    <widget class="ScrSpinBox" name="dropCapOffset">
+   <item row="5" column="1">
+    <widget class="ScrSpinBox" name="dropCapLines">
+     <property name="suffix">
+      <string> lines</string>
+     </property>
+     <property name="decimals">
+      <number>0</number>
+     </property>
      <property name="minimum">
-      <double>-99.989999999999995</double>
+      <double>2.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>10.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QRadioButton" name="peOffRadio">
+     <property name="text">
+      <string>No Paragraph Effects</string>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>SMScComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ui/smsccombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>ui/smspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMRadioButton</class>
+   <extends>QRadioButton</extends>
+   <header>ui/smradiobutton.h</header>
+  </customwidget>
   <customwidget>
    <class>ScrSpinBox</class>
    <extends>QDoubleSpinBox</extends>

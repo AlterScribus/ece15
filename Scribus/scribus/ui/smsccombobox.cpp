@@ -19,16 +19,17 @@ SMScComboBox::SMScComboBox(QWidget *parent)
 
 void SMScComboBox::setCurrentItem(int i)
 {
-	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	setFont(false);
 	hasParent_ = false;
 	pItem_ = 0;
 	ScComboBox::setCurrentIndex(i);
+	connect(this, SIGNAL(), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItem(int i, bool isParentValue)
 {
-	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	hasParent_ = true;
 	pItem_ = i;
 	setFont(!isParentValue);
@@ -39,12 +40,12 @@ void SMScComboBox::setCurrentItem(int i, bool isParentValue)
 	}
 
 	ScComboBox::setCurrentIndex(i);
-	connect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItemByData(int i)
 {
-	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	setFont(false);
 	hasParent_ = false;
 	pItem_ = 0;
@@ -53,12 +54,12 @@ void SMScComboBox::setCurrentItemByData(int i)
 		if(itemData(idx).toInt() == i)
 			ScComboBox::setCurrentIndex(idx);
 	}
-	connect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItemByData(int i, bool isParentValue)
 {
-	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	hasParent_ = true;
 	setFont(!isParentValue);
 	if (!isParentValue)
@@ -75,12 +76,12 @@ void SMScComboBox::setCurrentItemByData(int i, bool isParentValue)
 			pItem_ = idx;
 		}
 	}
-	connect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItemByData(double d)
 {
-	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	setFont(false);
 	hasParent_ = false;
 	pItem_ = 0;
@@ -89,12 +90,12 @@ void SMScComboBox::setCurrentItemByData(double d)
 		if(itemData(idx).toDouble() == d)
 			ScComboBox::setCurrentIndex(idx);
 	}
-	connect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItemByData(double d, bool isParentValue)
 {
-	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	hasParent_ = true;
 	setFont(!isParentValue);
 	if (!isParentValue)
@@ -111,7 +112,7 @@ void SMScComboBox::setCurrentItemByData(double d, bool isParentValue)
 			pItem_ = idx;
 		}
 	}
-	connect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 int SMScComboBox::getItemIndexForData(int i)
@@ -138,8 +139,6 @@ int SMScComboBox::getItemIndexForData(double d)
 	return 0;
 }
 
-
-
 void SMScComboBox::setParentItem(int i)
 {
 	hasParent_ = true;
@@ -149,7 +148,6 @@ void SMScComboBox::setParentItem(int i)
 bool SMScComboBox::useParentValue()
 {
 	bool ret = false;
-
 	if (useParentValue_ && hasParent_)
 	{
 		ret = currentIndex() == (count() - 1);
@@ -161,7 +159,6 @@ bool SMScComboBox::useParentValue()
 			useParentValue_ = false;
 		}
 	}
-
 	return ret;
 }
 
@@ -177,10 +174,13 @@ void SMScComboBox::currentChanged()
 	if (hasParent_ && !useParentValue_)
 	{
 		setFont(true);
-		addItem( tr("Use Parent Value"));
+		addItem(tr("Use Parent Value"));
 		useParentValue_ = true;
 	}
+	else
+	{
+		setFont(false);
+		if (itemText(count()-1) == tr("Use Parent Value"))
+			removeItem(count()-1);
+	}
 }
-
-
-

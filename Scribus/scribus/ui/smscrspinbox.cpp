@@ -70,8 +70,14 @@ void SMScrSpinBox::setParentValue(double val)
 
 bool SMScrSpinBox::useParentValue()
 {
-	bool ret = useParentValue_;
-	useParentValue_ = false;
+	bool ret = false;
+	if (useParentValue_ && hasParent_)
+	{
+		ret = true;
+		setFont(false);
+		setValue(pValue_, true);
+		useParentValue_ = false;
+	}
 	return ret;
 }
 

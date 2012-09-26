@@ -2583,8 +2583,6 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	static const QString HyphenationMode("HyphenationMode");
 	if (attrs.hasAttribute(HyphenationMode))
 		newStyle.setHyphenationMode(attrs.valueAsInt(HyphenationMode));
-	else
-		newStyle.setHyphenationMode(ParagraphStyle::HyphModeNotSet);
 
 	static const QString MinWordTrack("MinWordTrack");
 	if (attrs.hasAttribute(MinWordTrack))

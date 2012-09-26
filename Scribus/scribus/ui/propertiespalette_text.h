@@ -135,8 +135,8 @@ protected:
 	PropertyWidget_Orphans* orphanBox;
 	QTreeWidgetItem* orphanItem;
 
-	PropertyWidget_DropCap* dropcapsBox;
-	QTreeWidgetItem* dropcapsItem;
+	PropertyWidget_DropCap* parEffectsBox;
+	QTreeWidgetItem* parEffectsItem;
 
 	PropertyWidget_TextMargins* marginsBox;
 	QTreeWidgetItem* marginsItem;

@@ -128,7 +128,13 @@ public:
 	void reset##attr_NAME() { m_##attr_NAME = attr_DEFAULT; inh_##attr_NAME = true; }
 #include "paragraphstyle.attrdefs.cxx"
 #undef ATTRDEF
-	
+
+	/**parentATTR - set attribute to parent value */
+#define ATTRDEF(attr_TYPE, attr_GETTER, attr_NAME, attr_DEFAULT) \
+	void parent##attr_NAME()  { if (hasParent()) { const ParagraphStyle * parent = dynamic_cast<const ParagraphStyle*> ( parentStyle() ); m_##attr_NAME = parent->m_##attr_NAME; } else {m_##attr_NAME = attr_DEFAULT;} inh_##attr_NAME = true; }
+#include "paragraphstyle.attrdefs.cxx"
+#undef ATTRDEF
+
 	/** isInherited: returns true if the attriute is inherited */
 #define ATTRDEF(attr_TYPE, attr_GETTER, attr_NAME, attr_DEFAULT) \
 	bool isInh##attr_NAME() const { return inh_##attr_NAME; }

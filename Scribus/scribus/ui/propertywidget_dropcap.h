@@ -45,15 +45,45 @@ public slots:
 	void languageChange();
 	void unitChange();
 
-	void handleDropCapUse();
+	void handleParEffectUse();
+	void handleBulletStr(QString);
 	void handleDropCapLines();
-	void handleDropCapOffset();
-	void handleDropCapCharStyle();
+	void handleNumStyle(int);
+	void handleNumLevel(int);
+	void handlePEOffset();
+	void handlePECharStyle();
 
 private:
 	void connectSignals();
 	void disconnectSignals();
 	void enableDropCap(bool);
+	void enableBullet(bool);
+	void enableNum(bool);
+	void enableParEffect(bool);
+	void fillBulletStrEditCombo()
+	{
+		bulletStrEdit_->clear();
+		bulletStrEdit_->addItem(QChar(0x2022));
+		bulletStrEdit_->addItem("*");
+		bulletStrEdit_->addItem("-");
+		bulletStrEdit_->addItem("<");
+		bulletStrEdit_->addItem(">");
+		bulletStrEdit_->setMinimumWidth(50);
+		bulletStrEdit_->setEditText(QChar(0x2022));
+	}
+	
+	void fillNumStyleCombo()
+	{
+		numStyleCombo->clear();
+		numStyleCombo->addItem("1_2_3");
+		numStyleCombo->addItem("i_ii_iii");
+		numStyleCombo->addItem("I_II_III");
+		numStyleCombo->addItem("a_b_c");
+		numStyleCombo->addItem("i_ii_iii");
+		numStyleCombo->addItem("A_B_C");
+		numStyleCombo->addItem("*");
+	}
+	
 };
 
 #endif // PROPERTYWIDGET_DropCap_H

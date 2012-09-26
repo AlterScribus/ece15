@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>792</width>
-    <height>755</height>
+    <width>766</width>
+    <height>703</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -249,7 +249,10 @@
                 <item>
                  <widget class="QLabel" name="parEffectCharStyleComboLabel">
                   <property name="text">
-                   <string>Character Style for Effect:</string>
+                   <string>Use Char Style:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>parEffectCharStyleCombo</cstring>
                   </property>
                  </widget>
                 </item>
@@ -360,6 +363,9 @@
                      <property name="text">
                       <string>Bullet Char/String</string>
                      </property>
+                     <property name="buddy">
+                      <cstring>bulletStrEdit_</cstring>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -436,6 +442,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>422</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="title">
                  <string>Numeration</string>
                 </property>
@@ -451,7 +463,7 @@
                    <item>
                     <widget class="QLabel" name="numStyleLabel">
                      <property name="text">
-                      <string>Numbering Style</string>
+                      <string>Style</string>
                      </property>
                      <property name="buddy">
                       <cstring>numStyleCombo</cstring>
@@ -473,6 +485,9 @@
                      <property name="text">
                       <string>Level</string>
                      </property>
+                     <property name="buddy">
+                      <cstring>numLevelSpin</cstring>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -483,6 +498,9 @@
                      <property name="text">
                       <string>Prefix</string>
                      </property>
+                     <property name="buddy">
+                      <cstring>numPrefix</cstring>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -492,6 +510,9 @@
                     <widget class="QLabel" name="numSuffixLabel">
                      <property name="text">
                       <string>Suffix</string>
+                     </property>
+                     <property name="buddy">
+                      <cstring>numSuffix</cstring>
                      </property>
                     </widget>
                    </item>
@@ -571,6 +592,9 @@
                <property name="text">
                 <string>Hyphenation Mode</string>
                </property>
+               <property name="buddy">
+                <cstring>hyphenationMode</cstring>
+               </property>
               </widget>
              </item>
              <item>
@@ -621,6 +645,19 @@
                </property>
               </widget>
              </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
             </layout>
            </item>
            <item>
@@ -658,10 +695,7 @@
               <string>Optical Margins</string>
              </property>
              <layout class="QFormLayout" name="formLayout">
-              <property name="fieldGrowthPolicy">
-               <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-              </property>
-              <item row="0" column="1">
+              <item row="0" column="0">
                <widget class="SMRadioButton" name="optMarginRadioNone">
                 <property name="text">
                  <string>None</string>
@@ -671,44 +705,40 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
+              <item row="0" column="1">
                <widget class="SMRadioButton" name="optMarginRadioBoth">
                 <property name="text">
                  <string>Both Sides</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="1" column="0">
                <widget class="SMRadioButton" name="optMarginRadioLeft">
                 <property name="text">
                  <string>Left Only</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
+              <item row="1" column="1">
                <widget class="SMRadioButton" name="optMarginRadioRight">
                 <property name="text">
                  <string>Right Only</string>
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <layout class="QHBoxLayout" name="horizontalLayout_4">
-                <item>
-                 <widget class="QPushButton" name="optMarginDefaultButton">
-                  <property name="text">
-                   <string>Reset to Default</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="optMarginParentButton">
-                  <property name="text">
-                   <string>Use Parent Value</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="optMarginDefaultButton">
+                <property name="text">
+                 <string>Reset to Default</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="optMarginParentButton">
+                <property name="text">
+                 <string>Use Parent Value</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -733,8 +763,8 @@
              <property name="title">
               <string>Advanced Settings</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item>
                <layout class="QHBoxLayout" name="horizontalLayout">
                 <property name="sizeConstraint">
                  <enum>QLayout::SetDefaultConstraint</enum>
@@ -786,14 +816,14 @@
                 </item>
                </layout>
               </item>
-              <item row="1" column="0">
+              <item>
                <widget class="QLabel" name="glyphExtensionLabel">
                 <property name="text">
                  <string>TextLabel</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_6">
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -845,7 +875,7 @@
                 </item>
                </layout>
               </item>
-              <item row="3" column="0">
+              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
                  <widget class="QPushButton" name="advSetDefaultButton">
@@ -896,6 +926,9 @@
                 <property name="text">
                  <string>Don't separate first</string>
                 </property>
+                <property name="buddy">
+                 <cstring>keepLinesStart</cstring>
+                </property>
                </widget>
               </item>
               <item row="2" column="0" colspan="2">
@@ -927,9 +960,12 @@
                 <property name="text">
                  <string>Don't separate last</string>
                 </property>
+                <property name="buddy">
+                 <cstring>keepLinesEnd</cstring>
+                </property>
                </widget>
               </item>
-              <item row="4" column="0">
+              <item row="4" column="0" colspan="2">
                <layout class="QHBoxLayout" name="horizontalLayout_11">
                 <item>
                  <widget class="QPushButton" name="owDefaultButton">
@@ -1073,6 +1109,16 @@
    <header>ui/smsccombobox.h</header>
   </customwidget>
   <customwidget>
+   <class>SMSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>ui/smspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMRadioButton</class>
+   <extends>QRadioButton</extends>
+   <header>ui/smradiobutton.h</header>
+  </customwidget>
+  <customwidget>
    <class>SMScrSpinBox</class>
    <extends>QSpinBox</extends>
    <header>ui/smscrspinbox.h</header>
@@ -1082,11 +1128,6 @@
    <extends>QWidget</extends>
    <header>ui/smalignselect.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SMSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>ui/smspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>SMTabruler</class>
@@ -1099,11 +1140,6 @@
    <extends>QWidget</extends>
    <header>ui/smcstylewidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SMRadioButton</class>
-   <extends>QRadioButton</extends>
-   <header>ui/smradiobutton.h</header>
   </customwidget>
   <customwidget>
    <class>SMCheckBox</class>

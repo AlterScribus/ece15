@@ -45,8 +45,14 @@ void SMCheckBox::setParentValue(bool val)
 
 bool SMCheckBox::useParentValue()
 {
-	bool ret = useParentValue_;
-	useParentValue_ = false;
+	bool ret = false;
+	if (useParentValue_ && hasParent_)
+	{
+		ret = true;
+		setFont(false);
+		setChecked(pValue_, true);
+		useParentValue_ = false;
+	}
 	return ret;
 }
 

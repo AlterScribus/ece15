@@ -41,7 +41,6 @@ ParagraphStyle::ParagraphStyle() : Style(), cstyleContext(NULL), cstyleContextIs
 	m_isDefaultStyle=false;
 }
 
-
 ParagraphStyle::ParagraphStyle(const ParagraphStyle& other) : Style(other), cstyleContext(NULL), cstyleContextIsInh(other.cstyleContextIsInh), cstyle(other.charStyle())
 {
 	if (cstyleContextIsInh)
@@ -63,7 +62,6 @@ ParagraphStyle::~ParagraphStyle()
 {
 //	qDebug() << QString("~ParagraphStyle %1").arg(reinterpret_cast<uint>(this));
 }
-	
 
 QString ParagraphStyle::displayName() const
 {
@@ -77,7 +75,6 @@ QString ParagraphStyle::displayName() const
 		return parentStyle()->displayName() + "+";
 }
 
-
 bool ParagraphStyle::equiv(const Style& other) const
 {
 	other.validate();
@@ -90,26 +87,7 @@ bool ParagraphStyle::equiv(const Style& other) const
 #include "paragraphstyle.attrdefs.cxx"
 #undef ATTRDEF
 		;
-}	
-
-
-/* hm... av
-static void updateAutoLinespacing(ParagraphStyle& that)
-{
-	switch (that.lineSpacingMode())
-	{
-		case 0: 
-			that.setLineSpacing(((that.charStyle().fontSize() / 10.0) * static_cast<qreal>(typographicSettings.autoLineSpacing) / 100));
-			break;
-		case 1:
-			that.setLineSpacing(that.charStyle().font().height(size));
-			break;
-		case 2:
-			that.setLineSpacing(typographicSettings.valueBaseGrid-1);
-			break;
-	}
 }
-*/
 
 ParagraphStyle& ParagraphStyle::operator=(const ParagraphStyle& other) 
 {
@@ -130,7 +108,7 @@ ParagraphStyle& ParagraphStyle::operator=(const ParagraphStyle& other)
 	{
 		cstyle.setContext(other.charStyle().context());
 	}
-	
+
 #define ATTRDEF(attr_TYPE, attr_GETTER, attr_NAME, attr_DEFAULT) \
 	m_##attr_NAME = other.m_##attr_NAME; \
 	inh_##attr_NAME = other.inh_##attr_NAME;
@@ -138,7 +116,6 @@ ParagraphStyle& ParagraphStyle::operator=(const ParagraphStyle& other)
 #undef ATTRDEF
 	return *this;
 }
-
 
 void ParagraphStyle::setContext(const StyleContext* context)
 {
@@ -154,7 +131,6 @@ void ParagraphStyle::repairImplicitCharStyleInheritance()
 		cstyle.setContext(newParent ? newParent->charStyleContext() : NULL);
 	}
 }
-
 
 void ParagraphStyle::breakImplicitCharStyleInheritance(bool val)
 { 
@@ -183,8 +159,6 @@ void ParagraphStyle::update(const StyleContext* context)
 	}
 }
 
-
-
 void ParagraphStyle::applyStyle(const ParagraphStyle& other) 
 {
 	if (other.hasParent() && (other.parent() != Style::INHERIT_PARENT))
@@ -201,7 +175,6 @@ void ParagraphStyle::applyStyle(const ParagraphStyle& other)
 #include "paragraphstyle.attrdefs.cxx"
 #undef ATTRDEF
 }
-
 
 void ParagraphStyle::eraseStyle(const ParagraphStyle& other) 
 {
@@ -230,14 +203,12 @@ void ParagraphStyle::setStyle(const ParagraphStyle & other)
 #undef ATTRDEF
 }
 
-
 void ParagraphStyle::getNamedResources(ResourceCollection& lists) const
 {
 	for (const Style *sty = parentStyle(); sty != NULL; sty = sty->parentStyle())
 		lists.collectStyle(sty->name());
 	charStyle().getNamedResources(lists);
 }
-
 
 void ParagraphStyle::replaceNamedResources(ResourceCollection& newNames)
 {
@@ -251,12 +222,10 @@ void ParagraphStyle::replaceNamedResources(ResourceCollection& newNames)
 	cstyle.replaceNamedResources(newNames);
 }
 
-
 static QString toXMLString(ParagraphStyle::AlignmentType val)
 {
 	return QString::number(static_cast<int>(val));
 }
-
 
 static QString toXMLString(const QList<ParagraphStyle::TabRecord> & )
 {
@@ -309,8 +278,6 @@ class SetCharStyle_body : public desaxe::Action_body
 class SetCharStyle : public desaxe::MakeAction<SetCharStyle_body>
 {};
 
-
-
 class SetTabStop_body : public desaxe::Action_body
 {
 	void begin (const Xml_string& /*tagname*/, Xml_attr attr)
@@ -329,22 +296,17 @@ class SetTabStop_body : public desaxe::Action_body
 class SetTabStop : public desaxe::MakeAction<SetTabStop_body>
 {};
 
-
-
-
 template<>
 ParagraphStyle::AlignmentType parse<ParagraphStyle::AlignmentType>(const Xml_string& str)
 {
 	return parseEnum<ParagraphStyle::AlignmentType>(str);
 }
 
-
 template<>
 ParagraphStyle::LineSpacingMode parse<ParagraphStyle::LineSpacingMode>(const Xml_string& str)
 {
 	return parseEnum<ParagraphStyle::LineSpacingMode>(str);
 }
-
 
 typedef QList<ParagraphStyle::TabRecord> Tablist;
 
@@ -353,7 +315,6 @@ Tablist parse<Tablist>(const Xml_string& str)
 {
 	return Tablist();
 }
-
 
 using namespace desaxe;
 
