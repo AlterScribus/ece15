@@ -1183,11 +1183,11 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 	if (currItem->itemText.length() != 0)
 	{
 //		int ChPos = qMin(currItem->CPos, static_cast<int>(currItem->itemText.length()-1));
-		const ParagraphStyle& currPStyle( (doc->appMode == modeEdit) ? currItem->currentStyle() : currItem->itemText.defaultStyle());
+		const ParagraphStyle& currPStyle( (doc->appMode == modeEdit) ? currItem->currentStyle(false) : currItem->itemText.defaultStyle());
 		setAlignmentValue(currPStyle.alignment());
 		propertiesPalette->textPal->displayParStyle(currPStyle.parent());
 		propertiesPalette->textPal->displayCharStyle(currItem->currentCharStyle().parent());
-		doc->currentStyle = currItem->currentStyle();
+		doc->currentStyle = currPStyle;
 		// #8112 : do not use operator= here as it does not update style features
 		doc->currentStyle.charStyle().setStyle( currItem->currentCharStyle() );
 		emit TextStyle(doc->currentStyle);

@@ -1656,7 +1656,7 @@ bool ScribusView::slotSetCurs(int x, int y)
 			Doc->currentStyle.charStyle() = textFrame->itemText.charStyle(pos);
 			emit ItemCharStyle(Doc->currentStyle.charStyle());
 			emit ItemTextEffects(Doc->currentStyle.charStyle().effects());
-			emit ItemTextAlign(textFrame->itemText.paragraphStyle(pos).alignment());
+			emit ItemTextAlign(textFrame->itemText.paragraphStyle(pos, false).alignment());
 			return true;
 		}
 		else

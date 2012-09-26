@@ -373,13 +373,13 @@ public:
 	/// tests if a character is displayed by this frame
 	bool frameDisplays(int textpos) const;
 	/// returns the style at the current charpos
-	const ParagraphStyle& currentStyle() const;
+	const ParagraphStyle& currentStyle(bool useTrailStyle=true) const;
 	/// returns the style at the current charpos
 	ParagraphStyle& changeCurrentStyle();
 	/// returns the style at the current charpos
 	const CharStyle& currentCharStyle() const;
 	/// Return current text properties (current char + paragraph properties)
-	void currentTextProps(ParagraphStyle& parStyle) const;
+	void currentTextProps(ParagraphStyle& parStyle, bool useTrailStyle=true) const;
 	// deprecated:
 	double layoutGlyphs(const CharStyle& style, const QString& chars, GlyphLayout& layout);
 	void SetQColor(QColor *tmp, QString farbe, double shad);

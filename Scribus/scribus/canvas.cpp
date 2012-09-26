@@ -2496,19 +2496,20 @@ void Canvas::setupEditHRuler(PageItem * item, bool forceAndReset)
 	}
 	
 	double controlHash(0.0);
+	const ParagraphStyle& currStyle = item->currentStyle();
 	controlHash = item->xPos() 
 			+ item->yPos()				* 1.0
 			+ item->ColGap 				* 2.0
 			+ item->Cols 				* 3.0
 			+ item->textToFrameDistLeft()		* 4.0 
 			+ item->textToFrameDistRight()		* 5.0
-			+ item->currentStyle().firstIndent()	* 6.0
-			+ item->currentStyle().leftMargin()	* 7.0
+			+ currStyle.firstIndent()	* 6.0
+			+ currStyle.leftMargin()	* 7.0
 			+ item->width()				* 8.0
-			+ item->currentStyle().rightMargin()	* 9.0
+			+ currStyle.rightMargin()	* 9.0
 			+ (item->imageFlippedH() ? 32.32 : 13.13);
 	
-	foreach(const ParagraphStyle::TabRecord& tabrec, item->currentStyle().tabValues())
+	foreach(const ParagraphStyle::TabRecord& tabrec, currStyle.tabValues())
 	{
 		controlHash += tabrec.tabPosition;
 	}

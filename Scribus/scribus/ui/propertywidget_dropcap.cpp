@@ -30,6 +30,7 @@ PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent)
 	peCharStyleCombo->updateFormatList();
 	fillBulletStrEditCombo();
 	fillNumStyleCombo();
+	peOffRadio->setChecked(true);
 }
 
 void PropertyWidget_DropCap::setMainWindow(ScribusMainWindow* mw)
@@ -84,9 +85,9 @@ void PropertyWidget_DropCap::setCurrentItem(PageItem *item)
 	{
 		ParagraphStyle parStyle =  m_item->itemText.defaultStyle();
 		if (m_doc->appMode == modeEdit)
-			m_item->currentTextProps(parStyle);
+			m_item->currentTextProps(parStyle, false);
 		else if (m_doc->appMode == modeEditTable)
-			m_item->asTable()->activeCell().textFrame()->currentTextProps(parStyle);
+			m_item->asTable()->activeCell().textFrame()->currentTextProps(parStyle, false);
 		updateStyle(parStyle);
 
 		connectSignals();
@@ -133,11 +134,10 @@ void PropertyWidget_DropCap::enableBullet(bool enable)
 {
 	bulletRadio_->setChecked(enable);
 	bulletStrEdit_->setEnabled(enable);
-	if (bulletStrEdit_->currentText().isEmpty())
-		bulletStrEdit_->setEditText(bulletStrEdit_->itemText(0));
 	bulletCharTableButton_->setEnabled(enable);
 	if (enable)
 	{
+		fillBulletStrEditCombo();
 		enableDropCap(false);
 		enableNum(false);
 	}
@@ -151,12 +151,15 @@ void PropertyWidget_DropCap::enableNum(bool enable)
 	numStyleCombo->setEnabled(enable);
 	if (enable)
 	{
+		fillNumStyleCombo();
 		enableBullet(false);
 		enableDropCap(false);
 	}
 }
 void PropertyWidget_DropCap::enableParEffect(bool enable)
 {
+	if (!enable && peOffRadio->isChecked())
+		return;
 	peOffRadio->setChecked(!enable);
 	peOffset_->setEnabled(enable);
 	peCharStyleCombo->setEnabled(enable);
@@ -170,20 +173,25 @@ void PropertyWidget_DropCap::enableParEffect(bool enable)
 
 void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 {
+	if (peOffRadio->isChecked() && !newCurrent.hasBullet() && !newCurrent.hasDropCap() && !newCurrent.hasNum())
+		return;
 	disconnectSignals ();
 	if (newCurrent.hasDropCap())
 	{
-		enableDropCap(true);
+		if (!dropCapRadio_->isChecked())
+			enableDropCap(true);
 		dropCapLines->setValue(newCurrent.dropCapLines());
 	}
 	else if (newCurrent.hasBullet())
 	{
-		enableBullet(true);
+		if (!bulletRadio_->isChecked())
+			enableBullet(true);
 		bulletStrEdit_->setEditText(newCurrent.bulletStr());
 	}
 	else if (newCurrent.hasNum())
 	{
-		enableNum(true);
+		if (!numRadio_->isChecked())
+			enableNum(true);
 		numStyleCombo->setCurrentIndex(newCurrent.numStyle());
 		numPrefix->setText(newCurrent.numPrefix());
 		numSuffix->setText(newCurrent.numSuffix());
@@ -287,7 +295,10 @@ void PropertyWidget_DropCap::handleParEffectUse()
 	{
 		enableBullet(true);
 		newStyle.setHasBullet(true);
-		newStyle.setBulletStr(bulletStrEdit_->currentText());
+		QString bStr = bulletStrEdit_->currentText();
+		if (bStr.isEmpty())
+			bStr = QChar(0x2022);
+		newStyle.setBulletStr(bStr);
 		newStyle.setHasNum(false);
 		newStyle.setHasDropCap(false);
 	}
@@ -321,10 +332,7 @@ void PropertyWidget_DropCap::handleBulletStr(QString bulStr)
 		return;
 	ParagraphStyle newStyle;
 	if (bulStr.isEmpty())
-	{
-		bulStr = bulletStrEdit_->itemText(0);
-		bulletStrEdit_->setEditText(bulStr);
-	}
+		bulStr = QChar(0x2022);
 	newStyle.setBulletStr(bulStr);
 	PageItem *item = m_doc->m_Selection->itemAt(0);
 	if (m_doc->appMode == modeEditTable)

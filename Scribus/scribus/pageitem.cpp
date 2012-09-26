@@ -1442,7 +1442,7 @@ void PageItem::unlinkWithText(bool cutText)
 bool PageItem::frameDisplays(int textpos) const
 {
 #ifndef NLS_PROTO
-	return 0 <= textpos && textpos < signed(MaxChars) &&  textpos < itemText.length();
+	return (0 <= textpos) && (((textpos < signed(MaxChars)) && (textpos < itemText.length())) || ((textpos >= signed(MaxChars)) && (textpos >= itemText.length())));
 #else
 	return true; // FIXME:NLS
 #endif
@@ -1450,10 +1450,10 @@ bool PageItem::frameDisplays(int textpos) const
 
 
 /// returns the style at the current charpos
-const ParagraphStyle& PageItem::currentStyle() const
+const ParagraphStyle& PageItem::currentStyle(bool useTrailStyle) const
 {
 	if (frameDisplays(itemText.cursorPosition()))
-		return itemText.paragraphStyle(itemText.cursorPosition());
+		return itemText.paragraphStyle(itemText.cursorPosition(), useTrailStyle);
 	else
 		return itemText.defaultStyle();
 }
@@ -1476,10 +1476,12 @@ const CharStyle& PageItem::currentCharStyle() const
 		return itemText.defaultStyle().charStyle();
 }
 
-void PageItem::currentTextProps(ParagraphStyle& parStyle) const
+void PageItem::currentTextProps(ParagraphStyle& parStyle, bool useTrailStyle) const
 {
-	parStyle = this->currentStyle();
+	parStyle = this->currentStyle(useTrailStyle);
 	int position = itemText.cursorPosition();
+	if (!useTrailStyle && position >= itemText.length() && position > 0)
+		position--;
 	if (itemText.lengthOfSelection() > 0)
 		position = qMin(qMax(itemText.endOfSelection() - 1, 0), qMax(position, itemText.startOfSelection()));
 
