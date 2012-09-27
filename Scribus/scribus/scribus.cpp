@@ -1183,7 +1183,7 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 	if (currItem->itemText.length() != 0)
 	{
 //		int ChPos = qMin(currItem->CPos, static_cast<int>(currItem->itemText.length()-1));
-		const ParagraphStyle& currPStyle( (doc->appMode == modeEdit) ? currItem->currentStyle(false) : currItem->itemText.defaultStyle());
+		const ParagraphStyle& currPStyle( (doc->appMode == modeEdit) ? currItem->currentStyle() : currItem->itemText.defaultStyle());
 		setAlignmentValue(currPStyle.alignment());
 		propertiesPalette->textPal->displayParStyle(currPStyle.parent());
 		propertiesPalette->textPal->displayCharStyle(currItem->currentCharStyle().parent());

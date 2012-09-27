@@ -23,10 +23,9 @@ public:
 	PropertyWidget_Distance(QWidget* parent);
 	~PropertyWidget_Distance() {};
 
-protected:
 	void connectSignals();
 	void disconnectSignals();
-
+protected:
 	PageItem *         m_item;
 	ScribusMainWindow* m_ScMW;
 

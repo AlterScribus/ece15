@@ -835,7 +835,7 @@ const ParagraphStyle & StoryText::paragraphStyle() const
 	return paragraphStyle(d->cursorPosition);
 }
 
-const ParagraphStyle & StoryText::paragraphStyle(int pos, bool useTrailStyle) const
+const ParagraphStyle & StoryText::paragraphStyle(int pos) const
 {
 	if (pos < 0)
 		pos += length();
@@ -853,8 +853,6 @@ const ParagraphStyle & StoryText::paragraphStyle(int pos, bool useTrailStyle) co
 	while (pos < length() && that->d->at(pos)->ch != SpecialChars::PARSEP) {
 		++pos;
 	}
-	if ((pos >=length()) && !useTrailStyle && (pos > 0))
-		pos--;
 	if (pos >= length()) {
 		return that->d->trailingStyle;
 	}

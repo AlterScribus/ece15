@@ -54,7 +54,9 @@ public:
                          // When user releases the mouse button or arrow key, changes must be checked
                          // and if in ScribusView a groupTransaction has been started it must be also
                          // commmited
-
+	
+	void connectSignals(bool widgetsToo=false);
+	void disconnectSignals(bool widgetsToo=false);
 protected:
 
 	bool   m_haveDoc;
@@ -68,6 +70,7 @@ protected:
 
 private:
 	PageItem* currentItemFromSelection();
+	ParagraphStyle oldParagraphStyle;
 	
 public slots:
 	void setMainWindow(ScribusMainWindow *mw);

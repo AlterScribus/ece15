@@ -55,6 +55,7 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	m_haveDoc = false;
 	m_haveItem = false;
 	m_unitRatio = 1.0;
+	oldParagraphStyle = ParagraphStyle();
 
 
 	setupUi(this);
@@ -102,19 +103,56 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	
 	languageChange();
 
+	connectSignals();
+
+	m_haveItem = false;
+	setEnabled(false);
+}
+
+void PropertiesPalette_Text::connectSignals(bool widgetsToo)
+{
 	connect(lineSpacing   , SIGNAL(valueChanged(double)), this, SLOT(handleLineSpacing()));
 	connect(fonts         , SIGNAL(fontSelected(QString )), this, SLOT(handleTextFont(QString)));
 	connect(fontSize      , SIGNAL(valueChanged(double)), this, SLOT(handleFontSize()));
 	connect(textAlignment , SIGNAL(State(int))   , this, SLOT(handleAlignement(int)));
 	connect(charStyleClear, SIGNAL(clicked()), this, SLOT(doClearCStyle()));
 	connect(paraStyleClear, SIGNAL(clicked()), this, SLOT(doClearPStyle()));
-
 	connect(flopBox->flopGroup, SIGNAL(buttonClicked( int )), this, SLOT(handleFirstLinePolicy(int)));
-
 	connect(lineSpacingModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLineSpacingMode(int)));
+	if (widgetsToo)
+	{
+		colorWidgets->connectSignals();
+		orphanBox->connectSignals();
+		parEffectsBox->connectSignals();
+		marginsBox->connectSignals();
+		distanceWidgets->connectSignals();
+		optMargins->connectSignals();
+		advancedWidgets->connectSignals();
+		pathTextWidgets->connectSignals();
+	}
+}
 
-	m_haveItem = false;
-	setEnabled(false);
+void PropertiesPalette_Text::disconnectSignals(bool widgetsToo)
+{
+	disconnect(lineSpacing   , SIGNAL(valueChanged(double)), this, SLOT(handleLineSpacing()));
+	disconnect(fonts         , SIGNAL(fontSelected(QString )), this, SLOT(handleTextFont(QString)));
+	disconnect(fontSize      , SIGNAL(valueChanged(double)), this, SLOT(handleFontSize()));
+	disconnect(textAlignment , SIGNAL(State(int))   , this, SLOT(handleAlignement(int)));
+	disconnect(charStyleClear, SIGNAL(clicked()), this, SLOT(doClearCStyle()));
+	disconnect(paraStyleClear, SIGNAL(clicked()), this, SLOT(doClearPStyle()));
+	disconnect(flopBox->flopGroup, SIGNAL(buttonClicked( int )), this, SLOT(handleFirstLinePolicy(int)));
+	disconnect(lineSpacingModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLineSpacingMode(int)));
+	if (widgetsToo)
+	{
+		colorWidgets->disconnectSignals();
+		orphanBox->disconnectSignals();
+		parEffectsBox->disconnectSignals();
+		marginsBox->disconnectSignals();
+		distanceWidgets->disconnectSignals();
+		optMargins->disconnectSignals();
+		advancedWidgets->disconnectSignals();
+		pathTextWidgets->disconnectSignals();
+	}
 }
 
 void PropertiesPalette_Text::setMainWindow(ScribusMainWindow* mw)
@@ -137,6 +175,7 @@ void PropertiesPalette_Text::setMainWindow(ScribusMainWindow* mw)
 
 void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 {
+	disconnectSignals(true);
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
@@ -174,10 +213,12 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+	connectSignals(true);
 }
 
 void PropertiesPalette_Text::unsetDoc()
 {
+	disconnectSignals(true);
 	if (m_doc)
 	{
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
@@ -205,6 +246,7 @@ void PropertiesPalette_Text::unsetDoc()
 	m_haveItem = false;
 
 	setEnabled(false);
+	connectSignals(true);
 }
 
 void PropertiesPalette_Text::unsetItem()
@@ -238,6 +280,7 @@ void PropertiesPalette_Text::handleSelectionChanged()
 	if (!m_haveDoc || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
 
+	disconnectSignals(true);
 	PageItem* currItem = currentItemFromSelection();
 	if (m_doc->m_Selection->count() > 1 )
 	{
@@ -271,6 +314,7 @@ void PropertiesPalette_Text::handleSelectionChanged()
 	{
 		setCurrentItem(currItem);
 	}
+	connectSignals(true);
 	updateGeometry();
 	repaint();
 }
@@ -280,6 +324,7 @@ void PropertiesPalette_Text::handleUpdateRequest(int updateFlags)
 	// ColorWidget will handle its update itself
 	/*if (updateFlags & reqColorsUpdate)
 		updateColorList();*/
+	disconnectSignals(true);
 	if (updateFlags & reqCharStylesUpdate)
 	{
 		charStyleCombo->updateFormatList();
@@ -297,12 +342,14 @@ void PropertiesPalette_Text::handleUpdateRequest(int updateFlags)
 		charStyleCombo->setDoc(m_haveDoc ? m_doc : 0);
 		parEffectsBox->setDoc(m_haveDoc ? m_doc : 0);
 	}
+	connectSignals(true);
 }
 
 void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
+	disconnectSignals(true);
 	//CB We shouldnt really need to process this if our item is the same one
 	//maybe we do if the item has been changed by scripter.. but that should probably
 	//set some status if so.
@@ -353,10 +400,10 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 	{
 		ParagraphStyle parStyle =  m_item->itemText.defaultStyle();
 		if (m_doc->appMode == modeEdit)
-			m_item->currentTextProps(parStyle, false);
+			m_item->currentTextProps(parStyle);
 		else if (m_doc->appMode == modeEditTable)
 			m_item->asTable()->activeCell().textFrame()->currentTextProps(parStyle);
-		updateStyle(parStyle);
+			updateStyle(parStyle);
 	}
 	if (m_item->asOSGFrame())
 	{
@@ -366,6 +413,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 	{
 		setEnabled(false);
 	}
+	connectSignals(true);
 }
 
 void PropertiesPalette_Text::unitChange()
@@ -375,6 +423,7 @@ void PropertiesPalette_Text::unitChange()
 	bool tmp = m_haveItem;
 	m_haveItem = false;
 
+	disconnectSignals(true);
 	advancedWidgets->unitChange();
 	colorWidgets->unitChange();
 	distanceWidgets->unitChange();
@@ -383,6 +432,7 @@ void PropertiesPalette_Text::unitChange()
 	marginsBox->unitChange();
 	pathTextWidgets->unitChange();
 	parEffectsBox->unitChange();
+	connectSignals(true);
 
 	m_haveItem = tmp;
 }
@@ -391,6 +441,7 @@ void PropertiesPalette_Text::handleLineSpacingMode(int id)
 {
 	if ((m_haveDoc) && (m_haveItem))
 	{
+		disconnectSignals();
 		PageItem *i2 = m_item;
 		if (m_doc->appMode == modeEditTable)
 			i2 = m_item->asTable()->activeCell().textFrame();
@@ -399,9 +450,13 @@ void PropertiesPalette_Text::handleLineSpacingMode(int id)
 			Selection tempSelection(this, false);
 			tempSelection.addItem(i2, true);
 			m_doc->itemSelection_SetLineSpacingMode(id, &tempSelection);
-			updateStyle(((m_doc->appMode == modeEdit) || (m_doc->appMode == modeEditTable)) ? i2->currentStyle() : i2->itemText.defaultStyle());
+			const ParagraphStyle& curStyle(((m_doc->appMode == modeEdit) || (m_doc->appMode == modeEditTable)) ? i2->currentStyle() : i2->itemText.defaultStyle());
+			lineSpacingModeCombo->setCurrentIndex(curStyle.lineSpacingMode());
+			setupLineSpacingSpinbox(curStyle.lineSpacingMode(), curStyle.lineSpacing());
+			//updateStyle(((m_doc->appMode == modeEdit) || (m_doc->appMode == modeEditTable)) ? i2->currentStyle() : i2->itemText.defaultStyle());
 			m_doc->regionsChanged()->update(QRect());
 		}
+		connectSignals();
 	}
 }
 
@@ -409,6 +464,7 @@ void PropertiesPalette_Text::displayLineSpacing(double r)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
+	disconnectSignals();
 	bool tmp = m_haveItem;
 	m_haveItem = false;
 	lineSpacing->setValue(r);
@@ -425,25 +481,30 @@ void PropertiesPalette_Text::displayLineSpacing(double r)
 		}
 	}
 	m_haveItem = tmp;
+	connectSignals();
 }
 
 void PropertiesPalette_Text::displayFontFace(const QString& newFont)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
+	disconnectSignals();
 	bool tmp = m_haveItem;
 	m_haveItem = false;
 	if (m_item != NULL)
 		fonts->RebuildList(m_doc, m_item->isAnnotation());
 	fonts->setCurrentFont(newFont);
 	m_haveItem = tmp;
+	connectSignals();
 }
 
 void PropertiesPalette_Text::displayFontSize(double s)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
+	disconnectSignals();
 	fontSize->showValue(s / 10.0);
+	connectSignals();
 }
 
 void PropertiesPalette_Text::displayFirstLinePolicy( FirstLineOffsetPolicy f )
@@ -486,11 +547,13 @@ void PropertiesPalette_Text::updateCharStyle(const CharStyle& charStyle)
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
 
+	disconnectSignals(true);
 	advancedWidgets->updateCharStyle(charStyle);
 	colorWidgets->updateCharStyle(charStyle);
 
 	displayFontFace(charStyle.font().scName());
 	displayFontSize(charStyle.fontSize());
+	connectSignals(true);
 }
 
 void PropertiesPalette_Text::updateStyle(const ParagraphStyle& newCurrent)
@@ -498,8 +561,14 @@ void PropertiesPalette_Text::updateStyle(const ParagraphStyle& newCurrent)
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
 
+	if (newCurrent.equiv(oldParagraphStyle))
+		return;
+	else
+		oldParagraphStyle = newCurrent;
+
 	const CharStyle& charStyle = newCurrent.charStyle();
 
+	disconnectSignals(true);
 	advancedWidgets->updateStyle(newCurrent);
 	colorWidgets->updateStyle(newCurrent);
 	optMargins->updateStyle(newCurrent);
@@ -516,38 +585,47 @@ void PropertiesPalette_Text::updateStyle(const ParagraphStyle& newCurrent)
 	setupLineSpacingSpinbox(newCurrent.lineSpacingMode(), newCurrent.lineSpacing());
 	lineSpacingModeCombo->setCurrentIndex(newCurrent.lineSpacingMode());
 	textAlignment->setStyle(newCurrent.alignment());
+	connectSignals(true);
 	
 	m_haveItem = tmp;
 }
 
 void PropertiesPalette_Text::updateCharStyles()
 {
+	disconnectSignals();
 	charStyleCombo->updateFormatList();
 	parEffectsBox->updateCharStyles();
+	connectSignals();
 }
 
 void PropertiesPalette_Text::updateParagraphStyles()
 {
+	disconnectSignals();
 	paraStyleCombo->updateFormatList();
 	charStyleCombo->updateFormatList();
 	parEffectsBox->updateCharStyles();
+	connectSignals();
 }
 
 void PropertiesPalette_Text::updateTextStyles()
 {
+	disconnectSignals();
 	paraStyleCombo->updateFormatList();
 	charStyleCombo->updateFormatList();
+	connectSignals();
 }
 
 void PropertiesPalette_Text::displayAlignment(int e)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
+	disconnectSignals();
 	bool tmp = m_haveItem;
 	m_haveItem = false;
 	textAlignment->setEnabled(true);
 	textAlignment->setStyle(e);
 	m_haveItem = tmp;
+	connectSignals();
 }
 
 void PropertiesPalette_Text::displayCharStyle(const QString& name)
@@ -579,7 +657,9 @@ void PropertiesPalette_Text::handleLineSpacing()
 	{
 		Selection tempSelection(this, false);
 		tempSelection.addItem(i2, true);
+		disconnectSignals(true);
 		m_doc->itemSelection_SetLineSpacing(lineSpacing->value(), &tempSelection);
+		connectSignals(true);
 	}
 }
 
@@ -594,7 +674,9 @@ void PropertiesPalette_Text::handleFontSize()
 	{
 		Selection tempSelection(this, false);
 		tempSelection.addItem(i2, true);
+		disconnectSignals(true);
 		m_doc->itemSelection_SetFontSize(qRound(fontSize->value()*10.0), &tempSelection);
+		connectSignals(true);
 	}
 }
 
@@ -677,6 +759,7 @@ void PropertiesPalette_Text::changeEvent(QEvent *e)
 
 void PropertiesPalette_Text::languageChange()
 {
+	disconnectSignals(true);
 	paraStyleLabel->setText( tr("Paragraph St&yle:"));
 	charStyleLabel->setText( tr("Character St&yle:"));
 	
@@ -719,6 +802,7 @@ void PropertiesPalette_Text::languageChange()
 	charStyleCombo->setToolTip( tr("Character style of currently selected text or paragraph"));
 	paraStyleClear->setToolTip( tr("Remove Direct Paragraph Formatting"));
 	charStyleClear->setToolTip( tr("Remove Direct Character Formatting"));
+	connectSignals(true);
 }
 
 void PropertiesPalette_Text::handleFirstLinePolicy(int radioFlop)

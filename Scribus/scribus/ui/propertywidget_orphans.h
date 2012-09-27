@@ -23,6 +23,8 @@ public:
 	~PropertyWidget_Orphans() {};
 
 	void updateStyle(const ParagraphStyle& newCurrent);
+	void connectSignals();
+	void disconnectSignals();
 
 protected:
 	virtual void changeEvent(QEvent *e);
@@ -33,10 +35,6 @@ public slots:
 	void handleKeepLinesEnd();
 	void handleKeepTogether();
 	void handleKeepWithNext();
-
-private:
-	void connectSignals();
-	void disconnectSignals();
 };
 
 #endif

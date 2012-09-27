@@ -8,7 +8,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef SMPSTYLEWIDGET_H
 #define SMPSTYLEWIDGET_H
 
-class QEvent;
+//class QEvent;
 #include "ui_smpstylewidget.h"
 
 #include "ui/charselectenhanced.h"

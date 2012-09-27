@@ -183,7 +183,7 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
 	// Get paragraph style at current cursor position
 	const ParagraphStyle& paragraphStyle() const;
 	// Get paragraph style at specific position
- 	const ParagraphStyle& paragraphStyle(int pos, bool useTrailStyle = true) const;
+ 	const ParagraphStyle& paragraphStyle(int pos) const;
  	const ParagraphStyle& defaultStyle() const;
  	void setDefaultStyle(const ParagraphStyle& style);
  	void setCharStyle(int pos, uint len, const CharStyle& style);

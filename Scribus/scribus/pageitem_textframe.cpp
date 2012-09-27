@@ -1631,7 +1631,8 @@ void PageItem_TextFrame::layout()
 					prefixStr = style.bulletStr();
 				else if (style.hasNum())
 					prefixStr = "1. ";
-				hl->prefix = new ScText();
+				hl->prefix = new ScText(*hl);
+				hl->prefix->embedded = 0;
 			}
 			else
 				BulNumMode = false;

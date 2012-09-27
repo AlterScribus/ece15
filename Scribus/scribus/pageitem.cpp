@@ -1450,10 +1450,10 @@ bool PageItem::frameDisplays(int textpos) const
 
 
 /// returns the style at the current charpos
-const ParagraphStyle& PageItem::currentStyle(bool useTrailStyle) const
+const ParagraphStyle& PageItem::currentStyle() const
 {
 	if (frameDisplays(itemText.cursorPosition()))
-		return itemText.paragraphStyle(itemText.cursorPosition(), useTrailStyle);
+		return itemText.paragraphStyle(itemText.cursorPosition());
 	else
 		return itemText.defaultStyle();
 }
@@ -1476,12 +1476,10 @@ const CharStyle& PageItem::currentCharStyle() const
 		return itemText.defaultStyle().charStyle();
 }
 
-void PageItem::currentTextProps(ParagraphStyle& parStyle, bool useTrailStyle) const
+void PageItem::currentTextProps(ParagraphStyle& parStyle) const
 {
-	parStyle = this->currentStyle(useTrailStyle);
+	parStyle = this->currentStyle();
 	int position = itemText.cursorPosition();
-	if (!useTrailStyle && position >= itemText.length() && position > 0)
-		position--;
 	if (itemText.lengthOfSelection() > 0)
 		position = qMin(qMax(itemText.endOfSelection() - 1, 0), qMax(position, itemText.startOfSelection()));
 

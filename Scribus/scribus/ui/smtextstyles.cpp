@@ -995,12 +995,18 @@ void SMParagraphStyle::slotParEffectCharStyle(const QString& name)
 
 void SMParagraphStyle::slotBullet(bool isOn)
 {
+	QString bstr(pwidget_->bulletStrEdit_->currentText());
+	if (bstr.isEmpty())
+	{
+		bstr = QChar(0x2022);
+		pwidget_->bulletStrEdit_->setEditText(bstr);
+	}
 	for (int i = 0; i < selection_.count(); ++i)
 	{
 		selection_[i]->setHasBullet(isOn);
 		if (isOn)
 		{
-			selection_[i]->setBulletStr(pwidget_->bulletStrEdit_->currentText());
+			selection_[i]->setBulletStr(bstr);
 			selection_[i]->setHasDropCap(false);
 			selection_[i]->setHasNum(false);
 		}
@@ -1008,7 +1014,6 @@ void SMParagraphStyle::slotBullet(bool isOn)
 	QList<CharStyle> cstyles;
 	for (int i = 0; i < cstyles_->count(); ++i)
 		cstyles << (*cstyles_)[i];
-	//pwidget_->showBullet(selection_, cstyles, doc_->unitIndex());
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1018,16 +1023,21 @@ void SMParagraphStyle::slotBullet(bool isOn)
 
 void SMParagraphStyle::slotBulletStr(const QString &str)
 {
+	QString bstr(str);
+	if (bstr.isEmpty())
+	{
+		bstr = QChar(0x2022);
+		pwidget_->bulletStrEdit_->setEditText(bstr);
+	}
 	if (pwidget_->bulletStrEdit_->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->parentBulletStr();
 	else
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setBulletStr(str);
+			selection_[i]->setBulletStr(bstr);
 	QList<CharStyle> cstyles;
 	for (int i = 0; i < cstyles_->count(); ++i)
 		cstyles << (*cstyles_)[i];
-	//pwidget_->showBullet(selection_, cstyles, doc_->unitIndex());
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1049,7 +1059,6 @@ void SMParagraphStyle::slotNumeration(bool isOn)
 	QList<CharStyle> cstyles;
 	for (int i = 0; i < cstyles_->count(); ++i)
 		cstyles << (*cstyles_)[i];
-	//pwidget_->showNumeration(selection_, cstyles, doc_->unitIndex());
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;

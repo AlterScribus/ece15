@@ -21,16 +21,15 @@ class PropertyWidget_TextColor : public QFrame, Ui::PropertyWidget_TextColorBase
 
 public:
 	PropertyWidget_TextColor(QWidget* parent);
-	~PropertyWidget_TextColor() {};
+	~PropertyWidget_TextColor() {}
+	void connectSignals();
+	void disconnectSignals();
 
 	void updateColorList();
 
 protected:
 	PageItem *         m_item;
 	ScribusMainWindow* m_ScMW;
-
-	void connectSignals();
-	void disconnectSignals();
 
 	void configureWidgets(void);
 	void setCurrentItem(PageItem *i);
