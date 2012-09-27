@@ -3467,33 +3467,43 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			}
 			if(!selectedFrame.isNull())
 				sFList << selectedFrame;
-			p->save();//SA3
-			p->setFillMode(1);
-			p->setBrush(qApp->palette().color(QPalette::Active, QPalette::Highlight));
-			p->setLineWidth(0);
-			p->setPen(qApp->palette().color(QPalette::Active, QPalette::Highlight));
-			for(int sfc(0);sfc < sFList.count();++sfc)
-				p->drawRect(sFList[sfc].x(), sFList[sfc].y(), sFList[sfc].width(), sFList[sfc].height());
-			p->restore();//RE3
+			if (!sFList.isEmpty())
+			{
+				double brushOpacity = p->getBrushOpacity();
+				double penOpacity = p->getPenOpacity();
+				p->save();//SA3
+				p->setFillMode(1);
+				p->setBrush(qApp->palette().color(QPalette::Active, QPalette::Highlight));
+				p->setOpacity(1.0);
+				p->setLineWidth(0);
+				p->setPen(qApp->palette().color(QPalette::Active, QPalette::Highlight));
+				for(int sfc(0);sfc < sFList.count();++sfc)
+					p->drawRect(sFList[sfc].x(), sFList[sfc].y(), sFList[sfc].width(), sFList[sfc].height());
+				p->restore();//RE3
+				p->setBrushOpacity(brushOpacity);
+				p->setPenOpacity(penOpacity);
+			}
 			//	End of selection
 
 			//Spreflight warnings
 			if(!warnnedFrame.isNull())
 				wFList << warnnedFrame;
-			double brushOpacity = p->getBrushOpacity();
-			double penOpacity = p->getPenOpacity();
-			p->save();//SA3
-			p->setFillMode(1);
-			p->setBrush(m_Doc->guidesPrefs().preflightColor);
-			p->setBrushOpacity(m_Doc->guidesPrefs().preflightColor.alphaF());
-			p->setPen(m_Doc->guidesPrefs().preflightColor);
-			p->setPenOpacity(0.1);
-			p->setLineWidth(0);
-			for(int sfc(0);sfc < wFList.count();++sfc)
-				p->drawRect(wFList[sfc].x(), wFList[sfc].y(), wFList[sfc].width(), wFList[sfc].height());
-			p->setBrushOpacity(brushOpacity);
-			p->setPenOpacity(penOpacity);
-			p->restore();//RE3
+			if (!wFList.isEmpty())
+			{
+				double brushOpacity = p->getBrushOpacity();
+				double penOpacity = p->getPenOpacity();
+				p->save();//SA3
+				p->setFillMode(1);
+				p->setBrush(m_Doc->guidesPrefs().preflightColor);
+				p->setOpacity(m_Doc->guidesPrefs().preflightColor.alphaF());
+				p->setPen(m_Doc->guidesPrefs().preflightColor);
+				p->setLineWidth(0);
+				for(int sfc(0);sfc < wFList.count();++sfc)
+					p->drawRect(wFList[sfc].x(), wFList[sfc].y(), wFList[sfc].width(), wFList[sfc].height());
+				p->restore();//RE3
+				p->setBrushOpacity(brushOpacity);
+				p->setPenOpacity(penOpacity);
+			}
 			//	End of preflight warnings
 
 			QColor tmp;
