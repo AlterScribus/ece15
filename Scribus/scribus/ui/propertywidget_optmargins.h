@@ -25,13 +25,12 @@ public:
 	~PropertyWidget_OptMargins() {};
 
 	void updateStyle(const ParagraphStyle& newCurrent);
+	void connectSignals();
+	void disconnectSignals();
 
 protected:
 	PageItem *         m_item;
 	ScribusMainWindow* m_ScMW;
-
-	void connectSignals();
-	void disconnectSignals();
 
 	void configureWidgets(void);
 	void setCurrentItem(PageItem *item);

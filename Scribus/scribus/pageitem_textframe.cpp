@@ -1624,14 +1624,15 @@ void PageItem_TextFrame::layout()
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
 			
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && !isNoteFrame() && (style.hasBullet() || style.hasNum()))
 			{
 				BulNumMode = true;
 				if (style.hasBullet())
 					prefixStr = style.bulletStr();
 				else if (style.hasNum())
 					prefixStr = "1. ";
-				hl->prefix = new ScText();
+				hl->prefix = new ScText(*hl);
+				hl->prefix->embedded = 0;
 			}
 			else
 				BulNumMode = false;

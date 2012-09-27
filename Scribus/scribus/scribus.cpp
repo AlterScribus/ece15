@@ -1187,7 +1187,7 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 		setAlignmentValue(currPStyle.alignment());
 		propertiesPalette->textPal->displayParStyle(currPStyle.parent());
 		propertiesPalette->textPal->displayCharStyle(currItem->currentCharStyle().parent());
-		doc->currentStyle = currItem->currentStyle();
+		doc->currentStyle = currPStyle;
 		// #8112 : do not use operator= here as it does not update style features
 		doc->currentStyle.charStyle().setStyle( currItem->currentCharStyle() );
 		emit TextStyle(doc->currentStyle);

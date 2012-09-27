@@ -17,15 +17,14 @@ public:
 	~PropertyWidget_TextMargins() {}
 	
 	void updateStyle(const ParagraphStyle &newCurrent) { displayMargins(newCurrent); }
+	void connectSignals();
+	void disconnectSignals();
 
 protected:
 	PageItem *         m_item;
 	ScribusMainWindow* m_ScMW;
 	double m_unitRatio;
 	int    m_unitIndex;
-
-	void connectSignals();
-	void disconnectSignals();
 
 	void configureWidgets(void);
 	void setCurrentItem(PageItem *item);

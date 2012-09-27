@@ -4,6 +4,7 @@
 #include "ui_propertywidget_dropcapbase.h"
 
 #include "propertywidgetbase.h"
+#include "ui/charselectenhanced.h"
 
 class PageItem;
 class ParagraphStyle;
@@ -21,6 +22,9 @@ public:
 	void updateCharStyles();
 
 	void displayCharStyle(const QString& name);
+	void connectSignals();
+	void disconnectSignals();
+	CharSelectEnhanced * m_enhanced;
 
 protected:
 	double m_unitRatio;
@@ -53,9 +57,13 @@ public slots:
 	void handlePEOffset();
 	void handlePECharStyle();
 
+private slots:
+	void on_bulletCharTableButton__toggled(bool checked);
+	void insertSpecialChars(const QString &chars);
+
 private:
-	void connectSignals();
-	void disconnectSignals();
+	void openEnhanced();
+	void closeEnhanced(bool show = false);
 	void enableDropCap(bool);
 	void enableBullet(bool);
 	void enableNum(bool);
@@ -83,7 +91,6 @@ private:
 		numStyleCombo->addItem("A_B_C");
 		numStyleCombo->addItem("*");
 	}
-	
 };
 
 #endif // PROPERTYWIDGET_DropCap_H

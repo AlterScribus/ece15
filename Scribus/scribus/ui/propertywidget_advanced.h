@@ -24,11 +24,10 @@ class PropertyWidget_Advanced : public QFrame, Ui::PropertyWidget_AdvancedBase,
 public:
 	PropertyWidget_Advanced(QWidget* parent);
 	~PropertyWidget_Advanced() {};
-
-protected:
 	void connectSignals();
 	void disconnectSignals();
 
+protected:
 	double m_unitRatio;
 	int    m_unitIndex;
 

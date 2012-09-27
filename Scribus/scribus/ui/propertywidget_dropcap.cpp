@@ -12,13 +12,11 @@ for which a new license (GPL+exception) is in place.
 #include "selection.h"
 #include "units.h"
 #include "util.h"
+#include "util_icon.h"
 
-PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent)
+PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent), m_item(NULL), m_ScMW(NULL), m_enhanced(NULL)
 {
-	m_item = 0;
-	m_ScMW = 0;
-
-    setupUi(this);
+	setupUi(this);
 	setFrameStyle(QFrame::Box | QFrame::Plain);
 	setLineWidth(1);
 	layout()->setAlignment( Qt::AlignTop );
@@ -26,10 +24,12 @@ PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent)
 	languageChange();
 	dropCapLines->setDecimals(0);
 
-	if (!m_doc) return;
-	peCharStyleCombo->updateFormatList();
+	if (m_doc)
+		peCharStyleCombo->updateFormatList();
 	fillBulletStrEditCombo();
 	fillNumStyleCombo();
+	enableParEffect(false);
+	bulletCharTableButton_->setIcon(loadIcon("22/insert-table.png"));
 }
 
 void PropertyWidget_DropCap::setMainWindow(ScribusMainWindow* mw)
@@ -126,18 +126,16 @@ void PropertyWidget_DropCap::enableDropCap(bool enable)
 	{
 		enableBullet(false);
 		enableNum(false);
-		
 	}
 }
 void PropertyWidget_DropCap::enableBullet(bool enable)
 {
 	bulletRadio_->setChecked(enable);
 	bulletStrEdit_->setEnabled(enable);
-	if (bulletStrEdit_->currentText().isEmpty())
-		bulletStrEdit_->setEditText(bulletStrEdit_->itemText(0));
 	bulletCharTableButton_->setEnabled(enable);
 	if (enable)
 	{
+		fillBulletStrEditCombo();
 		enableDropCap(false);
 		enableNum(false);
 	}
@@ -151,12 +149,15 @@ void PropertyWidget_DropCap::enableNum(bool enable)
 	numStyleCombo->setEnabled(enable);
 	if (enable)
 	{
+		fillNumStyleCombo();
 		enableBullet(false);
 		enableDropCap(false);
 	}
 }
 void PropertyWidget_DropCap::enableParEffect(bool enable)
 {
+	if (!enable && peOffRadio->isChecked())
+		return;
 	peOffRadio->setChecked(!enable);
 	peOffset_->setEnabled(enable);
 	peCharStyleCombo->setEnabled(enable);
@@ -170,20 +171,25 @@ void PropertyWidget_DropCap::enableParEffect(bool enable)
 
 void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 {
+	if (peOffRadio->isChecked() && !newCurrent.hasBullet() && !newCurrent.hasDropCap() && !newCurrent.hasNum())
+		return;
 	disconnectSignals ();
 	if (newCurrent.hasDropCap())
 	{
-		enableDropCap(true);
+		if (!dropCapRadio_->isChecked())
+			enableDropCap(true);
 		dropCapLines->setValue(newCurrent.dropCapLines());
 	}
 	else if (newCurrent.hasBullet())
 	{
-		enableBullet(true);
+		if (!bulletRadio_->isChecked())
+			enableBullet(true);
 		bulletStrEdit_->setEditText(newCurrent.bulletStr());
 	}
 	else if (newCurrent.hasNum())
 	{
-		enableNum(true);
+		if (!numRadio_->isChecked())
+			enableNum(true);
 		numStyleCombo->setCurrentIndex(newCurrent.numStyle());
 		numPrefix->setText(newCurrent.numPrefix());
 		numSuffix->setText(newCurrent.numSuffix());
@@ -287,7 +293,10 @@ void PropertyWidget_DropCap::handleParEffectUse()
 	{
 		enableBullet(true);
 		newStyle.setHasBullet(true);
-		newStyle.setBulletStr(bulletStrEdit_->currentText());
+		QString bStr = bulletStrEdit_->currentText();
+		if (bStr.isEmpty())
+			bStr = QChar(0x2022);
+		newStyle.setBulletStr(bStr);
 		newStyle.setHasNum(false);
 		newStyle.setHasDropCap(false);
 	}
@@ -321,10 +330,7 @@ void PropertyWidget_DropCap::handleBulletStr(QString bulStr)
 		return;
 	ParagraphStyle newStyle;
 	if (bulStr.isEmpty())
-	{
-		bulStr = bulletStrEdit_->itemText(0);
-		bulletStrEdit_->setEditText(bulStr);
-	}
+		bulStr = QChar(0x2022);
 	newStyle.setBulletStr(bulStr);
 	PageItem *item = m_doc->m_Selection->itemAt(0);
 	if (m_doc->appMode == modeEditTable)
@@ -416,5 +422,48 @@ void PropertyWidget_DropCap::languageChange()
 	peOffsetLabel->setText(tr("Drop Caps offset"));
 	peCharStyleLabel->setText(tr("Drop Cap use character style..."));
 	peCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
+	bulletCharTableButton_->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
+	bulletCharTableButton_->setText(tr("Char Table"));
 }
 
+void PropertyWidget_DropCap::openEnhanced()
+{
+	if (m_enhanced)
+		return;
+
+	QApplication::changeOverrideCursor(QCursor(Qt::WaitCursor));
+	m_enhanced = new CharSelectEnhanced(this);
+	m_enhanced->setModal(true);
+	connect(m_enhanced, SIGNAL(insertSpecialChars(const QString &)), this, SLOT(insertSpecialChars(const QString &)));
+	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton_, SLOT(setChecked(bool)));
+	m_enhanced->setDoc(m_doc);
+	m_enhanced->setEnabled(true);
+	QString styleName = peCharStyleCombo->currentText();
+	setCurrentComboItem(m_enhanced->fontSelector, m_item->currentStyle().charStyle().font().scName());
+	m_enhanced->newFont(m_enhanced->fontSelector->currentIndex());
+	m_enhanced->show();
+	QApplication::changeOverrideCursor(Qt::ArrowCursor);
+}
+
+void PropertyWidget_DropCap::closeEnhanced(bool show)
+{
+	if (!m_enhanced || show)
+		return;
+	disconnect(m_enhanced, SIGNAL(insertSpecialChars(const QString &)), this, SLOT(insertSpecialChars(const QString &)));
+	disconnect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton_, SLOT(setChecked(bool)));
+	m_enhanced->close();
+	delete m_enhanced;
+	m_enhanced = NULL;
+}
+
+void PropertyWidget_DropCap::on_bulletCharTableButton__toggled(bool checked)
+{
+	if (m_enhanced && !checked)
+		closeEnhanced();
+	else if (!m_enhanced && checked)
+		openEnhanced();
+}
+void PropertyWidget_DropCap::insertSpecialChars(const QString &chars)
+{
+	bulletStrEdit_->lineEdit()->insert(chars);
+}

@@ -1442,7 +1442,7 @@ void PageItem::unlinkWithText(bool cutText)
 bool PageItem::frameDisplays(int textpos) const
 {
 #ifndef NLS_PROTO
-	return 0 <= textpos && textpos < signed(MaxChars) &&  textpos < itemText.length();
+	return (0 <= textpos) && (((textpos < signed(MaxChars)) && (textpos < itemText.length())) || ((textpos >= signed(MaxChars)) && (textpos >= itemText.length())));
 #else
 	return true; // FIXME:NLS
 #endif

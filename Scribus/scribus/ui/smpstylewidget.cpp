@@ -13,7 +13,7 @@ for which a new license (GPL+exception) is in place.
 #include "units.h"
 #include "util.h"
 #include "util_icon.h"
-#include "ui/charselectenhanced.h"
+//#include "ui/charselectenhanced.h"
 
 //static bool isEqual(double a, double b)
 //{
@@ -1059,7 +1059,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 	{
 		bulletStrEdit_->setEnabled(true);
 		if (bulletStrEdit_->currentText().isEmpty())
-			bulletStrEdit_->setEditText(bulletStrEdit_->itemText(0));
+			bulletStrEdit_->setEditText(QChar(0x2022));
 		bulletCharTableButton_->setEnabled(true);
 
 		numBox->setChecked(false);
