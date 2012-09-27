@@ -100,6 +100,8 @@ public:
 	virtual void setBrush( const QColor & );
 	virtual void setBrushOpacity( double op );
 	virtual void setOpacity( double op );
+	virtual double getBrushOpacity() { return fill_trans; }
+	virtual double getPenOpacity() { return stroke_trans; }
 	virtual void setFont( const QFont &f );
 	virtual QFont font();
 

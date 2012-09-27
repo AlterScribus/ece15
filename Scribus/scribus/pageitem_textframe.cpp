@@ -3480,6 +3480,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			//Spreflight warnings
 			if(!warnnedFrame.isNull())
 				wFList << warnnedFrame;
+			double brushOpacity = p->getBrushOpacity();
+			double penOpacity = p->getPenOpacity();
 			p->save();//SA3
 			p->setFillMode(1);
 			p->setBrush(m_Doc->guidesPrefs().preflightColor);
@@ -3489,8 +3491,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->setLineWidth(0);
 			for(int sfc(0);sfc < wFList.count();++sfc)
 				p->drawRect(wFList[sfc].x(), wFList[sfc].y(), wFList[sfc].width(), wFList[sfc].height());
-			p->setBrushOpacity(1.0);
-			p->setPenOpacity(1.0);
+			p->setBrushOpacity(brushOpacity);
+			p->setPenOpacity(penOpacity);
 			p->restore();//RE3
 			//	End of preflight warnings
 
