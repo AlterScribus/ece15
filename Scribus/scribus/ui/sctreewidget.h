@@ -57,7 +57,7 @@ public:
 	QWidget* widget(int index);
 	void setItemEnabled(int index, bool enable);
 	bool isItemEnabled(int index);
-	void setCurrentIndex(int index);
+	void setCurrentIndex(int index, bool onlyDisable=false);
 	int currentIndex();
 	void setItemText(int index, QString text);
 private slots:

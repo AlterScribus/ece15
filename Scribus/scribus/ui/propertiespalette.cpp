@@ -446,7 +446,6 @@ void  PropertiesPalette::handleSelectionChanged()
 {
 	if (!m_haveDoc || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
-	int currentTab = TabStack->currentIndex();
 	disconnect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
 
 	PageItem* currItem = currentItemFromSelection();
@@ -463,7 +462,10 @@ void  PropertiesPalette::handleSelectionChanged()
 		if (m_haveItem && m_item)
 		{
 			if ((m_item->isGroup()) && (!m_item->isSingleSel))
+			{
 				TabStack->setItemEnabled(idGroupItem, true);
+				TabStack->setCurrentIndex(idGroupItem, true);
+			}
 		}
 	}
 	else
@@ -507,6 +509,10 @@ void  PropertiesPalette::handleSelectionChanged()
 				TabStack->setItemEnabled(idTextItem, false);
 				TabStack->setItemEnabled(idImageItem, true);
 				TabStack->setItemEnabled(idLineItem, true);
+				if (currItem->PictureIsAvailable)
+					TabStack->setCurrentIndex(idImageItem, true);
+				else
+					TabStack->setCurrentIndex(idShapeItem, true);
 			}
 			break;
 		case PageItem::TextFrame:
@@ -514,12 +520,17 @@ void  PropertiesPalette::handleSelectionChanged()
 			TabStack->setItemEnabled(idTextItem, true);
 			TabStack->setItemEnabled(idImageItem, false);
 			TabStack->setItemEnabled(idLineItem, true);
+			if (currItem->itemText.length() > 0)
+				TabStack->setCurrentIndex(idTextItem, true);
+			else
+				TabStack->setCurrentIndex(idShapeItem, true);
 			break;
 		case PageItem::Line:
 			TabStack->setItemEnabled(idShapeItem, false);
 			TabStack->setItemEnabled(idTextItem, false);
 			TabStack->setItemEnabled(idImageItem, false);
 			TabStack->setItemEnabled(idLineItem, true);
+			TabStack->setCurrentIndex(idLineItem, true);
 			break;
 		case PageItem::ItemType1:
 		case PageItem::ItemType3:
@@ -530,6 +541,7 @@ void  PropertiesPalette::handleSelectionChanged()
 			TabStack->setItemEnabled(idTextItem, false);
 			TabStack->setItemEnabled(idImageItem, false);
 			TabStack->setItemEnabled(idLineItem, true);
+			TabStack->setCurrentIndex(idColorsItem, true);
 			break;
 		case PageItem::PolyLine:
 		case PageItem::Spiral:
@@ -537,12 +549,14 @@ void  PropertiesPalette::handleSelectionChanged()
 			TabStack->setItemEnabled(idTextItem, false);
 			TabStack->setItemEnabled(idImageItem, false);
 			TabStack->setItemEnabled(idLineItem, true);
+			TabStack->setCurrentIndex(idLineItem, true);
 			break;
 		case PageItem::PathText:
 			TabStack->setItemEnabled(idShapeItem, true);
 			TabStack->setItemEnabled(idTextItem, true);
 			TabStack->setItemEnabled(idImageItem, false);
 			TabStack->setItemEnabled(idLineItem, true);
+			TabStack->setCurrentIndex(idTextItem, true);
 			break;
 		case PageItem::Symbol:
 		case PageItem::Group:
@@ -553,19 +567,30 @@ void  PropertiesPalette::handleSelectionChanged()
 			TabStack->setItemEnabled(idGroupItem, true);
 			TabStack->setItemEnabled(idColorsItem, false);
 			TabStack->setItemEnabled(idTransparencyItem, false);
+			TabStack->setCurrentIndex(idGroupItem, true);
 			break;
 		case PageItem::Table:
 			TabStack->setItemEnabled(idTableItem, true);
 			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idTextItem, m_doc->appMode == modeEditTable);
 			TabStack->setItemEnabled(idImageItem, false);
 			TabStack->setItemEnabled(idLineItem, false);
 			TabStack->setItemEnabled(idGroupItem, false);
 			TabStack->setItemEnabled(idColorsItem, false);
 			TabStack->setItemEnabled(idTransparencyItem, false);
-			break;
+			if (m_doc->appMode == modeEditTable)
+			{
+				TabStack->setItemEnabled(idTextItem, true);
+				TabStack->setCurrentIndex(idTextItem, true);
+			}
+			else
+			{
+				TabStack->setItemEnabled(idTextItem, false);
+				TabStack->setCurrentIndex(idTableItem, true);
+			}
+				break;
 		}
 	}
+	int currentTab = TabStack->currentIndex();
 	if (TabStack->isItemEnabled(currentTab) && (TabStack->currentIndex() != currentTab))
 		TabStack->setCurrentIndex(currentTab);
 	updateGeometry();

@@ -183,13 +183,15 @@ bool ScTreeWidget::isItemEnabled(int index)
 	return !topLevelItem(index)->isDisabled();
 }
 
-void ScTreeWidget::setCurrentIndex(int index)
+void ScTreeWidget::setCurrentIndex(int index, bool onlyDisable)
 {
 	if ((index < 0) || (index >= topLevelItemCount()))
 		return;
 	int tops = topLevelItemCount();
 	for (int t = 0; t < tops; t++)
 	{
+		if (onlyDisable && !topLevelItem(t)->isDisabled())
+			continue;
 		setItemExpanded(topLevelItem(t), false);
 	}
 	QTreeWidgetItem *top = topLevelItem(index);
