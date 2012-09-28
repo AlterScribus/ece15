@@ -1506,6 +1506,25 @@ void PageItem_TextFrame::layout()
 			}
 			chstr = ExpandToken(a);
 
+			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
+			{
+				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
+				{
+					CharStyle peStyle(charStyle);
+					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
+					{
+						peStyle.setParent(style.peCharStyleName());
+						if (style.hasDropCap())
+						{
+							charStyle.applyStyle(peStyle);
+							itemText.setCharStyle(a, chstr.length(), charStyle);
+						}
+						else if (hl->prefix)
+							hl->prefix->setStyle(peStyle);
+					}
+				}
+			}
+
 			double hlcsize10 = charStyle.fontSize() / 10.0;
 			double scaleV = charStyle.scaleV() / 1000.0;
 			double scaleH = charStyle.scaleH() / 1000.0;
@@ -1529,45 +1548,6 @@ void PageItem_TextFrame::layout()
 					}
 					else
 						DropCmode = false;
-				}
-			}
-			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
-			{
-				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
-				{
-					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-					{
-						charStyle.applyCharStyle(m_Doc->charStyle(style.peCharStyleName()));
-//						const QString& curParent(style.hasParent() ? style.parent() : style.name());
-//						CharStyle newStyle;
-//						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-//						if (curParent == "")
-//							newStyle.setCharStyle(charStyle);
-//						newStyle.applyCharStyle(m_Doc->charStyle(style.peCharStyleName()));
-//						charStyle.setStyle(newStyle);
-					}
-					else
-					{
-						const QString& curParent(style.hasParent() ? style.parent() : style.name());
-						CharStyle newStyle;
-						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-						charStyle.setStyle(newStyle);
-					}
-					if (style.hasDropCap())
-						itemText.setCharStyle(a, chstr.length(), charStyle);
-					else if (hl->prefix)
-						hl->prefix->setStyle(charStyle);
-				}
-				if (!style.hasDropCap())
-				{
-					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-					{   //hasDropCap is cleared but is set peCharStyleName = clear parEffect char style for text
-						const QString& curParent(style.hasParent() ? style.parent() : style.name());
-						CharStyle newStyle;
-						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-						charStyle.setStyle(newStyle);
-						itemText.setCharStyle(a, chstr.length(),charStyle);
-					}
 				}
 			}
 
