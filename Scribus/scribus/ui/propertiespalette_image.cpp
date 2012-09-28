@@ -301,6 +301,8 @@ void PropertiesPalette_Image::updateProfileList()
 			}
 			renderIntent->setCurrentIndex(m_item->IRender);
 		}
+		if (parent())
+			inputProfiles->setMaximumWidth(((QWidget*) parent())->width()/2);
 
 		inputProfiles->blockSignals(false);
 		renderIntent->blockSignals(false);

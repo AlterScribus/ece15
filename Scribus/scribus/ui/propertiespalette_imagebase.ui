@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>286</width>
+    <width>225</width>
     <height>617</height>
    </rect>
   </property>
@@ -200,17 +200,17 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QCheckBox" name="cbProportional">
-        <property name="text">
-         <string>Proportional</string>
-        </property>
-       </widget>
-      </item>
       <item row="6" column="0">
        <widget class="QRadioButton" name="frameScale">
         <property name="text">
          <string>To Frame Size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="cbProportional">
+        <property name="text">
+         <string>Proportional</string>
         </property>
        </widget>
       </item>
