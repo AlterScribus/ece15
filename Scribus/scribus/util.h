@@ -129,7 +129,7 @@ QString SCRIBUS_API getLongPathName(const QString & shortPath);
  */
 QString SCRIBUS_API getFileNameByPage(ScribusDoc* currDoc, uint pageNo, QString extension);
 void SCRIBUS_API sDebug(QString message);
-const QString SCRIBUS_API getStringFromSequence(DocumentSectionType type, uint position);
+const QString SCRIBUS_API getStringFromSequence(DocumentSectionType type, uint position, QString asterix="");
 const QString SCRIBUS_API arabicToRoman(uint i);
 const QString SCRIBUS_API numberToLetterSequence(uint i);
 void SCRIBUS_API parsePagesString(QString pages, std::vector<int>* pageNs, int sourcePageCount);

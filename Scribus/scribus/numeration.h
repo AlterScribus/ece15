@@ -2,6 +2,8 @@
 #define NUMERATION_H
 
 #include <QString>
+#include <QMap>
+
 typedef enum 
 {
 	Type_1_2_3,
@@ -18,34 +20,42 @@ typedef enum {
 	NSRsection,
 	NSRstory,
 	NSRpage,
-	NSRframe,
-	NSRblock //used for contignous numeration eg. paragraphs - paragraph without numbering reset counter
+	NSRframe
+//	NSRblock //used for contignous numeration eg. paragraphs - paragraph without numbering reset counter
 } NumerationRange;
 
 class Numeration
 {
 public:
-	Numeration() : name(""), numFormat(Type_1_2_3) {}
-	Numeration(QString n, NumFormat f) : name(n), numFormat(f), asterix("*") {}
-	void setType(NumFormat format) { numFormat = format; }
-	const NumFormat format() { return numFormat; }
-	const QString numString(const uint num); 
+	Numeration() : numFormat(Type_1_2_3), asterix(QString()), lead('0'), len(0), range(NSRdocument), prefix(QString()), suffix(QString()), start(1) {}
+	Numeration(NumFormat f) : numFormat(f), asterix("*") {}
+	const QString numString(const int num);
 
-	QString name;
-private:
 	NumFormat numFormat;
 	QString asterix;
 	QChar lead;
-	uint len;
+	int len;
 	NumerationRange range;
 	QString prefix;
 	QString suffix;
+	int start;
 };
+
+//struct used by ScribusDoc for storing numerations used in document
+typedef struct {
+	QString name;
+	QList<Numeration> nums;
+	QList<int> counters; // <level, count>
+	int lastlevel;
+} numstruct;
+
 
 //util functions for use without Numeration class
 //convert passed num to string using numeration style
-const QString getStringFromNum(NumFormat format, uint num, const QChar leadingChar='0', const ushort charsLen=0);
+const QString getStringFromNum(NumFormat format, int num, const QChar leadingChar='0', const int charsLen=0);
 //convert passed num to string with custom chars
-const QString getAsterixStringFromNum(uint num, QString asterix, const QChar leadingChar='_', const ushort charsLen=0);
+const QString getAsterixStringFromNum(int num, QString asterix, const QChar leadingChar='_', const int charsLen=0);
+//return numeration name from type
+const QString getFormatName(int format);
 
 #endif // NUMERATION_H

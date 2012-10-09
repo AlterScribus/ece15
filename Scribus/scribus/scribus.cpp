@@ -1041,6 +1041,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["extrasHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasDeHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasGenerateTableOfContents"], "Extras", false);
+	scrMenuMgr->addMenuItem(scrActions["extrasUpdateDocument"], "Extras", true);
 	scrMenuMgr->setMenuEnabled("Extras", false);
 	connect(scrMenuMgr->getLocalPopupMenu("Extras"), SIGNAL(aboutToShow()), this, SLOT(extrasMenuAboutToShow()));
 
@@ -3335,6 +3336,12 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
+	while (doc->m_flagRenumber)
+	{
+		doc->updateNumbers();
+		if (!doc->m_flagRenumber)
+			doc->regionsChanged()->update(QRect());
+	}
 }
 
 void ScribusMainWindow::updateRecent(QString fn)
@@ -4153,6 +4160,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		/*QTime t;
 		t.start();*/
 		int docItemsCount=doc->Items->count();
+		doc->m_flagRenumber = false;
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -4185,6 +4193,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			slotFileSaveAs();
 		} */
 		delete fileLoader;
+		doc->updateNumbers(true);
 		view->updatesOn(true);
 		w->setUpdatesEnabled(true);
 		disconnect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(newActWin(QMdiSubWindow *)));
@@ -9732,6 +9741,16 @@ void ScribusMainWindow::generateTableOfContents()
 {
 	if (HaveDoc)
 		tocGenerator->generateDefault();
+}
+
+void ScribusMainWindow::updateDocument()
+{
+	if (HaveDoc)
+	{
+		doc->updateNumbers(true);
+//		doc->view()->repaint();
+		doc->regionsChanged()->update(QRect());
+	}
 }
 
 void ScribusMainWindow::insertSampleText()

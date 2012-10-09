@@ -646,6 +646,22 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("NUMERATION", static_cast<int>(style.hasNum()));
 	if ( ! style.isInhNumStyle())
 		docu.writeAttribute("NUMSTYLE", style.numStyle());
+	if ( ! style.isInhNumName())
+		docu.writeAttribute("NUMNAME", style.numName());
+	if ( ! style.isInhNumLevel())
+		docu.writeAttribute("NUMLEVEL", style.numLevel());
+	if ( ! style.isInhNumPrefix())
+		docu.writeAttribute("NUMPREFIX", style.numPrefix());
+	if ( ! style.isInhNumSuffix())
+		docu.writeAttribute("NUMSUFFIX", style.numSuffix());
+	if ( ! style.isInhNumStart())
+		docu.writeAttribute("NUMSTART", style.numStart());
+	if ( ! style.isInhNumRestart())
+		docu.writeAttribute("NUMRESTART", style.numRestart());
+	if ( ! style.isInhNumOther())
+		docu.writeAttribute("NUMOTHER", static_cast<int>(style.numOther()));
+	if ( ! style.isInhNumHigher())
+		docu.writeAttribute("NUMHigher", static_cast<int>(style.numHigher()));
 	if ( ! style.isInhOpticalMargins())
 		docu.writeAttribute("OpticalMargins", style.opticalMargins());
 	if ( ! style.isInhHyphenationMode())

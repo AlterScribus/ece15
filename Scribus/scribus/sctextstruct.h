@@ -112,15 +112,16 @@ public:
 	int embedded;
 	QChar ch;
 	ScText* prefix;
+	QString str;
 	ScText() : 
 		CharStyle(),
 		parstyle(NULL), glyph(), 
-		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), ch(), prefix(NULL) {}
+		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), ch(), prefix(NULL), str(QString()) {}
 	ScText(const ScText& other) : 
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), ch(other.ch), prefix(NULL)
+		embedded(other.embedded), ch(other.ch), prefix(NULL), str(other.str)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;
@@ -133,8 +134,6 @@ public:
 		}
 		if (other.parstyle)
 			parstyle = new ParagraphStyle(*other.parstyle);
-		if (other.prefix)
-			prefix = new ScText(*other.prefix);
 	}
 	~ScText();
 

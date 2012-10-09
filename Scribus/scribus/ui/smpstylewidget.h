@@ -43,6 +43,8 @@ private:
 
 	void fillBulletStrEditCombo();
 	void fillNumStyleCombo();
+	void fillNumerationsCombo(QList<ParagraphStyle> &pstyles);
+	void fillNumRestartCombo();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
 	void showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);
@@ -60,6 +62,8 @@ private:
 
 	void openEnhanced();
 	void closeEnhanced(bool show = false);
+	void connectPESignals();
+	void disconnectPESignals();
 
 	friend class SMParagraphStyle;
 

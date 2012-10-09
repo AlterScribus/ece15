@@ -35,6 +35,7 @@ for which a new license (GPL+exception) is in place.
 #include "canvas.h"
 #include "commonstrings.h"
 #include "hyphenator.h"
+#include "numeration.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
 #include "pageitem_textframe.h"
@@ -1329,7 +1330,6 @@ void PageItem_TextFrame::layout()
 	double chs, chsd = 0;
 	double EndX, OFs, wide, kernVal;
 	QString chstr;
-	QString prefixStr;
 	ScText *hl;
 	PageItem_TextFrame* nextFrame;
 	ParagraphStyle style;
@@ -1484,25 +1484,40 @@ void PageItem_TextFrame::layout()
 			}
 			
 			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && (style.hasBullet() || style.hasNum()))
+			QString prefixStr = QString();
+			BulNumMode = false;
+			
+			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP))
 			{
-				BulNumMode = true;
-				if (style.hasBullet())
-					prefixStr = style.bulletStr();
-				if (style.hasNum())
-					prefixStr = "1. ";
-				hl->prefix = new ScText(*hl);
-				hl->prefix->embedded = 0;
-			}
-			else
-			{
-				BulNumMode = false;
-				if (hl->prefix)
+				if (style.hasBullet() || style.hasNum())
 				{
-					delete hl->prefix;
-					hl->prefix = NULL;
+					BulNumMode = true;
+					if (hl->prefix == NULL)
+					{
+						hl->prefix = new ScText(*hl);
+//						const StyleContext* cStyleContext = style.charStyleContext();
+//						hl->prefix->setContext(cStyleContext);
+//						if (hl->prefix->parstyle)
+//							hl->prefix->parstyle->charStyleContext()->invalidate();
+					}
+					if (style.hasBullet())
+						prefixStr = style.bulletStr();
+					else if (style.hasNum())
+					{
+						if (hl->prefix->str.isEmpty())
+						{
+							prefixStr = "?";
+							m_Doc->m_flagRenumber = true;
+						}
+						else
+							prefixStr = hl->prefix->str;
+					}
 				}
-				
+			}
+			if (!BulNumMode && hl->prefix)
+			{
+				delete hl->prefix;
+				hl->prefix = NULL;
 			}
 			chstr = ExpandToken(a);
 
@@ -1667,7 +1682,7 @@ void PageItem_TextFrame::layout()
 			}
 			hl->glyph.yadvance = 0;
 			layoutGlyphs(*hl, chstr, hl->glyph);
-			if (BulNumMode)
+			if (BulNumMode && !prefixStr.isEmpty())
 			{
 				hl->prefix->glyph.yadvance = 0;
 				hl->prefix->ch = prefixStr[0];

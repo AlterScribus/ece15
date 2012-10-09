@@ -438,6 +438,60 @@
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_5">
                  <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                   <item>
+                    <widget class="QLabel" name="numComboLabel">
+                     <property name="text">
+                      <string>Set:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScComboBox" name="numComboBox">
+                     <property name="currentIndex">
+                      <number>-1</number>
+                     </property>
+                     <property name="minimumContentsLength">
+                      <number>10</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numLevelLabel">
+                     <property name="text">
+                      <string>Level</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMSpinBox" name="numLevelSpin"/>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="numNewLabel">
+                     <property name="text">
+                      <string>Create New Set:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="numNewLineEdit"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_10">
                    <item>
                     <widget class="QLabel" name="numStyleLabel">
@@ -460,14 +514,21 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLabel" name="numLevelLabel">
+                    <widget class="QLabel" name="numStartLabel">
                      <property name="text">
-                      <string>Level</string>
+                      <string>Start with</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="SMSpinBox" name="numLevelSpin"/>
+                    <widget class="SMSpinBox" name="numStartSpin">
+                     <property name="maximum">
+                      <number>99999</number>
+                     </property>
+                     <property name="value">
+                      <number>1</number>
+                     </property>
+                    </widget>
                    </item>
                    <item>
                     <widget class="QLabel" name="numPrefixLabel">
@@ -488,6 +549,47 @@
                    </item>
                    <item>
                     <widget class="QLineEdit" name="numSuffix"/>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <item>
+                    <widget class="QLabel" name="numRestartLabel">
+                     <property name="text">
+                      <string>Restart</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMScComboBox" name="numRestartCombo"/>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="SMCheckBox" name="numRestartOtherBox">
+                     <property name="text">
+                      <string>Restart after other style</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="SMCheckBox" name="numRestartHigherBox">
+                     <property name="text">
+                      <string>Restart after higher level</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>

@@ -209,6 +209,7 @@ SET(SCRIBUS_MOC_CLASSES
   latexhelpers.h
   loadsaveplugin.h
   menumanager.h
+  numeration.h
   navigator.h
   observable.h
   pageitem.h
@@ -559,6 +560,7 @@ SET(SCRIBUS_SOURCES
   menumanager.cpp
   mesh.cpp
   navigator.cpp
+  numeration.cpp
   observable.cpp
   nftrcreader.cpp
   nftsettings.cpp

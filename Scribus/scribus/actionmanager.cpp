@@ -864,9 +864,13 @@ void ActionManager::initExtrasMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasGenerateTableOfContents";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="extrasUpdateDocument";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 
 	connect( (*scrActions)["extrasManageImages"], SIGNAL(triggered()), mainWindow, SLOT(StatusPic()) );
 	connect( (*scrActions)["extrasGenerateTableOfContents"], SIGNAL(triggered()), mainWindow, SLOT(generateTableOfContents()) );
+	connect( (*scrActions)["extrasUpdateDocument"], SIGNAL(triggered()), mainWindow, SLOT(updateDocument()) );
+	
 }
 
 
@@ -1609,6 +1613,7 @@ void ActionManager::languageChange()
 	(*scrActions)["extrasHyphenateText"]->setTexts( tr("&Hyphenate Text"));
 	(*scrActions)["extrasDeHyphenateText"]->setTexts( tr("Dehyphenate Text"));
 	(*scrActions)["extrasGenerateTableOfContents"]->setTexts( tr("&Generate Table Of Contents"));
+	(*scrActions)["extrasUpdateDocument"]->setTexts( tr("&Update Document"));
 
 	//Windows Menu
 	(*scrActions)["windowsCascade"]->setText( tr("&Cascade"));
@@ -2125,7 +2130,8 @@ void ActionManager::createDefaultMenus()
 		<< "extrasManageImages"
 		<< "extrasHyphenateText"
 		<< "extrasDeHyphenateText"
-		<< "extrasGenerateTableOfContents";
+		<< "extrasGenerateTableOfContents"
+		<< "extrasUpdateDocument";
 	//Windows
 	++itmenu;
 	itmenu->second
