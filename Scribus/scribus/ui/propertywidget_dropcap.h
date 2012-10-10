@@ -25,7 +25,8 @@ public:
 	void connectSignals();
 	void disconnectSignals();
 	CharSelectEnhanced * m_enhanced;
-
+	
+	void fillNumerationsCombo();
 protected:
 	double m_unitRatio;
 	int    m_unitIndex;
@@ -52,9 +53,13 @@ public slots:
 	void handleParEffectUse();
 	void handleBulletStr(QString);
 	void handleDropCapLines();
+	void handleNumName(QString);
 	void handleNumStyle(int);
 	void handleNumLevel(int);
+	void hnadleNumPrefix(QString);
+	void handleNumSuffix(QString);
 	void handlePEOffset();
+	void handlePEIndent();
 	void handlePECharStyle();
 
 private slots:
@@ -91,6 +96,15 @@ private:
 		numStyleCombo->addItem("A_B_C");
 		numStyleCombo->addItem("*");
 	}
+//	void SMPStyleWidget::fillNumRestartCombo()
+//	{
+//		numRestartCombo->clear();
+//		numRestartCombo->addItem(tr("Document"));
+//		numRestartCombo->addItem(tr("Section"));
+//		numRestartCombo->addItem(tr("Story"));
+//		numRestartCombo->addItem(tr("Page"));
+//		numRestartCombo->addItem(tr("Frame"));
+//	}
 };
 
 #endif // PROPERTYWIDGET_DropCap_H
