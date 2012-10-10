@@ -49,7 +49,6 @@ typedef struct {
 	int lastlevel;
 } numstruct;
 
-
 //util functions for use without Numeration class
 //convert passed num to string using numeration style
 const QString getStringFromNum(NumFormat format, int num, const QChar leadingChar='0', const int charsLen=0);

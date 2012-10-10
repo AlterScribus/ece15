@@ -2466,6 +2466,10 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(PEDIST))
 		newStyle.setParEffectOffset(attrs.valueAsDouble(PEDIST));
 
+	static const QString PEINDENT("PEINDENT");
+	if (attrs.hasAttribute(PEINDENT))
+		newStyle.setParEffectIndent(attrs.valueAsDouble(PEINDENT));
+
 	static const QString DROP("DROP");
 	if (attrs.hasAttribute(DROP))
 		newStyle.setHasDropCap(static_cast<bool>(attrs.valueAsInt(DROP)));

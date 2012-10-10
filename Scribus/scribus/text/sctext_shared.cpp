@@ -121,8 +121,14 @@ void ScText_Shared::replaceCharStyleContextInParagraph(int pos, const StyleConte
 	for (int i=pos-1; i >=0 ; --i ) 
 	{
 		if ( (at(i)->ch) == SpecialChars::PARSEP)
+		{
+			if (at(i)->prefix)
+				value(i)->prefix->setContext(trailingStyle.charStyleContext());
 			break;
+		}
 		value(i)->setContext(newContext);
+		if (at(i)->prefix)
+			value(i)->prefix->setContext(newContext);
 	}
 #ifndef NDEBUG // skip assertions if we aren't debugging
 	// we are done here but will do a sanity check:

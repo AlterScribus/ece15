@@ -132,8 +132,6 @@ public:
 			layout       = layout->more;
 			otherLayout  = otherLayout->more;
 		}
-		if (other.parstyle)
-			parstyle = new ParagraphStyle(*other.parstyle);
 	}
 	~ScText();
 

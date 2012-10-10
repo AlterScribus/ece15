@@ -390,6 +390,8 @@ void StoryText::removeParSep(int pos)
 //		d->replaceParentStyle(pos, oldP, newP);
 		delete it->parstyle;
 		it->parstyle = 0;
+		if (it->prefix && it->prefix->parstyle)
+			it->prefix->parstyle = NULL;
 	}
 	// demote this parsep so the assert code in replaceCharStyleContextInParagraph()
 	// doesnt choke:

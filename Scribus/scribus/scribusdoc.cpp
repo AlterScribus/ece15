@@ -16000,11 +16000,12 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel);
 						if (hl->prefix == NULL)
 						{
-							hl->prefix = new ScText(*hl);
-//							const StyleContext* cStyleContext = style.charStyleContext();
-//							hl->prefix->setContext(cStyleContext);
-//							if (hl->prefix->parstyle)
-//								hl->prefix->parstyle->charStyleContext()->invalidate();
+							ScText clone;
+							clone.applyCharStyle(item->itemText.paragraphStyle(pos).charStyle());
+							clone.setEffects(ScStyle_Default);
+							hl->prefix = new ScText(clone);
+							const StyleContext* cStyleContext = item->itemText.paragraphStyle(pos).charStyleContext();
+							hl->prefix->setContext(cStyleContext);
 						}
 						if (hl->prefix->str != prefixStr)
 						{

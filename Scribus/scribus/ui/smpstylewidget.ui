@@ -297,6 +297,13 @@
                   </property>
                  </spacer>
                 </item>
+                <item>
+                 <widget class="SMCheckBox" name="parEffectIndentBox">
+                  <property name="text">
+                   <string>AutoIndent</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>

@@ -100,6 +100,7 @@ void SMPStyleWidget::languageChange()
 	dropCapLines_->setToolTip(    tr("Drop Cap Lines"));
 	bulletCharTableButton_->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
 	parEffectOffset_->setToolTip(   tr("Paragraph Effects Chars Offset"));
+	parEffectIndentBox->setToolTip(   tr("Hang Paragraph Effect before paragraph indent"));
 	parEffectCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
 	alignement_->setToolTip(      tr("Alignment"));
 	tabList_->first_->setToolTip( tr("First Line Indent"));
@@ -364,6 +365,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 
 		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio, pstyle->isInhParEffectOffset());
 		parEffectOffset_->setParentValue(parent->parEffectOffset() * unitRatio);
+		parEffectIndentBox->setChecked(pstyle->parEffectIndent(),pstyle->isInhParEffectIndent());
+		parEffectIndentBox->setParentValue(parent->parEffectIndent());
 
 		bulletBox->setChecked(pstyle->hasBullet());
 		setWidgetBoldFont(bulletBox, !pstyle->isInhHasBullet());
@@ -415,6 +418,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		maxGlyphExtSpin->setValue(pstyle->maxGlyphExtension() * 100.0);
 
 		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio);
+		parEffectIndentBox->setChecked(pstyle->parEffectIndent());
 		parentParEffectsButton->hide();
 		disconnect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 		dropCapsBox->setChecked(pstyle->hasDropCap());
@@ -463,6 +467,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	dropCapLines_->setEnabled(pstyle->hasDropCap());
 
 	parEffectOffset_->setEnabled(pstyle->hasDropCap() || pstyle->hasBullet() || pstyle->hasNum());
+	parEffectIndentBox->setEnabled(pstyle->hasDropCap() || pstyle->hasBullet() || pstyle->hasNum());
 	parEffectCharStyleCombo->setEnabled(pstyle->hasDropCap() || pstyle->hasBullet() || pstyle->hasNum());
 	parEffectCharStyleCombo->clear();
 	parEffectCharStyleCombo->addItem(tr("No Style"));

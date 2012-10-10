@@ -1479,6 +1479,7 @@ void PageItem_TextFrame::layout()
 				opticalMargins = style.opticalMargins();
 			if (hl->prefix && !style.hasBullet() && !style.hasNum())
 			{
+				hl->prefix->parstyle = NULL;
 				delete hl->prefix;
 				hl->prefix = NULL;
 			}
@@ -1494,11 +1495,12 @@ void PageItem_TextFrame::layout()
 					BulNumMode = true;
 					if (hl->prefix == NULL)
 					{
-						hl->prefix = new ScText(*hl);
-//						const StyleContext* cStyleContext = style.charStyleContext();
-//						hl->prefix->setContext(cStyleContext);
-//						if (hl->prefix->parstyle)
-//							hl->prefix->parstyle->charStyleContext()->invalidate();
+						ScText clone;
+						clone.applyCharStyle(charStyle);
+						clone.setEffects(ScStyle_Default);
+						hl->prefix = new ScText(clone);
+						const StyleContext* cStyleContext = itemText.paragraphStyle(a).charStyleContext();
+						hl->prefix->setContext(cStyleContext);
 					}
 					if (style.hasBullet())
 						prefixStr = style.bulletStr();
@@ -1516,6 +1518,7 @@ void PageItem_TextFrame::layout()
 			}
 			if (!BulNumMode && hl->prefix)
 			{
+				hl->prefix->parstyle = NULL;
 				delete hl->prefix;
 				hl->prefix = NULL;
 			}
@@ -1925,13 +1928,16 @@ void PageItem_TextFrame::layout()
 				if (current.addLeftIndent && (maxDX == 0 || DropCmode || BulNumMode))
 				{
 					current.leftIndent = style.leftMargin();
-					if (current.hasDropCap)
-						current.leftIndent = 0;
+//					if (current.hasDropCap)
+//						current.leftIndent = 0;
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
 						if (BulNumMode)
-							current.leftIndent += style.parEffectOffset() + hl->prefix->glyph.wide();
+						{
+							if (!style.parEffectIndent())
+								current.leftIndent += style.parEffectOffset() + hl->prefix->glyph.wide();
+						}
 					}
 					current.addLeftIndent = false;
 				}
