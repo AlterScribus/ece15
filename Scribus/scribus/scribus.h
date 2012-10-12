@@ -448,6 +448,7 @@ public slots:
 	void objectAttributes();
 	void getImageInfo();
 	void generateTableOfContents();
+	void updateDocument();
 
 //	void saveStyles(StilFormate *dia); //still required for style save from SE
 	void setNewAlignment(int a);
@@ -638,6 +639,8 @@ public:
 	bool stylesShortcutKeyEvent(const QKeyEvent*);
 	//! \brief check for missing externals files (images for now)
 	void checkExternals();
+
+	QString osgFilterString;
 };
 
 #endif

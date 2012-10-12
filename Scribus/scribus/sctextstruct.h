@@ -114,15 +114,16 @@ public:
 	Mark* mark;
 	QChar ch;
 	ScText* prefix;
+	QString str;
 	ScText() : 
 		CharStyle(),
 		parstyle(NULL), glyph(), 
-		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), mark(NULL), ch(), prefix(NULL) {}
+		PtransX(0.0f), PtransY(0.0f), PRot(0.0f), PDx(0.0f), embedded(0), mark(NULL), ch(), prefix(NULL), str(QString()) {}
 	ScText(const ScText& other) : 
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), mark(other.mark), ch(other.ch), prefix(NULL)
+		embedded(other.embedded), mark(other.mark), ch(other.ch), prefix(NULL), str(other.str)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;

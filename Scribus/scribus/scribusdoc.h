@@ -43,6 +43,7 @@ for which a new license (GPL+exception) is in place.
 #include "documentinformation.h"
 #include "marks.h"
 #include "notesstyles.h"
+#include "numeration.h"
 #include "observable.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
@@ -1176,6 +1177,8 @@ public:
 	void beginUpdate();
 	void endUpdate();
 	int addToInlineFrames(PageItem *item);
+	void removeInlineFrame(int fIndex);
+	void checkItemForFrames(PageItem *it, int fIndex);
 
 protected:
 	void addSymbols();
@@ -1775,6 +1778,15 @@ public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();
 	void itemSelection_EditWeld();
+
+//auto-numerations
+public:
+	QMap<QString, numstruct*> numerations;
+	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
+	QString getNumberStr(QString numName, int level, bool increment=true, bool resetlower=true);
+	void setNumerationCounter(QString numName, int level, int number);
+	bool m_flagRenumber;
+	void updateNumbers(bool updateNumerations = false);
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

@@ -188,6 +188,8 @@ for which a new license (GPL+exception) is in place.
 #include "ui/notesstyleseditor.h"
 #ifdef HAVE_OSG
 	#include "ui/osgeditor.h"
+	#include <osgDB/ReaderWriter>
+	#include <osgDB/PluginQuery>
 #endif
 #include "ui/outlinepalette.h"
 #include "ui/pageitemattributes.h"
@@ -488,6 +490,37 @@ void ScribusMainWindow::initDefaultValues()
 	ClipB = QApplication::clipboard();
 	palettesStatus[0] = false;
 	guidesStatus[0] = false;
+#ifdef HAVE_OSG
+	QStringList supportedExts;
+	supportedExts << "osg" << "dxf" << "flt" << "ive" << "geo" << "sta" << "stl" << "logo" << "3ds" << "ac" << "obj";
+	QStringList realSupportedExts;
+	QMap<QString, QString> formats;
+	osgDB::FileNameList plugins = osgDB::listAllAvailablePlugins();
+	for(osgDB::FileNameList::iterator itr = plugins.begin(); itr != plugins.end(); ++itr)
+	{
+		osgDB::ReaderWriterInfoList infoList;
+		if (osgDB::queryPlugin(*itr, infoList))
+		{
+			for(osgDB::ReaderWriterInfoList::iterator rwi_itr = infoList.begin(); rwi_itr != infoList.end(); ++rwi_itr)
+			{
+				osgDB::ReaderWriterInfo& info = *(*rwi_itr);
+				osgDB::ReaderWriter::FormatDescriptionMap::iterator fdm_itr;
+				for(fdm_itr = info.extensions.begin(); fdm_itr != info.extensions.end(); ++fdm_itr)
+				{
+					if (supportedExts.contains(QString::fromStdString(fdm_itr->first)))
+					{
+						formats.insert("*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper(), QString::fromStdString(fdm_itr->second) + " (*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper() + ")");
+					}
+				}
+			}
+		}
+	}
+	realSupportedExts = formats.keys();
+	QString docexts = realSupportedExts.join(" ");
+	QStringList longList = formats.values();
+	QString longDesc = longList.join(";;") + ";;";
+	osgFilterString = tr("All Supported Formats (%1);;%2All Files (*)").arg(docexts).arg(longDesc);
+#endif
 }
 
 
@@ -572,6 +605,7 @@ void ScribusMainWindow::initPalettes()
 	connect(symbolPalette, SIGNAL(paletteShown(bool)), scrActions["toolsSymbols"], SLOT(setChecked(bool)));
 	connect(symbolPalette, SIGNAL(startEdit(QString)), this, SLOT(editSymbolStart(QString)));
 	connect(symbolPalette, SIGNAL(endEdit()), this, SLOT(editSymbolEnd()));
+	connect(symbolPalette, SIGNAL(objectDropped()), this, SLOT(PutToPatterns()));
 	symbolPalette->installEventFilter(this);
 	symbolPalette->hide();
 
@@ -1046,6 +1080,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["extrasHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasDeHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasGenerateTableOfContents"], "Extras", false);
+	scrMenuMgr->addMenuItem(scrActions["extrasUpdateDocument"], "Extras", true);
 	scrMenuMgr->setMenuEnabled("Extras", false);
 	connect(scrMenuMgr->getLocalPopupMenu("Extras"), SIGNAL(aboutToShow()), this, SLOT(extrasMenuAboutToShow()));
 
@@ -2950,7 +2985,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemAttributes"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(false);
 		//scrMenuMgr->setMenuEnabled("ItemShapes", !(currItem->isTableItem && currItem->isSingleSel));
-//		scrMenuMgr->setMenuEnabled("ItemConvertTo", true);
+		scrMenuMgr->setMenuEnabled("ItemConvertTo", !((doc->appMode == modeEdit) || (currItem->isAnnotation())));
 		scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 		scrActions["itemConvertToImageFrame"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToOutlines"]->setEnabled(doc->appMode != modeEdit);
@@ -3426,6 +3461,12 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		doc->setNotesChanged(false);
 		doc->flag_updateEndNotes = false;
 		doc->flag_updateMarksLabels = false;
+	}
+	while (doc->m_flagRenumber)
+	{
+		doc->updateNumbers();
+		if (!doc->m_flagRenumber)
+			doc->regionsChanged()->update(QRect());
 	}
 }
 
@@ -4249,6 +4290,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		/*QTime t;
 		t.start();*/
 		int docItemsCount=doc->Items->count();
+		doc->m_flagRenumber = false;
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -4286,6 +4328,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			slotFileSaveAs();
 		} */
 		delete fileLoader;
+		doc->updateNumbers(true);
 		view->updatesOn(true);
 		w->setUpdatesEnabled(true);
 		disconnect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(newActWin(QMdiSubWindow *)));
@@ -9834,7 +9877,7 @@ void ScribusMainWindow::callImageEditor()
 #ifdef HAVE_OSG
 		if (currItem->asOSGFrame())
 		{
-			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame());
+			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame(), osgFilterString);
 			dia->exec();
 			return;
 		}
@@ -9960,6 +10003,16 @@ void ScribusMainWindow::generateTableOfContents()
 {
 	if (HaveDoc)
 		tocGenerator->generateDefault();
+}
+
+void ScribusMainWindow::updateDocument()
+{
+	if (HaveDoc)
+	{
+		doc->updateNumbers(true);
+//		doc->view()->repaint();
+		doc->regionsChanged()->update(QRect());
+	}
 }
 
 void ScribusMainWindow::insertSampleText()

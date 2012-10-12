@@ -8,7 +8,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef SMPSTYLEWIDGET_H
 #define SMPSTYLEWIDGET_H
 
-//class QEvent;
+class QEvent;
 #include "ui_smpstylewidget.h"
 
 #include "ui/charselectenhanced.h"
@@ -43,6 +43,8 @@ private:
 
 	void fillBulletStrEditCombo();
 	void fillNumStyleCombo();
+	void fillNumerationsCombo(QList<ParagraphStyle> &pstyles);
+	void fillNumRestartCombo();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
 	void showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);
@@ -64,6 +66,11 @@ private:
 	void openEnhanced();
 	void closeEnhanced(bool show = false);
 
+	void openEnhanced();
+	void closeEnhanced(bool show = false);
+	void connectPESignals();
+	void disconnectPESignals();
+
 	friend class SMParagraphStyle;
 
 private slots:
@@ -83,9 +90,8 @@ private slots:
 	void slotDefaultWidowsOrphans();
 	void slotParentWidowsOrphans();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
-
 	void on_bulletCharTableButton__toggled(bool checked);
-	
+
 signals:
 	void useParentParaEffects();
 	void useParentOptMargins();

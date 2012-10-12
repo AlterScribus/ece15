@@ -276,7 +276,8 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true)
+	flag_layoutNotesFrames(true),
+	m_flagRenumber(false)
 {
 	docUnitRatio=unitGetRatioFromIndex(docPrefsData.docSetupPrefs.docUnitIndex);
 	docPrefsData.docSetupPrefs.pageHeight=0;
@@ -376,6 +377,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true)
+	m_flagRenumber(false)
 {
 	docPrefsData.docSetupPrefs.docUnitIndex=unitindex;
 	docPrefsData.docSetupPrefs.pageHeight=pagesize.height();
@@ -577,6 +579,7 @@ void ScribusDoc::init()
 	//for loading old documents where default notes style is not saved
 	if (m_docNotesStylesList.isEmpty())
 		m_docNotesStylesList.append(new NotesStyle());
+	m_flagRenumber = true;
 }
 
 
@@ -687,6 +690,9 @@ ScribusDoc::~ScribusDoc()
 		delete m_docNotesStylesList.takeFirst();
 	docPatterns.clear();
 	docGradients.clear();
+	foreach (numstruct* ns, numerations.values())
+		delete ns;
+	numerations.clear();
 	while (!DocItems.isEmpty())
 	{
 		delete DocItems.takeFirst();
@@ -1494,6 +1500,9 @@ void ScribusDoc::redefineStyles(const StyleSet<ParagraphStyle>& newStyles, bool 
 		}
 	}
 	docParagraphStyles.invalidate();
+	setupNumerations();
+	if (!isLoading())
+		m_flagRenumber = true;
 }
 
 void ScribusDoc::redefineCharStyles(const StyleSet<CharStyle>& newStyles, bool removeUnused)
@@ -11475,6 +11484,10 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 				}
 			}
 			*/
+		if (currItem->asTextFrame())
+			currItem->dropLinks();
+		if (currItem->isWelded())
+			currItem->unWeld();
 		if (currItem->isBookmark)
 			//CB From view   emit DelBM(currItem);
 			m_ScMW->DelBookMark(currItem);
@@ -16478,6 +16491,203 @@ void ScribusDoc::itemSelection_EditWeld()
 	m_ScMW->view->requestMode(modeEditWeldPoint);
 }
 
+void ScribusDoc::setupNumerations()
+{
+	foreach (numstruct* ns, numerations.values())
+		delete ns;
+	numerations.clear();
+//create default numeration
+	numstruct * numS = new numstruct;
+	numS->name = "default";
+	Numeration num;
+	numS->nums.insert(0,num);
+	numS->counters.insert(0, 0);
+	numerations.insert(numS->name, numS);
+
+	for (int i=0; i < docParagraphStyles.count(); ++i)
+	{
+		if (docParagraphStyles[i].hasNum())
+		{
+			num.numFormat = (NumFormat) docParagraphStyles[i].numStyle();
+			num.prefix = docParagraphStyles[i].numPrefix();
+			num.suffix = docParagraphStyles[i].numSuffix();
+			num.start = docParagraphStyles[i].numStart() -1;
+			QString name = docParagraphStyles[i].numName();
+			if (numerations.contains(name))
+				numS = numerations.value(name);
+			else
+			{
+				numS = new numstruct;
+				numS->name = name;
+			}
+			int level = docParagraphStyles[i].numLevel();
+			if (level >= numS->counters.count())
+			{
+				for (int i=numS->counters.count(); i <= level; ++i)
+				{
+					numS->nums.insert(i,num);
+					numS->counters.insert(i, 0);
+				}
+			}
+			numS->nums.replace(level, num);
+			numS->counters.replace(level, num.start);
+			numS->lastlevel = 0;
+			numerations.insert(numS->name, numS);
+		}
+	}
+}
+
+QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, bool resetlower)
+{
+	Q_ASSERT(numerations.contains(numName));
+	numstruct * numS = numerations.value(numName);
+	numS->lastlevel = level;
+	if (resetlower)
+	{
+		for (int l = 0; l < numS->counters.count(); ++l)
+			if (l >= level)
+				setNumerationCounter(numName, l, numS->nums[l].start);
+	}
+	if (increment)
+	{
+		int currNum = numS->counters.at(level);
+		++currNum;
+		setNumerationCounter(numName, level, currNum);
+	}
+	QString result = QString();
+	for (int i=0; i <= level; ++i)
+	{
+		result.append(numS->nums[i].prefix);
+		result.append(numS->nums[i].numString(numS->counters.at(i)));
+		result.append(numS->nums[i].suffix);
+	}
+	return result;
+}
+
+void ScribusDoc::setNumerationCounter(QString numName, int level, int number)
+{
+	numstruct * numS = numerations.value(numName);
+	if (level > numS->counters.count())
+		numS->counters.insert(level, number);
+	else
+		numS->counters.replace(level, number);
+}
+
+void ScribusDoc::updateNumbers(bool updateNumerations)
+{
+	if (updateNumerations)
+		//after stles change reset all numerations settings
+		setupNumerations();
+	else
+	{
+		//reset ALL counters
+		foreach (numstruct * numS, numerations.values())
+			for (int l = 0; l < numS->nums.count(); ++l)
+				numS->counters[l] = numS->nums[l].start;
+	}
+	m_flagRenumber = false;
+
+	//renumbering for doc, sections, page and frame range
+	for (int sec = 0; sec < sections().count(); ++sec)
+	{
+		//reset section range counters
+		foreach (numstruct * numS, numerations.values())
+			for (int l = 0; l < numS->nums.count(); ++l)
+				if (numS->nums[l].range == NSRsection)
+					numS->counters[l] = numS->nums[l].start;
+
+		int start = sections().value(sec).fromindex;
+		int stop = sections().value(sec).toindex;
+		for (int page = start; page <= stop; ++page)
+		{
+			//reset page range counters
+			foreach (numstruct * numS, numerations.values())
+				for (int l = 0; l < numS->nums.count(); ++l)
+					if (numS->nums[l].range == NSRpage)
+						numS->counters[l] = numS->nums[l].start;
+			for (int i=0; i < DocItems.count(); ++i)
+			{
+				PageItem* item = DocItems.at(i);
+				if (item->OwnPage != page)
+					continue;
+				if (!item->isTextFrame())
+					continue;
+
+				//reset items and stories range counters
+				foreach (numstruct * numS, numerations.values())
+					for (int l = 0; l < numS->nums.count(); ++l)
+						if ((numS->nums[l].range == NSRframe) || ((numS->nums[l].range == NSRstory) && (item->prevInChain() == NULL)))
+							numS->counters[l] = numS->nums[l].start;
+				
+				int pos = item->firstInFrame();
+				if ((pos != 0) && (item->itemText.text(pos-1) != SpecialChars::PARSEP))
+					pos = item->itemText.nextParagraph(pos)+1;
+				int last = item->lastInFrame();
+				int len = item->itemText.length();
+				while (pos <= last)
+				{
+					ParagraphStyle style = item->itemText.paragraphStyle(pos);
+					if (style.hasNum())
+					{
+						ScText * hl = item->itemText.item(pos);
+						bool resetlowerlevel = false;
+						if (style.numOther())
+						{
+							if (pos == 0)
+								resetlowerlevel = true;
+							else
+							{
+								int currPara = item->itemText.nrOfParagraph(pos);
+								int currStart = item->itemText.startOfParagraph(currPara);
+								ParagraphStyle preStyle = item->itemText.paragraphStyle(currStart-1);
+								//reset counter if prev style hasnt numeration or has other numeration
+								if (!preStyle.hasNum() || (preStyle.numName() != style.numName()))
+									resetlowerlevel = true;
+							}
+							if (resetlowerlevel && (style.numLevel() > 0))
+							{
+								for (int l = 0; l < style.numLevel(); ++l)
+									setNumerationCounter(style.numName(), l, numerations.value(style.numName())->counters[l] +1);
+							}
+						}
+						if (style.numHigher() && (style.numLevel() > 0))
+						{
+							if (numerations.value(style.numName())->lastlevel < style.numLevel())
+								resetlowerlevel = true;
+						}
+						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel);
+						if (hl->prefix == NULL)
+						{
+							ScText clone;
+							clone.applyCharStyle(item->itemText.paragraphStyle(pos).charStyle());
+							clone.setEffects(ScStyle_Default);
+							hl->prefix = new ScText(clone);
+							const StyleContext* cStyleContext = item->itemText.paragraphStyle(pos).charStyleContext();
+							hl->prefix->setContext(cStyleContext);
+						}
+						if (hl->prefix->str != prefixStr)
+						{
+							hl->prefix->str = prefixStr;
+							item->invalid = true;
+							m_flagRenumber = true;
+						}
+					}
+					if (pos == last)
+						break;
+					if (item->itemText.text(pos) == SpecialChars::PARSEP)
+						++pos;
+					else
+					{
+						pos = item->itemText.nextParagraph(pos)+1;
+						if (pos == len)
+							break;
+					}
+				}
+			}
+		}
+	}
+}
+
 int ScribusDoc::addToInlineFrames(PageItem *item)
 {
 	int fIndex = qrand();
@@ -16490,6 +16700,141 @@ int ScribusDoc::addToInlineFrames(PageItem *item)
 	item->setXYPos(lw, lw, true);
 	FrameItems.insert(fIndex, item);
 	return fIndex;
+}
+
+void ScribusDoc::removeInlineFrame(int fIndex)
+{
+	QList<PageItem*> allItems;
+	PageItem* it = NULL;
+	uint counter = 0;
+	for (uint lc = 0; lc < 2; ++lc)
+	{
+		switch (lc)
+		{
+			case 0:
+				counter = MasterItems.count();
+				break;
+			case 1:
+				counter = DocItems.count();
+				break;
+		}
+		for (uint d = 0; d < counter; ++d)
+		{
+			switch (lc)
+			{
+				case 0:
+					it = MasterItems.at(d);
+					break;
+				case 1:
+					it = DocItems.at(d);
+					break;
+			}
+			if (it->isGroup())
+				allItems = it->asGroupFrame()->getItemList();
+			else
+				allItems.append(it);
+			for (int ii = 0; ii < allItems.count(); ii++)
+			{
+				it = allItems.at(ii);
+				if (it->isTable())
+				{
+					for (int row = 0; row < it->asTable()->rows(); ++row)
+					{
+						for (int col = 0; col < it->asTable()->columns(); col ++)
+						{
+							TableCell cell = it->asTable()->cellAt(row, col);
+							if (cell.row() == row && cell.column() == col)
+							{
+								PageItem* textFrame = cell.textFrame();
+								checkItemForFrames(textFrame, fIndex);
+							}
+						}
+					}
+				}
+				else
+					checkItemForFrames(it, fIndex);
+			}
+			allItems.clear();
+		}
+	}
+	for (QHash<int, PageItem*>::iterator itf = FrameItems.begin(); itf != FrameItems.end(); ++itf)
+	{
+		PageItem *ite = itf.value();
+		if (ite->isGroup())
+			allItems = ite->asGroupFrame()->getItemList();
+		else
+			allItems.append(ite);
+		for (int ii = 0; ii < allItems.count(); ii++)
+		{
+			ite = allItems.at(ii);
+			if (ite->isTable())
+			{
+				for (int row = 0; row < ite->asTable()->rows(); ++row)
+				{
+					for (int col = 0; col < ite->asTable()->columns(); col ++)
+					{
+						TableCell cell = ite->asTable()->cellAt(row, col);
+						if (cell.row() == row && cell.column() == col)
+						{
+							PageItem* textFrame = cell.textFrame();
+							checkItemForFrames(textFrame, fIndex);
+						}
+					}
+				}
+			}
+			else
+				checkItemForFrames(ite, fIndex);
+		}
+		allItems.clear();
+	}
+	QStringList patterns = getUsedPatterns();
+	for (int c = 0; c < patterns.count(); ++c)
+	{
+		ScPattern pa = docPatterns[patterns[c]];
+		for (int o = 0; o < pa.items.count(); o++)
+		{
+			it = pa.items.at(o);
+			if (it->isGroup())
+				allItems = it->asGroupFrame()->getItemList();
+			else
+				allItems.append(it);
+			for (int ii = 0; ii < allItems.count(); ii++)
+			{
+				it = allItems.at(ii);
+				checkItemForFrames(it, fIndex);
+			}
+			allItems.clear();
+		}
+	}
+	it = FrameItems.take(fIndex);
+	delete it;
+	changed();
+	regionsChanged()->update(QRect());
+}
+
+
+void ScribusDoc::checkItemForFrames(PageItem *it, int fIndex)
+{
+	QList<int> deleteList;
+	deleteList.clear();
+	if (!it->isTextFrame() && !it->isPathText())
+		return;
+	int start = 0;
+	int stop  = it->itemText.length();
+	for (int e = start; e < stop; ++e)
+	{
+		ScText *hl = it->itemText.item(e);
+		if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(this)))
+		{
+			if (hl->getItem(this)->inlineCharID == fIndex)
+				deleteList.prepend(e);
+		}
+	}
+	for (int a = 0; a < deleteList.count(); a++)
+	{
+		it->itemText.removeChars(deleteList[a], 1);
+	}
+	it->invalid = true;
 }
 
 QStringList ScribusDoc::marksLabelsList(MarkType type)

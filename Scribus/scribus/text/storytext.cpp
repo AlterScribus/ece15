@@ -374,6 +374,8 @@ void StoryText::insertParSep(int pos)
 //		it->parstyle->charStyle().setName("cpara"); // DONT TRANSLATE
 //		it->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
 	}
+	if (it->parstyle->hasNum())
+		doc->m_flagRenumber = true;
 	d->replaceCharStyleContextInParagraph(pos, it->parstyle->charStyleContext());
 }
 /**
@@ -384,11 +386,15 @@ void StoryText::removeParSep(int pos)
 {
 	ScText* it = item_p(pos);
 	if (it->parstyle) {
+		if (it->parstyle->hasNum())
+			doc->m_flagRenumber = true;
 //		const CharStyle* oldP = & it->parstyle->charStyle();
 //		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
 //		d->replaceParentStyle(pos, oldP, newP);
 		delete it->parstyle;
 		it->parstyle = 0;
+		if (it->prefix && it->prefix->parstyle)
+			it->prefix->parstyle = NULL;
 	}
 	// demote this parsep so the assert code in replaceCharStyleContextInParagraph()
 	// doesnt choke:

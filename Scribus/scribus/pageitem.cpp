@@ -1174,14 +1174,14 @@ void PageItem::drawOverflowMarker(ScPainter *p)
 
 	p->save();
 
-	p->setPen(color, 0.5 / p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	p->setPen(color, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 	p->setPenOpacity(1.0);
 	p->setBrush(Qt::white);
 	p->setBrushOpacity(1.0);
 	p->setFillMode(ScPainter::Solid);
-	p->drawRect(left, top, sideLength, sideLength);
-	p->drawLine(QPointF(left, top), QPointF(right, bottom));
-	p->drawLine(QPointF(left, bottom), QPointF(right, top));
+	p->drawSharpRect(left, top, sideLength, sideLength);
+	p->drawSharpLine(QPointF(left, top), QPointF(right, bottom));
+	p->drawSharpLine(QPointF(left, bottom), QPointF(right, top));
 
 	p->restore();
 }
@@ -1331,7 +1331,6 @@ void PageItem::unlink(bool createUndo)
 		}
 	}
 }
-
 
 void PageItem::dropLinks()
 {
@@ -2005,8 +2004,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 	p->rotate(Rot);
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
-		double aestheticFactor(5.0);
-		double scpInv = 1.0 / (qMax(p->zoomFactor(), 1.0) * aestheticFactor);
+		double scpInv = 0;
 		if (!isGroup())
 		{
 			if ((Frame) && (m_Doc->guidesPrefs().framesShown) && ((itemType() == ImageFrame) || (itemType() == LatexFrame) || (itemType() == OSGFrame) || (itemType() == PathText)))
@@ -2041,21 +2039,21 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 				else
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-					p->setupPolygon(&PoLine, false);
+					p->setupSharpPolygon(&PoLine, false);
 	#else
-					p->setupPolygon(&PoLine);
+					p->setupSharpPolygon(&PoLine);
 	#endif
 				p->strokePath();
 			}
 		}
 		if ((m_Doc->guidesPrefs().framesShown) && textFlowUsesContourLine() && (ContourLine.size() != 0))
 		{
-			p->setPen(Qt::darkGray, 1.0 / qMax(p->zoomFactor(), 1.0), Qt::DotLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::darkGray, 0, Qt::DotLine, Qt::FlatCap, Qt::MiterJoin);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupPolygon(&ContourLine, false);
+			p->setupSharpPolygon(&ContourLine, false);
 	#else
-			p->setupPolygon(&ContourLine);
+			p->setupSharpPolygon(&ContourLine);
 	#endif
 			p->strokePath();
 		}
@@ -2081,7 +2079,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		}
 		if ((m_Doc->guidesPrefs().layerMarkersShown) && (m_Doc->layerCount() > 1) && (!m_Doc->layerOutline(LayerID)) && (isGroup()) && (!m_Doc->drawAsPreview))
 		{
-			p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setPenOpacity(1.0);
 			p->setBrush(m_Doc->layerMarker(LayerID));
 			p->setBrushOpacity(1.0);
@@ -2089,7 +2087,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 			double ofwh = 10;
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
-			p->drawRect(ofx, ofy, ofwh, ofwh);
+			p->drawSharpRect(ofx, ofy, ofwh, ofwh);
 		}
 		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
 		{
@@ -2097,7 +2095,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 			if (m_Locked)
 				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setFillMode(ScPainter::None);
-			p->drawRect(0, 0, Width, Height);
+			p->drawSharpRect(0, 0, Width, Height);
 			no_fill = false;
 			no_stroke = false;
 		}
@@ -2105,7 +2103,6 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		//if (m_Doc->m_Selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
 	}
-//	Tinput = false;
 	FrameOnly = false;
 	p->restore();
 }
@@ -4827,6 +4824,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	bool useRasterBackup = m_Doc->useRaster;
 	bool SnapGuidesBackup = m_Doc->SnapGuides;
 	bool SnapElementBackup = m_Doc->SnapElement;
+	int dummy = 0;
 	m_Doc->SnapElement = false;
 	m_Doc->useRaster = false;
 	m_Doc->SnapGuides = false;
@@ -4843,7 +4841,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	{
 		bool actionFound = checkGradientUndoRedo(ss, isUndo);
 		if (actionFound)
-			int dummy = 0;
+			dummy = 0;
 		else if (ss->contains("ARC"))
 			restoreArc(ss, isUndo);
 		else if (ss->contains("MASKTYPE"))
@@ -5100,6 +5098,8 @@ void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
 		PageItem* wIt = is->getItem();
 		weldTo(wIt);
 	}
+	m_Doc->changed();
+	m_Doc->regionsChanged()->update(QRectF());
 }
 
 void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
@@ -5130,6 +5130,8 @@ void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
 	{
 		unWeld();
 	}
+	m_Doc->changed();
+	m_Doc->regionsChanged()->update(QRectF());
 }
 
 bool PageItem::checkGradientUndoRedo(SimpleState *ss, bool isUndo)
@@ -10250,6 +10252,7 @@ void PageItem::weldTo(PageItem* pIt)
 	addWelded(pIt);
 	pIt->addWelded(this);
 	if(!pIt->isNoteFrame() && undoManager->undoEnabled())
+	if(undoManager->undoEnabled())
 	{
 		ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);
 		is->set("WELD_ITEMS", "weld_items");
@@ -10378,8 +10381,6 @@ void PageItem::unWeld()
 			if (pIt2 == this)
 			{
 				pIt->weldList.removeAt(b);
-//				if (isNoteFrame() && asNoteFrame()->masterFrame() != NULL && asNoteFrame()->masterFrame() == pIt)
-//					break;
 				if(undoManager->undoEnabled())
 				{
 					ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);

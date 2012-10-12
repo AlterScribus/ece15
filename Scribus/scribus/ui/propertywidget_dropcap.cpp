@@ -9,6 +9,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_table.h"
 #include "propertywidget_dropcap.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "selection.h"
 #include "units.h"
 #include "util.h"
@@ -106,9 +107,28 @@ void PropertyWidget_DropCap::unitChange()
 	peOffset_->blockSignals(false);
 }
 
+void PropertyWidget_DropCap::fillNumerationsCombo()
+{
+	QStringList numNames;
+	for (int i = 0; i < m_doc->paragraphStyles().count(); ++i)
+	{
+		ParagraphStyle pStyle = m_doc->paragraphStyles()[i];
+		if (pStyle.hasNum() && !numNames.contains(pStyle.numName()))
+			numNames.append(pStyle.numName());
+	}
+	if (numNames.isEmpty())
+		numNames.append("default");
+	else if (numNames.count() > 1)
+		numNames.sort();
+	numNames.prepend("<new>");
+	numComboBox->clear();
+	numComboBox->insertItems(0, numNames);
+}
+
 void PropertyWidget_DropCap::updateCharStyles()
 {
 	peCharStyleCombo->updateFormatList();
+	fillNumerationsCombo();
 }
 
 void PropertyWidget_DropCap::displayCharStyle(const QString& name)
@@ -143,6 +163,7 @@ void PropertyWidget_DropCap::enableBullet(bool enable)
 void PropertyWidget_DropCap::enableNum(bool enable)
 {
 	numRadio_->setChecked(enable);
+	numComboBox->setEnabled(enable);
 	numLevelSpin->setEnabled(enable);
 	numPrefix->setEnabled(enable);
 	numSuffix->setEnabled(enable);
@@ -161,6 +182,7 @@ void PropertyWidget_DropCap::enableParEffect(bool enable)
 	peOffRadio->setChecked(!enable);
 	peOffset_->setEnabled(enable);
 	peCharStyleCombo->setEnabled(enable);
+	peIndent_->setEnabled(enable);
 	if (!enable)
 	{
 		enableBullet(false);
@@ -174,26 +196,59 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 	if (peOffRadio->isChecked() && !newCurrent.hasBullet() && !newCurrent.hasDropCap() && !newCurrent.hasNum())
 		return;
 	disconnectSignals ();
+
 	if (newCurrent.hasDropCap())
 	{
 		if (!dropCapRadio_->isChecked())
 			enableDropCap(true);
 		dropCapLines->setValue(newCurrent.dropCapLines());
+		setWidgetBoldFont(dropCapLines, !newCurrent.isInhDropCapLines());
 	}
 	else if (newCurrent.hasBullet())
 	{
 		if (!bulletRadio_->isChecked())
 			enableBullet(true);
 		bulletStrEdit_->setEditText(newCurrent.bulletStr());
+		setWidgetBoldFont(bulletCharLabel, !newCurrent.isInhBulletStr());
 	}
 	else if (newCurrent.hasNum())
 	{
 		if (!numRadio_->isChecked())
 			enableNum(true);
-		numStyleCombo->setCurrentIndex(newCurrent.numStyle());
+		QString numName = newCurrent.numName();
+		if (numName.isEmpty())
+			numName = "default";
+		numComboBox->setCurrentItem(numComboBox->findText(numName), newCurrent.isInhNumName());
+		numStyleCombo->setCurrentItem(newCurrent.numStyle(), newCurrent.isInhNumStyle());
+		numLevelSpin->setValue(newCurrent.numLevel());
+		setWidgetBoldFont(numLevelSpin, newCurrent.isInhNumLevel());
+		numstruct * numS = m_doc->numerations.value(newCurrent.numName());
+		if (numS)
+			numLevelSpin->setMaximum(numS->counters.count());
+		else
+			numLevelSpin->setMaximum(0);
 		numPrefix->setText(newCurrent.numPrefix());
 		numSuffix->setText(newCurrent.numSuffix());
-		numLevelSpin->setValue(newCurrent.numLevel());
+	//	numStartSpin->setValue(pstyle->numStart(), pstyle->isInhNumStart());
+	//	numStartSpin->setParentValue(parent->numStart());
+	//	numRestartCombo->setCurrentItem(pstyle->numRestart(), pstyle->isInhNumRestart());
+	//	numRestartCombo->setParentItem(parent->numRestart());
+	//	numRestartOtherBox->setChecked(pstyle->numOther(), pstyle->isInhNumOther());
+	//	numRestartOtherBox->setParentValue(parent->numOther());
+	//	numRestartHigherBox->setChecked(pstyle->numHigher(), pstyle->isInhNumHigher());
+	//	numRestartHigherBox->setParentValue(parent->numHigher());
+		if (newCurrent.hasParent())
+		{
+			const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newCurrent.parentStyle());
+			if (!parent->numName().isEmpty())
+				numComboBox->setParentItem(numComboBox->findText(parent->numName()));
+			else
+				numComboBox->setParentItem(0);
+			numStyleCombo->setParentItem(parent->numStyle());
+			numLevelSpin->setParentValue(parent->numLevel());
+		}
+		setWidgetBoldFont(numPrefixLabel, !newCurrent.isInhNumPrefix());
+		setWidgetBoldFont(numSuffixLabel, !newCurrent.isInhNumSuffix());
 	}
 	else
 	{
@@ -202,7 +257,16 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 		return;
 	}
 	enableParEffect(true);
+
 	peOffset_->setValue(newCurrent.parEffectOffset() * m_unitRatio);
+	setWidgetBoldFont(peOffsetLabel, !newCurrent.isInhParEffectOffset());
+	peIndent_->setChecked(newCurrent.parEffectIndent(), newCurrent.isInhParEffectIndent());
+	if (newCurrent.hasParent())
+	{
+		const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newCurrent.parentStyle());
+		peIndent_->setParentValue(parent->parEffectIndent());
+	}
+
 	displayCharStyle(newCurrent.peCharStyleName());
 	connectSignals ();
 }
@@ -215,9 +279,13 @@ void PropertyWidget_DropCap::connectSignals()
 	connect(numRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
 	connect(dropCapLines, SIGNAL(valueChanged(double)), this, SLOT(handleDropCapLines()), Qt::UniqueConnection);
 	connect(bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(handleBulletStr(QString)), Qt::UniqueConnection);
+	connect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)), Qt::UniqueConnection);
 	connect(numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(handleNumLevel(int)), Qt::UniqueConnection);
 	connect(numStyleCombo, SIGNAL(activated(int)), this, SLOT(handleNumStyle(int)), Qt::UniqueConnection);
+	connect(numPrefix, SIGNAL(textEdited(QString)), this, SLOT(handleNumPrefix(QString)), Qt::UniqueConnection);
+	connect(numSuffix, SIGNAL(textEdited(QString)), this, SLOT(handleNumSufffix(QString)), Qt::UniqueConnection);
 	connect(peOffset_, SIGNAL(valueChanged(double)), this, SLOT(handlePEOffset()), Qt::UniqueConnection);
+	connect(peIndent_, SIGNAL(toggled(bool)), this, SLOT(handlePEIndent()), Qt::UniqueConnection);
 	connect(peCharStyleCombo, SIGNAL(activated(int)), this, SLOT(handlePECharStyle()), Qt::UniqueConnection);
 }
 
@@ -229,8 +297,13 @@ void PropertyWidget_DropCap::disconnectSignals()
 	disconnect(numRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
 	disconnect(dropCapLines, SIGNAL(valueChanged(double)), this, SLOT(handleDropCapLines()));
 	disconnect(bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(handleBulletStr(QString)));
+	disconnect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)));
 	disconnect(numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(handleNumLevel(int)));
 	disconnect(numStyleCombo, SIGNAL(activated(int)), this, SLOT(handleNumStyle(int)));
+	disconnect(numPrefix, SIGNAL(textEdited(QString)), this, SLOT(handleNumPrefix(QString)));
+	disconnect(numSuffix, SIGNAL(textEdited(QString)), this, SLOT(handleNumSufffix(QString)));
+	disconnect(peOffset_, SIGNAL(valueChanged(double)), this, SLOT(handlePEOffset()));
+	disconnect(peIndent_, SIGNAL(toggled(bool)), this, SLOT(handlePEIndent()));
 	disconnect(peOffset_, SIGNAL(valueChanged(double)), this, SLOT(handlePEOffset()));
 	disconnect(peCharStyleCombo, SIGNAL(activated(int)), this, SLOT(handlePECharStyle()));
 }
@@ -360,11 +433,74 @@ void PropertyWidget_DropCap::handleDropCapLines()
 	}
 }
 
+void PropertyWidget_DropCap::handleNumName(QString)
+{
+	if (!m_doc || !m_item)
+		return;
+	ParagraphStyle newStyle;
+	QString numName = numComboBox->currentText();
+	if (numName == "<new>")
+	{
+		newStyle.setNumOther(true);
+		newStyle.setNumHigher(true);
+		newStyle.setNumRestart(NSRstory);
+		int suffix = 1;
+		while (m_doc->numerations.contains(numName + "_"+ QString(suffix)))
+			++suffix;
+		numName.append("_" + QString(suffix));
+		m_doc->m_flagRenumber = true;
+	}
+	newStyle.setNumName(numName);
+	PageItem *item = m_item;
+	if (m_doc->appMode == modeEditTable)
+		item = item->asTable()->activeCell().textFrame();
+	if (item != NULL)
+	{
+		Selection tempSelection(this, false);
+		tempSelection.addItem(item, true);
+		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+	}
+}
+
 void PropertyWidget_DropCap::handleNumStyle(int)
 {
+	if (!m_doc || !m_item)
+		return;
+	ParagraphStyle newStyle;
+	newStyle.setNumStyle(numStyleCombo->currentIndex());
+	PageItem *item = m_item;
+	if (m_doc->appMode == modeEditTable)
+		item = item->asTable()->activeCell().textFrame();
+	if (item != NULL)
+	{
+		Selection tempSelection(this, false);
+		tempSelection.addItem(item, true);
+		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+	}
 }
 
 void PropertyWidget_DropCap::handleNumLevel(int)
+{
+	if (!m_doc || !m_item)
+		return;
+	ParagraphStyle newStyle;
+	newStyle.setNumLevel(numLevelSpin->value());
+	PageItem *item = m_item;
+	if (m_doc->appMode == modeEditTable)
+		item = item->asTable()->activeCell().textFrame();
+	if (item != NULL)
+	{
+		Selection tempSelection(this, false);
+		tempSelection.addItem(item, true);
+		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+	}
+}
+
+void PropertyWidget_DropCap::hnadleNumPrefix(QString)
+{
+}
+
+void PropertyWidget_DropCap::handleNumSuffix(QString)
 {
 }
 
@@ -374,6 +510,23 @@ void PropertyWidget_DropCap::handlePEOffset()
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setParEffectOffset(peOffset_->value());
+	PageItem *item = m_item;
+	if (m_doc->appMode == modeEditTable)
+		item = item->asTable()->activeCell().textFrame();
+	if (item != NULL)
+	{
+		Selection tempSelection(this, false);
+		tempSelection.addItem(item, true);
+		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+	}
+}
+
+void PropertyWidget_DropCap::handlePEIndent()
+{
+	if (!m_doc || !m_item)
+		return;
+	ParagraphStyle newStyle;
+	newStyle.setParEffectIndent(peIndent_->isChecked());
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();
@@ -419,8 +572,8 @@ void PropertyWidget_DropCap::languageChange()
 	peOffRadio->setText(tr("No Paragraph Effects"));
 	dropCapRadio_->setText(tr("Use Drop Caps"));
 	dropCapLinesLabel->setText(tr("Drop Caps lines"));
-	peOffsetLabel->setText(tr("Drop Caps offset"));
-	peCharStyleLabel->setText(tr("Drop Cap use character style..."));
+	peOffsetLabel->setText(tr("Paragraph Effect offset"));
+	peCharStyleLabel->setText(tr("Pargraph Effect style..."));
 	peCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
 	bulletCharTableButton_->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
 	bulletCharTableButton_->setText(tr("Char Table"));

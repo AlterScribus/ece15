@@ -217,7 +217,11 @@ SET(SCRIBUS_MOC_CLASSES
   latexhelpers.h
   loadsaveplugin.h
   menumanager.h
+<<<<<<< HEAD
 marks.h
+=======
+  numeration.h
+>>>>>>> c71ca3ff01ca471bf0a83c0a6a900473bd952c92
   navigator.h
 notesstyles.h
 numeration.h
@@ -580,6 +584,7 @@ SET(SCRIBUS_SOURCES
   menumanager.cpp
   mesh.cpp
   navigator.cpp
+  numeration.cpp
   observable.cpp
   nftrcreader.cpp
   nftsettings.cpp

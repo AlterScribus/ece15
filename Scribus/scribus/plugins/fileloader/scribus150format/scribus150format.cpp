@@ -2540,6 +2540,10 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(PEDIST))
 		newStyle.setParEffectOffset(attrs.valueAsDouble(PEDIST));
 
+	static const QString PEINDENT("PEINDENT");
+	if (attrs.hasAttribute(PEINDENT))
+		newStyle.setParEffectIndent(attrs.valueAsDouble(PEINDENT));
+
 	static const QString DROP("DROP");
 	if (attrs.hasAttribute(DROP))
 		newStyle.setHasDropCap(static_cast<bool>(attrs.valueAsInt(DROP)));
@@ -2568,9 +2572,41 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(NUMERATION))
 		newStyle.setHasNum(static_cast<bool>(attrs.valueAsInt(NUMERATION)));
 
+	static const QString NUMNAME("NUMNAME");
+	if (attrs.hasAttribute(NUMNAME))
+		newStyle.setNumName(attrs.valueAsString(NUMNAME));
+
 	static const QString NUMSTYLE("NUMSTYLE");
 	if (attrs.hasAttribute(NUMSTYLE))
-		newStyle.setNumStyle(static_cast<bool>(attrs.valueAsInt(NUMSTYLE)));
+		newStyle.setNumStyle(attrs.valueAsInt(NUMSTYLE));
+
+	static const QString NUMLEVEL("NUMLEVEL");
+	if (attrs.hasAttribute(NUMSTYLE))
+		newStyle.setNumLevel(attrs.valueAsInt(NUMLEVEL));
+
+	static const QString NUMSTART("NUMSTART");
+	if (attrs.hasAttribute(NUMSTART))
+		newStyle.setNumLevel(attrs.valueAsInt(NUMSTART));
+
+	static const QString NUMPREFIX("NUMPREFIX");
+	if (attrs.hasAttribute(NUMPREFIX))
+		newStyle.setNumPrefix(attrs.valueAsString(NUMPREFIX));
+
+	static const QString NUMSUFFIX("NUMSUFFIX");
+	if (attrs.hasAttribute(NUMSUFFIX))
+		newStyle.setNumSuffix(attrs.valueAsString(NUMSUFFIX));
+
+	static const QString NUMRESTART("NUMRESTART");
+	if (attrs.hasAttribute(NUMRESTART))
+		newStyle.setNumRestart(attrs.valueAsInt(NUMRESTART));
+
+	static const QString NUMOTHER("NUMOTHER");
+	if (attrs.hasAttribute(NUMERATION))
+		newStyle.setNumOther(static_cast<bool>(attrs.valueAsInt(NUMOTHER)));
+
+	static const QString NUMHIGHER("NUMHIGHER");
+	if (attrs.hasAttribute(NUMHIGHER))
+		newStyle.setNumHigher(static_cast<bool>(attrs.valueAsInt(NUMHIGHER)));
 
 	static const QString PSHORTCUT("PSHORTCUT");
 	if (attrs.hasAttribute(PSHORTCUT))
