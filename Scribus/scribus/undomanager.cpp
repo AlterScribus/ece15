@@ -1050,6 +1050,7 @@ void UndoManager::languageChange()
 	UndoManager::PathOperation		= tr("Path Operation");
 	UndoManager::ChangePageAttrs    = tr("Change Page Attributes");
 	UndoManager::Transform          = tr("Transform");
+	UndoManager::WeldItems          = tr("Weld Items");
 }
 
 void UndoManager::initIcons()
@@ -1320,6 +1321,7 @@ QString UndoManager::ClearImage         = "";
 QString UndoManager::PathOperation      = "";
 QString UndoManager::ChangePageAttrs    = "";
 QString UndoManager::Transform          = "";
+QString UndoManager::WeldItems          = "";
 
 /*** Icons for UndoObjects *******************************************/
 QPixmap *UndoManager::IImageFrame      = 0;
