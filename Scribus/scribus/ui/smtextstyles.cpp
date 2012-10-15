@@ -13,7 +13,6 @@ for which a new license (GPL+exception) is in place.
 #include "colorcombo.h"
 #include "commonstrings.h"
 #include "fontcombo.h"
-#include "langmgr.h"
 #include "ui/scmwmenumanager.h"
 #include "prefsmanager.h"
 #include "propertiespalette.h"
@@ -71,9 +70,7 @@ void SMParagraphStyle::setCurrentDoc(ScribusDoc *doc)
 	{
 		if (pwidget_)
 		{
-			QStringList languageList;
-			LanguageManager::instance()->fillInstalledHyphStringList(&languageList);
-			pwidget_->cpage->fillLangComboFromList(languageList);
+			pwidget_->cpage->fillLangCombo(doc_->scMW()->LangTransl);
 			pwidget_->cpage->fillColorCombo(doc_->PageColors);
 			pwidget_->cpage->fontFace_->RebuildList(doc_);
 			if (unitRatio_ != doc_->unitRatio())
@@ -1309,15 +1306,18 @@ void SMParagraphStyle::slotLanguage()
 	QString language = doc_->paragraphStyle("").charStyle().language();
 
 	if (pwidget_->cpage->language_->useParentValue())
-	{
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->charStyle().resetLanguage();
-	}
 	else
 	{
-		QString la=LanguageManager::instance()->getAbbrevFromLang(pwidget_->cpage->language_->currentText(), true, false);
-		if (!la.isEmpty())
-			language=la;
+		for (it = doc_->scMW()->LangTransl.begin(); it != doc_->scMW()->LangTransl.end(); ++it)
+		{
+			if (it.value() == pwidget_->cpage->language_->currentText())
+			{
+				language = it.key();
+				break;
+			}
+		}
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->charStyle().setLanguage(language);
 	}
@@ -1565,9 +1565,7 @@ void SMCharacterStyle::setCurrentDoc(ScribusDoc *doc)
 	{
 		if (page_)
 		{
-			QStringList languageList;
-			LanguageManager::instance()->fillInstalledHyphStringList(&languageList);
-			page_->fillLangComboFromList(languageList);
+			page_->fillLangCombo(doc_->scMW()->LangTransl);
 			page_->fillColorCombo(doc_->PageColors);
 			page_->fontFace_->RebuildList(doc_);
 		}
@@ -2234,9 +2232,14 @@ void SMCharacterStyle::slotLanguage()
 			selection_[i]->resetLanguage();
 	else
 	{
-		QString tl(LanguageManager::instance()->getAbbrevFromLang(page_->language_->currentText(), true));
-		if (!tl.isEmpty())
-			language=tl;
+		for (it = doc_->scMW()->LangTransl.begin(); it != doc_->scMW()->LangTransl.end(); ++it)
+		{
+			if (it.value() == page_->language_->currentText())
+			{
+				language = it.key();
+				break;
+			}
+		}
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setLanguage(language);
 	}

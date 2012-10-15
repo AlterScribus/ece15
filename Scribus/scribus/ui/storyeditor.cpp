@@ -1965,7 +1965,6 @@ void StoryEditor::buildGUI()
 	EditorBar->editor = Editor;
 	Editor->installEventFilter(this);
 	languageChange();
-	ActionManager::setActionTooltips(&seActions);
 }
 
 void StoryEditor::changeEvent(QEvent *e)
@@ -2894,7 +2893,7 @@ void StoryEditor::updateTextFrame()
 		}
 	}
 #endif
-	currItem->asTextFrame()->invalidateLayout(true);
+	currItem->invalidateLayout();
 	PageItem* nb2 = nextItem;
 	nb2->itemText.clear();
 #if 0
@@ -2942,7 +2941,7 @@ void StoryEditor::updateTextFrame()
 	Editor->saveItemText(nextItem);
 	// #9180 : force relayout here, it appears that relayout is sometime disabled
 	// to speed up selection, but re layout() cannot be avoided here
-	nextItem->asTextFrame()->invalidateLayout(true);
+	nextItem->invalidateLayout();
 	nextItem->layout();
 #if 0
 	QList<PageItem*> FrameItemsDel;
@@ -3298,7 +3297,7 @@ void StoryEditor::SaveTextFile()
 	if (!fileName.isEmpty())
 	{
 		dirs->set("story_save", fileName.left(fileName.lastIndexOf("/")));
-		Serializer::writeWithEncoding(fileName, LoadEnc, Editor->StyledText.plainText());
+		Serializer::writeWithEncoding(fileName, LoadEnc, Editor->toPlainText());
 	}
 	blockUpdate = false;
 }
