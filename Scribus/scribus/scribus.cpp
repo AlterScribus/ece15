@@ -188,6 +188,8 @@ for which a new license (GPL+exception) is in place.
 #include "ui/notesstyleseditor.h"
 #ifdef HAVE_OSG
 	#include "ui/osgeditor.h"
+	#include <osgDB/ReaderWriter>
+	#include <osgDB/PluginQuery>
 #endif
 #include "ui/outlinepalette.h"
 #include "ui/pageitemattributes.h"
@@ -390,10 +392,12 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 	DocDir = prefsManager->documentDir();
 
 	if (primaryMainWindow)
-		ScCore->setSplashStatus( tr("Initializing Hyphenator") );
+		ScCore->setSplashStatus( tr("Initializing Languages") );
+	LanguageManager::instance();
+
 	QString preLang(prefsManager->appPrefs.hyphPrefs.Language);
 	initHyphenator();
-	if (!LanguageManager::instance()->getHyphFilename( preLang, true ).isEmpty() )
+	if (!LanguageManager::instance()->getHyphFilename( preLang ).isEmpty() )
 		prefsManager->appPrefs.hyphPrefs.Language = preLang;
 	if (primaryMainWindow)
 		ScCore->setSplashStatus( tr("Reading Scrapbook") );
@@ -488,6 +492,37 @@ void ScribusMainWindow::initDefaultValues()
 	ClipB = QApplication::clipboard();
 	palettesStatus[0] = false;
 	guidesStatus[0] = false;
+#ifdef HAVE_OSG
+	QStringList supportedExts;
+	supportedExts << "osg" << "dxf" << "flt" << "ive" << "geo" << "sta" << "stl" << "logo" << "3ds" << "ac" << "obj";
+	QStringList realSupportedExts;
+	QMap<QString, QString> formats;
+	osgDB::FileNameList plugins = osgDB::listAllAvailablePlugins();
+	for(osgDB::FileNameList::iterator itr = plugins.begin(); itr != plugins.end(); ++itr)
+	{
+		osgDB::ReaderWriterInfoList infoList;
+		if (osgDB::queryPlugin(*itr, infoList))
+		{
+			for(osgDB::ReaderWriterInfoList::iterator rwi_itr = infoList.begin(); rwi_itr != infoList.end(); ++rwi_itr)
+			{
+				osgDB::ReaderWriterInfo& info = *(*rwi_itr);
+				osgDB::ReaderWriter::FormatDescriptionMap::iterator fdm_itr;
+				for(fdm_itr = info.extensions.begin(); fdm_itr != info.extensions.end(); ++fdm_itr)
+				{
+					if (supportedExts.contains(QString::fromStdString(fdm_itr->first)))
+					{
+						formats.insert("*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper(), QString::fromStdString(fdm_itr->second) + " (*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper() + ")");
+					}
+				}
+			}
+		}
+	}
+	realSupportedExts = formats.keys();
+	QString docexts = realSupportedExts.join(" ");
+	QStringList longList = formats.values();
+	QString longDesc = longList.join(";;") + ";;";
+	osgFilterString = tr("All Supported Formats (%1);;%2All Files (*)").arg(docexts).arg(longDesc);
+#endif
 }
 
 
@@ -572,6 +607,7 @@ void ScribusMainWindow::initPalettes()
 	connect(symbolPalette, SIGNAL(paletteShown(bool)), scrActions["toolsSymbols"], SLOT(setChecked(bool)));
 	connect(symbolPalette, SIGNAL(startEdit(QString)), this, SLOT(editSymbolStart(QString)));
 	connect(symbolPalette, SIGNAL(endEdit()), this, SLOT(editSymbolEnd()));
+	connect(symbolPalette, SIGNAL(objectDropped()), this, SLOT(PutToPatterns()));
 	symbolPalette->installEventFilter(this);
 	symbolPalette->hide();
 
@@ -581,6 +617,7 @@ void ScribusMainWindow::initPalettes()
 	connect(inlinePalette, SIGNAL(paletteShown(bool)), scrActions["toolsInline"], SLOT(setChecked(bool)));
 	connect(inlinePalette, SIGNAL(startEdit(int)), this, SLOT(editInlineStart(int)));
 	connect(inlinePalette, SIGNAL(endEdit()), this, SLOT(editInlineEnd()));
+	connect(inlinePalette, SIGNAL(objectDropped(QString)), this, SLOT(PutToInline(QString)));
 	inlinePalette->installEventFilter(this);
 	inlinePalette->hide();
 	
@@ -1043,7 +1080,6 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["extrasHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasDeHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasGenerateTableOfContents"], "Extras", false);
-	scrMenuMgr->setMenuEnabled("Extras", false);
 	connect(scrMenuMgr->getLocalPopupMenu("Extras"), SIGNAL(aboutToShow()), this, SLOT(extrasMenuAboutToShow()));
 
 	//Window menu
@@ -1078,7 +1114,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuToMenuBar("Page");
 	scrMenuMgr->addMenuToMenuBar("View");
 	scrMenuMgr->addMenuToMenuBar("Extras");
-	scrMenuMgr->setMenuEnabled("Extras", false);
+	//scrMenuMgr->setMenuEnabled("Extras", false);
 	scrMenuMgr->addMenuToMenuBar("Windows");
 	menuBar()->addSeparator();
 	scrMenuMgr->addMenuToMenuBar("Help");
@@ -1395,12 +1431,12 @@ bool ScribusMainWindow::eventFilter( QObject* /*o*/, QEvent *e )
 
 void ScribusMainWindow::inputMethodEvent ( QInputMethodEvent * event )
 {
-	qDebug() << "IMEmw" << event->commitString() << event->preeditString() << "attributes:" << event->attributes().count();
+	//qDebug() << "IMEmw" << event->commitString() << event->preeditString() << "attributes:" << event->attributes().count();
 }
 
 QVariant ScribusMainWindow::inputMethodQuery ( Qt::InputMethodQuery query ) const
 {
-	qDebug() << "IMQmw" << query;
+	//qDebug() << "IMQmw" << query;
 	return QVariant();
 }
 
@@ -2108,6 +2144,8 @@ ScribusDoc *ScribusMainWindow::doFileNew(double width, double height, double top
 		connect(ScCore->fileWatcher, SIGNAL(fileChanged(QString)), tempDoc, SLOT(updatePict(QString)));
 		connect(ScCore->fileWatcher, SIGNAL(fileDeleted(QString)), tempDoc, SLOT(removePict(QString)));
 		connect(ScCore->fileWatcher, SIGNAL(dirChanged(QString )), tempDoc, SLOT(updatePictDir(QString )));
+		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
+		view->clockLabel->resetTime();
 		//scrActions["fileSave"]->setEnabled(false);
 		tempView->cmsToolbarButton->setChecked(tempDoc->HasCMS);
 		undoManager->switchStack(tempDoc->DocName);
@@ -2226,14 +2264,12 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 {
 	if (w == NULL)
 	{
-		if ( mdiArea->subWindowList().count() == 0)
+		if (mdiArea->subWindowList().count() == 0)
 			ActWin = NULL;
 		return;
 	}
 	if (w->widget() == NULL)
 		return;
-	if (doc!=0 && doc->appMode == modeEditClip)
-		view->requestMode(submodeEndNodeEdit);
 	ScribusWin* scw = dynamic_cast<ScribusWin *>(w->widget());
 	if (!scw)
 		return;
@@ -2242,14 +2278,16 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 		if (!scw->doc()->hasGUI())
 			return;
 	}
-	if(scw == ActWin)
+	if (scw == ActWin)
 		return;
 	ActWin = scw;
-	if (ActWin->doc()==NULL)
+	if (ActWin->doc() == NULL)
 		return;
 
 	if (doc != NULL)
 	{
+		if (doc->appMode == modeEditClip)
+			view->requestMode(submodeEndNodeEdit);
 		if ((HaveDoc) && (doc != ActWin->doc()))
 			outlinePalette->buildReopenVals();
 	}
@@ -2538,7 +2576,7 @@ void ScribusMainWindow::HaveNewDoc()
 	scrActions["insertFrame"]->setEnabled(true);
 	//scrMenuMgr->setMenuEnabled("Windows", true);
 //	scrMenuMgr->setMenuEnabled("Page", true);
-	scrMenuMgr->setMenuEnabled("Extras", true);
+	//scrMenuMgr->setMenuEnabled("Extras", true);
 
 	scrActions["toolsSelect"]->setEnabled(true);
 	scrActions["toolsZoom"]->setEnabled(true);
@@ -2933,7 +2971,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemAttributes"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(false);
 		//scrMenuMgr->setMenuEnabled("ItemShapes", !(currItem->isTableItem && currItem->isSingleSel));
-//		scrMenuMgr->setMenuEnabled("ItemConvertTo", true);
+		scrMenuMgr->setMenuEnabled("ItemConvertTo", !((doc->appMode == modeEdit) || (currItem->isAnnotation())));
 		scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 		scrActions["itemConvertToImageFrame"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToOutlines"]->setEnabled(doc->appMode != modeEdit);
@@ -3978,9 +4016,17 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			is12doc=true;
 		}
 
+		QDir docProfileDir(fi.absolutePath() + "/profiles");
 		ScCore->getCMSProfilesDir(fi.absolutePath()+"/", false, false);
+		if (docProfileDir.exists())
+			ScCore->getCMSProfilesDir(fi.absolutePath()+"/profiles", false, false);
+
+		QDir docFontDir(fi.absolutePath() + "/fonts");
 		prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/", FName);
+		if (docFontDir.exists())
+			prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/fonts", FName);
 		prefsManager->appPrefs.fontPrefs.AvailFonts.updateFontMap();
+
 		doc=new ScribusDoc();
 		doc->is12doc=is12doc;
 		doc->appMode = modeNormal;
@@ -4175,7 +4221,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		else
 			doc->setName(FName);
 		doc->setMasterPageMode(false);
-		doc->setHyphLanguage(GetLang(doc->hyphLanguage()));
+		//IL doc->setHyphLanguage(GetLang(doc->hyphLanguage()));
 		HaveNewDoc();
 //		propertiesPalette->Cpal->displayGradient(0);
 //		propertiesPalette->updateCList();
@@ -4204,6 +4250,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		}
 //		RestoreBookMarks();
 		doc->setMasterPageMode(false);
+		/*QTime t;
+		t.start();*/
 		int docItemsCount=doc->Items->count();
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
@@ -4232,8 +4280,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			if(ite->nextInChain() == NULL)
 				ite->layout();
 		}
-//		if (doc->OldBM)
-//			StoreBookmarks();
+		/*qDebug("Time elapsed: %d ms", t.elapsed());*/
 		doc->RePos = false;
 		doc->setModified(false);
 		updateRecent(FName);
@@ -4278,6 +4325,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		doc->connectDocSignals();
 		if (doc->autoSave())
 			doc->autoSaveTimer->start(doc->autoSaveTime());
+		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
+		view->clockLabel->resetTime();
 // 		scrActions["fileSave"]->setEnabled(false);
 		doc->NrItems = bookmarkPalette->BView->NrItems;
 		doc->First = bookmarkPalette->BView->First;
@@ -4529,12 +4578,15 @@ void ScribusMainWindow::slotFileRevert()
 {
 	if ((doc->hasName) && (doc->isModified()) && (!doc->masterPageMode()))
 	{
+		ScribusWin* tw = ActWin;
 		int t = QMessageBox::warning(this, CommonStrings::trWarning, "<qt>" +
 								 QObject::tr("The changes to your document have not been saved and you have requested to revert them. Do you wish to continue?") + "</qt>",
 								 QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 		if (t == QMessageBox::No)
 			return;
 
+		mdiArea->setActiveSubWindow(tw->getSubWin());
+		ActWin = tw;
 		QString fn(doc->DocName);
 		doc->setModified(false);
 		if (doc==storyEditor->currentDocument())
@@ -4811,7 +4863,7 @@ bool ScribusMainWindow::DoFileClose()
 		scrMenuMgr->setMenuEnabled("Insert", false);
 		scrActions["insertFrame"]->setEnabled(false);
 
-		scrMenuMgr->setMenuEnabled("Extras", false);
+		//scrMenuMgr->setMenuEnabled("Extras", false);
 		//		scrMenuMgr->setMenuEnabled("Item", false);
 		scrActions["itemDuplicate"]->setEnabled(false);
 		scrActions["itemMulDuplicate"]->setEnabled(false);
@@ -9435,28 +9487,28 @@ void ScribusMainWindow::showLayer()
 
 void ScribusMainWindow::initHyphenator()
 {
-	InstLang.clear();
+//IL	InstLang.clear();
 	//Build our list of hyphenation dictionaries we have in the install dir
 	//Grab the language abbreviation from it, get the full language text
 	//Insert the name as key and a new string list into the map
 	QString hyphDirName = QDir::toNativeSeparators(ScPaths::instance().dictDir());
 	QDir hyphDir(hyphDirName, "hyph*.dic", QDir::Name, QDir::Files | QDir::NoSymLinks);
-	if ((hyphDir.exists()) && (hyphDir.count() != 0))
-	{
+//IL	if ((hyphDir.exists()) && (hyphDir.count() != 0))
+//IL	{
 // 		LanguageManager langmgr;
 // 		langmgr.init(false);
-		QString languageOfHyphFile;
-		for (uint dc = 0; dc < hyphDir.count(); ++dc)
-		{
-			QFileInfo fi(hyphDir[dc]);
-			QString fileLangAbbrev=fi.baseName().section('_', 1);
-			InstLang.insert(fileLangAbbrev, QStringList());
+//IL		QString languageOfHyphFile;
+//IL		for (uint dc = 0; dc < hyphDir.count(); ++dc)
+//IL		{
+//IL			QFileInfo fi(hyphDir[dc]);
+//IL			QString fileLangAbbrev=fi.baseName().section('_', 1);
+//IL			InstLang.insert(fileLangAbbrev, QStringList());
 //<<hunspell
 //			languageOfHyphFile = LanguageManager::instance()->getLangFromAbbrev(fileLangAbbrev, false);
 //			InstLang.insert(languageOfHyphFile, QStringList());
 //>>hunspell
-		}
-	}
+//IL		}
+//IL	}
 
 	//For each qm file existing, load the file and find the translations of the names
 	QString pfad = ScPaths::instance().translationDir();
@@ -9469,57 +9521,48 @@ void ScribusMainWindow::initHyphenator()
 			QString ext = fi.suffix().toLower();
 			if (ext == "qm")
 			{
-    			QTranslator *trans = new QTranslator(0);
-				trans->load(pfad + d2[dc]);
+ //IL   			QTranslator *trans = new QTranslator(0);
+//IL				trans->load(pfad + d2[dc]);
 
-				QString translatedLang;
-				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
-				{
-					translatedLang="";
-					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
-					if (!translatedLang.isEmpty())
-						it.value().append(translatedLang);
-				}
-				delete trans;
+//IL				QString translatedLang;
+//IL				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
+//IL				{
+//IL					translatedLang="";
+//IL					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
+//IL					if (!translatedLang.isEmpty())
+//IL						it.value().append(translatedLang);
+//IL				}
+//IL				delete trans;
 			}
 		}
 	}
 	//For each hyphenation file, grab the strings and the hyphenation data.
 	QString lang = QString(QLocale::system().name()).left(2);
-	LangTransl.clear();
-	prefsManager->appPrefs.hyphPrefs.Language = "en_US";
+//IL	LangTransl.clear();
+	prefsManager->appPrefs.hyphPrefs.Language = "en_GB";
+	if (!LanguageManager::instance()->getHyphFilename(lang).isEmpty() )
+		prefsManager->appPrefs.hyphPrefs.Language = lang;
+
+/*
 	if ((hyphDir.exists()) && (hyphDir.count() != 0))
 	{
 		LanguageManager *langmgr(LanguageManager::instance());
 // 		langmgr.init(false);
-		QString datein = "";
+		QString tLang = "";
 		for (uint dc = 0; dc < hyphDir.count(); ++dc)
 		{
 			QFileInfo fi(hyphDir[dc]);
-			QString fileLangAbbrev=fi.baseName().section('_', 1);
-			datein = langmgr->getLangFromAbbrev(fileLangAbbrev);
-			QString tDatein = datein;
-			datein = GetLang(datein);
-			LangTransl.insert(datein, tDatein);
+			QString fileLangAbbrev = fi.baseName().section('_', 1);
+			tLang = langmgr->getLangFromAbbrev(fileLangAbbrev);
+//IL			LangTransl.insert(fileLangAbbrev, tLang);
 			langmgr->addHyphLang(fileLangAbbrev, hyphDir[dc]);
-// 			Sprachen.insert(datein, hyphDir[dc]);
 			if (fileLangAbbrev == lang)
 				prefsManager->appPrefs.hyphPrefs.Language = fileLangAbbrev;
 		}
-		if (datein.isEmpty())
-			prefsManager->appPrefs.hyphPrefs.Language = "en_US";
+		if (tLang.isEmpty())
+			prefsManager->appPrefs.hyphPrefs.Language = "en_GB";
 	}
-}
-
-QString ScribusMainWindow::GetLang(QString inLang)
-{
-	QMap<QString, QStringList>::Iterator itlend=InstLang.end();
- 	for (QMap<QString, QStringList>::Iterator itl = InstLang.begin(); itl != itlend; ++itl)
-	{
-		if (itl.value().contains(inLang))
-			return LanguageManager::instance()->getLangFromAbbrev(itl.key());
-	}
-	return inLang;
+	*/
 }
 
 void ScribusMainWindow::ImageEffects()
@@ -9701,7 +9744,7 @@ void ScribusMainWindow::callImageEditor()
 #ifdef HAVE_OSG
 		if (currItem->asOSGFrame())
 		{
-			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame());
+			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame(), osgFilterString);
 			dia->exec();
 			return;
 		}
@@ -9846,6 +9889,7 @@ void ScribusMainWindow::languageChange()
 		//before changing the tr_NoneColor to the new value. See #9267, #5529
 		prefsManager->languageChange();
 		CommonStrings::languageChange();
+		LanguageManager::instance()->languageChange();
 		//Update actions
 		if (actionManager!=NULL)
 		{
@@ -10135,6 +10179,62 @@ void ScribusMainWindow::slotItemTransform()
 			trans.commit();
 		}
 	}
+}
+
+void ScribusMainWindow::PutToInline(QString buffer)
+{
+	Selection tempSelection(*doc->m_Selection);
+	bool savedAlignGrid = doc->useRaster;
+	bool savedAlignGuides = doc->SnapGuides;
+	bool savedAlignElement = doc->SnapElement;
+	int ac = doc->Items->count();
+	bool isGroup = false;
+	double gx, gy, gh, gw;
+	FPoint minSize = doc->minCanvasCoordinate;
+	FPoint maxSize = doc->maxCanvasCoordinate;
+	doc->useRaster = false;
+	doc->SnapGuides = false;
+	doc->SnapElement = false;
+	undoManager->setUndoEnabled(false);
+	slotElemRead(buffer, 0, 0, false, true, doc, view);
+	doc->useRaster = savedAlignGrid;
+	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
+	doc->m_Selection->clear();
+	if (doc->Items->count() - ac > 1)
+		isGroup = true;
+	doc->m_Selection->delaySignalsOn();
+	for (int as = ac; as < doc->Items->count(); ++as)
+	{
+		doc->m_Selection->addItem(doc->Items->at(as));
+	}
+	if (isGroup)
+		doc->GroupCounter++;
+	doc->m_Selection->setGroupRect();
+	doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
+	PageItem* currItem3 = doc->Items->at(ac);
+	currItem3->isEmbedded = true;
+	currItem3->setIsAnnotation(false);
+	currItem3->isBookmark = false;
+	currItem3->gXpos = currItem3->xPos() - gx;
+	currItem3->gYpos = currItem3->yPos() - gy;
+	currItem3->gWidth = gw;
+	currItem3->gHeight = gh;
+	doc->addToInlineFrames(currItem3);
+	int acc = doc->Items->count();
+	for (int as = ac; as < acc; ++as)
+	{
+		doc->Items->takeAt(ac);
+	}
+	doc->m_Selection->clear();
+	doc->m_Selection->delaySignalsOff();
+	*doc->m_Selection=tempSelection;
+	doc->minCanvasCoordinate = minSize;
+	doc->maxCanvasCoordinate = maxSize;
+	undoManager->setUndoEnabled(true);
+	inlinePalette->unsetDoc();
+	inlinePalette->setDoc(doc);
+	view->Deselect(false);
 }
 
 void ScribusMainWindow::PutToPatterns()

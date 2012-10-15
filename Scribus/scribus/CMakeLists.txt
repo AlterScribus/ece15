@@ -285,6 +285,7 @@ pageitem_noteframe.h
   ui/charselectenhanced.h
   ui/charzoom.h
   ui/checkDocument.h
+  ui/clockwidget.h
   ui/cmsprefs.h
   ui/cmykfw.h
   ui/collectforoutput_ui.h
@@ -571,6 +572,7 @@ SET(SCRIBUS_SOURCES
   hyphenator.cpp
   ioapi.c
   KarbonCurveFit.cpp
+  langdef.cpp
   langmgr.cpp
   latexhelpers.cpp
   loadsaveplugin.cpp
@@ -726,6 +728,7 @@ pageitem_noteframe.cpp
   ui/charselectenhanced.cpp
   ui/charzoom.cpp
   ui/checkDocument.cpp
+  ui/clockwidget.cpp
   ui/cmsprefs.cpp
   ui/cmykfw.cpp
   ui/collectforoutput_ui.cpp

@@ -71,7 +71,7 @@ public:
 	* @param keyRepeat a reference to the keyRepeat property
 	*/
 	virtual void handleModeEditKey(QKeyEvent *k, bool& keyRepeat);
-	void deleteSelectedTextFromFrame(bool findNotes = true);
+	void deleteSelectedTextFromFrame(/*bool findNotes = true*/);
 	void setNewPos(int oldPos, int len, int dir);
 	void ExpandSel(int dir, int oldPos);
 	void deselectAll();

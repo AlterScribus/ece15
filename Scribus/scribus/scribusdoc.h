@@ -189,6 +189,7 @@ public:
 	void setHyphAutoCheck(bool b) { docPrefsData.hyphPrefs.AutoCheck=b; }
 	bool autoSave() const { return docPrefsData.docSetupPrefs.AutoSave; }
 	int autoSaveTime() const  { return docPrefsData.docSetupPrefs.AutoSaveTime; }
+	bool autoSaveClockDisplay() const  { return docPrefsData.displayPrefs.showAutosaveClockOnCanvas; }
 	void setAutoSave(bool b) { docPrefsData.docSetupPrefs.AutoSave=b; }
 	void setAutoSaveTime(int i) { docPrefsData.docSetupPrefs.AutoSaveTime=i; }
 	//FIXME (maybe) :non const, the loaders make a mess here
@@ -1170,6 +1171,8 @@ public:
 	void beginUpdate();
 	void endUpdate();
 	int addToInlineFrames(PageItem *item);
+	void removeInlineFrame(int fIndex);
+	void checkItemForFrames(PageItem *it, int fIndex);
 
 protected:
 	void addSymbols();
@@ -1207,6 +1210,7 @@ public: // Public attributes
 	int viewCount;
 	int viewID;
 	bool SnapGuides;
+	bool SnapElement;
 	bool GuideLock;
 	bool dontResize;
 	/** \brief Minimum and Maximum Points of Document */
@@ -1385,6 +1389,7 @@ signals:
 	//! Signal a change in rotation mode (aka basepoint)
 	void rotationMode(int);
 	void updateEditItem();
+	void updateAutoSaveClock();
 	
 public slots:
 	void selectionChanged();
@@ -1755,6 +1760,7 @@ public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();
 	void itemSelection_EditWeld();
+	void restartAutoSaveTimer();
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);
