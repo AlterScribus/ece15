@@ -727,8 +727,7 @@ bool Scribus134Format::loadFile(const QString & fileName, const FileFormat & /* 
 
 	// start auto save timer if needed
 	if (m_Doc->autoSave()  && ScCore->usingGUI())
-		m_Doc->restartAutoSaveTimer();
-//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -1018,15 +1017,9 @@ void Scribus134Format::readToolSettings(ScribusDoc* doc, ScXmlStreamAttributes& 
 	doc->itemToolPrefs().shapeLineColorShade     = attrs.valueAsInt("PENSHADE", 100);
 	doc->itemToolPrefs().lineColor  = attrs.valueAsInt("LINESHADE", 100);
 	doc->itemToolPrefs().shapeFillColorShade      = attrs.valueAsInt("BRUSHSHADE", 100);
-	doc->opToolPrefs().magMin      = attrs.valueAsInt("MAGMIN", 1);
-	doc->opToolPrefs().magMax      = attrs.valueAsInt("MAGMAX", 3200);
-	doc->opToolPrefs().magStep     = attrs.valueAsInt("MAGSTEP", 200);
 	doc->opToolPrefs().dispX       = attrs.valueAsDouble("dispX", 10.0);
 	doc->opToolPrefs().dispY       = attrs.valueAsDouble("dispY", 10.0);
 	doc->opToolPrefs().constrain   = attrs.valueAsDouble("constrain", 15.0);
-	//CB Reset doc zoom step value to 200% instead of old values.
-	if (doc->opToolPrefs().magStep <= 100)
-		doc->opToolPrefs().magStep = 200;
 	doc->itemToolPrefs().textTabFillChar = attrs.valueAsString("TabFill","");
 	doc->itemToolPrefs().textTabWidth   = attrs.valueAsDouble("TabWidth", 36.0);
 	if (attrs.hasAttribute("CPICT"))
@@ -1222,18 +1215,7 @@ void Scribus134Format::readCharacterStyleAttrs(ScribusDoc *doc, ScXmlStreamAttri
 
 	static const QString LANGUAGE("LANGUAGE");
 	if (attrs.hasAttribute(LANGUAGE))
-	{
-		QString l(attrs.valueAsString(LANGUAGE));
-		if (LanguageManager::instance()->langTableIndex(l)!=-1)
-			newStyle.setLanguage(l); //new style storage
-		else
-		{ //old style storage
-			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
-			if (lnew.isEmpty())
-				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
-			newStyle.setLanguage(lnew);
-		}
-	}
+		newStyle.setLanguage(attrs.valueAsString(LANGUAGE));
 
 	static const QString SHORTCUT("SHORTCUT");
 	if (attrs.hasAttribute(SHORTCUT))

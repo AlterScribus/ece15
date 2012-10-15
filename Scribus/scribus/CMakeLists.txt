@@ -726,7 +726,6 @@ pageitem_noteframe.cpp
   ui/charselectenhanced.cpp
   ui/charzoom.cpp
   ui/checkDocument.cpp
-  ui/clockwidget.cpp
   ui/cmsprefs.cpp
   ui/cmykfw.cpp
   ui/collectforoutput_ui.cpp

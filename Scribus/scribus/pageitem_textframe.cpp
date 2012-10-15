@@ -976,17 +976,18 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 	// measure natural widths for glyphs and spaces
 	for (int sof = line.firstItem; sof <= line.lastItem; ++sof)
 	{
-		if (!SpecialChars::isExpandingSpace(itemText.text(sof)))
+		ScText* hl = itemText.item(sof);
+		if (!SpecialChars::isExpandingSpace(hl->ch))
 		{
-			glyphNatural += itemText.item(sof)->glyph.wide();
+			glyphNatural += hl->glyph.wide();
 		}
-		else if ( (itemText.item(sof)->effects() & ScStyle_SuppressSpace) == 0)
+		else if ( (hl->effects() & ScStyle_SuppressSpace) == 0)
 		{
-			spaceNatural += itemText.item(sof)->glyph.wide();
-			if (imSpace < 0.0 || imSpace > itemText.item(sof)->glyph.wide())
-				imSpace = itemText.item(sof)->glyph.wide();
+			spaceNatural += hl->glyph.wide();
+			if (imSpace < 0.0 || imSpace > hl->glyph.wide())
+				imSpace = hl->glyph.wide();
 		}
-		if (sof != line.firstItem && implicitSpace(itemText.item(sof - 1), itemText.item(sof))) {
+		if (sof != line.firstItem && implicitSpace(itemText.item(sof - 1), hl)) {
 			spaceInsertion += 1;
 		}
 	}
@@ -1047,11 +1048,12 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 	// distribute whitespace on spaces and glyphs
 	for (int yof = startItem; yof <= line.lastItem; ++yof)
 	{
-		double wide = itemText.item(yof)->glyph.wide();
-		if (!SpecialChars::isExpandingSpace(itemText.text(yof)))
+		ScText* hl = itemText.item(yof);
+		double wide = hl->glyph.wide();
+		if (!SpecialChars::isExpandingSpace(hl->ch))
 		{
-			itemText.item(yof)->glyph.last()->xadvance += wide * glyphExtension;
-			GlyphLayout* glyph = &(itemText.item(yof)->glyph);
+			hl->glyph.last()->xadvance += wide * glyphExtension;
+			GlyphLayout* glyph = &(hl->glyph);
 			while (glyph)
 			{
 				glyph->xoffset *= glyphScale;
@@ -1059,11 +1061,11 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 				glyph = glyph->more;
 			}
 		}
-		else if ((itemText.item(yof)->effects() & ScStyle_SuppressSpace) == 0)
+		else if ((hl->effects() & ScStyle_SuppressSpace) == 0)
 		{
-			itemText.item(yof)->glyph.last()->xadvance += wide * spaceExtension;
+			hl->glyph.last()->xadvance += wide * spaceExtension;
 		}
-		if (yof != line.firstItem && implicitSpace(itemText.item(yof - 1), itemText.item(yof))) {
+		if (yof != line.firstItem && implicitSpace(itemText.item(yof - 1), hl)) {
 			itemText.item(yof - 1)->glyph.last()->xadvance += imSpace;
 		}
 	}
@@ -1133,10 +1135,11 @@ static double opticalRightMargin(const StoryText& itemText, const LineSpec& line
 		--b;
 	if (b >= line.firstItem) 
 	{
-		double chs = itemText.charStyle(b).fontSize() * (itemText.charStyle(b).scaleH() / 1000.0);
+		const CharStyle& chStyle(itemText.charStyle(b));
+		double chs = chStyle.fontSize() * (chStyle.scaleH() / 1000.0);
 		QChar chr = (itemText.item(b)->effects() & ScStyle_SoftHyphenVisible) ? 
 			QChar('-') : itemText.text(b);
-		double rightCorr = itemText.charStyle(b).font().realCharWidth(chr, chs / 10.0);
+		double rightCorr = chStyle.font().realCharWidth(chr, chs / 10.0);
 		if (QString("-,.`´'~").indexOf(chr) >= 0
 			|| chr == QChar(0x2018)
 			|| chr == QChar(0x2019)
@@ -1159,8 +1162,8 @@ static double opticalRightMargin(const StoryText& itemText, const LineSpec& line
 				 )
 			rightCorr *= 0.5;
 		else {
-			rightCorr = itemText.charStyle(b).font().charWidth(chr, chs / 10.0);
-			rightCorr -= itemText.charStyle(b).font().charWidth(chr, chs / 10.0, QChar('.'));
+			rightCorr = chStyle.font().charWidth(chr, chs / 10.0);
+			rightCorr -= chStyle.font().charWidth(chr, chs / 10.0, QChar('.'));
 		}
 		return rightCorr;
 	}
@@ -1334,7 +1337,7 @@ void PageItem_TextFrame::layout()
 	QString chstr;
 	ScText *hl;
 	ParagraphStyle style;
-	int /*ParagraphStyle::OpticalMarginType*/ opticalMargins = ParagraphStyle::OM_None;
+	int opticalMargins = ParagraphStyle::OM_None;
 	
 	bool outs = false;
 	bool goNoRoom = false;
@@ -3754,9 +3757,9 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			p->setFillMode(0);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupSharpPolygon(&PoLine, false);
+			p->setupPolygon(&PoLine, false);
 	#else
-			p->setupSharpPolygon(&PoLine);
+			p->setupPolygon(&PoLine);
 	#endif
 			p->strokePath();
 		}
@@ -3765,9 +3768,9 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			p->setPen(Qt::lightGray, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupSharpPolygon(&ContourLine, false);
+			p->setupPolygon(&ContourLine, false);
 	#else
-			p->setupSharpPolygon(&ContourLine);
+			p->setupPolygon(&ContourLine);
 	#endif
 			p->strokePath();
 		}
@@ -3782,7 +3785,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			drawColumnBorders(p);
 		if ((m_Doc->guidesPrefs().layerMarkersShown) && (m_Doc->layerCount() > 1) && (!m_Doc->layerOutline(LayerID)) && (!m_Doc->drawAsPreview))
 		{
-			p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setPenOpacity(1.0);
 			p->setBrush(m_Doc->layerMarker(LayerID));
 			p->setBrushOpacity(1.0);
@@ -3790,7 +3793,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			double ofwh = 10;
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
-			p->drawSharpRect(ofx, ofy, ofwh, ofwh);
+			p->drawRect(ofx, ofy, ofwh, ofwh);
 		}
 		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
 		{
@@ -3798,7 +3801,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			if (m_Locked)
 				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setFillMode(ScPainter::None);
-			p->drawSharpRect(0, 0, Width, Height);
+			p->drawRect(0, 0, Width, Height);
 			no_fill = false;
 			no_stroke = false;
 		}
@@ -4877,7 +4880,7 @@ void PageItem_TextFrame::drawOverflowMarker(ScPainter *p)
 
 void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 {
-	p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 	p->setPenOpacity(1.0);
 	p->setBrush(Qt::white);
 	p->setBrushOpacity(1.0);
@@ -4891,16 +4894,16 @@ void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 	if (lineColor() != CommonStrings::None)
 		lineCorr = m_lineWidth / 2.0;
 	if (TExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
+		p->drawLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
 	if (BExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
+		p->drawLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
 	while(curCol < Cols)
 	{
 		colLeft=(colWidth + ColGap) * curCol + Extra + lineCorr;
 		if (colLeft != 0.0)
-			p->drawSharpLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
+			p->drawLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
 		if (colLeft + colWidth != Width)
-			p->drawSharpLine(FPoint(colLeft+colWidth, 0), FPoint(colLeft+colWidth, 0+Height));
+			p->drawLine(FPoint(colLeft+colWidth, 0), FPoint(colLeft+colWidth, 0+Height));
 		++curCol;
 	}
 	

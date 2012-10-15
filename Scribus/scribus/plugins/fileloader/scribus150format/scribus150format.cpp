@@ -12,7 +12,6 @@ for which a new license (GPL+exception) is in place.
 #include "ui/missing.h"
 #include "hyphenator.h"
 #include "notesstyles.h"
-#include "langmgr.h"
 #include "pageitem_latexframe.h"
 #include "pageitem_noteframe.h"
 #include "prefsmanager.h"
@@ -441,10 +440,12 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0; i < ta->weldList.count(); i++)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem   = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -543,10 +544,12 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -936,10 +939,12 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1038,10 +1043,12 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1607,10 +1614,12 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1709,10 +1718,12 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -1879,8 +1890,7 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 
 	// start auto save timer if needed
 	if (m_Doc->autoSave()  && ScCore->usingGUI())
-		m_Doc->restartAutoSaveTimer();
-//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -1988,24 +1998,7 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->PageSpa = attrs.valueAsDouble("ABSTSPALTEN");
 	m_Doc->setUnitIndex( attrs.valueAsInt("UNITS", 0) );
 
-	//m_Doc->setHyphLanguage(attrs.valueAsString("LANGUAGE", "en_US"));
-	static const QString LANGUAGE("LANGUAGE");
-	if (attrs.hasAttribute(LANGUAGE))
-	{
-		QString l(attrs.valueAsString(LANGUAGE));
-		if (LanguageManager::instance()->langTableIndex(l)!=-1)
-			m_Doc->setHyphLanguage(l); //new style storage
-		else
-		{ //old style storage
-			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
-			if (lnew.isEmpty())
-				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
-			m_Doc->setHyphLanguage(lnew);
-		}
-	}
-
-
-
+	m_Doc->setHyphLanguage(attrs.valueAsString("LANGUAGE", "en_US"));
 	m_Doc->setHyphMinimumWordLength(attrs.valueAsInt("MINWORDLEN", 3));
 	m_Doc->setHyphConsecutiveLines(attrs.valueAsInt("HYCOUNT", 2));
 
@@ -2030,6 +2023,7 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->rulerXoffset = attrs.valueAsDouble("rulerXoffset", 0.0);
 	m_Doc->rulerYoffset = attrs.valueAsDouble("rulerYoffset", 0.0);
 	m_Doc->SnapGuides   = attrs.valueAsBool("SnapToGuides", false);
+	m_Doc->SnapElement  = attrs.valueAsBool("SnapToElement", false);
 	m_Doc->useRaster    = attrs.valueAsBool("SnapToGrid", false);
 	
 	m_Doc->setAutoSave(attrs.valueAsBool("AutoSave", false));
@@ -2217,15 +2211,9 @@ void Scribus150Format::readToolSettings(ScribusDoc* doc, ScXmlStreamAttributes& 
 	doc->itemToolPrefs().calligrapicPenAngle = attrs.valueAsDouble("calligrapicPenAngle", 0.0);
 	doc->itemToolPrefs().calligrapicPenWidth = attrs.valueAsDouble("calligrapicPenWidth", 10.0);
 	doc->itemToolPrefs().calligrapicPenStyle = static_cast<Qt::PenStyle>(attrs.valueAsInt("calligrapicPenStyle"));
-	doc->opToolPrefs().magMin      = attrs.valueAsInt("MAGMIN", 1);
-	doc->opToolPrefs().magMax      = attrs.valueAsInt("MAGMAX", 3200);
-	doc->opToolPrefs().magStep     = attrs.valueAsInt("MAGSTEP", 200);
 	doc->opToolPrefs().dispX       = attrs.valueAsDouble("dispX", 10.0);
 	doc->opToolPrefs().dispY       = attrs.valueAsDouble("dispY", 10.0);
 	doc->opToolPrefs().constrain   = attrs.valueAsDouble("constrain", 15.0);
-	//CB Reset doc zoom step value to 200% instead of old values.
-	if (doc->opToolPrefs().magStep <= 100)
-		doc->opToolPrefs().magStep = 200;
 	doc->itemToolPrefs().textTabFillChar = attrs.valueAsString("TabFill","");
 	doc->itemToolPrefs().textTabWidth   = attrs.valueAsDouble("TabWidth", 36.0);
 	if (attrs.hasAttribute("CPICT"))
@@ -2450,19 +2438,7 @@ void Scribus150Format::readCharacterStyleAttrs(ScribusDoc *doc, ScXmlStreamAttri
 
 	static const QString LANGUAGE("LANGUAGE");
 	if (attrs.hasAttribute(LANGUAGE))
-	{
-		QString l(attrs.valueAsString(LANGUAGE));
-		if (LanguageManager::instance()->langTableIndex(l)!=-1)
-			newStyle.setLanguage(l); //new style storage
-		else
-		{ //old style storage
-			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
-			if (lnew.isEmpty())
-				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
-			newStyle.setLanguage(lnew);
-		}
-	}
-
+		newStyle.setLanguage(attrs.valueAsString(LANGUAGE));
 
 	static const QString SHORTCUT("SHORTCUT");
 	if (attrs.hasAttribute(SHORTCUT))
@@ -3961,8 +3937,10 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 	uint itemCount1 = m_Doc->Items->count();
 	bool savedAlignGrid = m_Doc->useRaster;
 	bool savedAlignGuides = m_Doc->SnapGuides;
+	bool savedAlignElement = m_Doc->SnapElement;
 	m_Doc->useRaster = false;
 	m_Doc->SnapGuides = false;
+	m_Doc->SnapElement = false;
 
 	QStringRef tagName = reader.name();
 	while(!reader.atEnd() && !reader.hasError())
@@ -4027,6 +4005,7 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 
 	doc->useRaster  = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
 	if (!success)
 	{
 		return false;
@@ -4061,10 +4040,12 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -4099,10 +4080,12 @@ bool Scribus150Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -5842,10 +5825,12 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = LinkID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
@@ -5898,10 +5883,12 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0 ; i < ta->weldList.count(); i++)
+				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID[wInf.weldID];
+					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					if (ta->weldList[i].weldItem == NULL)
+						ta->weldList.removeAt(i--);
 				}
 			}
 		}
