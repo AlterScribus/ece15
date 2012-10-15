@@ -67,7 +67,6 @@ void RowResize::mouseReleaseEvent(QMouseEvent* event)
 		table()->adjustFrameToTable();
 	}
 	table()->doc()->dontResize = false;
-	table()->adjustFrameToTable();
 	table()->doc()->setRedrawBounding(table());
 	table()->update();
 

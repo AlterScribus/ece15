@@ -668,7 +668,7 @@ void ActionManager::initViewMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewRulerMode";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-	name="Grid";
+	name="viewSnapToGrid";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="viewSnapToGuides";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
