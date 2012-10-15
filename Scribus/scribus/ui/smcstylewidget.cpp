@@ -254,7 +254,6 @@ void SMCStyleWidget::show(CharStyle *cstyle, QList<CharStyle> &cstyles, const QS
 
 	QString clang = cstyle->language().isNull() || cstyle->language().isEmpty() ?
 	                                      defLang : cstyle->language();
-//	qDebug()<<"style lang"<<cstyle->language()<<clang;
 	QString plang(QString::null);
 	if (hasParent)
 		plang = parent->language().isNull() || parent->language().isEmpty() ?
@@ -268,15 +267,15 @@ void SMCStyleWidget::show(CharStyle *cstyle, QList<CharStyle> &cstyles, const QS
 	{
 		if (language_->itemText(i) == langMap_[clang])
 			ci = i;
-
+		
 		if (hasParent && language_->itemText(i) == langMap_[plang])
 			pi = i;
 		tl=LanguageManager::instance()->getTransLangFromLang(defLang);
-//		qDebug() << i << language_->itemText(i) << defLang << langMap_[defLang] << tl;
+// 		qDebug() << i << language_->itemText(i) << defLang << langMap_[defLang] << tl;
 		if (language_->itemText(i) == defLang || language_->itemText(i) == langMap_[defLang] || language_->itemText(i) == tl)
 // 		{
 			di = i;
-//			qDebug() << "match on:" << di;
+// 			qDebug() << "match on:" << di;
 // 		}
 	}
 

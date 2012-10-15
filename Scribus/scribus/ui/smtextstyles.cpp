@@ -291,6 +291,7 @@ void SMParagraphStyle::apply()
 {
 	if (!doc_)
 		return;
+
 	QMap<QString, QString> replacement;
 	for (int i = 0; i < deleted_.count(); ++i)
 	{
@@ -298,6 +299,7 @@ void SMParagraphStyle::apply()
 			continue;
 		replacement[deleted_[i].first] = deleted_[i].second;
 	}
+
 	doc_->redefineStyles(tmpStyles_, false);
 	doc_->replaceStyles(replacement);
 

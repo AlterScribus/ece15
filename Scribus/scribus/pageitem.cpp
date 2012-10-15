@@ -2088,7 +2088,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		//if (m_Doc->m_Selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
 	}
-//	Tinput = false;	
+//	Tinput = false;
 	FrameOnly = false;
 	p->restore();
 }

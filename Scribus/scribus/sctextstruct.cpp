@@ -73,3 +73,9 @@ PageItem* ScText::getItem(ScribusDoc *doc)
 		return doc->FrameItems[embedded];
 	return NULL;
 }
+
+void ScText::setNewMark(Mark *mrk)
+{
+	if (!mrk->isUnique())
+		mark = mrk;
+}

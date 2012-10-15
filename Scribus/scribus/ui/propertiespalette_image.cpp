@@ -47,6 +47,7 @@ PropertiesPalette_Image::PropertiesPalette_Image( QWidget* parent) : QWidget(par
 	imagePageNumber->setMinimum(0);
 	imagePageNumber->setSpecialValueText(tr( "Auto" ));
 	imagePageNumber->setDecimals(0);
+	imagePageNumber->setSuffix("");
 	imagePageNumberLabel->setBuddy(imagePageNumber);
 	installSniffer(imagePageNumber);
 	
@@ -72,9 +73,11 @@ PropertiesPalette_Image::PropertiesPalette_Image( QWidget* parent) : QWidget(par
 	keepImageWHRatioButton->setCheckable( true );
 	keepImageWHRatioButton->setAutoRaise( true );
 
+	imgDpiX->setSuffix("");
 	installSniffer(imgDpiX);
 	imgDPIXLabel->setBuddy(imgDpiX);
 
+	imgDpiY->setSuffix("");
 	installSniffer(imgDpiY);
 	imgDPIYLabel->setBuddy(imgDpiY);
 
@@ -101,7 +104,7 @@ PropertiesPalette_Image::PropertiesPalette_Image( QWidget* parent) : QWidget(par
 	connect(keepImageDPIRatioButton, SIGNAL(clicked())       , this, SLOT(handleImageDPIRatio()));
 	connect(freeScale          , SIGNAL(clicked())           , this, SLOT(handleScaling()));
 	connect(frameScale         , SIGNAL(clicked())           , this, SLOT(handleScaling()));
-	connect(cbProportional     , SIGNAL(clicked())           , this, SLOT(handleScaling()));
+	connect(cbProportional     , SIGNAL(stateChanged(int))   , this, SLOT(handleScaling()));
 	connect(imgEffectsButton   , SIGNAL(clicked())           , this, SLOT(handleImageEffects()));
 	connect(imgExtProperties   , SIGNAL(clicked())           , this, SLOT(handleExtImgProperties()));
 	connect(inputProfiles      , SIGNAL(activated(const QString&)), this, SLOT(handleProfile(const QString&)));
@@ -484,6 +487,11 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 			cbProportional->setChecked(m_item->AspectRatio);
 			freeScale->setEnabled(true);
 			frameScale->setEnabled(true);
+			//Necessary for undo action
+			keepImageWHRatioButton->setEnabled(setter);
+			keepImageDPIRatioButton->setEnabled(setter);
+			keepImageWHRatioButton->setChecked(m_item->AspectRatio);
+			keepImageDPIRatioButton->setChecked(m_item->AspectRatio);
 		}
 //CB Why do we need this? Setting it too much here
 // 		if (setter == true)
@@ -668,9 +676,13 @@ void PropertiesPalette_Image::handleImageDPIRatio()
 		imgDpiY->setValue(imgDpiX->value());
 		handleLocalDpi();
 		keepImageWHRatioButton->setChecked(true);
+		cbProportional->setChecked(true);
 	}
 	else
+	{
 		keepImageWHRatioButton->setChecked(false);
+		cbProportional->setChecked(false);
+	}
 	imgDpiX->blockSignals(false);
 	imgDpiY->blockSignals(false);
 }
@@ -686,9 +698,13 @@ void PropertiesPalette_Image::handleImageWHRatio()
 		imageYScaleSpinBox->setValue(imageXScaleSpinBox->value());
 		handleLocalScale();
 		keepImageDPIRatioButton->setChecked(true);
+		cbProportional->setChecked(true);
 	}
 	else
+	{
 		keepImageDPIRatioButton->setChecked(false);
+		cbProportional->setChecked(false);
+	}
 	imageXScaleSpinBox->blockSignals(false);
 	imageYScaleSpinBox->blockSignals(false);
 }
@@ -713,6 +729,14 @@ void PropertiesPalette_Image::handleImagePageNumber()
 	if (!m_haveDoc || !m_haveItem || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
 	bool reallynew = (m_item->pixm.imgInfo.actualPageNumber != imagePageNumber->value());
+	if(UndoManager::undoEnabled())
+	{
+		SimpleState *ss = new SimpleState(Um::PageNmbr.arg(static_cast<int>(imagePageNumber->value())),"",Um::IImageFrame);
+		ss->set("IMAGE_NBR","image_nbr");
+		ss->set("OLD",m_item->pixm.imgInfo.actualPageNumber);
+		ss->set("NEW",imagePageNumber->value());
+		UndoManager::instance()->action(m_item,ss);
+	}
 	m_item->pixm.imgInfo.actualPageNumber = static_cast<int>(imagePageNumber->value());
 	if (reallynew)
 		m_item->loadImage(m_item->externalFile(), true);
@@ -798,8 +822,6 @@ void PropertiesPalette_Image::languageChange()
 	QString pctSuffix = tr(" %");
 	imageXScaleSpinBox->setSuffix(pctSuffix);
 	imageYScaleSpinBox->setSuffix(pctSuffix);
-	imgDpiX->setSuffix("");
-	imgDpiY->setSuffix("");
 
 	QString ptSuffix = tr(" pt");
 	QString suffix   = (m_haveDoc) ? unitGetSuffixFromIndex(m_doc->unitIndex()) : ptSuffix;

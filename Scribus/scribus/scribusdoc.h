@@ -189,7 +189,6 @@ public:
 	void setHyphAutoCheck(bool b) { docPrefsData.hyphPrefs.AutoCheck=b; }
 	bool autoSave() const { return docPrefsData.docSetupPrefs.AutoSave; }
 	int autoSaveTime() const  { return docPrefsData.docSetupPrefs.AutoSaveTime; }
-	bool autoSaveClockDisplay() const  { return docPrefsData.displayPrefs.showAutosaveClockOnCanvas; }
 	void setAutoSave(bool b) { docPrefsData.docSetupPrefs.AutoSave=b; }
 	void setAutoSaveTime(int i) { docPrefsData.docSetupPrefs.AutoSaveTime=i; }
 	//FIXME (maybe) :non const, the loaders make a mess here
@@ -1142,10 +1141,12 @@ public:
 	bool hasTOCSetup() { return !docPrefsData.tocPrefs.defaultToCSetups.empty(); }
 	//! \brief Get the closest guide to the given point
 	void getClosestGuides(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
+	//! \brief Get the closest border of another element to the given point
+	void getClosestElementBorder(double xin, double yin, double *xout, double *yout, int *GxM, int *GyM, ScPage* refPage = NULL);
 	//! \brief Snap an item to the guides
 	void SnapToGuides(PageItem *currItem);
-	bool ApplyGuides(double *x, double *y);
-	bool ApplyGuides(FPoint* point);
+	bool ApplyGuides(double *x, double *y, bool elementSnap = false);
+	bool ApplyGuides(FPoint* point, bool elementSnap = false);
 	bool MoveItem(double newX, double newY, PageItem* ite, bool fromMP = false);
 	void RotateItem(double win, PageItem *currItem);
 	void MoveRotated(PageItem *currItem, FPoint npv, bool fromMP = false);
@@ -1160,7 +1161,9 @@ public:
 	QMap<PageItem*, QString> getDocItemNames(PageItem::ItemType itemType);
 	//! \brief Returns a serializer for this document
 	Serializer *serializer();
-
+	//! \brief Returns a text serializer for this document, used to paste text chunks
+	Serializer *textSerializer();
+	 
 	//! \brief Get rotation mode
 	int RotMode() const {return rotMode;}
 	//! \brief Set rotation mode
@@ -1171,8 +1174,6 @@ public:
 	void beginUpdate();
 	void endUpdate();
 	int addToInlineFrames(PageItem *item);
-	void removeInlineFrame(int fIndex);
-	void checkItemForFrames(PageItem *it, int fIndex);
 
 protected:
 	void addSymbols();
@@ -1198,7 +1199,7 @@ protected:
 	ScribusMainWindow* m_ScMW;
 	ScribusView* m_View;
 	ScGuardedObject<ScribusDoc> m_guardedObject;
-	Serializer *m_serializer;
+	Serializer *m_serializer, *m_tserializer;
 	QString currentEditedSymbol;
 	int currentEditedIFrame;
 
@@ -1389,7 +1390,6 @@ signals:
 	//! Signal a change in rotation mode (aka basepoint)
 	void rotationMode(int);
 	void updateEditItem();
-	void updateAutoSaveClock();
 	
 public slots:
 	void selectionChanged();
@@ -1760,7 +1760,6 @@ public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();
 	void itemSelection_EditWeld();
-	void restartAutoSaveTimer();
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

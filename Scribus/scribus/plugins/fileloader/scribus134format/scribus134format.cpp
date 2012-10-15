@@ -9,7 +9,6 @@ for which a new license (GPL+exception) is in place.
 
 #include "../../formatidlist.h"
 #include "commonstrings.h"
-#include "langmgr.h"
 #include "ui/missing.h"
 #include "hyphenator.h"
 #include "pageitem_latexframe.h"

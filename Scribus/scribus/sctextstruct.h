@@ -121,7 +121,7 @@ public:
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), mark(other.mark), ch(other.ch)
+		embedded(other.embedded), mark(NULL), ch(other.ch)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;
@@ -134,6 +134,8 @@ public:
 		}
 		if (other.parstyle)
 			parstyle = new ParagraphStyle(*other.parstyle);
+		if (other.mark)
+			setNewMark(other.mark);
 	}
 	~ScText();
 
@@ -142,6 +144,8 @@ public:
 	bool hasMark(Mark * MRK = NULL) const;
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
+private:
+	void setNewMark(Mark* mrk);
 };
 #endif
 

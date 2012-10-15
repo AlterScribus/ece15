@@ -12,7 +12,6 @@ for which a new license (GPL+exception) is in place.
 #include "ui/missing.h"
 #include "hyphenator.h"
 #include "notesstyles.h"
-#include "langmgr.h"
 #include "pageitem_latexframe.h"
 #include "pageitem_noteframe.h"
 #include "prefsmanager.h"
@@ -441,7 +440,7 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 			for (int ttc = 0; ttc < WeldItems.count(); ++ttc)
 			{
 				PageItem* ta = WeldItems.at(ttc);
-				for (int i = 0; i < ta->weldList.count(); i++)
+				for (int i = 0; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
 					ta->weldList[i].weldItem   = LinkID.value(wInf.weldID, 0);
@@ -943,7 +942,7 @@ bool Scribus150Format::loadPalette(const QString & fileName)
 				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
 					if (ta->weldList[i].weldItem == NULL)
 						ta->weldList.removeAt(i--);
 				}
@@ -1618,7 +1617,7 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
 					if (ta->weldList[i].weldItem == NULL)
 						ta->weldList.removeAt(i--);
 				}
@@ -5829,7 +5828,7 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 				for (int i = 0 ; i < ta->weldList.count(); ++i)
 				{
 					PageItem::weldingInfo wInf = ta->weldList.at(i);
-					ta->weldList[i].weldItem = WeldID.value(wInf.weldID, 0);
+					ta->weldList[i].weldItem = LinkID.value(wInf.weldID, 0);
 					if (ta->weldList[i].weldItem == NULL)
 						ta->weldList.removeAt(i--);
 				}

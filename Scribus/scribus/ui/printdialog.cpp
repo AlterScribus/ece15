@@ -141,7 +141,10 @@ PrintDialog::PrintDialog( QWidget* parent, ScribusDoc* doc, const PrintOptions& 
 	setStoredValues(printOptions.filename, gcr);
 #if defined(_WIN32)
 	if (!outputToFile())
+	{
+		DevMode = printOptions.devMode;
 		PrinterUtil::initDeviceSettings( PrintDest->currentText(), DevMode );
+	}
 #endif
 
 	printEngineMap = PrinterUtil::getPrintEngineSupport(PrintDest->currentText(), outputToFile());
@@ -316,7 +319,14 @@ void PrintDialog::SelPrinter(const QString& prn)
 		if (fi.isRelative()) // if (m_doc->DocName.startsWith( tr("Document")))
 			LineEdit1->setText( QDir::toNativeSeparators(QDir::currentPath() + "/" + m_doc->DocName + ".ps") );
 		else
-			LineEdit1->setText( QDir::toNativeSeparators(fi.path() + "/" + fi.baseName() + ".ps") );
+		{
+			QString completeBaseName = fi.completeBaseName();
+			if (completeBaseName.endsWith(".sla", Qt::CaseInsensitive))
+				if (completeBaseName.length() > 4) completeBaseName.chop(4);
+			if (completeBaseName.endsWith(".gz", Qt::CaseInsensitive))
+				if (completeBaseName.length() > 3) completeBaseName.chop(3);
+			LineEdit1->setText( QDir::toNativeSeparators(fi.path() + "/" + completeBaseName + ".ps") );
+		}
 	}
 
 	// Get page description language supported by the selected printer

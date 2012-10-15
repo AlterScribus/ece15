@@ -241,7 +241,6 @@ void PrefsManager::initDefaults()
 	appPrefs.displayPrefs.scratchColor = qApp->palette().color(QPalette::Active, QPalette::Window);
 	appPrefs.displayPrefs.showPageShadow = true;
 	appPrefs.displayPrefs.showVerifierWarningsOnCanvas = true;
-	appPrefs.displayPrefs.showAutosaveClockOnCanvas = false;
 	appPrefs.displayPrefs.frameColor = QColor(Qt::red);
 	appPrefs.displayPrefs.frameNormColor = QColor(Qt::black);
 	appPrefs.displayPrefs.frameGroupColor = QColor(Qt::darkCyan);
@@ -259,7 +258,7 @@ void PrefsManager::initDefaults()
 	appPrefs.itemToolPrefs.lineEndArrow = 0;
 	appPrefs.opToolPrefs.magMin = 1;
 	appPrefs.opToolPrefs.magMax = 3200;
-	appPrefs.opToolPrefs.magStep = 200;
+	appPrefs.opToolPrefs.magStep = 25;
 	appPrefs.docSetupPrefs.docUnitIndex = 0;
 	appPrefs.itemToolPrefs.polyCorners = 4;
 	appPrefs.itemToolPrefs.polyFactor = 0.5;
@@ -1405,7 +1404,6 @@ bool PrefsManager::WritePref(QString ho)
 	deDisplay.setAttribute("ShowMarginsFilled", static_cast<int>(appPrefs.displayPrefs.marginColored));
 	deDisplay.setAttribute("DisplayScale", ScCLocale::toQStringC(appPrefs.displayPrefs.displayScale, 8));
 	deDisplay.setAttribute("ShowVerifierWarningsOnCanvas",static_cast<int>(appPrefs.displayPrefs.showVerifierWarningsOnCanvas));
-	deDisplay.setAttribute("ShowAutosaveClockOnCanvas",static_cast<int>(appPrefs.displayPrefs.showAutosaveClockOnCanvas));
 	deDisplay.setAttribute("ToolTips", static_cast<int>(appPrefs.displayPrefs.showToolTips));
 	deDisplay.setAttribute("ShowMouseCoordinates", static_cast<int>(appPrefs.displayPrefs.showMouseCoordinates));
 	elem.appendChild(deDisplay);
@@ -1704,7 +1702,15 @@ bool PrefsManager::WritePref(QString ho)
 			continue;
 		QDomElement kscc=docu.createElement("Shortcut");
 		kscc.setAttribute("Action",ksc.value().actionName);
-		kscc.setAttribute("KeySequence",Prefs_KeyboardShortcuts::getKeyText(ksc.value().keySequence));
+		QString ks(Prefs_KeyboardShortcuts::getKeyText(ksc.value().keySequence));
+#ifdef Q_OS_MAC
+		ks.replace("Ctrl","Meta");
+		ks.replace("Cmd","Ctrl");
+#endif
+#ifdef Q_OS_WIN32
+		ks.replace("Windows","Meta");
+#endif
+		kscc.setAttribute("KeySequence",ks);
 		elem.appendChild(kscc);
 	}
 	QDomElement cosd=docu.createElement("DefaultColorSet");
@@ -1966,7 +1972,6 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.displayPrefs.marginColored = static_cast<bool>(dc.attribute("ShowMarginsFilled", "0").toInt());
 			appPrefs.displayPrefs.displayScale = qRound(ScCLocale::toDoubleC(dc.attribute("DisplayScale"), appPrefs.displayPrefs.displayScale)*72)/72.0;
 			appPrefs.displayPrefs.showVerifierWarningsOnCanvas = static_cast<bool>(dc.attribute("ShowVerifierWarningsOnCanvas", "1").toInt());
-			appPrefs.displayPrefs.showAutosaveClockOnCanvas = static_cast<bool>(dc.attribute("ShowAutosaveClockOnCanvas", "0").toInt());
 			appPrefs.displayPrefs.showToolTips = static_cast<bool>(dc.attribute("ToolTips", "1").toInt());
 			appPrefs.displayPrefs.showMouseCoordinates = static_cast<bool>(dc.attribute("ShowMouseCoordinates", "1").toInt());
 		}
@@ -2107,8 +2112,8 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.itemToolPrefs.imageStrokeColorShade = dc.attribute("ImageStrokeColorShade", "100").toInt();
 			appPrefs.itemToolPrefs.imageScaleX = ScCLocale::toDoubleC(dc.attribute("ImageScaleX"), 1.0);
 			appPrefs.itemToolPrefs.imageScaleY = ScCLocale::toDoubleC(dc.attribute("ImageScaleY"), 1.0);
-			appPrefs.itemToolPrefs.imageScaleType = static_cast<bool>(dc.attribute("PSCALE", "1").toInt());
-			appPrefs.itemToolPrefs.imageAspectRatio = static_cast<bool>(dc.attribute("PASPECT", "0").toInt());
+			appPrefs.itemToolPrefs.imageScaleType = static_cast<bool>(dc.attribute("PSCALE", "0").toInt());
+			appPrefs.itemToolPrefs.imageAspectRatio = static_cast<bool>(dc.attribute("PASPECT", "1").toInt());
 			appPrefs.itemToolPrefs.imageUseEmbeddedPath = static_cast<bool>(dc.attribute("EmbeddedPath", "0").toInt());
 			appPrefs.itemToolPrefs.imageLowResType = dc.attribute("ImageLowResType", "1").toInt();
 			appPrefs.itemToolPrefs.polyCorners = dc.attribute("PolygonCorners", "4").toInt();
@@ -2149,10 +2154,9 @@ bool PrefsManager::ReadPref(QString ho)
 		{
 			appPrefs.opToolPrefs.magMin  = dc.attribute("MinimumMagnification", "1").toInt();
 			appPrefs.opToolPrefs.magMax  = dc.attribute("MaximumMagnification", "3200").toInt();
-			appPrefs.opToolPrefs.magStep = dc.attribute("MagnificationStep", "200").toInt();
-			//CB Reset prefs zoom step value to 200% instead of old values.
-			if (appPrefs.opToolPrefs.magStep <= 100)
-				appPrefs.opToolPrefs.magStep = 200;
+			appPrefs.opToolPrefs.magStep = dc.attribute("MagnificationStep", "25").toInt();
+			if (appPrefs.opToolPrefs.magStep < 0)
+				appPrefs.opToolPrefs.magStep = 25;
 			appPrefs.opToolPrefs.dispX = ScCLocale::toDoubleC(dc.attribute("DisplayOffsetX"), 10.0);
 			appPrefs.opToolPrefs.dispY = ScCLocale::toDoubleC(dc.attribute("DisplayOffsetY"), 10.0);
 			appPrefs.opToolPrefs.constrain = ScCLocale::toDoubleC(dc.attribute("RotationConstrainAngle"), 15.0);

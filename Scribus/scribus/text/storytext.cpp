@@ -295,9 +295,9 @@ void StoryText::insert(int pos, const StoryText& other, bool onlySelection)
 {
 	if (pos < 0)
 		pos += length()+1;
-	int referenceChar = qMax(0, qMin(pos, length()-1));
-	CharStyle cstyle(charStyle(referenceChar));
-	ParagraphStyle pstyle(paragraphStyle(referenceChar));
+
+	CharStyle cstyle(charStyle(pos));
+	ParagraphStyle pstyle(paragraphStyle(pos));
 	
 	// this style represents all differences between this and other's defaultstyles
 	ParagraphStyle otherDefault(other.defaultStyle());
@@ -1671,22 +1671,12 @@ void StoryText::invalidateLayout()
 
 void StoryText::invalidateAll()
 {
-		//FIX ME: realy invalidation is needed before finishing loading document or even if doc is not set?
-	//do not invalidate if doc is not set, doc is loading or signals are blocked
-	//that speeds up layout`s things
-	if (doc == NULL || doc->isLoading() || signalsBlocked())
-		return;
 	d->pstyleContext.invalidate();
 	invalidate(0, nrOfItems());
 }
 
 void StoryText::invalidate(int firstItem, int endItem)
 {
-	//FIX ME: realy invalidation is needed before finishing loading document or even if doc is not set?
-	//do not invalidate if doc is not set, doc is loading or signals are blocked
-	//that speeds up layout`s things
-	if ((doc == NULL) || doc->isLoading() || signalsBlocked())
-		return;
 	for (int i=firstItem; i < endItem; ++i) {
 		ParagraphStyle* par = item(i)->parstyle;
 		if (par)
@@ -2280,6 +2270,11 @@ public:
 	{
 		if (lastStyle)
 			delete lastStyle;
+	}
+	
+	virtual void reset()
+	{
+		numPara = 0;
 	}
 	
 	void begin(const Xml_string& tag, Xml_attr attr)

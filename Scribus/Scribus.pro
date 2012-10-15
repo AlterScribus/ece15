@@ -1112,7 +1112,7 @@ HEADERS += scribus/actionmanager.h \
     scribus/plugins/scripter/api_printer.h \
     scribus/plugins/scripter/api_layer.h \
     scribus/plugins/scripter/api_imageitem.h \
-    scribus/plugins/scripter/api_imageexport.h
+    scribus/plugins/scripter/api_imageexport.h \
     scribus/marks.h \
     scribus/notesstyles.h \
     scribus/pageitem_noteframe.h \
@@ -2158,7 +2158,7 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/plugins/scripter/api_printer.cpp \
     scribus/plugins/scripter/api_layer.cpp \
     scribus/plugins/scripter/api_imageitem.cpp \
-    scribus/plugins/scripter/api_imageexport.cpp
+    scribus/plugins/scripter/api_imageexport.cpp \
     scribus/notesstyles.cpp \
     scribus/pageitem_noteframe.cpp \
     scribus/ui/mark2item.cpp \

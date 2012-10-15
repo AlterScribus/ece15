@@ -21,24 +21,9 @@
 #ifndef __PRC_BIT_STREAM_H
 #define __PRC_BIT_STREAM_H
 
-#ifdef _MSC_VER
-#include <stdio.h>
-#if _MSC_VER >= 1600
-#include <stdint.h>
-#else
-typedef signed char int8_t;
-typedef signed short int16_t;
-typedef signed long int32_t;
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned long uint32_t;
-#endif // _MSC_VER >= 1600
-#else
-#include <inttypes.h>
-#endif // _MSC_VER
 #include <string>
-#include <iostream>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define CHUNK_SIZE (1024)
 // Is this a reasonable initial size?
@@ -67,7 +52,6 @@ class PRCbitStream
     PRCbitStream& operator <<(const char*);
 
     void compress();
-    void write(std::ostream &out) const;
   private:
     void writeBit(bool);
     void writeBits(uint32_t,uint8_t);

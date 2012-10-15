@@ -62,7 +62,7 @@ Hyphenator::Hyphenator(QWidget* parent, ScribusDoc *dok) : QObject( parent ),
 		Language = PrefsManager::instance()->appPrefs.hyphPrefs.Language;
 		doc->setHyphLanguage(Language);
 	}
-//	pfad += ScCore->primaryMainWindow()->Sprachen[Language];
+// 	pfad += ScCore->primaryMainWindow()->Sprachen[Language];
 	pfad += lmgr->getHyphFilename( doc->hyphLanguage(), true );
 	QFile f(pfad);
 	if (f.open(QIODevice::ReadOnly))
@@ -202,7 +202,7 @@ void Hyphenator::slotHyphenate(PageItem* it)
 	else {
 		text = it->itemText.text(0, it->itemText.length());
 	}
-
+	
 	int firstC = 0;
 	int lastC = 0;
 	int Ccount = 0;
