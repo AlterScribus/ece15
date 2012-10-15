@@ -1025,6 +1025,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuSeparator("Page");
 	scrMenuMgr->addMenuItem(scrActions["viewSnapToGrid"], "Page", true);
 	scrMenuMgr->addMenuItem(scrActions["viewSnapToGuides"], "Page", true);
+	scrMenuMgr->addMenuItem(scrActions["viewSnapToElements"], "Page", true);
 
 	//View menu
 	scrMenuMgr->createMenu("View", ActionManager::defaultMenuNameEntryTranslated("View"));
@@ -2570,6 +2571,7 @@ void ScribusMainWindow::HaveNewDoc()
 
 	scrActions["viewSnapToGrid"]->setChecked(doc->useRaster);
 	scrActions["viewSnapToGuides"]->setChecked(doc->SnapGuides);
+	scrActions["viewSnapToElements"]->setChecked(doc->SnapElement);
 	scrActions["viewShowRulers"]->setEnabled(true);
 
 	scrMenuMgr->setMenuEnabled("Insert", true);
@@ -4857,6 +4859,7 @@ bool ScribusMainWindow::DoFileClose()
 		scrActions["viewFit400"]->setEnabled(false);
 		//scrMenuMgr->setMenuEnabled("Windows", false);
 		scrActions["viewSnapToGuides"]->setChecked(false);
+		scrActions["viewSnapToElements"]->setChecked(false);
 		scrActions["viewSnapToGrid"]->setChecked(false);
 		scrActions["viewShowRulers"]->setEnabled(false);
 
