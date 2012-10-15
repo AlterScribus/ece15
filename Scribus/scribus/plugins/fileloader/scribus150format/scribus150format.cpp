@@ -12,6 +12,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/missing.h"
 #include "hyphenator.h"
 #include "notesstyles.h"
+#include "langmgr.h"
 #include "pageitem_latexframe.h"
 #include "pageitem_noteframe.h"
 #include "prefsmanager.h"
