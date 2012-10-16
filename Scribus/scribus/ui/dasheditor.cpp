@@ -79,7 +79,8 @@ void DashPreview::paintEvent(QPaintEvent *e)
 		if (onlyselect)
 			StopM.append(startX);
 	}
-	p->setPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	p->setPen(Qt::black);
+	p->setLineWidth(1);
 	p->setFillMode(0);
 	p->drawRect(0, 0, pWidth, 10);
 	p->end();

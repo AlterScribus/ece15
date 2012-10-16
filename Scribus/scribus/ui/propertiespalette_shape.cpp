@@ -159,10 +159,15 @@ void PropertiesPalette_Shape::setLocked(bool isLocked)
 	QPalette pal(qApp->palette());
 	if (isLocked)
 		pal.setCurrentColorGroup(QPalette::Disabled);
+
+	bool shapeEditLocked = isLocked;
+	if (m_haveItem)
+		shapeEditLocked |=  m_item->sizeLocked();
+	editShape->setEnabled(!shapeEditLocked);
+
 	if ((m_haveDoc) && (m_haveItem))
 	{
 		enableCustomShape();
-		enableEditShape();
 		if (((m_item->asTextFrame()) || (m_item->asImageFrame()) || (m_item->asPolygon())) &&  (!m_item->ClipEdited) && ((m_item->FrameType == 0) || (m_item->FrameType == 2)))
 			roundRect->setEnabled(!isLocked);
 		else
@@ -170,9 +175,12 @@ void PropertiesPalette_Shape::setLocked(bool isLocked)
 	}
 }
 
-void PropertiesPalette_Shape::setSizeLocked(bool )
+void PropertiesPalette_Shape::setSizeLocked(bool isLocked)
 {
-	enableEditShape();
+	bool shapeEditLocked = isLocked;
+	if (m_haveItem)
+		shapeEditLocked |=  m_item->locked();
+	editShape->setEnabled(!shapeEditLocked);
 }
 
 void PropertiesPalette_Shape::setRoundRectEnabled(bool enabled)
@@ -193,23 +201,8 @@ void PropertiesPalette_Shape::enableCustomShape()
 		enabled &= !m_item->isSpiral();
 		enabled &= !m_item->isRegularPolygon();
 		enabled &= !m_item->locked();
-		enabled &= !m_item->sizeLocked();
-		enabled &= !m_item->isTable();
 	}
 	customShape->setEnabled(enabled);
-}
-
-void PropertiesPalette_Shape::enableEditShape()
-{
-	bool enabled = false;
-	if (m_item)
-	{
-		enabled  = true;
-		enabled &= !m_item->locked();
-		enabled &= !m_item->sizeLocked();
-		enabled &= !m_item->isTable();
-	}
-	editShape->setEnabled(enabled);
 }
 
 void PropertiesPalette_Shape::handleSelectionChanged()
@@ -229,7 +222,7 @@ void PropertiesPalette_Shape::handleSelectionChanged()
 		m_haveItem = (itemType != -1);
 		if (itemType != -1)
 		{
-			enableEditShape();
+			editShape->setEnabled(!currItem->locked() && !currItem->sizeLocked());
 			enableCustomShape();
 		}
 		else
@@ -302,12 +295,6 @@ void PropertiesPalette_Shape::handleSelectionChanged()
 				roundRect->setEnabled(!currItem->locked());
 			else
 				roundRect->setEnabled(false);
-			break;
-		case PageItem::Table:
-			setEnabled(true);
-			roundRect->setEnabled(false);
-			editShape->setEnabled(false);
-			customShape->setEnabled(false);
 			break;
 		}
 	}
@@ -389,13 +376,6 @@ void PropertiesPalette_Shape::setCurrentItem(PageItem *item)
 	if (m_item->asSymbolFrame())
 	{
 		setEnabled(false);
-	}
-	if (m_item->asTable())
-	{
-		setEnabled(true);
-		roundRect->setEnabled(false);
-		editShape->setEnabled(false);
-		customShape->setEnabled(false);
 	}
 	m_haveItem = true;
 	displayTextFlowMode(m_item->textFlowMode());

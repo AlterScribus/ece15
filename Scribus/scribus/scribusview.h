@@ -65,7 +65,6 @@ class QMimeData;
 #include "observable.h"
 #include "scribusapi.h"
 #include "scribusdoc.h"
-#include "ui/clockwidget.h"
 
 class Canvas;
 class CanvasMode;
@@ -141,7 +140,6 @@ public:
 	QComboBox *unitSwitcher; //Menu for units at bottom of view
 	QComboBox *previewQualitySwitcher; //Menu for image preview quality
 	QComboBox *visualMenu;
-	ClockWidget *clockLabel;
   /** Dokument zu dem die Seite gehoert */
 	ScribusDoc * const Doc;
 	Canvas * const m_canvas;

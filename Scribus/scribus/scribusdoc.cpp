@@ -4138,10 +4138,10 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 
 		if (it->itemText.charStyle(e).effects() & ScStyle_SoftHyphenVisible)
 		{
-			uint gl = font->char2CMap(QChar('-'));
-			FPointArray gly(font->glyphOutline(gl));
-			if (!font->replacementName().isEmpty())
-				Really[font->replacementName()].insert(gl, gly);
+			uint gl = it->itemText.charStyle(e).font().char2CMap(QChar('-'));
+			FPointArray gly(it->itemText.charStyle(e).font().glyphOutline(gl));
+			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
+				Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
 		}
 		if ((it->itemText.charStyle(e).effects() & ScStyle_SmallCaps) || (it->itemText.charStyle(e).effects() & ScStyle_AllCaps))
 		{
@@ -4150,12 +4150,12 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 				chstr = chstr.toUpper();
 			chr = chstr.unicode();
 		}
-		if (font->canRender(chr))
+		if (it->itemText.charStyle(e).font().canRender(chr))
 		{
-			uint gl = font->char2CMap(chr);
-			gly = font->glyphOutline(gl);
-			if (!font->replacementName().isEmpty())
-				Really[font->replacementName()].insert(gl, gly);
+			uint gl = it->itemText.charStyle(e).font().char2CMap(chr);
+			gly = it->itemText.charStyle(e).font().glyphOutline(gl);
+			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
+				Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
 		}
 	}
 }
@@ -9060,7 +9060,7 @@ void ScribusDoc::MirrorPolyH(PageItem* currItem)
 			ss->set("IS_CONTOUR", true);
 			undoManager->action(currItem, ss, Um::IBorder);
 		}
-		//FPoint tp2(getMinClipF(&currItem->ContourLine));
+		FPoint tp2(getMinClipF(&currItem->ContourLine));
 		FPoint tp(getMaxClipF(&currItem->ContourLine));
 		ma.translate(qRound(tp.x()), 0);
 		ma.scale(-1, 1);
@@ -15603,7 +15603,6 @@ void ScribusDoc::setNewPrefs(const ApplicationPrefs& prefsData, const Applicatio
 	autoSaveTimer->stop();
 	if (docPrefsData.docSetupPrefs.AutoSave)
 		autoSaveTimer->start(docPrefsData.docSetupPrefs.AutoSaveTime);
-	emit updateAutoSaveClock();
 
 /*	FIXME: scribus determines dict by charstyle now, so this setting should go into the doc's default charstyle
 		currDoc->docHyphenator->slotNewDict(ScMW->GetLang(tabHyphenator->language->currentText()));

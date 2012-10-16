@@ -170,7 +170,7 @@ struct SingleLine
 	}
 };
 
-struct Bullet
+struct Bullet  //used by style reader while importing ODT files
 {
 	QString name;
 	QString charStr;
