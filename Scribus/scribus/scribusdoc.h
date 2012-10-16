@@ -190,6 +190,7 @@ public:
 	void setHyphAutoCheck(bool b) { docPrefsData.hyphPrefs.AutoCheck=b; }
 	bool autoSave() const { return docPrefsData.docSetupPrefs.AutoSave; }
 	int autoSaveTime() const  { return docPrefsData.docSetupPrefs.AutoSaveTime; }
+	bool autoSaveClockDisplay() const  { return docPrefsData.displayPrefs.showAutosaveClockOnCanvas; }
 	void setAutoSave(bool b) { docPrefsData.docSetupPrefs.AutoSave=b; }
 	void setAutoSaveTime(int i) { docPrefsData.docSetupPrefs.AutoSaveTime=i; }
 	//FIXME (maybe) :non const, the loaders make a mess here
@@ -1395,6 +1396,7 @@ signals:
 	//! Signal a change in rotation mode (aka basepoint)
 	void rotationMode(int);
 	void updateEditItem();
+	void updateAutoSaveClock();
 	
 public slots:
 	void selectionChanged();

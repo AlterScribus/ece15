@@ -152,7 +152,6 @@ public:
 	void applyNewMaster(QString name);
 	void updateRecent(QString fn);
 	void doPasteRecent(QString data);
-	QString GetLang(QString inLang);
 	bool getPDFDriver(const QString & fn, const QString & nam,
 					  int Components, const std::vector<int> & pageNs,
 					  const QMap<int,QPixmap> & thumbs, QString& error, 
@@ -231,8 +230,8 @@ public:
 	ScribusWin* ActWin;
 	QClipboard *ClipB;
 	QString LoadEnc;
-	QMap<QString, QStringList> InstLang;
-	QMap<QString,QString> LangTransl;
+	//QMap<QString, QStringList> InstLang;
+	//QMap<QString,QString> LangTransl;
 
 	QProcess *ExternalImageEditor;
 
@@ -277,6 +276,7 @@ public slots:
 	void updateActiveWindowCaption(const QString &newCaption);
 	void windowsMenuActivated(int id);
 	void PutScrap(int scID);
+	void PutToInline(QString buffer);
 	void PutToPatterns();
 	void changeLayer(int);
 	void showLayer();

@@ -1890,7 +1890,8 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 
 	// start auto save timer if needed
 	if (m_Doc->autoSave()  && ScCore->usingGUI())
-		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+		m_Doc->restartAutoSaveTimer();
+//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -1998,7 +1999,24 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->PageSpa = attrs.valueAsDouble("ABSTSPALTEN");
 	m_Doc->setUnitIndex( attrs.valueAsInt("UNITS", 0) );
 
-	m_Doc->setHyphLanguage(attrs.valueAsString("LANGUAGE", "en_US"));
+	//m_Doc->setHyphLanguage(attrs.valueAsString("LANGUAGE", "en_US"));
+	static const QString LANGUAGE("LANGUAGE");
+	if (attrs.hasAttribute(LANGUAGE))
+	{
+		QString l(attrs.valueAsString(LANGUAGE));
+		if (LanguageManager::instance()->langTableIndex(l)!=-1)
+			m_Doc->setHyphLanguage(l); //new style storage
+		else
+		{ //old style storage
+			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
+			if (lnew.isEmpty())
+				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
+			m_Doc->setHyphLanguage(lnew);
+		}
+	}
+
+
+
 	m_Doc->setHyphMinimumWordLength(attrs.valueAsInt("MINWORDLEN", 3));
 	m_Doc->setHyphConsecutiveLines(attrs.valueAsInt("HYCOUNT", 2));
 
@@ -2439,7 +2457,18 @@ void Scribus150Format::readCharacterStyleAttrs(ScribusDoc *doc, ScXmlStreamAttri
 
 	static const QString LANGUAGE("LANGUAGE");
 	if (attrs.hasAttribute(LANGUAGE))
-		newStyle.setLanguage(attrs.valueAsString(LANGUAGE));
+	{
+		QString l(attrs.valueAsString(LANGUAGE));
+		if (LanguageManager::instance()->langTableIndex(l)!=-1)
+			newStyle.setLanguage(l); //new style storage
+		else
+		{ //old style storage
+			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
+			if (lnew.isEmpty())
+				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
+			newStyle.setLanguage(lnew);
+		}
+	}
 
 
 	static const QString SHORTCUT("SHORTCUT");

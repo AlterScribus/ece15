@@ -9653,7 +9653,7 @@ void ScribusDoc::MirrorPolyH(PageItem* currItem)
 			ss->set("IS_CONTOUR", true);
 			undoManager->action(currItem, ss, Um::IBorder);
 		}
-		FPoint tp2(getMinClipF(&currItem->ContourLine));
+		//FPoint tp2(getMinClipF(&currItem->ContourLine));
 		FPoint tp(getMaxClipF(&currItem->ContourLine));
 		ma.translate(qRound(tp.x()), 0);
 		ma.scale(-1, 1);
@@ -16266,6 +16266,7 @@ void ScribusDoc::setNewPrefs(const ApplicationPrefs& prefsData, const Applicatio
 	autoSaveTimer->stop();
 	if (docPrefsData.docSetupPrefs.AutoSave)
 		autoSaveTimer->start(docPrefsData.docSetupPrefs.AutoSaveTime);
+	emit updateAutoSaveClock();
 
 /*	FIXME: scribus determines dict by charstyle now, so this setting should go into the doc's default charstyle
 		currDoc->docHyphenator->slotNewDict(ScMW->GetLang(tabHyphenator->language->currentText()));
@@ -18276,4 +18277,12 @@ void ScribusDoc::setNFCoords(PageItem_NoteFrame* nF)
 		coordsMap = noteframesCoords.value(nF->masterFrame());
 	coordsMap.insert(nF->notesStyle(), c);
 	noteframesCoords.insert(nF->masterFrame(), coordsMap);
+}
+
+void ScribusDoc::restartAutoSaveTimer()
+{
+	autoSaveTimer->stop();
+	if (docPrefsData.docSetupPrefs.AutoSave)
+		autoSaveTimer->start(docPrefsData.docSetupPrefs.AutoSaveTime);
+	emit updateAutoSaveClock();
 }

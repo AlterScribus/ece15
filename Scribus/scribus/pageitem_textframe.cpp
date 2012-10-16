@@ -4074,7 +4074,10 @@ void PageItem_TextFrame::DrawObj_Post(ScPainter *p)
 								p->setStrokeMode(ScPainter::Solid);
 							}
 							else
+							{
+								no_stroke = true;
 								p->setStrokeMode(ScPainter::None);
+							}
 						}
 						else
 						{
@@ -4095,6 +4098,8 @@ void PageItem_TextFrame::DrawObj_Post(ScPainter *p)
 							p->setDash(DashValues, DashOffset);
 						p->strokePath();
 					}
+					else
+						no_stroke = true;
 				}
 				else
 				{
@@ -4137,7 +4142,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
 		double scpInv = 0.0;
-		if ((Frame) && (m_Doc->guidesPrefs().framesShown))
+		if ((Frame) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
 		{
 			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			if ((isBookmark) || (m_isAnnotation))
@@ -4187,6 +4192,16 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
 			p->drawSharpRect(ofx, ofy, ofwh, ofwh);
+		}
+		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
+		{
+			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			if (m_Locked)
+				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setFillMode(ScPainter::None);
+			p->drawSharpRect(0, 0, Width, Height);
+			no_fill = false;
+			no_stroke = false;
 		}
 		//if (m_Doc->selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);

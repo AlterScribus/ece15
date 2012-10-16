@@ -143,7 +143,7 @@ public:
 	
 
 protected:
-	ScribusView * const m_view;	
+	ScribusView * const m_view;
 	Canvas * const m_canvas;
 	ScribusDoc * const m_doc;
 	PanGesture * m_panGesture;

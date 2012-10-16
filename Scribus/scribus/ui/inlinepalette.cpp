@@ -72,6 +72,11 @@ void InlineView::dropEvent(QDropEvent *e)
 		e->acceptProposedAction();
 		if (e->source() == this)
 			return;
+		QString text = e->mimeData()->text();
+		if ((text.startsWith("<SCRIBUSELEM")) || (text.startsWith("SCRIBUSELEMUTF8")))
+		{
+			emit objectDropped(text);
+		}
 	}
 	else
 		e->ignore();
@@ -80,7 +85,9 @@ void InlineView::dropEvent(QDropEvent *e)
  void InlineView::startDrag(Qt::DropActions supportedActions)
  {
 	QMimeData *mimeData = new QMimeData;
-	QByteArray data = currentItem()->text().toLocal8Bit();
+	int id = currentItem()->data(Qt::UserRole).toInt();
+	QByteArray data;
+	data.setNum(id);
 	mimeData->setData("text/inline", data);
 	QDrag *drag = new QDrag(this);
 	drag->setMimeData(mimeData);
@@ -103,6 +110,7 @@ InlinePalette::InlinePalette( QWidget* parent) : ScDockPalette( parent, "Inline"
 	languageChange();
 	connect(InlineViewWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(handleDoubleClick(QListWidgetItem *)));
 	connect(InlineViewWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleContextMenue(QPoint)));
+	connect(InlineViewWidget, SIGNAL(objectDropped(QString)), this, SIGNAL(objectDropped(QString)));
 }
 
 void InlinePalette::handleContextMenue(QPoint p)
