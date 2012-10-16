@@ -191,7 +191,7 @@ void SMPStyleWidget::languageChange()
 
 	parEffectCharStyleComboLabel->setText(tr("Character Style for Effect:"));
 	distFromTextLabel->setText(tr("Distance from Text:"));
-	parentParEffectsButton->setText(tr("Use Parent`s Values"));
+	peParentButton->setText(tr("Use Parent`s Values"));
 	
 	QFont font1;
 	if (font1.pointSize())
@@ -427,17 +427,17 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		connect(coaParentButton, SIGNAL(clicked()), this, SLOT(slotParentClearOnApply()));
 		if (pstyle->isInhHasDropCap() && pstyle->isInhHasBullet() && pstyle->isInhHasNum())
 		{
-			parentParEffectsButton->hide();
-			disconnect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
+			peParentButton->hide();
+			disconnect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 		}
 		else
 		{
-			parentParEffectsButton->show();
+			peParentButton->show();
 			QFont f(font());
 			f.setBold(true);
-			parentParEffectsButton->setFont(f);
+			peParentButton->setFont(f);
 		}
-		connect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
+		connect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 
 		dropCapsBox->setChecked(pstyle->hasDropCap());
 		setWidgetBoldFont(dropCapsBox, !pstyle->isInhHasDropCap());
@@ -518,8 +518,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 
 		parEffectOffset_->setValue(pstyle->parEffectOffset() * unitRatio);
 		parEffectIndentBox->setChecked(pstyle->parEffectIndent());
-		parentParEffectsButton->hide();
-		disconnect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
+		peParentButton->hide();
+		disconnect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 		dropCapsBox->setChecked(pstyle->hasDropCap());
 		setWidgetBoldFont(dropCapsBox, false);
 		dropCapLines_->setValue(pstyle->dropCapLines());
@@ -1200,7 +1200,7 @@ void SMPStyleWidget::slotDropCap(bool isOn)
 		dropCapLines_->setEnabled(false);
 	if (hasParent_)
 		peParentButton->show();
-	parentParEffectsButton->show();
+	peParentButton->show();
 	parEffectOffset_->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 	parEffectCharStyleCombo->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 	connectPESignals();
@@ -1233,7 +1233,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 	}
 	if (hasParent_)
 		peParentButton->show();
-	parentParEffectsButton->show();
+	peParentButton->show();
 	parEffectOffset_->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 	parEffectCharStyleCombo->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 }
@@ -1279,7 +1279,7 @@ void SMPStyleWidget::slotDefaultParEffects()
 	numBox->setChecked(false);
 	if (hasParent_)
 		peParentButton->show();
-		parentParEffectsButton->show();
+		peParentButton->show();
 	parEffectOffset_->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 	parEffectCharStyleCombo->setEnabled(bulletBox->isChecked() || numBox->isChecked() || dropCapsBox->isChecked());
 	connectPESignals();
@@ -1288,7 +1288,7 @@ void SMPStyleWidget::slotDefaultParEffects()
 void SMPStyleWidget::slotParentParEffects()
 {
 	disconnectPESignals();
-	parentParEffectsButton->hide();
+	peParentButton->hide();
 	dropCapsBox->setChecked(parentDC_);
 	bulletBox->setChecked(parentBul_);
 	numBox->setChecked(parentNum_);
@@ -1335,14 +1335,6 @@ void SMPStyleWidget::closeEnhanced(bool show)
 	m_enhanced->close();
 	delete m_enhanced;
 	m_enhanced = NULL;
-}
-
-void SMPStyleWidget::on_bulletCharTableButton__toggled(bool checked)
-{
-	if (m_enhanced && !checked)
-		closeEnhanced();
-	else if (!m_enhanced && checked)
-		openEnhanced();
 }
 
 void SMPStyleWidget::showHyphenationMode(QList<ParagraphStyle*> &pstyles)
@@ -1474,7 +1466,7 @@ void SMPStyleWidget::showWidowsOrphans(QList<ParagraphStyle *> &pstyles)
 
 void SMPStyleWidget::connectPESignals()
 {
-	connect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
+	connect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 	connect(bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
 	connect(numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumbering(bool)));
 	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
@@ -1482,7 +1474,7 @@ void SMPStyleWidget::connectPESignals()
 
 void SMPStyleWidget::disconnectPESignals()
 {
-	disconnect(parentParEffectsButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
+	disconnect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 	disconnect(bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullets(bool)));
 	disconnect(numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumbering(bool)));
 	disconnect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));

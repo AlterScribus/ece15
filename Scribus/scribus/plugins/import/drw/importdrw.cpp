@@ -1267,8 +1267,6 @@ void DrwPlug::decodeSymbol(QDataStream &ds, bool last)
 	QPointF posEnd, posMid, posStart;
 	//QTransform mat;
 	QLineF sLin, eLin;
-	//FPoint wh;
-	//QPointF position = getCoordinate(ds);
 	double boundingBoxX = getValue(ds);
 	double boundingBoxY = getValue(ds);
 	double boundingBoxW = getValue(ds);

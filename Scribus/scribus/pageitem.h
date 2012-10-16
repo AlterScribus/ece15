@@ -1424,6 +1424,8 @@ protected:
 	void restoreCustomLineStyle(SimpleState *state, bool isUndo);
 	void restoreArrow(SimpleState *state, bool isUndo, bool isStart);
 
+	void restorePStyle(SimpleState *state, bool isUndo);
+
 	void restoreType(SimpleState *state, bool isUndo);
 	void restoreTextFlowing(SimpleState *state, bool isUndo);
 	void restoreImageScaleMode(SimpleState *state, bool isUndo);
@@ -1447,7 +1449,7 @@ protected:
 
 	void restoreWeldItems(SimpleState *state, bool isUndo);
 	void restoreUnWeldItem(SimpleState *state, bool isUndo);
-
+	
 	/*@}*/
 
 	/**

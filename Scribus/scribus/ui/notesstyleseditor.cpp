@@ -8,7 +8,6 @@
 #include "scribusview.h"
 #include "scribus.h"
 #include "scmessagebox.h"
-#include "selection.h"
 #include "undomanager.h"
 
 NotesStylesEditor::NotesStylesEditor(QWidget *parent, const char *name)
@@ -264,9 +263,6 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 		QString currNS = NSlistBox->currentText();
 		NotesStyle* NS = NULL;
 		
-		UndoTransaction *trans = NULL;
-		if(UndoManager::instance()->undoEnabled())
-			trans = new UndoTransaction(UndoManager::instance()->beginTransaction(Um::Selection,Um::ITextFrame,Um::EditNotesStyle));
 		foreach (const QString &nsName, changesMap.keys())
 		{
 			NotesStyle n = changesMap.value(nsName);
@@ -304,31 +300,16 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 					ss->set("NSTYLE", QString("edit"));
 					m_Doc->undoSetNotesStyle(ss, NS);
 				}
-				if (!m_Doc->listNotesFrames(NS).isEmpty())
+				//converting foot <--> end notes or changing footnotes range
+				if ((NS->isEndNotes() != n.isEndNotes()) || (NS->isEndNotes() && n.isEndNotes() && NS->range() != n.range()))
 				{
-					//converting foot <--> end notes or changing footnotes range
-					if ((NS->isEndNotes() != n.isEndNotes()) || (NS->isEndNotes() && n.isEndNotes() && NS->range() != n.range()))
-					{
-						foreach (PageItem_NoteFrame* nF, m_Doc->listNotesFrames(NS))
-							m_Doc->delNoteFrame(nF, false);
-					}
+					foreach (PageItem_NoteFrame* nF, m_Doc->listNotesFrames(NS))
+						m_Doc->delNoteFrame(nF, false);
+					if (n.isEndNotes())
+						m_Doc->flag_updateEndNotes = true;
 				}
+				m_Doc->setNotesChanged(true); //notesframes width must be updated
 				*NS = n;
-				if (!m_Doc->listNotesFrames(NS).isEmpty())
-				{
-					m_Doc->setNotesChanged(true); //notesframes width must be updated
-					//invalidate all text frames with marks from current changed notes style
-					foreach (PageItem* item, m_Doc->DocItems)
-					{
-						if (item->isTextFrame() && !item->isNoteFrame() && item->asTextFrame()->hasMark(NS))
-							item->invalid = true;
-					}
-					m_Doc->updateNotesNums(NS);
-					m_Doc->updateNotesFramesSettings(NS);
-					if (m_Doc->flag_updateEndNotes)
-						m_Doc->updateEndnotesFrames(NS);
-					m_Doc->updateNotesFramesStyles(NS);
-				}
 				if (ss)
 				{
 					ss->set("NEWname", NS->name());
@@ -348,13 +329,18 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 					ss->set("NEWnotesParStyle", NS->notesParStyle());
 					UndoManager::instance()->action(m_Doc, ss);
 				}
+				//invalidate all text frames with marks from current changed notes style
+				foreach (PageItem* item, m_Doc->DocItems)
+				{
+					if (item->isTextFrame() && !item->isNoteFrame() && item->asTextFrame()->hasMark(NS))
+						item->invalid = true;
+				}
+				m_Doc->updateNotesNums(NS);
+				m_Doc->updateNotesFramesSettings(NS);
+				if (m_Doc->flag_updateEndNotes)
+					m_Doc->updateEndnotesFrames(NS);
+				m_Doc->updateNotesFramesStyles(NS);
 			}
-		}
-		if(trans)
-		{
-			trans->commit();
-			delete trans;
-			trans = NULL;
 		}
 		if (m_Doc->notesChanged())
 		{

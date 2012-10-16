@@ -1890,8 +1890,7 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 
 	// start auto save timer if needed
 	if (m_Doc->autoSave()  && ScCore->usingGUI())
-		m_Doc->restartAutoSaveTimer();
-//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -1999,24 +1998,7 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->PageSpa = attrs.valueAsDouble("ABSTSPALTEN");
 	m_Doc->setUnitIndex( attrs.valueAsInt("UNITS", 0) );
 
-	//m_Doc->setHyphLanguage(attrs.valueAsString("LANGUAGE", "en_US"));
-	static const QString LANGUAGE("LANGUAGE");
-	if (attrs.hasAttribute(LANGUAGE))
-	{
-		QString l(attrs.valueAsString(LANGUAGE));
-		if (LanguageManager::instance()->langTableIndex(l)!=-1)
-			m_Doc->setHyphLanguage(l); //new style storage
-		else
-		{ //old style storage
-			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
-			if (lnew.isEmpty())
-				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
-			m_Doc->setHyphLanguage(lnew);
-		}
-	}
-
-
-
+	m_Doc->setHyphLanguage(attrs.valueAsString("LANGUAGE", "en_US"));
 	m_Doc->setHyphMinimumWordLength(attrs.valueAsInt("MINWORDLEN", 3));
 	m_Doc->setHyphConsecutiveLines(attrs.valueAsInt("HYCOUNT", 2));
 
@@ -2457,19 +2439,7 @@ void Scribus150Format::readCharacterStyleAttrs(ScribusDoc *doc, ScXmlStreamAttri
 
 	static const QString LANGUAGE("LANGUAGE");
 	if (attrs.hasAttribute(LANGUAGE))
-	{
-		QString l(attrs.valueAsString(LANGUAGE));
-		if (LanguageManager::instance()->langTableIndex(l)!=-1)
-			newStyle.setLanguage(l); //new style storage
-		else
-		{ //old style storage
-			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
-			if (lnew.isEmpty())
-				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
-			newStyle.setLanguage(lnew);
-		}
-	}
-
+		newStyle.setLanguage(attrs.valueAsString(LANGUAGE));
 
 	static const QString SHORTCUT("SHORTCUT");
 	if (attrs.hasAttribute(SHORTCUT))
@@ -3867,87 +3837,51 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 			{
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
-				Mark* mrk = NULL;
-				if (doc->isLoading() || t == MARKVariableTextType)
-					mrk = m_Doc->getMarkDefinied(l, t);
-				if (mrk == NULL)
+				Mark* mark = NULL;
+				if (m_Doc->isLoading())
 				{
-					mrk = m_Doc->newMark();
-					getUniqueName(l,doc->marksLabelsList(t), "_");
-					mrk->label = l;
-					mrk->setType(t);
-					mrk->setString(tAtt.valueAsString("strtxt"));
-					if (mrk->isUnique())
-					{
-						mrk->setItemPtr(newItem);
-						mrk->setItemName(newItem->getUName());
-					}
-					m_Doc->flag_updateMarksLabels = true;
+					mark = m_Doc->getMarkDefinied(l, t);
 				}
-				if (mrk->isType(MARKNoteMasterType))
-				{
-					NotesStyle* NS = m_Doc->getNotesStyle(tAtt.valueAsString("nStyle"));
-					Q_ASSERT(NS != NULL);
-					TextNote* note = m_Doc->newNote(NS);
-					mrk->setNotePtr(note);
-					note->setMasterMark(mrk);
-					note->setSaxedText(tAtt.valueAsString("noteTXT"));
-					m_Doc->setNotesChanged(true);
-				}
-				else if (mrk->isType(MARK2MarkType))
-				{
-					QString d_l = tAtt.valueAsString("dest_l");
-					MarkType d_t = (MarkType) tAtt.valueAsInt("dest_t");
-					mrk->setMark(d_l, d_t);
-				}
-				else if (mrk->isType(MARK2ItemType))
-				{
-					mrk->setItemName(tAtt.valueAsString("item"));
-					mrk->setItemPtr(m_Doc->getItemFromName(tAtt.valueAsString("item")));
-				}
-				if (!mrk->isType(MARK2ItemType))
-				{
-					mrk->setItemPtr(newItem);
-					mrk->setItemName(newItem->getUName());
-				}
-				mrk->OwnPage = newItem->OwnPage;
-				int atPos = newItem->itemText.length();
-				newItem->itemText.insertMark(mrk, atPos);
-				if (UndoManager::undoEnabled())
-				{
-					ScItemsState* iss = NULL;
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						iss = new ScItemsState(UndoManager::InsertNote);
-						m_Doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
-					}
+				else
+				{	//doc is not loading so it is copy/paste task
+					if (t == MARKVariableTextType)
+						mark = m_Doc->getMarkDefinied(l, t);
 					else
-						iss = new ScItemsState(UndoManager::InsertMark);
-					iss->set("MARK", QString("paste"));
-					iss->set("label", mrk->label);
-					iss->set("type", (int) mrk->getType());
-					iss->set("strtxt", mrk->getString());
-					iss->set("at", atPos);
-					if (newItem->isNoteFrame())
-						iss->set("noteframeName", newItem->getUName());
-					else
-						iss->insertItem("inItem", newItem);
-					if (mrk->isType(MARK2MarkType))
 					{
-						QString dName;
-						MarkType dType;
-						mrk->getMark(dName, dType);
-						iss->set("dName", dName);
-						iss->set("dType", (int) dType);
+						//create copy of mark
+						Mark* oldMark = m_Doc->getMarkDefinied(l, t);
+						if (oldMark == NULL)
+						{
+							qWarning() << "wrong copy of oldMark";
+							mark = m_Doc->newMark();
+							mark->setType(t);
+						}
+						else
+						{
+							mark = m_Doc->newMark(oldMark);
+							getUniqueName(l,doc->marksLabelsList(t), "_");
+						}
+						mark->label = l;
+						if (t == MARKNoteMasterType)
+						{  //create copy of note
+							TextNote* old = mark->getNotePtr();
+							TextNote* note = m_Doc->newNote(old->notesStyle());
+							mark->setNotePtr(note);
+							note->setMasterMark(mark);
+							note->setSaxedText(old->saxedText());
+							m_Doc->setNotesChanged(true);
+						}
 					}
-					if (mrk->isType(MARK2ItemType))
-						iss->insertItem("itemPtr", mrk->getItemPtr());
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
-						iss->set("noteTXT", mrk->getNotePtr()->saxedText());
-					}
-					undoManager->action(m_Doc, iss);
+				}
+				if (mark == NULL)
+					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
+				else
+				{
+					//set pointer to item holds mark in his text
+					if (t == MARKAnchorType)
+						mark->setItemPtr(newItem);
+					mark->OwnPage = newItem->OwnPage;
+					newItem->itemText.insertMark(mark, newItem->itemText.length());
 				}
 			}
 		}

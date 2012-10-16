@@ -1438,18 +1438,14 @@ void PageItem_TextFrame::layout()
 		if (!isNoteFrame() && m_Doc->notesChanged() && !m_notesFramesMap.isEmpty())
 		{ //if notes are used
 			UndoManager::instance()->setUndoEnabled(false);
-//			QList<PageItem_NoteFrame*> delList;
+			QList<PageItem_NoteFrame*> delList;
 			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			{
-					if (nF->isEndNotesFrame())
-						removeNoteFrame(nF);
-					else if (nF->isAutoNoteFrame())
-						m_Doc->delNoteFrame(nF,false);
+				if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
+					delList.append(nF);
 			}
-//			while (!delList.isEmpty())
-//			{
-//				m_Doc->delNoteFrame(delList.takeFirst(), false);
-//			}
+			while (!delList.isEmpty())
+				m_Doc->delNoteFrame(delList.takeFirst(), false);
 			UndoManager::instance()->setUndoEnabled(true);
 		}
 		return;
@@ -1584,7 +1580,7 @@ void PageItem_TextFrame::layout()
 						continue;
 					hl->mark->setItemPtr(this);
 					NotesStyle* nStyle = note->notesStyle();
-					Q_ASSERT(nStyle != NULL);
+						Q_ASSERT(nStyle != NULL);
 					QString chsName = nStyle->marksChStyle();
 					CharStyle newStyle(itemText.charStyle(a));
 					if ((chsName != "") && (chsName != tr("No Style")))
@@ -1711,10 +1707,9 @@ void PageItem_TextFrame::layout()
 				}
 			}
 
-			double hlcsize10 = charStyle.fontSize() / 10.0;
-			double scaleV = charStyle.scaleV() / 1000.0;
-			double scaleH = charStyle.scaleH() / 1000.0;
->>>>>>> c71ca3ff01ca471bf0a83c0a6a900473bd952c92
+			hlcsize10 = charStyle.fontSize() / 10.0;
+			scaleV = charStyle.scaleV() / 1000.0;
+			scaleH = charStyle.scaleH() / 1000.0;
 			offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
 			if (current.startOfCol && firstLineOffset() == FLOPBaselineGrid)
 				style.setLineSpacingMode(ParagraphStyle::BaselineGridLineSpacing);
@@ -1772,8 +1767,6 @@ void PageItem_TextFrame::layout()
 					itemText.setCharStyle(a, chstr.length(),charStyle);
 				}
 			}
-
-			const ScFace* font = &charStyle.font();
 
 			{  // local block for 'fl'
 				StyleFlag fl = hl->effects();
@@ -2031,7 +2024,7 @@ void PageItem_TextFrame::layout()
 					//
 					for (int i = 0; i < chstrLen; ++i)
 					{
-						realCharHeight = qMax(realCharHeight, font->realCharHeight(chstr[i], hlcsize10));
+						realCharHeight = qMax(realCharHeight, font->realCharHeight(chstr[i], charStyle.fontSize() / 10.0));
 						realAsce = qMax(realAsce, font->realCharHeight(chstr[i], chsd / 10.0));
 						wide += font->realCharWidth(chstr[i], chsd / 10.0);
 					}
@@ -2115,7 +2108,7 @@ void PageItem_TextFrame::layout()
 						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
-						else if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
+						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
 						{
 							if (current.yPos <= lastLineY)
 								current.yPos = lastLineY +1;
@@ -2523,9 +2516,7 @@ void PageItem_TextFrame::layout()
 				hyphWidth = 0.0;
 			int maxYAsc100 = maxYAsc/100;
 			int maxYDesc100 = maxYDesc/100;
-			double overflowWidth = 0.0;
-			double hyphWidth = 0.0;
-			bool inOverflow = false;
+			inOverflow = false;
 			if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
 				hyphWidth = font->charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
@@ -3177,6 +3168,12 @@ NoRoom:
 			itemText.blockSignals(false);
 			return;
 	}
+	if (NextBox != NULL) 
+	{
+		PageItem_TextFrame * nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
+		nextFrame->invalid = true;
+		nextFrame->firstChar = MaxChars;
+	}
 	//Prefligth warnings
 	if (m_Doc->guidesPrefs().showPreflight)
 	{
@@ -3312,9 +3309,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 {
 	if (invalid)
 	{
-		if (!isNoteFrame() || !asNoteFrame()->deleteIt)
-			//do not layout notes frames which should be deleted
-			layout();
+		if (isNoteFrame() && asNoteFrame()->deleteIt)
+		//do not layout notes frames which should be deleted
+			return;
+		layout();
 	}
 	QTransform pf2;
 	QPoint pt1, pt2;
@@ -3329,7 +3327,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	QColor cachedFillQ;
 	QColor cachedStrokeQ;
 	//	QValueList<ParagraphStyle::TabRecord> tTabValues;
-	double desc, asce;
+	double desc, asce, wide;
 	//	tTabValues.clear();
 	p->save(); //SA1
 	//	QRect e2;
@@ -3353,278 +3351,17 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->fillPath();
 		}
 	}
-	double S_TExtra = TExtra;
-	double S_Extra = Extra;
-	double S_RExtra = RExtra;
-	double S_BExtra = BExtra;
-	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && ((annotation().Type() > 1) && (annotation().Type() < 7)))
+	if ((isAnnotation()) && (annotation().Type() == 2) && (!Pfile.isEmpty()) && (PictureIsAvailable) && (PicArt) && (annotation().UseIcons()))
 	{
-		QColor fontColor;
-		SetQColor(&fontColor, itemText.defaultStyle().charStyle().fillColor(), itemText.defaultStyle().charStyle().fillShade());
-		double fontSize = itemText.defaultStyle().charStyle().fontSize() / 10.0;
-		QString fontName = itemText.defaultStyle().charStyle().font().family();
-		QString bmUtf16("");
-		QString cc;
-		if (!((itemText.length() == 1) && (itemText.text(0, 1) == QChar(13))))
-		{
-			for (uint d = 0; d < static_cast<uint>(itemText.length()); ++d)
-			{
-				if (d == 0)
-				{
-					const CharStyle& charStyle(itemText.charStyle(d));
-					SetQColor(&fontColor, charStyle.fillColor(), charStyle.fillShade());
-					fontSize = charStyle.fontSize() / 10.0;
-					fontName = charStyle.font().family();
-				}
-				cc = itemText.text(d, 1);
-				bmUtf16 += (cc == QChar(13) ? QChar(10) : cc);
-			}
-		}
-		p->save();
-		if ((annotation().Bwid() > 0) && (annotation().borderColor() != CommonStrings::None))
-		{
-			QColor tmp;
-			SetQColor(&tmp, annotation().borderColor(), 100);
-			QPalette pal = QPalette(tmp);
-			if (annotation().Bsty() == 3)
-				p->drawShadePanel(QRect(0, 0, Width, Height), pal, false, annotation().Bwid());
-			else if (annotation().Bsty() == 4)
-				p->drawShadePanel(QRect(0, 0, Width, Height), pal, true, annotation().Bwid());
-			else
-			{
-				p->setPen(tmp, annotation().Bwid(), annotation().Bsty() == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
-				p->setStrokeMode(ScPainter::Solid);
-				p->drawRect(0, 0, Width, Height);
-			}
-		}
-		if (annotation().Type() == 2)
-		{
-			int wdt = annotation().Bwid();
-			QPainterPath clp;
-			clp.addRect(QRectF(wdt, wdt, Width - (2 * wdt), Height - (2 * wdt)));
-			FPointArray clpArr;
-			clpArr.fromQPainterPath(clp);
-			p->setupPolygon(&clpArr);
-			p->setClipPath();
-			if (!bmUtf16.isEmpty())
-			{
-				p->setPen(fontColor);
-				p->setFont(QFont(fontName, fontSize));
-				p->drawText(QRectF(wdt, wdt, Width - (2 * wdt), Height - (2 * wdt)), bmUtf16);
-			}
-			if ((!Pfile.isEmpty()) && (PictureIsAvailable) && (PicArt) && (annotation().UseIcons()))
-			{
-				p->save();//SA2
-				p->setupPolygon(&PoLine);
-				p->setClipPath();
-				p->scale(LocalScX, LocalScY);
-				p->translate(LocalX*LocalScX, LocalY*LocalScY);
-				p->rotate(LocalRot);
-				if (pixm.width() > 0 && pixm.height() > 0)
-					p->drawImage(pixm.qImagePtr());
-				p->restore();//RE2
-			}
-			p->restore();
-			p->restore();
-			return;
-		}
-		else if (annotation().Type() == 3)
-		{
-			int wdt = annotation().Bwid();
-			TExtra = wdt;
-			Extra = wdt;
-			RExtra = wdt;
-			BExtra = wdt;
-			invalid = true;
-			layout();
-		}
-		else if (annotation().Type() == 4)
-		{
-			if (annotation().IsChk())
-			{
-				p->setBrush(fontColor);
-				p->setFillMode(ScPainter::Solid);
-				p->setStrokeMode(ScPainter::None);
-				QPainterPath chkPath;
-				if (annotation().ChkStil() == 0)
-				{
-					chkPath.moveTo(6.60156, 0);
-					chkPath.lineTo(6.7725, 0.244063);
-					chkPath.cubicTo(6.7725, 0.244063, 5.7275, 1.03031, 4.44813, 2.66609);
-					chkPath.cubicTo(4.44813, 2.66609, 3.16891, 4.30172, 2.49516, 5.72266);
-					chkPath.lineTo(2.13375, 5.96672);
-					chkPath.cubicTo(2.13375, 5.96672, 1.68453, 6.27922, 1.52344, 6.43062);
-					chkPath.cubicTo(1.52344, 6.43062, 1.46, 6.20109, 1.24516, 5.67875);
-					chkPath.lineTo(1.10844, 5.36125);
-					chkPath.cubicTo(1.10844, 5.36125, 0.815469, 4.67766, 0.563906, 4.35062);
-					chkPath.cubicTo(0.563906, 4.35062, 0.3125, 4.02344, 0, 3.91594);
-					chkPath.cubicTo(0, 3.91594, 0.527344, 3.35938, 0.966875, 3.35938);
-					chkPath.cubicTo(0.966875, 3.35938, 1.34281, 3.35938, 1.80172, 4.37984);
-					chkPath.lineTo(1.95312, 4.72172);
-					chkPath.cubicTo(1.95312, 4.72172, 2.77828, 3.33, 4.07219, 2.01656);
-					chkPath.cubicTo(4.07219, 2.01656, 5.36625, 0.703125, 6.60156, 0);
-					chkPath.closeSubpath();
-				}
-				else if (annotation().ChkStil() == 1)
-				{
-					chkPath.moveTo(2.42672, 3.30078);
-					chkPath.lineTo(2.35359, 3.40328);
-					chkPath.cubicTo(2.35359, 3.40328, 1.59187, 4.55563, 1.10359, 4.55563);
-					chkPath.cubicTo(1.10359, 4.55563, 0.542031, 4.55563, 0, 3.64266);
-					chkPath.cubicTo(0, 3.64266, 0.0732812, 3.6475, 0.1075, 3.6475);
-					chkPath.cubicTo(0.1075, 3.6475, 0.747031, 3.6475, 1.53328, 2.67094);
-					chkPath.lineTo(1.665, 2.50484);
-					chkPath.lineTo(1.49422, 2.31937);
-					chkPath.cubicTo(1.49422, 2.31937, 0.776406, 1.55766, 0.776406, 1.02547);
-					chkPath.cubicTo(0.776406, 1.02547, 0.776406, 0.590781, 1.5625, 0);
-					chkPath.cubicTo(1.5625, 0, 1.67484, 0.756875, 2.23141, 1.47469);
-					chkPath.lineTo(2.37797, 1.66016);
-					chkPath.lineTo(2.49516, 1.50875);
-					chkPath.cubicTo(2.49516, 1.50875, 3.31062, 0.46875, 3.97469, 0.46875);
-					chkPath.cubicTo(3.97469, 0.46875, 4.49219, 0.46875, 4.76078, 1.25484);
-					chkPath.cubicTo(4.76078, 1.25484, 4.68266, 1.24516, 4.64844, 1.24516);
-					chkPath.cubicTo(4.64844, 1.24516, 4.41406, 1.24516, 3.98922, 1.56016);
-					chkPath.cubicTo(3.98922, 1.56016, 3.56453, 1.875, 3.27156, 2.27047);
-					chkPath.lineTo(3.125, 2.47078);
-					chkPath.lineTo(3.26656, 2.6075);
-					chkPath.cubicTo(3.26656, 2.6075, 4.05281, 3.36922, 4.90719, 3.36922);
-					chkPath.cubicTo(4.90719, 3.36922, 4.44828, 4.29687, 3.95016, 4.29687);
-					chkPath.cubicTo(3.95016, 4.29687, 3.50094, 4.29687, 2.65141, 3.50594);
-					chkPath.lineTo(2.42672, 3.30078);
-					chkPath.closeSubpath();
-				}
-				else if (annotation().ChkStil() == 2)
-				{
-					chkPath.moveTo(0, 4.09187);
-					chkPath.lineTo(2.89062, 0);
-					chkPath.lineTo(5.78125, 4.09187);
-					chkPath.lineTo(2.89062, 8.17875);
-					chkPath.closeSubpath();
-				}
-				else if (annotation().ChkStil() == 3)
-				{
-					chkPath.moveTo(0, 2.89062);
-					chkPath.cubicTo(0, 2.89062, 0, 1.69437, 0.847187, 0.847187);
-					chkPath.cubicTo(0.847187, 0.847187, 1.69437, 0, 2.89062, 0);
-					chkPath.cubicTo(2.89062, 0, 4.08703, 0, 4.93656, 0.847187);
-					chkPath.cubicTo(4.93656, 0.847187, 5.78625, 1.69437, 5.78625, 2.89062);
-					chkPath.cubicTo(5.78625, 2.89062, 5.78625, 4.08688, 4.93656, 4.93406);
-					chkPath.cubicTo(4.93656, 4.93406, 4.08703, 5.78125, 2.89062, 5.78125);
-					chkPath.cubicTo(2.89062, 5.78125, 1.69437, 5.78125, 0.847187, 4.93406);
-					chkPath.cubicTo(0.847187, 4.93406, 0, 4.08688, 0, 2.89062);
-					chkPath.closeSubpath();
-				}
-				else if (annotation().ChkStil() == 4)
-				{
-					chkPath.moveTo(0, 2.49516);
-					chkPath.lineTo(2.62219, 2.49516);
-					chkPath.lineTo(3.43266, 0);
-					chkPath.lineTo(4.24328, 2.49516);
-					chkPath.lineTo(6.86531, 2.49516);
-					chkPath.lineTo(4.74609, 4.03812);
-					chkPath.lineTo(5.55672, 6.53313);
-					chkPath.lineTo(3.43266, 4.99016);
-					chkPath.lineTo(1.30859, 6.53313);
-					chkPath.lineTo(2.11922, 4.03812);
-					chkPath.closeSubpath();
-				}
-				else if (annotation().ChkStil() == 5)
-				{
-					chkPath.moveTo(0, 5.78125);
-					chkPath.lineTo(0, 0);
-					chkPath.lineTo(5.78125, 0);
-					chkPath.lineTo(5.78125, 5.78125);
-					chkPath.closeSubpath();
-				}
-				if (!chkPath.isEmpty())
-				{
-					QTransform mm;
-					mm.scale(fontSize / 10.0, fontSize / 10.0);
-					chkPath = mm.map(chkPath);
-					QRectF bb = chkPath.boundingRect();
-					QRectF bi = QRectF(0.0, 0.0, Width, Height);
-					double dx = bi.center().x() - (bb.width() / 2.0);
-					double dy = bi.center().y() - (bb.height() / 2.0);
-					p->translate(dx, dy);
-					FPointArray chArr;
-					chArr.fromQPainterPath(chkPath);
-					p->setupPolygon(&chArr);
-					p->fillPath();
-				}
-				p->restore();
-				p->restore();
-				return;
-			}
-		}
-		else if (annotation().Type() == 5)
-		{
-			int wdt = annotation().Bwid();
-			if (Width > 2 * wdt + 15)
-			{
-				if (!bmUtf16.isEmpty())
-				{
-					p->save();
-					QPainterPath clp;
-					clp.addRect(QRectF(wdt + 1, wdt + 1, Width - (2 * wdt) - 17, Height - (2 * wdt) - 2));
-					FPointArray clpArr;
-					clpArr.fromQPainterPath(clp);
-					p->setupPolygon(&clpArr);
-					p->setClipPath();
-					p->setPen(fontColor);
-					p->setFont(QFont(fontName, fontSize));
-					QStringList textList = bmUtf16.split("\n");
-					p->drawText(QRectF(wdt + 1, wdt + 1, Width - (2 * wdt) - 17, Height - (2 * wdt) - 2), textList[0], false, 1);
-					p->restore();
-				}
-				p->setFillMode(ScPainter::Solid);
-				p->setStrokeMode(ScPainter::None);
-				p->setBrush(QColor(200, 200, 200));
-				QRectF bi;
-				if ((annotation().Bsty() == 3) || (annotation().Bsty() == 4))
-					bi = QRectF(Width - wdt - 15, wdt, 15, Height - (2 * wdt));
-				else
-					bi = QRectF(Width - (wdt / 2.0) - 15, wdt / 2.0, 15, Height - wdt);
-				p->drawRect(bi.x(), bi.y(), bi.width(), bi.height());
-				QPainterPath chkPath;
-				chkPath.moveTo(bi.center().x() - 3, bi.center().y());
-				chkPath.lineTo(bi.center().x() + 3, bi.center().y());
-				chkPath.lineTo(bi.center().x(), bi.center().y() + 4);
-				chkPath.closeSubpath();
-				FPointArray chArr;
-				chArr.fromQPainterPath(chkPath);
-				p->setupPolygon(&chArr);
-				p->setBrush(QColor(0, 0, 0));
-				p->fillPath();
-				p->restore();
-				p->restore();
-				return;
-			}
-		}
-		else if (annotation().Type() == 6)
-		{
-			int wdt = annotation().Bwid();
-			if (Width > 2 * wdt + 15)
-			{
-				if (!bmUtf16.isEmpty())
-				{
-					p->save();
-					QPainterPath clp;
-					clp.addRect(QRectF(wdt + 1, wdt + 1, Width - (2 * wdt) - 17, Height - (2 * wdt) - 2));
-					FPointArray clpArr;
-					clpArr.fromQPainterPath(clp);
-					p->setupPolygon(&clpArr);
-					p->setClipPath();
-					p->setPen(fontColor);
-					p->setFont(QFont(fontName, fontSize));
-					p->drawText(QRectF(wdt + 1, wdt + 1, Width - (2 * wdt) - 17, Height - (2 * wdt) - 2), bmUtf16, false, 2);
-					p->restore();
-				}
-				p->restore();
-				p->restore();
-				return;
-			}
-		}
-		p->restore();
+		p->save();//SA2
+		p->setupPolygon(&PoLine);
+		p->setClipPath();
+		p->scale(LocalScX, LocalScY);
+		p->translate(LocalX*LocalScX, LocalY*LocalScY);
+		p->rotate(LocalRot);
+		if (pixm.width() > 0 && pixm.height() > 0)
+			p->drawImage(pixm.qImagePtr());
+		p->restore();//RE2
 	}
 	/* Experimental Addition to display an Image as Background */
 	/*
@@ -3885,8 +3622,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				{
 					const ScFace* font = &charStyle.font();
 					double fontSize = charStyle.fontSize() / 10.0;
-					desc = - font.descent(fontSize);
-					asce = font.ascent(fontSize);
+					desc = - font->descent(fontSize);
+					asce = font->ascent(fontSize);
 					if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
@@ -3998,10 +3735,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	//	}
 		//	pf2.end();
 	}
-	TExtra = S_TExtra;
-	Extra = S_Extra;
-	RExtra = S_RExtra;
-	BExtra = S_BExtra;
 	p->restore();//RE1
 }
 
@@ -4028,102 +3761,94 @@ void PageItem_TextFrame::DrawObj_Post(ScPainter *p)
 		p->setMaskMode(0);
 		if (!m_Doc->RePos)
 		{
-			if (!isAnnotation() || (isAnnotation() && ((annotation().Type() == 0) || (annotation().Type() > 6))))
-			{
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 9, 4))
-				p->setBlendModeStroke(lineBlendmode());
-				p->setPenOpacity(1.0 - lineTransparency());
+			p->setBlendModeStroke(lineBlendmode());
+			p->setPenOpacity(1.0 - lineTransparency());
 #else
-				if (lineBlendmode() != 0)
-					p->beginLayer(1.0 - lineTransparency(), lineBlendmode());
+			if (lineBlendmode() != 0)
+				p->beginLayer(1.0 - lineTransparency(), lineBlendmode());
 #endif
-				p->setupPolygon(&PoLine);
-				if (NamedLStyle.isEmpty())
+			p->setupPolygon(&PoLine);
+			if (NamedLStyle.isEmpty())
+			{
+				if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
 				{
-					if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
+					p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
+					if (DashValues.count() != 0)
+						p->setDash(DashValues, DashOffset);
+				}
+				if ((!patternStrokeVal.isEmpty()) && (m_Doc->docPatterns.contains(patternStrokeVal)))
+				{
+					if (patternStrokePath)
 					{
-						p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
-						if (DashValues.count() != 0)
-							p->setDash(DashValues, DashOffset);
-					}
-					if ((!patternStrokeVal.isEmpty()) && (m_Doc->docPatterns.contains(patternStrokeVal)))
-					{
-						if (patternStrokePath)
-						{
-							QPainterPath guidePath = PoLine.toQPainterPath(false);
-							DrawStrokePattern(p, guidePath);
-						}
-						else
-						{
-							p->setPattern(&m_Doc->docPatterns[patternStrokeVal], patternStrokeScaleX, patternStrokeScaleY, patternStrokeOffsetX, patternStrokeOffsetY, patternStrokeRotation, patternStrokeSkewX, patternStrokeSkewY, patternStrokeMirrorX, patternStrokeMirrorY);
-							p->setStrokeMode(ScPainter::Pattern);
-							p->strokePath();
-						}
-					}
-					else if (GrTypeStroke > 0)
-					{
-						if ((!gradientStrokeVal.isEmpty()) && (!m_Doc->docGradients.contains(gradientStrokeVal)))
-							gradientStrokeVal = "";
-						if (!(gradientStrokeVal.isEmpty()) && (m_Doc->docGradients.contains(gradientStrokeVal)))
-							stroke_gradient = m_Doc->docGradients[gradientStrokeVal];
-						if (stroke_gradient.Stops() < 2) // fall back to solid stroking if there are not enough colorstops in the gradient.
-						{
-							if (lineColor() != CommonStrings::None)
-							{
-								p->setBrush(strokeQColor);
-								p->setStrokeMode(ScPainter::Solid);
-							}
-							else
-							{
-								no_stroke = true;
-								p->setStrokeMode(ScPainter::None);
-							}
-						}
-						else
-						{
-							p->setStrokeMode(ScPainter::Gradient);
-							p->stroke_gradient = stroke_gradient;
-							if (GrTypeStroke == 6)
-								p->setGradient(VGradient::linear, FPoint(GrStrokeStartX, GrStrokeStartY), FPoint(GrStrokeEndX, GrStrokeEndY), FPoint(GrStrokeStartX, GrStrokeStartY), GrStrokeScale, GrStrokeSkew);
-							else
-								p->setGradient(VGradient::radial, FPoint(GrStrokeStartX, GrStrokeStartY), FPoint(GrStrokeEndX, GrStrokeEndY), FPoint(GrStrokeFocalX, GrStrokeFocalY), GrStrokeScale, GrStrokeSkew);
-						}
-						p->strokePath();
-					}
-					else if (lineColor() != CommonStrings::None)
-					{
-						p->setStrokeMode(ScPainter::Solid);
-						p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
-						if (DashValues.count() != 0)
-							p->setDash(DashValues, DashOffset);
-						p->strokePath();
+						QPainterPath guidePath = PoLine.toQPainterPath(false);
+						DrawStrokePattern(p, guidePath);
 					}
 					else
-						no_stroke = true;
-				}
-				else
-				{
-					p->setStrokeMode(ScPainter::Solid);
-					multiLine ml = m_Doc->MLineStyles[NamedLStyle];
-					QColor tmp;
-					for (int it = ml.size()-1; it > -1; it--)
 					{
-						SetQColor(&tmp, ml[it].Color, ml[it].Shade);
-						p->setPen(tmp, ml[it].Width,
-								  static_cast<Qt::PenStyle>(ml[it].Dash),
-								  static_cast<Qt::PenCapStyle>(ml[it].LineEnd),
-								  static_cast<Qt::PenJoinStyle>(ml[it].LineJoin));
+						p->setPattern(&m_Doc->docPatterns[patternStrokeVal], patternStrokeScaleX, patternStrokeScaleY, patternStrokeOffsetX, patternStrokeOffsetY, patternStrokeRotation, patternStrokeSkewX, patternStrokeSkewY, patternStrokeMirrorX, patternStrokeMirrorY);
+						p->setStrokeMode(ScPainter::Pattern);
 						p->strokePath();
 					}
 				}
-#if (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 9, 4))
-				if (lineBlendmode() != 0)
-					p->endLayer();
-#else
-				if (lineBlendmode() != 0)
-					p->setBlendModeStroke(0);
-#endif
+				else if (GrTypeStroke > 0)
+				{
+					if ((!gradientStrokeVal.isEmpty()) && (!m_Doc->docGradients.contains(gradientStrokeVal)))
+						gradientStrokeVal = "";
+					if (!(gradientStrokeVal.isEmpty()) && (m_Doc->docGradients.contains(gradientStrokeVal)))
+						stroke_gradient = m_Doc->docGradients[gradientStrokeVal];
+					if (stroke_gradient.Stops() < 2) // fall back to solid stroking if there are not enough colorstops in the gradient.
+					{
+						if (lineColor() != CommonStrings::None)
+						{
+							p->setBrush(strokeQColor);
+							p->setStrokeMode(ScPainter::Solid);
+						}
+						else
+							p->setStrokeMode(ScPainter::None);
+					}
+					else
+					{
+						p->setStrokeMode(ScPainter::Gradient);
+						p->stroke_gradient = stroke_gradient;
+						if (GrTypeStroke == 6)
+							p->setGradient(VGradient::linear, FPoint(GrStrokeStartX, GrStrokeStartY), FPoint(GrStrokeEndX, GrStrokeEndY), FPoint(GrStrokeStartX, GrStrokeStartY), GrStrokeScale, GrStrokeSkew);
+						else
+							p->setGradient(VGradient::radial, FPoint(GrStrokeStartX, GrStrokeStartY), FPoint(GrStrokeEndX, GrStrokeEndY), FPoint(GrStrokeFocalX, GrStrokeFocalY), GrStrokeScale, GrStrokeSkew);
+					}
+					p->strokePath();
+				}
+				else if (lineColor() != CommonStrings::None)
+				{
+					p->setStrokeMode(ScPainter::Solid);
+					p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
+					if (DashValues.count() != 0)
+						p->setDash(DashValues, DashOffset);
+					p->strokePath();
+				}
 			}
+			else
+			{
+				p->setStrokeMode(ScPainter::Solid);
+				multiLine ml = m_Doc->MLineStyles[NamedLStyle];
+				QColor tmp;
+				for (int it = ml.size()-1; it > -1; it--)
+				{
+					SetQColor(&tmp, ml[it].Color, ml[it].Shade);
+					p->setPen(tmp, ml[it].Width,
+							  static_cast<Qt::PenStyle>(ml[it].Dash),
+							  static_cast<Qt::PenCapStyle>(ml[it].LineEnd),
+							  static_cast<Qt::PenJoinStyle>(ml[it].LineJoin));
+					p->strokePath();
+				}
+			}
+#if (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 9, 4))
+			if (lineBlendmode() != 0)
+				p->endLayer();
+#else
+			if (lineBlendmode() != 0)
+				p->setBlendModeStroke(0);
+#endif
 		}
 	}
 	p->setFillMode(ScPainter::Solid);
@@ -4133,16 +3858,16 @@ void PageItem_TextFrame::DrawObj_Post(ScPainter *p)
 
 void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 {
-	if (isAnnotation() && ((annotation().Type() > 1) && (annotation().Type() < 7)) && (annotation().Bwid() > 0))
-		return;
 	p->save();
 	if (!isEmbedded)
 		p->translate(Xpos, Ypos);
 	p->rotate(Rot);
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
-		double scpInv = 0.0;
-		if ((Frame) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
+		// added to prevent fat frame outline due to antialiasing and considering you can’t pass a cosmetic pen to scpainter - pm
+		double aestheticFactor(5.0);
+		double scpInv = 1.0 / (qMax(p->zoomFactor(), 1.0) * aestheticFactor);
+		if ((Frame) && (m_Doc->guidesPrefs().framesShown))
 		{
 			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			if ((isBookmark) || (m_isAnnotation))
@@ -4155,9 +3880,9 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			p->setFillMode(0);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupSharpPolygon(&PoLine, false);
+			p->setupPolygon(&PoLine, false);
 	#else
-			p->setupSharpPolygon(&PoLine);
+			p->setupPolygon(&PoLine);
 	#endif
 			p->strokePath();
 		}
@@ -4166,9 +3891,9 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			p->setPen(Qt::lightGray, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupSharpPolygon(&ContourLine, false);
+			p->setupPolygon(&ContourLine, false);
 	#else
-			p->setupSharpPolygon(&ContourLine);
+			p->setupPolygon(&ContourLine);
 	#endif
 			p->strokePath();
 		}
@@ -4176,14 +3901,14 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 		//Draw the overflow icon
 		if (frameOverflows())
 		{
-			if (!(m_Doc->drawAsPreview))
+			if (!m_Doc->drawAsPreview)
 				drawOverflowMarker(p);
 		}
 		if ((m_Doc->guidesPrefs().colBordersShown) && (!m_Doc->drawAsPreview))
 			drawColumnBorders(p);
 		if ((m_Doc->guidesPrefs().layerMarkersShown) && (m_Doc->layerCount() > 1) && (!m_Doc->layerOutline(LayerID)) && (!m_Doc->drawAsPreview))
 		{
-			p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setPenOpacity(1.0);
 			p->setBrush(m_Doc->layerMarker(LayerID));
 			p->setBrushOpacity(1.0);
@@ -4191,21 +3916,12 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			double ofwh = 10.0;
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
-			p->drawSharpRect(ofx, ofy, ofwh, ofwh);
-		}
-		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
-		{
-			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
-			if (m_Locked)
-				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
-			p->setFillMode(ScPainter::None);
-			p->drawSharpRect(0, 0, Width, Height);
-			no_fill = false;
-			no_stroke = false;
+			p->drawRect(ofx, ofy, ofwh, ofwh);
 		}
 		//if (m_Doc->selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
 	}
+//	Tinput = false;
 	FrameOnly = false;
 	p->restore();
 }
@@ -4272,7 +3988,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	int kk = k->key();
 	int as = k->text()[0].unicode();
 	QString uc = k->text();
-	QString Tcha, Twort;
+	QString cr, Tcha, Twort;
 	uint Tcoun;
 	int len, pos;
 	int keyModifiers=0;
@@ -4296,7 +4012,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		return;
 	}
 	//>>
-
+	
 	ScribusView* view = m_Doc->view();	
 	switch (kk)
 	{
@@ -4359,7 +4075,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				{
 					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
 					if(ss && ss->get("ETEA") == "insert_frametext")
-							ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(QChar(conv)));
+						ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(QChar(conv)));
 					else {
 						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
 						ss->set("INSERT_FRAMETEXT", "insert_frametext");
@@ -4385,8 +4101,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 				else
 					update();
-//				update();
-//				doc()->changed();
 				keyRepeat = false;
 				return;
 			}
@@ -4669,30 +4383,35 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		m_Doc->scMW()->setTBvals(this);
 		break;
 	case Qt::Key_Delete:
-	case Qt::Key_Backspace:
+		if (itemText.cursorPosition() == itemText.length())
+		{
+			if (itemText.lengthOfSelection() > 0)
+			{
+				deleteSelectedTextFromFrame();
+				m_Doc->scMW()->setTBvals(this);
+				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
+				{
+					if (!asNoteFrame()->isEndNotesFrame())
+					{
+						Q_ASSERT(asNoteFrame()->masterFrame());
+						asNoteFrame()->masterFrame()->invalid = true;
+					}
+				}
+				else
+					update();
+//				view->RefreshItem(this);
+			}
+			keyRepeat = false;
+			return;
+		}
 		if (itemText.length() == 0)
 		{
 			keyRepeat = false;
 			return;
 		}
+		cr = itemText.text();
 		if (itemText.lengthOfSelection() == 0)
-		{
-			if (kk==Qt::Key_Backspace)
-			{
-				if (itemText.cursorPosition() == 0)
-				{
-					keyRepeat = false;
-					return;
-				}
-				itemText.setCursorPosition(-1, true);
-			}
-			else if (itemText.cursorPosition() == itemText.length())
-			{
-				keyRepeat = false;
-				return;
-			}
 			itemText.select(itemText.cursorPosition(), 1, true);
-		}
 		deleteSelectedTextFromFrame();
 		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
@@ -4705,35 +4424,86 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		else
 		{
 			layout();
-			//check if cursor need to jump to linked frame
-			//but not for notes frames can`t be updated as may disapper during update
-			if ((itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
+			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+				NextBox->updateLayout();
+		}
+		//		Tinput = false;
+//		if ((cr == QChar(13)) && (itemText.length() != 0))
+//		{
+//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(itemText.cursorPosition()-1,0))));
+//			Tinput = false;
+//		}
+		m_Doc->scMW()->setTBvals(this);
+//		view->RefreshItem(this);
+		break;
+	case Qt::Key_Backspace:
+		if (itemText.cursorPosition() == 0)
+		{
+			if (itemText.lengthOfSelection() > 0)
+			{
+				deleteSelectedTextFromFrame();
+				m_Doc->scMW()->setTBvals(this);
+				if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
+				{
+					if (!asNoteFrame()->isEndNotesFrame())
+					{
+						Q_ASSERT(asNoteFrame()->masterFrame());
+						asNoteFrame()->masterFrame()->invalid = true;
+					}
+				}
+				else
+					update();
+			}
+			break;
+		}
+		if (itemText.length() == 0)
+			break;
+		cr = itemText.text(qMax((int) itemText.cursorPosition() - 1, 0), 1);
+		if (itemText.lengthOfSelection() == 0)
+		{
+			itemText.setCursorPosition(-1, true);
+			itemText.select(itemText.cursorPosition(), 1, true);
+		}
+		deleteSelectedTextFromFrame();
+//		Tinput = false;
+//		if ((cr == QChar(13)) && (itemText.length() != 0))
+//		{
+//			m_Doc->chAbStyle(this, findParagraphStyle(m_Doc, itemText.paragraphStyle(qMax(CPos-1,0))));
+//			Tinput = false;
+//		}
+		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
+		{
+			if (!asNoteFrame()->isEndNotesFrame())
+			{
+				Q_ASSERT(asNoteFrame()->masterFrame());
+				asNoteFrame()->masterFrame()->invalid = true;
+			}
+		}
+		else
+		{
+			layout();
+			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+				NextBox->updateLayout();
+		}
+		if (itemText.cursorPosition() < firstInFrame())
+		{
+			itemText.setCursorPosition( firstInFrame() );
+			if (BackBox != 0)
 			{
 				view->Deselect(true);
-				NextBox->update();
-				m_Doc->scMW()->selectItemsFromOutlines(NextBox);
+				if (BackBox->invalid)
+					BackBox->updateLayout();
+				itemText.setCursorPosition( BackBox->lastInFrame() );
+				m_Doc->scMW()->selectItemsFromOutlines(BackBox);
+				//currItem = currItem->BackBox;
 			}
-			else if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-				NextBox->updateLayout();
-
-			if (itemText.cursorPosition() < firstInFrame())
-			{
-				itemText.setCursorPosition( firstInFrame() );
-				if (BackBox != 0)
-				{
-					view->Deselect(true);
-					if (BackBox->invalid)
-						BackBox->updateLayout();
-					itemText.setCursorPosition( BackBox->lastInFrame() );
-					m_Doc->scMW()->selectItemsFromOutlines(BackBox);
-				}
-			}
-			m_Doc->scMW()->setTBvals(this);
-			doc()->changed();
 		}
+		m_Doc->scMW()->setTBvals(this);
+//		update();
+//		view->RefreshItem(this);
 		break;
 	default:
-		if (isNoteFrame() && itemText.cursorPosition() == 0 && itemText.lengthOfSelection() == 0)
+		if (isNoteFrame() && itemText.cursorPosition() == 0)
 			break; //avoid inserting chars before first note mark
 		bool doUpdate = false;
 		UndoTransaction* activeTransaction = NULL;
@@ -4768,84 +4538,79 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			qDebug()<<"Native Virtual Key:"<<k->nativeVirtualKey();
 			*/
 		}
-		//if after deleting selection there is any note then stop handling inserting char
-		if (!isNoteFrame() || !asNoteFrame()->notesList().isEmpty())
+		//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
+		if (kk == Qt::Key_Tab)
 		{
-			//if ((kk == Qt::Key_Tab) || ((kk == Qt::Key_Return) && (buttonState & Qt::ShiftButton)))
-			if (kk == Qt::Key_Tab)
+			if (UndoManager::undoEnabled())
 			{
-				if (UndoManager::undoEnabled())
-				{
-					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
-					if(ss && ss->get("ETEA") == "insert_frametext")
+				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+				if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + QString(SpecialChars::TAB));
-					else {
-						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
-						ss->set("INSERT_FRAMETEXT", "insert_frametext");
-						ss->set("ETEA", QString("insert_frametext"));
-						ss->set("TEXT_STR", QString(SpecialChars::TAB));
-						ss->set("START", itemText.cursorPosition());
-						UndoObject * undoTarget = this;
-						if (isNoteFrame())
-						{
-							undoTarget = m_Doc;
-							ss->set("noteframeName", getUName());
-						}
-						undoManager->action(undoTarget, ss);
+				else {
+					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+					ss->set("INSERT_FRAMETEXT", "insert_frametext");
+					ss->set("ETEA", QString("insert_frametext"));
+					ss->set("TEXT_STR", QString(SpecialChars::TAB));
+					ss->set("START", itemText.cursorPosition());
+					UndoObject * undoTarget = this;
+					if (isNoteFrame())
+					{
+						undoTarget = m_Doc;
+						ss->set("noteframeName", getUName());
 					}
+					undoManager->action(undoTarget, ss);
 				}
-				itemText.insertChars(QString(SpecialChars::TAB), true);
-				//			Tinput = true;
-				//			view->RefreshItem(this);
-				doUpdate = true;
 			}
-			else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
+			itemText.insertChars(QString(SpecialChars::TAB), true);
+//			Tinput = true;
+//			view->RefreshItem(this);
+			doUpdate = true;
+		}
+		else if ((uc[0] > QChar(31) && m_Doc->currentStyle.charStyle().font().canRender(uc[0])) || (as == 13) || (as == 30))
+		{
+			if (UndoManager::undoEnabled())
 			{
-				if (UndoManager::undoEnabled())
-				{
-					SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
-					if(ss && ss->get("ETEA") == "insert_frametext")
+				SimpleState *ss = dynamic_cast<SimpleState*>(undoManager->getLastUndo());
+				if(ss && ss->get("ETEA") == "insert_frametext")
 						ss->set("TEXT_STR",ss->get("TEXT_STR") + uc);
-					else {
-						ss = new SimpleState(Um::InsertText,"",Um::ICreate);
-						ss->set("INSERT_FRAMETEXT", "insert_frametext");
-						ss->set("ETEA", QString("insert_frametext"));
-						ss->set("TEXT_STR",uc);
-						ss->set("START", itemText.cursorPosition());
-						UndoObject * undoTarget = this;
-						if (isNoteFrame())
-						{
-							undoTarget = m_Doc;
-							ss->set("noteframeName", getUName());
-						}
-						undoManager->action(undoTarget, ss);
+				else {
+					ss = new SimpleState(Um::InsertText,"",Um::ICreate);
+					ss->set("INSERT_FRAMETEXT", "insert_frametext");
+					ss->set("ETEA", QString("insert_frametext"));
+					ss->set("TEXT_STR",uc);
+					ss->set("START", itemText.cursorPosition());
+					UndoObject * undoTarget = this;
+					if (isNoteFrame())
+					{						undoTarget = m_Doc;
+						ss->set("noteframeName", getUName());
 					}
+					undoManager->action(undoTarget, ss);
 				}
-				itemText.insertChars(uc, true);
-				if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
-				{
-					Twort = "";
-					Tcoun = 0;
-					for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
-					{
-						Tcha = itemText.text(hych,1);
-						if (Tcha[0] == ' ')
-						{
-							Tcoun = hych+1;
-							break;
-						}
-						Twort.prepend(Tcha);
-					}
-					if (!Twort.isEmpty())
-					{
-						m_Doc->docHyphenator->slotHyphenateWord(this, Twort, Tcoun);
-					}
-				}
-				invalid = true;
-				//			Tinput = true;
-				//			view->RefreshItem(this);
-				doUpdate = true;
 			}
+			itemText.insertChars(uc, true);
+			if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
+			{
+				Twort = "";
+				Tcoun = 0;
+				for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
+				{
+					Tcha = itemText.text(hych,1);
+					if (Tcha[0] == ' ')
+					{
+						Tcoun = hych+1;
+						break;
+					}
+					Twort.prepend(Tcha);
+				}
+				if (!Twort.isEmpty())
+				{
+					m_Doc->docHyphenator->slotHyphenateWord(this, Twort, Tcoun);
+				}
+			}
+			invalid = true;
+//			Tinput = true;
+//			view->RefreshItem(this);
+			doUpdate = true;
 		}
 		if (doUpdate)
 		{
@@ -4866,16 +4631,13 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 			}
 			else
-			{
 				update();
-				if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-					NextBox->updateLayout();
-				doc()->changed();
-			}
+			if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+				NextBox->updateLayout();
 		}
 		//check if cursor need to jump to next linked frame
 		//but not for notes frames can`t be updated as may disapper during update
-		if (!(isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty()) && (itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
+		if ((itemText.cursorPosition() > lastInFrame() + 1) && (lastInFrame() < (itemText.length() - 2)) && NextBox != 0)
 		{
 			view->Deselect(true);
 			NextBox->update();
@@ -4891,7 +4653,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		keyRepeat = false;
 }
 
-void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
+void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 {
 	if (itemText.lengthOfSelection() == 0)
 	{
@@ -4916,10 +4678,12 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 		}
 		UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
 
+		//find and delete notes and marks in selected text
 		QList<QPair<TextNote*, int> > notes2DEL;
-		if (isNoteFrame() && findNotes)
+		if (isNoteFrame()/* && findNotes*/)
 		{
-			//find notes in selected text
+			//find and delete notes
+			//if marks are in notes then they will be deleted further while note is physicaly deleted
 			for (int i=start; i < stop; ++i)
 			{
 				if (i == itemText.length())
@@ -4931,42 +4695,35 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 		}
 		else
 		{
-			//delete marks from selected text
+			//delete marks from selected text (with undo)
 			marksNum = removeMarksFromText(true);
-			if (!findNotes)
-			{
-				itemText.select(start, stop - start - marksNum);
-				itemText.removeSelection();
-				HasSel = false;
-				return;
-			}
 			stop -= marksNum;
 		}
 		//delete text
-		ScItemState<CharStyle>* sch = NULL;
-		if (ts)
-			sch = dynamic_cast<ScItemState<CharStyle>*>(ts->at(0));
 		for (int i=start; i <= stop; ++i)
 		{
 			ScText* hl = NULL;
 			if (i < itemText.length())
 				hl = itemText.item(i);
-			if (i==stop || !itemText.charStyle(i).equiv(lastParent) || i==stop || (hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType)))
+			const CharStyle& curParent = itemText.charStyle(i);
+			if (i==stop || !curParent.equiv(lastParent) || (hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType)))
 			{
 				added = false;
 				lastIsDelete = false;
-				if (!(hl!=NULL && hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
-					&& (is && sch && sch->get("ETEA") == "delete_frametext" && is->getItem().equiv(lastParent)))
+				if (is && ts && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext" && lastPos<is->getInt("START"))
 				{
-					if  (lastPos < is->getInt("START"))
+					if (is->getItem().equiv(lastParent))
 					{
 						is->set("START",start);
-						is->set("TEXT_STR", itemText.text(lastPos, i - lastPos) + is->get("TEXT_STR"));
+						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos) + is->get("TEXT_STR"));
 						added = true;
 					}
-					else //if (lastPos >= is->getInt("START"))
-					{
-						is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos, i - lastPos));
+					lastIsDelete = true;
+				}
+				else if (is && ts && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext"  && lastPos>=is->getInt("START"))
+				{
+					if (is->getItem().equiv(lastParent)){
+						is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos,i - lastPos));
 						added = true;
 					}
 					lastIsDelete = true;
@@ -5008,6 +4765,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 							TextNote* note = notes2DEL.at(ii).first;
 							Q_ASSERT(note != NULL);
 							m_Doc->setUndoDelNote(note);
+							if (note->isEndNote())
+								m_Doc->flag_updateEndNotes = true;
 							m_Doc->deleteNote(note);
 						}
 						if(is)
@@ -5032,8 +4791,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 					}
 				}
 				lastPos = i;
-				if (i < itemText.length())
-					lastParent = itemText.charStyle(i);
+				lastParent = curParent;
 			}
 		}
 		if (trans)
@@ -5043,7 +4801,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(bool findNotes)
 			trans = NULL;
 		}
 	}
-	else
+	else //remove marks without undo
 		marksNum =removeMarksFromText(false);
 	itemText.setCursorPosition( start );
 	//for sure text is still selected
@@ -5260,7 +5018,7 @@ void PageItem_TextFrame::drawOverflowMarker(ScPainter *p)
 
 void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 {
-	p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 	p->setPenOpacity(1.0);
 	p->setBrush(Qt::white);
 	p->setBrushOpacity(1.0);
@@ -5274,16 +5032,16 @@ void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 	if (lineColor() != CommonStrings::None)
 		lineCorr = m_lineWidth / 2.0;
 	if (TExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
+		p->drawLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
 	if (BExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
+		p->drawLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
 	while(curCol < Cols)
 	{
 		colLeft=(colWidth + ColGap) * curCol + Extra + lineCorr;
 		if (colLeft != 0.0)
-			p->drawSharpLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
+			p->drawLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
 		if (colLeft + colWidth != Width)
-			p->drawSharpLine(FPoint(colLeft+colWidth, 0), FPoint(colLeft+colWidth, 0+Height));
+			p->drawLine(FPoint(colLeft+colWidth, 0), FPoint(colLeft+colWidth, 0+Height));
 		++curCol;
 	}
 	
@@ -5479,32 +5237,27 @@ bool PageItem_TextFrame::hasNoteFrame(NotesStyle *NS, bool inChain)
 
 void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
 {
-	if (m_notesFramesMap.isEmpty())
-		return;
 	int oldItemsCount = m_Doc->Items->count();
 
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->isEndNotesFrame())
-			removeNoteFrame(nF);
-		else
+		if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
 			delList.append(nF);
 	}
-	
 	while (!delList.isEmpty())
 	{
 		PageItem_NoteFrame* nF = delList.takeFirst();
 		m_Doc->delNoteFrame(nF);
 	}
-	Q_ASSERT(m_notesFramesMap.isEmpty());
+
 	//check if doc need update
-	m_Doc->setNotesChanged(true);
 	if (doUpdate && (oldItemsCount != m_Doc->Items->count()))
 	{
 		m_Doc->changed();
 		m_Doc->regionsChanged()->update(QRectF());
 	}
+	m_Doc->setNotesChanged(true);
 }
 
 Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
@@ -5605,6 +5358,13 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 
 			TextNote* note = mark->getNotePtr();
 			Q_ASSERT(note != NULL);
+			if (note == NULL)
+			{
+				qWarning() << "note mark without valid note pointer";
+				note = m_Doc->newNote(m_Doc->m_docNotesStylesList.at(0));
+				note->setMasterMark(mark);
+				mark->setNotePtr(note);
+			}
 			NotesStyle* NS = note->notesStyle();
 			PageItem_NoteFrame* nF = NULL;
 			if (NS->isEndNotes())
@@ -5623,15 +5383,6 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
 					w = scP->width() - scP->Margins.Left - scP->Margins.Right;
 					h = calculateLineSpacing(itemText.defaultStyle(), this);
-					//if page is not empty then position new endnoteframe at bottom of page (above margins)
-					for (int d = 0; d < m_Doc->Items->count(); ++d)
-					{
-						if (m_Doc->Items->at(d)->OwnPage == scP->pageNr())
-						{
-							y += scP->height() - scP->Margins.Top - scP->Margins.Bottom - h;
-							break;
-						}
-					}
 					nF = m_Doc->createNoteFrame(note->notesStyle(), x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
 					switch (NS->range())
 					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
@@ -5656,7 +5407,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					//create new footnotes frame for that text frame
 					nF = m_Doc->createNoteFrame(this, note->notesStyle(), m_Doc->DocItems.indexOf(lastItem));
 				//insert in map noteframe with empty list of notes
-				setNoteFrame(nF);
+				m_notesFramesMap.insert(nF, QList<TextNote*>());
 				m_Doc->setNotesChanged(true);
 			}
 			else if (NS->isEndNotes())
@@ -5667,19 +5418,9 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 					double x,y;
 					x = scP->Margins.Left + m_Doc->rulerXoffset + scP->xOffset();
 					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
-					//check if endnoteframe is on proper page and not outside of it
 					if ((scP->pageNr() != nF->OwnPage) || (nF->xPos() > (x + scP->width())) || nF->yPos() > (y + scP->height()))
 					{
 						undoManager->setUndoEnabled(false);
-						//if page is not empty then position new endnoteframe at bottom of page (above margins)
-						for (int d = 0; d < m_Doc->Items->count(); ++d)
-						{
-							if (m_Doc->Items->at(d)->OwnPage == scP->pageNr())
-							{
-								y += scP->height() - scP->Margins.Top - scP->Margins.Bottom - nF->height();
-								break;
-							}
-						}
 						nF->setXYPos(x,y);
 						undoManager->setUndoEnabled(true);
 					}
@@ -5691,8 +5432,6 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 			{
 				nList.append(note);
 				notesMap.insert(nF, nList);
-				if (nF->isEndNotesFrame())
-					m_Doc->flag_updateEndNotes = true;
 			}
 			if (!nF->isEndNotesFrame())
 				lastItem = nF;
@@ -5708,10 +5447,44 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 {
 	bool docWasChanged = false;
 
+//	QList<PageItem_NoteFrame*> curr_footNotesList;
+//	QList<PageItem_NoteFrame*> old_footNotesList;
+//	QList<PageItem_NoteFrame*> curr_endNotesList;
+//	QList<PageItem_NoteFrame*> old_endNotesList;
+
+	
+//	foreach(PageItem_NoteFrame* nF, notesMap.keys())
+//	{
+//		if (nF->isEndNotesFrame())
+//			curr_endNotesList.append(nF);
+//		else if (!notesMap.value(nF).isEmpty())
+//			curr_footNotesList.append(nF);
+//	}
+//	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+//	{
+//		if (nF->isEndNotesFrame())
+//			old_endNotesList.append(nF);
+//		else
+//			old_footNotesList.append(nF);
+//	}
+//	//check for endnotes marks change in current frame
+//	foreach (PageItem_NoteFrame* nF, old_endNotesList)
+//	{
+//		if (nF->deleteIt)
+//		{
+//			m_Doc->delNoteFrame(nF,true);
+//			docWasChanged = true;
+//		}
+//		else if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
+//		{
+//			m_Doc->endNoteFrameChanged(nF);
+//			docWasChanged = true;
+//		}
+//	}
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->deleteIt) //|| (nF->isAutoNoteFrame() && ((!notesMap.keys().contains(nF) && !nF->isEndNotesFrame()) || nF->notesList().isEmpty())))
+		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
 		{
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
@@ -5729,29 +5502,17 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	if (m_notesFramesMap != notesMap)
 	{
 		docWasChanged = true;
-		if (notesMap.isEmpty())
+		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 		{
-			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+			if (notesMap.contains(nF))
 			{
-				if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
-					removeNoteFrame(nF);
+				m_notesFramesMap.insert(nF, notesMap.value(nF));
+				notesMap.remove(nF);
 			}
+			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
+				m_notesFramesMap.remove(nF);
 		}
-		else
-		{
-			foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-			{
-				if (notesMap.contains(nF))
-				{
-					nF->updateNotes(notesMap.value(nF));
-					setNoteFrame(nF);
-					notesMap.remove(nF);
-				}
-				else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
-					removeNoteFrame(nF);
-			}
-			m_notesFramesMap.unite(notesMap);
-		}
+		m_notesFramesMap.unite(notesMap);
 	}
 	if (docWasChanged)
 	{
@@ -5764,8 +5525,10 @@ void PageItem_TextFrame::notesFramesLayout()
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		Q_ASSERT_X(nF != NULL,"PageItem_TextFrame::notesFramesLayout()","nF==NULL");
-		Q_ASSERT_X(!nF->deleteIt, "PageItem_TextFrame::notesFramesLayout()", "nF->deleteIt");
+		if (nF == NULL)
+			continue;
+		if (nF->deleteIt)
+			continue;
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
 		nF->invalid = true;
@@ -5783,6 +5546,8 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		{
 			if (doUndo && UndoManager::undoEnabled())
 				m_Doc->setUndoDelNote(note);
+			if (note->isEndNote())
+				m_Doc->flag_updateEndNotes = true;
 			m_Doc->deleteNote(note);
 			note = selectedNoteMark(true);
 			++num;

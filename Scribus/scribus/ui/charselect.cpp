@@ -102,12 +102,7 @@ void CharSelect::slot_insertSpecialChar()
 	else
 		cItem = m_Item->asTextFrame();
 	if (cItem->HasSel)
-	{
-//		//removing marks and notes from selected text
-//		if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!m_doc->hasGUI()))
-//			return;
 		cItem->deleteSelectedTextFromFrame();
-	}
 	cItem->invalidateLayout();
 	//CB: Avox please make text->insertchar(char) so none of this happens in gui code, and item can tell doc its changed so the view and mainwindow slotdocch are not necessary
 	QChar ch;
@@ -142,12 +137,7 @@ void CharSelect::slot_insertUserSpecialChar(QChar ch, QString font)
 	else
 		cItem = m_Item->asTextFrame();
 	if (cItem->HasSel)
-	{
-		//removing marks and notes from selected text
-//		if (cItem->isTextFrame() && !cItem->asTextFrame()->removeMarksFromText(!m_doc->hasGUI()))
-//			return;
 		cItem->deleteSelectedTextFromFrame();
-	}
 	cItem->invalidateLayout();
 // 	//CB: Avox please make text->insertchar(char) so none of this happens in gui code, and item can tell doc its changed so the view and mainwindow slotdocch are not necessary
 	if (ch == QChar(10))

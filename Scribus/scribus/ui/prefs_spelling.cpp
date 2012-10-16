@@ -19,7 +19,9 @@ for which a new license (GPL+exception) is in place.
 #include "fileunzip.h"
 #include "langmgr.h"
 #include "prefsstructs.h"
+#include "scribuscore.h" //FIXME: for the ScCore call (remove this call)
 #include "scribusdoc.h"
+#include "scribus.h" //FIXME: for the ScCore call (remove this call)
 #include "util_icon.h"
 #include "util.h"
 #include "util_file.h"
@@ -103,11 +105,11 @@ void Prefs_Spelling::downloadSpellDicts()
 
 void Prefs_Spelling::updateDictList()
 {
-	bool dictsFound=LanguageManager::instance()->findSpellingDictionaries(dictionaryPaths);
+	bool dictsFound=LanguageManager::instance()->findDictionaries(dictionaryPaths);
 	if (!dictsFound)
 		return;
 	dictionaryMap.clear();
-	LanguageManager::instance()->findSpellingDictionarySets(dictionaryPaths, dictionaryMap);
+	LanguageManager::instance()->findDictionarySets(dictionaryPaths, dictionaryMap);
 
 	dictTableWidget->clear();
 	dictTableWidget->setRowCount(dictionaryMap.count());
@@ -118,7 +120,7 @@ void Prefs_Spelling::updateDictList()
 	{
 		 i.next();
 		 int column=0;
-		 qDebug()<<i.key()<<i.value()<<LanguageManager::instance()->getLangFromAbbrev(i.key(), false);
+		 qDebug()<<i.key()<<i.value();
 		 QTableWidgetItem *newItem1 = new QTableWidgetItem(LanguageManager::instance()->getLangFromAbbrev(i.key()));
 		 newItem1->setFlags(newItem1->flags() & ~Qt::ItemIsEditable);
 		 dictTableWidget->setItem(row, column++, newItem1);
@@ -230,8 +232,8 @@ void Prefs_Spelling::setAvailDictsXMLFile(QString availDictsXMLDataFile)
 						QUrl url(d.url);
 						if (url.isValid() && !url.isEmpty() && !url.host().isEmpty())
 							dictList.append(d);
-						//else
-						//	qDebug()<<"hysettings : availDicts : invalid URL"<<d.url;
+						else
+							qDebug()<<"hysettings : availDicts : invalid URL"<<d.url;
 					}
 				}
 			}

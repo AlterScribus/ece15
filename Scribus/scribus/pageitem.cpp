@@ -1174,14 +1174,14 @@ void PageItem::drawOverflowMarker(ScPainter *p)
 
 	p->save();
 
-	p->setPen(color, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	p->setPen(color, 0.5 / p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 	p->setPenOpacity(1.0);
 	p->setBrush(Qt::white);
 	p->setBrushOpacity(1.0);
 	p->setFillMode(ScPainter::Solid);
-	p->drawSharpRect(left, top, sideLength, sideLength);
-	p->drawSharpLine(QPointF(left, top), QPointF(right, bottom));
-	p->drawSharpLine(QPointF(left, bottom), QPointF(right, top));
+	p->drawRect(left, top, sideLength, sideLength);
+	p->drawLine(QPointF(left, top), QPointF(right, bottom));
+	p->drawLine(QPointF(left, bottom), QPointF(right, top));
 
 	p->restore();
 }
@@ -1332,6 +1332,7 @@ void PageItem::unlink(bool createUndo)
 	}
 }
 
+
 void PageItem::dropLinks()
 {
 	// update auto pointers
@@ -1350,23 +1351,6 @@ void PageItem::dropLinks()
 	PageItem* after = NextBox;
 	if (after != 0 || before != 0)
 	{
-		if (undoManager->undoEnabled())
-		{
-			if (before)
-			{
-				ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
-				is->set("UNLINK_TEXT_FRAME", QString("drop_links"));
-				is->setItem(qMakePair(before, this));
-				undoManager->action(before, is);
-			}
-			if (after)
-			{
-				ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
-				is->set("UNLINK_TEXT_FRAME", QString("drop_links"));
-				is->setItem(qMakePair(this, after));
-				undoManager->action(this, is);
-			}
-		}
 		itemText = StoryText(m_Doc);
 		if (before)
 			before->NextBox = after;
@@ -2004,10 +1988,11 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 	p->rotate(Rot);
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
-		double scpInv = 0;
+		double aestheticFactor(5.0);
+		double scpInv = 1.0 / (qMax(p->zoomFactor(), 1.0) * aestheticFactor);
 		if (!isGroup())
 		{
-			if ((Frame) && (m_Doc->guidesPrefs().framesShown) && ((itemType() == ImageFrame) || (itemType() == LatexFrame) || (itemType() == OSGFrame) || (itemType() == PathText)) && (no_stroke))
+			if ((Frame) && (m_Doc->guidesPrefs().framesShown) && ((itemType() == ImageFrame) || (itemType() == LatexFrame) || (itemType() == OSGFrame) || (itemType() == PathText)))
 			{
 				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 				if ((isBookmark) || (m_isAnnotation))
@@ -2039,21 +2024,21 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 				else
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-					p->setupSharpPolygon(&PoLine, false);
+					p->setupPolygon(&PoLine, false);
 	#else
-					p->setupSharpPolygon(&PoLine);
+					p->setupPolygon(&PoLine);
 	#endif
 				p->strokePath();
 			}
 		}
 		if ((m_Doc->guidesPrefs().framesShown) && textFlowUsesContourLine() && (ContourLine.size() != 0))
 		{
-			p->setPen(Qt::darkGray, 0, Qt::DotLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::darkGray, 1.0 / qMax(p->zoomFactor(), 1.0), Qt::DotLine, Qt::FlatCap, Qt::MiterJoin);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupSharpPolygon(&ContourLine, false);
+			p->setupPolygon(&ContourLine, false);
 	#else
-			p->setupSharpPolygon(&ContourLine);
+			p->setupPolygon(&ContourLine);
 	#endif
 			p->strokePath();
 		}
@@ -2079,7 +2064,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		}
 		if ((m_Doc->guidesPrefs().layerMarkersShown) && (m_Doc->layerCount() > 1) && (!m_Doc->layerOutline(LayerID)) && (isGroup()) && (!m_Doc->drawAsPreview))
 		{
-			p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setPenOpacity(1.0);
 			p->setBrush(m_Doc->layerMarker(LayerID));
 			p->setBrushOpacity(1.0);
@@ -2087,7 +2072,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 			double ofwh = 10;
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
-			p->drawSharpRect(ofx, ofy, ofwh, ofwh);
+			p->drawRect(ofx, ofy, ofwh, ofwh);
 		}
 		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
 		{
@@ -2095,7 +2080,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 			if (m_Locked)
 				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setFillMode(ScPainter::None);
-			p->drawSharpRect(0, 0, Width, Height);
+			p->drawRect(0, 0, Width, Height);
 			no_fill = false;
 			no_stroke = false;
 		}
@@ -2103,6 +2088,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		//if (m_Doc->m_Selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
 	}
+//	Tinput = false;
 	FrameOnly = false;
 	p->restore();
 }
@@ -4620,17 +4606,8 @@ void PageItem::checkChanges(bool force)
 	// has the item been resized
 	if (force || ((oldWidth != Width || oldHeight != Height) && shouldCheck()))
 	{
-		bool widthChange = (oldWidth != Width);
 		resizeUndoAction();
 		spreadChanges = (textFlowMode() != TextFlowDisabled );
-		if (isTextFrame() && !asTextFrame()->notesFramesList().isEmpty() && widthChange)
-		{
-			foreach (PageItem_NoteFrame* nF, asTextFrame()->notesFramesList())
-			{
-				if (nF->isAutoWidth())
-					nF->invalidateLayout();
-			}
-		}
 	}
 	// has the item been rotated
 	if (force || ((oldRot != Rot) && (shouldCheck())))
@@ -4824,7 +4801,6 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	bool useRasterBackup = m_Doc->useRaster;
 	bool SnapGuidesBackup = m_Doc->SnapGuides;
 	bool SnapElementBackup = m_Doc->SnapElement;
-	int dummy = 0;
 	m_Doc->SnapElement = false;
 	m_Doc->useRaster = false;
 	m_Doc->SnapGuides = false;
@@ -4841,7 +4817,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	{
 		bool actionFound = checkGradientUndoRedo(ss, isUndo);
 		if (actionFound)
-			dummy = 0;
+			int dummy = 0;
 		else if (ss->contains("ARC"))
 			restoreArc(ss, isUndo);
 		else if (ss->contains("MASKTYPE"))
@@ -4984,6 +4960,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreArrow(ss, isUndo, true);
 		else if (ss->contains("END_ARROW"))
 			restoreArrow(ss, isUndo, false);
+		else if (ss->contains("PSTYLE"))
+			restorePStyle(ss, isUndo);
 		else if (ss->contains("CONVERT"))
 			restoreType(ss, isUndo);
 		else if (ss->contains("TEXTFLOW_OLDMODE"))
@@ -6426,7 +6404,6 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 	QString text = is->get("TEXT_STR");
 	int start = is->getInt("START");
 	if (isUndo){
-		ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
 		itemText.insertChars(start,text);
 		itemText.applyCharStyle(start, text.length(), is->getItem());
 		invalid = true;
@@ -6692,6 +6669,17 @@ void PageItem::restoreArrow(SimpleState *state, bool isUndo, bool isStart)
 		setEndArrowIndex(i);
 }
 
+
+void PageItem::restorePStyle(SimpleState *state, bool isUndo)
+{
+	int styleid = state->getInt("OLD_STYLE");
+	if (!isUndo)
+		styleid = state->getInt("NEW_STYLE");
+	//will be done later with other text-undo:
+	//	m_Doc->chAbStyle(this, styleid);
+}
+
+
 // FIXME: This must go into class ScribusDoc!
 // For now we'll just make it independent of 'this' -- AV
 void PageItem::restoreType(SimpleState *state, bool isUndo)
@@ -6917,18 +6905,9 @@ void PageItem::restoreUnlinkTextFrame(UndoState *state, bool isUndo)
 	else
 	{
 		if (isUndo)
-		{
-			PageItem* next = is->getItem().second;
-			if (next != NULL)
-				asTextFrame()->link(next);
-		}
+			asTextFrame()->link(is->getItem().second->asTextFrame());
 		else
-		{
-			if (is->get("UNLINK_TEXT_FRAME") == "drop_links")
-				dropLinks();
-			else
-				unlink();
-		}
+			unlink();
 	}
 }
 
@@ -10018,16 +9997,31 @@ void PageItem::updateClip(bool updateWelded)
 					for (int i = 0 ; i < weldList.count(); i++)
 					{
 						weldingInfo wInf = weldList.at(i);
+						if (wInf.weldItem->isNoteFrame())
+						{
+							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
+							if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
+							{
+								if (noteFrame->notesStyle()->isAutoNotesWidth())
+								{
+									if (noteFrame->width() != width())
+									{
+										noteFrame->setWidth(width());
+										noteFrame->updateClip();
+									}
+								}
+								noteFrame->setXYPos(xPos(),yPos() + height());
+								setWeldPoint(0, height(), noteFrame);
+								noteFrame->setWeldPoint(0,0, this);
+								continue;
+							}
+						}
 						FPointArray gr4;
 						FPoint wp = wInf.weldPoint;
 						gr4.addPoint(wp);
 						gr4.map(ma);
 						double dx = gr4.point(0).x() - wp.x();
 						double dy = gr4.point(0).y() - wp.y();
-						if (Xpos != oldXpos)
-							dx -= (Width - oldWidth);
-						if (Ypos != oldYpos)
-							dy -= (Height - oldHeight);
 						moveWelded(dx, dy, i);
 						wInf.weldPoint = gr4.point(0);
 						weldList[i] = wInf;
@@ -10137,9 +10131,34 @@ void PageItem::updateClip(bool updateWelded)
 			{
 				for (int i = 0 ; i < weldList.count(); i++)
 				{
-					double dx = Xpos - oldXpos;
-					double dy = Ypos - oldYpos;
+					weldingInfo wInf = weldList.at(i);
+					if (wInf.weldItem->isNoteFrame())
+					{
+						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
+						if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
+						{
+							if (noteFrame->notesStyle()->isAutoNotesWidth())
+							{
+								if (noteFrame->width() != width())
+								{
+									noteFrame->setWidth(width());
+									noteFrame->updateClip();
+								}
+							}
+							setWeldPoint(0, height(), noteFrame);
+							noteFrame->setWeldPoint(0,0, this);
+							continue;
+						}
+					}
+					FPointArray gr4;
+					FPoint wp = wInf.weldPoint;
+					gr4.addPoint(wp);
+					gr4.map(ma);
+					double dx = gr4.point(0).x() - wp.x();
+					double dy = gr4.point(0).y() - wp.y();
 					moveWelded(dx, dy, i);
+					wInf.weldPoint = gr4.point(0);
+					weldList[i] = wInf;
 				}
 			}
 		}
@@ -10252,7 +10271,6 @@ void PageItem::weldTo(PageItem* pIt)
 	addWelded(pIt);
 	pIt->addWelded(this);
 	if(!pIt->isNoteFrame() && undoManager->undoEnabled())
-	if(undoManager->undoEnabled())
 	{
 		ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);
 		is->set("WELD_ITEMS", "weld_items");
@@ -10372,8 +10390,6 @@ void PageItem::unWeld()
 	{
 		weldingInfo wInf = weldList.at(a);
 		PageItem *pIt = wInf.weldItem;
-		if (pIt == NULL)
-			continue;
 		for (int b = 0 ; b < pIt->weldList.count(); b++)
 		{
 			weldingInfo wInf2 = pIt->weldList.at(b);

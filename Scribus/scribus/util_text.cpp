@@ -15,8 +15,6 @@ for which a new license (GPL+exception) is in place.
  ***************************************************************************/
 
 //#include <QDebug>
-#include <sstream>
-#include "desaxe/saxXML.h"
 
 #include "scribusdoc.h"
 #include "util_text.h"
@@ -56,22 +54,15 @@ int findParagraphStyle(ScribusDoc* doc, const QString &name)
 
 StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 {
-	if (saxedString.isEmpty())
-		return StoryText();
-	Serializer *textSerializer = doc->textSerializer();
-	textSerializer->reset();
-	textSerializer->store<ScribusDoc>("<scribusdoc>", doc);
-	textSerializer->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
-	return *(textSerializer->result<StoryText>());
-}
+	assert(!saxedString.isEmpty());
 
-QString saxedText(StoryText* story)
-{
-	std::ostringstream xmlString;
-	SaxXML xmlStream(xmlString);
-	xmlStream.beginDoc();
-	story->saxx(xmlStream, "SCRIBUSTEXT");
-	xmlStream.endDoc();
-	std::string xml(xmlString.str());
-	return QString(xml.c_str());
+	Serializer* dig = doc->textSerializer();
+	dig->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
+
+	StoryText* story = dig->result<StoryText>();
+	assert (story != NULL);
+
+	StoryText res = *story;
+	delete story;
+	return res;
 }

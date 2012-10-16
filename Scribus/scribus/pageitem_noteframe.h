@@ -45,7 +45,7 @@ public:
 	//return list of notes in noteframe
 	QList<TextNote*> notesList() { return l_notes; }
 	//remove note from list
-	void removeNote(TextNote* note) { l_notes.removeOne(note); if (l_notes.isEmpty() && isAutoNoteFrame()) deleteIt = true; }
+	void removeNote(TextNote* note) { l_notes.removeOne(note); }
 
 	void restoreDeleteNoteText(SimpleState *state, bool isUndo);
 	void restoreInsertNoteText(SimpleState *state, bool isUndo);

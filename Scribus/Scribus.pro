@@ -1124,7 +1124,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/ui/MarkInsertDlg.h \
     scribus/ui/markanchor.h \
     scribus/ui/mark2mark.h \
-    scribus/ui/mark2item.h
+    scribus/ui/mark2item.h \
+    scribus/numeration.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -2170,7 +2171,9 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/ui/marksmanager.cpp \
     scribus/ui/marknote.cpp \
     scribus/ui/markanchor.cpp \
-    scribus/ui/mark2mark.cpp
+    scribus/ui/mark2mark.cpp \
+    scribus/canvasmode_imageimport.cpp \
+    scribus/numeration.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
@@ -2216,7 +2219,7 @@ TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.uk.ts \
                 resources/translations/po/scribus.zh_CN.ts \
                 resources/translations/po/scribus.zh_TW.ts
--
+
 OTHER_FILES += \
     scribus/plugins/scripter/README.txt \
     scribus/plugins/scripter/dynapidocs.spy \

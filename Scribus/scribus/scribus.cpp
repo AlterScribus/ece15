@@ -188,8 +188,6 @@ for which a new license (GPL+exception) is in place.
 #include "ui/notesstyleseditor.h"
 #ifdef HAVE_OSG
 	#include "ui/osgeditor.h"
-	#include <osgDB/ReaderWriter>
-	#include <osgDB/PluginQuery>
 #endif
 #include "ui/outlinepalette.h"
 #include "ui/pageitemattributes.h"
@@ -392,12 +390,11 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 	DocDir = prefsManager->documentDir();
 
 	if (primaryMainWindow)
-		ScCore->setSplashStatus( tr("Initializing Languages") );
-	LanguageManager::instance();
+		ScCore->setSplashStatus( tr("Initializing Hyphenator") );
 
 	QString preLang(prefsManager->appPrefs.hyphPrefs.Language);
 	initHyphenator();
-	if (!LanguageManager::instance()->getHyphFilename( preLang ).isEmpty() )
+	if (!LanguageManager::instance()->getHyphFilename( preLang, true ).isEmpty() )
 		prefsManager->appPrefs.hyphPrefs.Language = preLang;
 	if (primaryMainWindow)
 		ScCore->setSplashStatus( tr("Reading Scrapbook") );
@@ -492,37 +489,6 @@ void ScribusMainWindow::initDefaultValues()
 	ClipB = QApplication::clipboard();
 	palettesStatus[0] = false;
 	guidesStatus[0] = false;
-#ifdef HAVE_OSG
-	QStringList supportedExts;
-	supportedExts << "osg" << "dxf" << "flt" << "ive" << "geo" << "sta" << "stl" << "logo" << "3ds" << "ac" << "obj";
-	QStringList realSupportedExts;
-	QMap<QString, QString> formats;
-	osgDB::FileNameList plugins = osgDB::listAllAvailablePlugins();
-	for(osgDB::FileNameList::iterator itr = plugins.begin(); itr != plugins.end(); ++itr)
-	{
-		osgDB::ReaderWriterInfoList infoList;
-		if (osgDB::queryPlugin(*itr, infoList))
-		{
-			for(osgDB::ReaderWriterInfoList::iterator rwi_itr = infoList.begin(); rwi_itr != infoList.end(); ++rwi_itr)
-			{
-				osgDB::ReaderWriterInfo& info = *(*rwi_itr);
-				osgDB::ReaderWriter::FormatDescriptionMap::iterator fdm_itr;
-				for(fdm_itr = info.extensions.begin(); fdm_itr != info.extensions.end(); ++fdm_itr)
-				{
-					if (supportedExts.contains(QString::fromStdString(fdm_itr->first)))
-					{
-						formats.insert("*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper(), QString::fromStdString(fdm_itr->second) + " (*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper() + ")");
-					}
-				}
-			}
-		}
-	}
-	realSupportedExts = formats.keys();
-	QString docexts = realSupportedExts.join(" ");
-	QStringList longList = formats.values();
-	QString longDesc = longList.join(";;") + ";;";
-	osgFilterString = tr("All Supported Formats (%1);;%2All Files (*)").arg(docexts).arg(longDesc);
-#endif
 }
 
 
@@ -607,7 +573,6 @@ void ScribusMainWindow::initPalettes()
 	connect(symbolPalette, SIGNAL(paletteShown(bool)), scrActions["toolsSymbols"], SLOT(setChecked(bool)));
 	connect(symbolPalette, SIGNAL(startEdit(QString)), this, SLOT(editSymbolStart(QString)));
 	connect(symbolPalette, SIGNAL(endEdit()), this, SLOT(editSymbolEnd()));
-	connect(symbolPalette, SIGNAL(objectDropped()), this, SLOT(PutToPatterns()));
 	symbolPalette->installEventFilter(this);
 	symbolPalette->hide();
 
@@ -617,7 +582,6 @@ void ScribusMainWindow::initPalettes()
 	connect(inlinePalette, SIGNAL(paletteShown(bool)), scrActions["toolsInline"], SLOT(setChecked(bool)));
 	connect(inlinePalette, SIGNAL(startEdit(int)), this, SLOT(editInlineStart(int)));
 	connect(inlinePalette, SIGNAL(endEdit()), this, SLOT(editInlineEnd()));
-	connect(inlinePalette, SIGNAL(objectDropped(QString)), this, SLOT(PutToInline(QString)));
 	inlinePalette->installEventFilter(this);
 	inlinePalette->hide();
 	
@@ -1119,7 +1083,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuToMenuBar("Page");
 	scrMenuMgr->addMenuToMenuBar("View");
 	scrMenuMgr->addMenuToMenuBar("Extras");
-	//scrMenuMgr->setMenuEnabled("Extras", false);
+	scrMenuMgr->setMenuEnabled("Extras", false);
 	scrMenuMgr->addMenuToMenuBar("Windows");
 	menuBar()->addSeparator();
 	scrMenuMgr->addMenuToMenuBar("Help");
@@ -1701,35 +1665,24 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 				if (currItem->asImageFrame() && !currItem->locked())
 				{
 					currItem->handleModeEditKey(k, keyrep);
-					slotDocCh(false);
 				}
 //FIXME:av		view->oldCp = currItem->CPos;
-				else if (currItem->itemType() == PageItem::TextFrame)
+				if (currItem->itemType() == PageItem::TextFrame)
 				{
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
 					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 					{
-						doc->m_Selection->delaySignalsOn();
-						view->Deselect(true);
-						if (!currItem->asNoteFrame()->isEndNotesFrame())
-						{
-							view->SelectItem(currItem->asNoteFrame()->masterFrame());
-							doc->m_Selection->connectItemToGUI();
-						}
-						doc->m_Selection->delaySignalsOff();
 						if (!currItem->asNoteFrame()->isEndNotesFrame())
 						{
 							currItem->asNoteFrame()->masterFrame()->invalidateLayout();
 							currItem->asNoteFrame()->masterFrame()->updateLayout();
 						}
 					}
-					if (doc->notesChanged())
-						slotDocCh(false);
 					keyrep=kr;
 				}
-				//slotDocCh(false);
+				slotDocCh(false);
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -2159,8 +2112,6 @@ ScribusDoc *ScribusMainWindow::doFileNew(double width, double height, double top
 		connect(ScCore->fileWatcher, SIGNAL(fileChanged(QString)), tempDoc, SLOT(updatePict(QString)));
 		connect(ScCore->fileWatcher, SIGNAL(fileDeleted(QString)), tempDoc, SLOT(removePict(QString)));
 		connect(ScCore->fileWatcher, SIGNAL(dirChanged(QString )), tempDoc, SLOT(updatePictDir(QString )));
-		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
-		view->clockLabel->resetTime();
 		//scrActions["fileSave"]->setEnabled(false);
 		tempView->cmsToolbarButton->setChecked(tempDoc->HasCMS);
 		undoManager->switchStack(tempDoc->DocName);
@@ -2593,7 +2544,7 @@ void ScribusMainWindow::HaveNewDoc()
 	scrActions["insertFrame"]->setEnabled(true);
 	//scrMenuMgr->setMenuEnabled("Windows", true);
 //	scrMenuMgr->setMenuEnabled("Page", true);
-	//scrMenuMgr->setMenuEnabled("Extras", true);
+	scrMenuMgr->setMenuEnabled("Extras", true);
 
 	scrActions["toolsSelect"]->setEnabled(true);
 	scrActions["toolsZoom"]->setEnabled(true);
@@ -2990,7 +2941,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemAttributes"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(false);
 		//scrMenuMgr->setMenuEnabled("ItemShapes", !(currItem->isTableItem && currItem->isSingleSel));
-		scrMenuMgr->setMenuEnabled("ItemConvertTo", !((doc->appMode == modeEdit) || (currItem->isAnnotation())));
+//		scrMenuMgr->setMenuEnabled("ItemConvertTo", true);
 		scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 		scrActions["itemConvertToImageFrame"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToOutlines"]->setEnabled(doc->appMode != modeEdit);
@@ -3451,9 +3402,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
-	if (doc->isLoading())
-		m_marksCount = doc->marksList().count();
-	else if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+	if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
 		bool sendUpdateReqest = false;
 		if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
@@ -3632,7 +3581,7 @@ void ScribusMainWindow::doPasteRecent(QString data)
 				slotElemRead(data, view->dragX, view->dragY, true, false, doc, view);
 			doc->useRaster = savedAlignGrid;
 			doc->SnapGuides = savedAlignGuides;
-			doc->SnapElement = savedAlignElement;
+			doc->SnapElement = savedAlignElement;    
 			Selection tmpSelection(this, false);
 			tmpSelection.copy(*doc->m_Selection, true);
 			for (int as = ac; as < doc->Items->count(); ++as)
@@ -4261,7 +4210,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		else
 			doc->setName(FName);
 		doc->setMasterPageMode(false);
-		//IL doc->setHyphLanguage(GetLang(doc->hyphLanguage()));
+		doc->setHyphLanguage(GetLang(doc->hyphLanguage()));
 		HaveNewDoc();
 //		propertiesPalette->Cpal->displayGradient(0);
 //		propertiesPalette->updateCList();
@@ -4302,10 +4251,12 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			if((ite->nextInChain() == NULL) && !ite->isNoteFrame())  //do not layout notes frames
 				ite->layout();
 		}
-		doc->setLoading(true);
 		if (!doc->marksList().isEmpty())
+		{
+			doc->setLoading(true);
 			doc->updateMarks(true);
-		doc->setLoading(false);
+			doc->setLoading(false);
+		}
 		for (QHash<int, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
 		{
 			PageItem *ite = itf.value();
@@ -4360,8 +4311,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		doc->connectDocSignals();
 		if (doc->autoSave())
 			doc->autoSaveTimer->start(doc->autoSaveTime());
-		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
-		view->clockLabel->resetTime();
 // 		scrActions["fileSave"]->setEnabled(false);
 		doc->NrItems = bookmarkPalette->BView->NrItems;
 		doc->First = bookmarkPalette->BView->First;
@@ -4613,15 +4562,12 @@ void ScribusMainWindow::slotFileRevert()
 {
 	if ((doc->hasName) && (doc->isModified()) && (!doc->masterPageMode()))
 	{
-		ScribusWin* tw = ActWin;
 		int t = QMessageBox::warning(this, CommonStrings::trWarning, "<qt>" +
 								 QObject::tr("The changes to your document have not been saved and you have requested to revert them. Do you wish to continue?") + "</qt>",
 								 QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 		if (t == QMessageBox::No)
 			return;
 
-		mdiArea->setActiveSubWindow(tw->getSubWin());
-		ActWin = tw;
 		QString fn(doc->DocName);
 		doc->setModified(false);
 		if (doc==storyEditor->currentDocument())
@@ -4900,7 +4846,7 @@ bool ScribusMainWindow::DoFileClose()
 		scrMenuMgr->setMenuEnabled("Insert", false);
 		scrActions["insertFrame"]->setEnabled(false);
 
-		//scrMenuMgr->setMenuEnabled("Extras", false);
+		scrMenuMgr->setMenuEnabled("Extras", false);
 		//		scrMenuMgr->setMenuEnabled("Item", false);
 		scrActions["itemDuplicate"]->setEnabled(false);
 		scrActions["itemMulDuplicate"]->setEnabled(false);
@@ -5379,71 +5325,16 @@ void ScribusMainWindow::slotEditPaste()
 							story->removeChars(pos,1);
 					}
 				}
-				int atPos = currItem->itemText.cursorPosition();
+				if (UndoManager::undoEnabled())
+				{
+					ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
+					is->set("PASTE_TEXT", "paste_text");
+					is->set("START",currItem->itemText.cursorPosition());
+					is->setItem(*story);
+					undoManager->action(currItem, is);
+				}
 				currItem->itemText.insert(*story);
-				doc->updateMarks(doc->notesChanged());
-				StoryText story2 = story->copy();
-				if (UndoManager::undoEnabled())
-				{
-					for (int i = story->length() -1; i >= 0; --i)
-					{
-						if (story->item(i)->hasMark())
-							story->removeChars(i,1);
-					}
-					if (story->length() > 0)
-					{
-						ScItemState<StoryText> *is = new ScItemState<StoryText>(Um::Paste);
-						is->set("PASTE_TEXT", "paste_text");
-						is->set("START",atPos);
-						is->setItem(*story);
-						undoManager->action(currItem, is);
-					}
-				}
-				if (UndoManager::undoEnabled())
-				{
-					int marksNum = 0;
-					for (int i = 0; i < story2.length(); ++i)
-					{
-						if (story2.item(i)->hasMark())
-						{
-							ScItemsState* iss = NULL;
-							Mark* mrk = story2.item(i)->mark;
-							if (mrk->isType(MARKNoteMasterType))
-							{
-								iss = new ScItemsState(UndoManager::InsertNote);
-								doc->updateNotesNums(mrk->getNotePtr()->notesStyle());
-							}
-							else
-								iss = new ScItemsState(UndoManager::InsertMark);
-							iss->set("MARK", QString("paste"));
-							iss->set("label", mrk->label);
-							iss->set("type", (int) mrk->getType());
-							iss->set("strtxt", mrk->getString());
-							iss->set("at", atPos + i - marksNum);
-							if (currItem->isNoteFrame())
-								iss->set("noteframeName", currItem->getUName());
-							else
-								iss->insertItem("inItem", currItem);
-							if (mrk->isType(MARK2MarkType))
-							{
-								QString dName;
-								MarkType dType;
-								mrk->getMark(dName, dType);
-								iss->set("dName", dName);
-								iss->set("dType", (int) dType);
-							}
-							if (mrk->isType(MARK2ItemType))
-								iss->insertItem("itemPtr", mrk->getItemPtr());
-							if (mrk->isType(MARKNoteMasterType))
-							{
-								iss->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
-								iss->set("noteTXT", mrk->getNotePtr()->saxedText());
-							}
-							++marksNum;
-							undoManager->action(doc, iss);
-						}
-					}
-				}
+
 				delete story;
 			}
 			else if (ScMimeData::clipboardHasScribusElem() || ScMimeData::clipboardHasScribusFragment())
@@ -5610,7 +5501,7 @@ void ScribusMainWindow::slotEditPaste()
 		}
 		if (doc->notesChanged())
 			doc->notesFramesUpdate();
-		//slotDocCh(false);
+		slotDocCh(false);
 	}
 }
 
@@ -6852,7 +6743,7 @@ void ScribusMainWindow::setAppMode(int mode)
 			if (currItem != 0)
 			{
 				currItem->update();
-				if (currItem->isTextFrame())
+				if (currItem->asTextFrame())
 					enableTextActions(&scrActions, false);
 				//		scrMenuMgr->setMenuEnabled("Item", true);
 				scrActions["itemDuplicate"]->setEnabled(true);
@@ -6893,7 +6784,7 @@ void ScribusMainWindow::setAppMode(int mode)
 			}
 			scrActions["editPaste"]->setEnabled(false);
 			charPalette->setEnabled(true, currItem);
-			if ((currItem != NULL) && currItem->asTextFrame())
+			if (currItem!=NULL && currItem->asTextFrame())
 			{
 				//setTBvals before placing cursor has no effect
 				currItem->itemText.setCursorPosition(0);
@@ -9631,9 +9522,8 @@ void ScribusMainWindow::initHyphenator()
 	QDir hyphDir(hyphDirName, "hyph*.dic", QDir::Name, QDir::Files | QDir::NoSymLinks);
 	if ((hyphDir.exists()) && (hyphDir.count() != 0))
 	{
-		LanguageManager langmgr;
-		langmgr.init(false);
-		QString languageOfHyphFile;
+// 		LanguageManager langmgr;
+// 		langmgr.init(false);
 		for (uint dc = 0; dc < hyphDir.count(); ++dc)
 		{
 			QFileInfo fi(hyphDir[dc]);
@@ -9657,29 +9547,25 @@ void ScribusMainWindow::initHyphenator()
 			QString ext = fi.suffix().toLower();
 			if (ext == "qm")
 			{
- //IL   			QTranslator *trans = new QTranslator(0);
-//IL				trans->load(pfad + d2[dc]);
+				QTranslator *trans = new QTranslator(0);
+				trans->load(pfad + d2[dc]);
 
-//IL				QString translatedLang;
-//IL				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
-//IL				{
-//IL					translatedLang="";
-//IL					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
-//IL					if (!translatedLang.isEmpty())
-//IL						it.value().append(translatedLang);
-//IL				}
-//IL				delete trans;
+				QString translatedLang;
+				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
+				{
+					translatedLang="";
+					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
+					if (!translatedLang.isEmpty())
+						it.value().append(translatedLang);
+				}
+				delete trans;
 			}
 		}
 	}
 	//For each hyphenation file, grab the strings and the hyphenation data.
 	QString lang = QString(QLocale::system().name()).left(2);
-//IL	LangTransl.clear();
+	LangTransl.clear();
 	prefsManager->appPrefs.hyphPrefs.Language = "en_GB";
-	if (!LanguageManager::instance()->getHyphFilename(lang).isEmpty() )
-		prefsManager->appPrefs.hyphPrefs.Language = lang;
-
-/*
 	if ((hyphDir.exists()) && (hyphDir.count() != 0))
 	{
 		LanguageManager *langmgr(LanguageManager::instance());
@@ -9690,7 +9576,7 @@ void ScribusMainWindow::initHyphenator()
 			QFileInfo fi(hyphDir[dc]);
 			QString fileLangAbbrev = fi.baseName().section('_', 1);
 			tLang = langmgr->getLangFromAbbrev(fileLangAbbrev);
-//IL			LangTransl.insert(fileLangAbbrev, tLang);
+			LangTransl.insert(fileLangAbbrev, tLang);
 			langmgr->addHyphLang(fileLangAbbrev, hyphDir[dc]);
 			if (fileLangAbbrev == lang)
 				prefsManager->appPrefs.hyphPrefs.Language = fileLangAbbrev;
@@ -9698,7 +9584,17 @@ void ScribusMainWindow::initHyphenator()
 		if (tLang.isEmpty())
 			prefsManager->appPrefs.hyphPrefs.Language = "en_GB";
 	}
-	*/
+}
+
+QString ScribusMainWindow::GetLang(QString inLang)
+{
+	QMap<QString, QStringList>::Iterator itlend=InstLang.end();
+ 	for (QMap<QString, QStringList>::Iterator itl = InstLang.begin(); itl != itlend; ++itl)
+	{
+		if (itl.value().contains(inLang))
+			return LanguageManager::instance()->getLangFromAbbrev(itl.key(), false);
+	}
+	return inLang;
 }
 
 void ScribusMainWindow::ImageEffects()
@@ -9881,7 +9777,7 @@ void ScribusMainWindow::callImageEditor()
 #ifdef HAVE_OSG
 		if (currItem->asOSGFrame())
 		{
-			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame(), osgFilterString);
+			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame());
 			dia->exec();
 			return;
 		}
@@ -10040,7 +9936,6 @@ void ScribusMainWindow::languageChange()
 		//before changing the tr_NoneColor to the new value. See #9267, #5529
 		prefsManager->languageChange();
 		CommonStrings::languageChange();
-		LanguageManager::instance()->languageChange();
 		//Update actions
 		if (actionManager!=NULL)
 		{
@@ -10337,62 +10232,6 @@ void ScribusMainWindow::slotItemTransform()
 			}
 		}
 	}
-}
-
-void ScribusMainWindow::PutToInline(QString buffer)
-{
-	Selection tempSelection(*doc->m_Selection);
-	bool savedAlignGrid = doc->useRaster;
-	bool savedAlignGuides = doc->SnapGuides;
-	bool savedAlignElement = doc->SnapElement;
-	int ac = doc->Items->count();
-	bool isGroup = false;
-	double gx, gy, gh, gw;
-	FPoint minSize = doc->minCanvasCoordinate;
-	FPoint maxSize = doc->maxCanvasCoordinate;
-	doc->useRaster = false;
-	doc->SnapGuides = false;
-	doc->SnapElement = false;
-	undoManager->setUndoEnabled(false);
-	slotElemRead(buffer, 0, 0, false, true, doc, view);
-	doc->useRaster = savedAlignGrid;
-	doc->SnapGuides = savedAlignGuides;
-	doc->SnapElement = savedAlignElement;
-	doc->m_Selection->clear();
-	if (doc->Items->count() - ac > 1)
-		isGroup = true;
-	doc->m_Selection->delaySignalsOn();
-	for (int as = ac; as < doc->Items->count(); ++as)
-	{
-		doc->m_Selection->addItem(doc->Items->at(as));
-	}
-	if (isGroup)
-		doc->GroupCounter++;
-	doc->m_Selection->setGroupRect();
-	doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
-	PageItem* currItem3 = doc->Items->at(ac);
-	currItem3->isEmbedded = true;
-	currItem3->setIsAnnotation(false);
-	currItem3->isBookmark = false;
-	currItem3->gXpos = currItem3->xPos() - gx;
-	currItem3->gYpos = currItem3->yPos() - gy;
-	currItem3->gWidth = gw;
-	currItem3->gHeight = gh;
-	doc->addToInlineFrames(currItem3);
-	int acc = doc->Items->count();
-	for (int as = ac; as < acc; ++as)
-	{
-		doc->Items->takeAt(ac);
-	}
-	doc->m_Selection->clear();
-	doc->m_Selection->delaySignalsOff();
-	*doc->m_Selection=tempSelection;
-	doc->minCanvasCoordinate = minSize;
-	doc->maxCanvasCoordinate = maxSize;
-	undoManager->setUndoEnabled(true);
-	inlinePalette->unsetDoc();
-	inlinePalette->setDoc(doc);
-	view->Deselect(false);
 }
 
 void ScribusMainWindow::PutToPatterns()
@@ -10756,37 +10595,34 @@ void ScribusMainWindow::insertMark(MarkType mType)
 	}
 }
 
-void ScribusMainWindow::slotEditMark(Mark* mrk)
+void ScribusMainWindow::slotEditMark()
 {
 	if (!HaveDoc)
 		return;
+	if (doc->m_Selection->count() != 1)
+		return;
+	if  (doc->appMode != modeEdit)
+		return;
 	PageItem * currItem = doc->m_Selection->itemAt(0);
-	if (mrk == NULL)
+	if (currItem->itemText.cursorPosition() < currItem->itemText.length())
 	{
-		if (doc->m_Selection->count() != 1)
-			return;
-		if  (doc->appMode != modeEdit)
-			return;
-		if (currItem->itemText.cursorPosition() < currItem->itemText.length())
+		ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
+		if (hl->hasMark())
 		{
-			ScText *hl = currItem->itemText.item(currItem->itemText.cursorPosition());
-			if (!hl->hasMark())
-				return;
-			else mrk = hl->mark;
+			if (editMarkDlg(hl->mark, currItem->asTextFrame()))
+			{
+				if (hl->mark->isType(MARKVariableTextType))
+					doc->flag_updateMarksLabels = true;
+				else
+					currItem->invalid = true;
+				//doc->updateMarks();
+				doc->changed();
+				doc->regionsChanged()->update(QRectF());
+				view->DrawNew();
+			}
+			if (hl->mark->isNoteType())
+				nsEditor->setNotesStyle(hl->mark->getNotePtr()->notesStyle());
 		}
-	}
-	if (editMarkDlg(mrk, currItem->asTextFrame()))
-	{
-		if (mrk->isType(MARKVariableTextType))
-			doc->flag_updateMarksLabels = true;
-		else
-			currItem->invalid = true;
-		//doc->updateMarks();
-		doc->changed();
-		doc->regionsChanged()->update(QRectF());
-		view->DrawNew();
-		if (mrk->isNoteType())
-			nsEditor->setNotesStyle(mrk->getNotePtr()->notesStyle());
 	}
 }
 
@@ -10841,6 +10677,8 @@ void ScribusMainWindow::slotInsertMarkNote()
 		currItem->itemText.insertMark(mrk);
 		currItem->invalidateLayout();
 		currItem->layout();
+		if (mrk->getNotePtr()->isEndNote())
+			doc->flag_updateEndNotes = true;
 		doc->regionsChanged()->update(QRectF());
 		doc->changed();
 		doc->setCursor2MarkPos(mrk->getNotePtr()->noteMark());
@@ -11320,14 +11158,8 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				}
 				if (mrk->isType(MARK2ItemType) && mrk->getItemPtr() != oldMark.getItemPtr())
 				{
-					if (oldMark.getItemPtr() != NULL && oldMark.getItemPtr()->isNoteFrame())
-						is->set("noteframeOLD", oldMark.getItemPtr()->getUName());
-					else
-						is->insertItem("itemPtrOLD", oldMark.getItemPtr());
-					if (mrk->getItemPtr() != NULL && mrk->getItemPtr()->isNoteFrame())
-						is->set("noteframeNEW", mrk->getItemPtr()->getUName());
-					else
-						is->insertItem("itemPtrNEW", mrk->getItemPtr());
+					is->insertItem("itemPtrOLD", oldMark.getItemPtr());
+					is->insertItem("itemPtrNEW", mrk->getItemPtr());
 				}
 			}
 			undoManager->action(doc, is);

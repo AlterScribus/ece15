@@ -217,11 +217,8 @@ SET(SCRIBUS_MOC_CLASSES
   latexhelpers.h
   loadsaveplugin.h
   menumanager.h
-<<<<<<< HEAD
-marks.h
-=======
+  marks.h
   numeration.h
->>>>>>> c71ca3ff01ca471bf0a83c0a6a900473bd952c92
   navigator.h
 notesstyles.h
 numeration.h
@@ -291,7 +288,6 @@ pageitem_noteframe.h
   ui/charselectenhanced.h
   ui/charzoom.h
   ui/checkDocument.h
-  ui/clockwidget.h
   ui/cmsprefs.h
   ui/cmykfw.h
   ui/collectforoutput_ui.h
@@ -579,7 +575,6 @@ SET(SCRIBUS_SOURCES
   hyphenator.cpp
   ioapi.c
   KarbonCurveFit.cpp
-  langdef.cpp
   langmgr.cpp
   latexhelpers.cpp
   loadsaveplugin.cpp
@@ -737,7 +732,6 @@ pageitem_noteframe.cpp
   ui/charselectenhanced.cpp
   ui/charzoom.cpp
   ui/checkDocument.cpp
-  ui/clockwidget.cpp
   ui/cmsprefs.cpp
   ui/cmykfw.cpp
   ui/collectforoutput_ui.cpp

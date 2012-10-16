@@ -190,7 +190,6 @@ public:
 	void setHyphAutoCheck(bool b) { docPrefsData.hyphPrefs.AutoCheck=b; }
 	bool autoSave() const { return docPrefsData.docSetupPrefs.AutoSave; }
 	int autoSaveTime() const  { return docPrefsData.docSetupPrefs.AutoSaveTime; }
-	bool autoSaveClockDisplay() const  { return docPrefsData.displayPrefs.showAutosaveClockOnCanvas; }
 	void setAutoSave(bool b) { docPrefsData.docSetupPrefs.AutoSave=b; }
 	void setAutoSaveTime(int i) { docPrefsData.docSetupPrefs.AutoSaveTime=i; }
 	//FIXME (maybe) :non const, the loaders make a mess here
@@ -1167,7 +1166,7 @@ public:
 	Serializer *serializer();
 	//! \brief Returns a text serializer for this document, used to paste text chunks
 	Serializer *textSerializer();
-
+	 
 	//! \brief Get rotation mode
 	int RotMode() const {return rotMode;}
 	//! \brief Set rotation mode
@@ -1178,8 +1177,6 @@ public:
 	void beginUpdate();
 	void endUpdate();
 	int addToInlineFrames(PageItem *item);
-	void removeInlineFrame(int fIndex);
-	void checkItemForFrames(PageItem *it, int fIndex);
 
 protected:
 	void addSymbols();
@@ -1216,8 +1213,8 @@ public: // Public attributes
 	int Last;
 	int viewCount;
 	int viewID;
-	bool SnapGuides;
 	bool SnapElement;
+	bool SnapGuides;
 	bool GuideLock;
 	bool dontResize;
 	/** \brief Minimum and Maximum Points of Document */
@@ -1396,7 +1393,6 @@ signals:
 	//! Signal a change in rotation mode (aka basepoint)
 	void rotationMode(int);
 	void updateEditItem();
-	void updateAutoSaveClock();
 	
 public slots:
 	void selectionChanged();
@@ -1737,20 +1733,8 @@ public:
 
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(Mark* mrk, int &lastItem);
-
-	//struct to save position and dimensions of noteframe (undo puropses)
-	struct coords {
-		double _X, _Y, _W, _H;
-		coords() : _X(0.0), _Y(0.0), _W(-1.0), _H(-1.0) {}
-		coords(double x, double y, double w = -1.0, double h = -1.0) { _X = x; _Y = y; _W = w; _H = h; }
-	};
-	bool getNFCoords(PageItem* item, NotesStyle* nStyle, coords &c);
-	void setNFCoords(PageItem_NoteFrame* nF);
 	
 private:
-	//maps to storing noteframes coords for each text frame
-	QMap<PageItem*, QMap<NotesStyle*, coords> > noteframesCoords;
-	
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
 	NotesInFrameMap m_docNotesInFrameMap;
 

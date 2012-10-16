@@ -9,7 +9,6 @@ for which a new license (GPL+exception) is in place.
 
 #include "../../formatidlist.h"
 #include "commonstrings.h"
-#include "langmgr.h"
 #include "ui/missing.h"
 #include "pageitem_group.h"
 #include "prefsmanager.h"
@@ -320,19 +319,7 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 		m_Doc->cmsSettings().DefaultIntentColors = (eRenderIntent) dc.attribute("DISc", "1").toInt();
 		m_Doc->cmsSettings().DefaultIntentImages = (eRenderIntent) dc.attribute("DIIm", "0").toInt();
 		layerToSetActive=dc.attribute("ALAYER", "0").toInt();
-		//m_Doc->setHyphLanguage(dc.attribute("LANGUAGE", ""));
-		static const QString LANGUAGE("LANGUAGE");
-		QString l(dc.attribute(LANGUAGE, "en"));
-		if (LanguageManager::instance()->langTableIndex(l)!=-1)
-			m_Doc->setHyphLanguage(l); //new style storage
-		else
-		{ //old style storage
-			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
-			if (lnew.isEmpty())
-				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
-			m_Doc->setHyphLanguage(lnew);
-		}
-
+		m_Doc->setHyphLanguage(dc.attribute("LANGUAGE", ""));
 		m_Doc->setHyphMinimumWordLength(dc.attribute("MINWORDLEN", "3").toInt());
 		m_Doc->setHyphConsecutiveLines(dc.attribute("HYCOUNT", "2").toInt());
 		if (dc.hasAttribute("PAGEWIDTH"))
@@ -1172,8 +1159,7 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 
 	// start auto save timer if needed
 	if (m_Doc->autoSave() && ScCore->usingGUI())
-		m_Doc->restartAutoSaveTimer();
-//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(DOC.childNodes().count());

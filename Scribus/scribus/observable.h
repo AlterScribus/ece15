@@ -213,8 +213,6 @@ public:
 	{ 
 		MassObservable<OBSERVED*>::update(dynamic_cast<OBSERVED*>(this)); 
 	}
-private:
-	using MassObservable<OBSERVED*>::update;
 };
 
 

@@ -21,7 +21,7 @@ class PageItem_TextFrame;
 //used for map with endnotes frames maped with range item
 typedef union
 {
-	void* voidPtr;
+	void* P;
 	int sectionIndex;
 	ScPage* page;
 	PageItem_TextFrame* firstStoryFrame;
@@ -48,8 +48,8 @@ public:
 	void setSuffix (const QString str) { suffixStr = str; }
 
 	const QString numString(const uint num) { return numeration.numString(num); }
-	void setFormat(const NumFormat format) { numeration.setFormat(format); }
-	const NumFormat getFormat() { return numeration.format(); }
+	void setFormat(const NumFormat format) { numeration.numFormat = format; }
+	const NumFormat getFormat() { return numeration.numFormat; }
 
 	bool isEndNotes() { return m_endNotesStyle; }
 	bool isAutoNotesHeight() { return autoNotesHeight; }

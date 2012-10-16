@@ -243,7 +243,6 @@ void PrefsManager::initDefaults()
 	appPrefs.displayPrefs.scratchColor = qApp->palette().color(QPalette::Active, QPalette::Window);
 	appPrefs.displayPrefs.showPageShadow = true;
 	appPrefs.displayPrefs.showVerifierWarningsOnCanvas = true;
-	appPrefs.displayPrefs.showAutosaveClockOnCanvas = false;
 	appPrefs.displayPrefs.frameColor = QColor(Qt::red);
 	appPrefs.displayPrefs.frameNormColor = QColor(Qt::black);
 	appPrefs.displayPrefs.frameGroupColor = QColor(Qt::darkCyan);
@@ -1410,7 +1409,6 @@ bool PrefsManager::WritePref(QString ho)
 	deDisplay.setAttribute("ShowMarginsFilled", static_cast<int>(appPrefs.displayPrefs.marginColored));
 	deDisplay.setAttribute("DisplayScale", ScCLocale::toQStringC(appPrefs.displayPrefs.displayScale, 8));
 	deDisplay.setAttribute("ShowVerifierWarningsOnCanvas",static_cast<int>(appPrefs.displayPrefs.showVerifierWarningsOnCanvas));
-	deDisplay.setAttribute("ShowAutosaveClockOnCanvas",static_cast<int>(appPrefs.displayPrefs.showAutosaveClockOnCanvas));
 	deDisplay.setAttribute("ToolTips", static_cast<int>(appPrefs.displayPrefs.showToolTips));
 	deDisplay.setAttribute("ShowMouseCoordinates", static_cast<int>(appPrefs.displayPrefs.showMouseCoordinates));
 	elem.appendChild(deDisplay);
@@ -1979,7 +1977,6 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.displayPrefs.marginColored = static_cast<bool>(dc.attribute("ShowMarginsFilled", "0").toInt());
 			appPrefs.displayPrefs.displayScale = qRound(ScCLocale::toDoubleC(dc.attribute("DisplayScale"), appPrefs.displayPrefs.displayScale)*72)/72.0;
 			appPrefs.displayPrefs.showVerifierWarningsOnCanvas = static_cast<bool>(dc.attribute("ShowVerifierWarningsOnCanvas", "1").toInt());
-			appPrefs.displayPrefs.showAutosaveClockOnCanvas = static_cast<bool>(dc.attribute("ShowAutosaveClockOnCanvas", "0").toInt());
 			appPrefs.displayPrefs.showToolTips = static_cast<bool>(dc.attribute("ToolTips", "1").toInt());
 			appPrefs.displayPrefs.showMouseCoordinates = static_cast<bool>(dc.attribute("ShowMouseCoordinates", "1").toInt());
 		}

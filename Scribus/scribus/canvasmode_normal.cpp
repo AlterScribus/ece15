@@ -802,13 +802,8 @@ void CanvasMode_Normal::mousePressEvent(QMouseEvent *m)
 				resizeGesture->mousePressEvent(m);
 				if (resizeGesture->frameHandle() > 0)
 				{
-					int how = (int) resizeGesture->frameHandle();
-					if (!(currItem->sizeHLocked() && !(how == 5 || how == 8))
-						&& !(currItem->sizeVLocked() && !(how == 6 || how == 7)))
-					{
-						m_view->startGesture(resizeGesture);
-						return;
-					}
+					m_view->startGesture(resizeGesture);
+					return;
 				}
 			}
 //#7928			else

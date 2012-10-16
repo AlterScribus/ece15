@@ -326,7 +326,6 @@ void Cpalette::updateFromItem()
 		else
 			CGradDia->setValues(currentItem->GrStrokeStartX, currentItem->GrStrokeStartY, currentItem->GrStrokeEndX, currentItem->GrStrokeEndY, currentItem->GrStrokeFocalX, currentItem->GrStrokeFocalY, currentItem->GrStrokeScale, currentItem->GrStrokeSkew, 0, 0);
 	}
-
 	editMeshColors->setEnabled(!CGradDia->isVisible());
 	gradEditButton->setEnabled(true);
 
@@ -628,7 +627,8 @@ void Cpalette::updateGradientList()
 		pb.fillRect(0, 0, 48, 12, b);
 		pb.end();
 		ScPainter *p = new ScPainter(&pixm, 48, 12);
-		p->setPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->setPen(Qt::black);
+		p->setLineWidth(1);
 		p->setFillMode(2);
 		p->fill_gradient = gr;
 		p->setGradient(VGradient::linear, FPoint(0,6), FPoint(48, 6), FPoint(0,0), 1, 0);
@@ -1294,6 +1294,7 @@ void Cpalette::resetOneControlPoint()
 	{
 		if ((grow == -1) || (gcol == -1))
 			return;
+
 		tmp = currentItem->meshGradientArray[grow][gcol];
 		if (cont == 1)
 			tmp.controlTop    = tmp.gridPoint;
@@ -1303,6 +1304,7 @@ void Cpalette::resetOneControlPoint()
 			tmp.controlLeft   = tmp.gridPoint;
 		else if (cont == 4)
 			tmp.controlRight  = tmp.gridPoint;
+
 		if(UndoManager::undoEnabled())
 		{
 			ScItemState<QPair<meshPoint,meshPoint> > *ss = new ScItemState<QPair<meshPoint,meshPoint> >(Um::GradPos);

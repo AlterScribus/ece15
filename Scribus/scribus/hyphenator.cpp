@@ -45,7 +45,7 @@ for which a new license (GPL+exception) is in place.
 Hyphenator::Hyphenator(QWidget* parent, ScribusDoc *dok) : QObject( parent ),
 	doc(dok),
 	hdict(0),
-	usable(false),
+	useAble(false),
 	codec(0),
 	MinWordLen(doc->hyphMinimumWordLength()),
 	HyCount(doc->hyphConsecutiveLines()),
@@ -53,15 +53,17 @@ Hyphenator::Hyphenator(QWidget* parent, ScribusDoc *dok) : QObject( parent ),
 	AutoCheck(doc->hyphAutoCheck())
 {
 	//FIXME:av pick up language from charstyle
+	QString pfad(ScPaths::instance().dictDir());
 	LanguageManager * lmgr(LanguageManager::instance());
-	if (!lmgr->getHyphFilename(doc->hyphLanguage()).isEmpty() )
+	if (!lmgr->getHyphFilename(doc->hyphLanguage(), false).isEmpty() )
 		Language = doc->hyphLanguage();
 	else
 	{
 		Language = PrefsManager::instance()->appPrefs.hyphPrefs.Language;
 		doc->setHyphLanguage(Language);
 	}
-	QString pfad = lmgr->getHyphFilename(doc->hyphLanguage());
+// 	pfad += ScCore->primaryMainWindow()->Sprachen[Language];
+	pfad += lmgr->getHyphFilename( doc->hyphLanguage(), true );
 	QFile f(pfad);
 	if (f.open(QIODevice::ReadOnly))
 	{
@@ -73,14 +75,14 @@ Hyphenator::Hyphenator(QWidget* parent, ScribusDoc *dok) : QObject( parent ),
 	}
 	else
 	{
-		usable = false;
+		useAble = false;
 		hdict = NULL;
 		return;
 	}
 	QByteArray fn = pfad.toLocal8Bit();
 	const char * filename = fn.data();
 	hdict = hnj_hyphen_load(filename);
-	usable = hdict == NULL ? false : true;
+	useAble = hdict == NULL ? false : true;
 	rememberedWords.clear();
 /* Add reading these special lists from prefs or doc here */
 	ignoredWords.clear();
@@ -97,7 +99,7 @@ void Hyphenator::NewDict(const QString& name)
 {
 // 	if (!ScCore->primaryMainWindow()->Sprachen.contains(name))
 // 		return;
-	if( LanguageManager::instance()->getHyphFilename(name).isEmpty() )
+	if( LanguageManager::instance()->getHyphFilename(name, false).isEmpty() )
 		return;
 		
 	if (Language != name) 
@@ -110,7 +112,7 @@ void Hyphenator::NewDict(const QString& name)
 		if (hdict != NULL)
 			hnj_hyphen_free(hdict);
 
-		pfad +=  LanguageManager::instance()->getHyphFilename(Language) ;
+		pfad +=  LanguageManager::instance()->getHyphFilename(Language, false) ;
 		QFile f(pfad);
 		if (f.open(QIODevice::ReadOnly))
 		{
@@ -122,14 +124,14 @@ void Hyphenator::NewDict(const QString& name)
 		}
 		else
 		{
-			usable = false;
+			useAble = false;
 			hdict = NULL;
 			return;
 		}
 		QByteArray fn = pfad.toLocal8Bit();
 		filename = fn.data();
 		hdict = hnj_hyphen_load(filename);
-		usable = hdict == NULL ? false : true;
+		useAble = hdict == NULL ? false : true;
 	}
 }
 
@@ -147,7 +149,7 @@ void Hyphenator::slotNewSettings(int Wordlen, bool Autom, bool ACheck, int Num)
 
 void Hyphenator::slotHyphenateWord(PageItem* it, const QString& text, int firstC)
 {
-	if ((!usable))//FIXME:av || (!ScMW->Sprachen.contains(it->Language)))
+	if ((!useAble))//FIXME:av || (!ScMW->Sprachen.contains(it->Language)))
 		return;
 	const char *word;
 	char *buffer;
@@ -179,8 +181,9 @@ void Hyphenator::slotHyphenateWord(PageItem* it, const QString& text, int firstC
 
 void Hyphenator::slotHyphenate(PageItem* it)
 {
-	if ((!usable) || !(it->asTextFrame()) || (it->itemText.length() == 0))
+	if ((!useAble) || !(it->asTextFrame()) || (it->itemText.length() == 0))
 		return;
+
 	doc->DoDrawing = false;
 
 	const char *word;
@@ -199,6 +202,7 @@ void Hyphenator::slotHyphenate(PageItem* it)
 	else {
 		text = it->itemText.text(0, it->itemText.length());
 	}
+	
 	int firstC = 0;
 	int lastC = 0;
 	int Ccount = 0;

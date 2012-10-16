@@ -123,7 +123,7 @@ public:
 		CharStyle(other),
 		parstyle(NULL), glyph(other.glyph), 
 		PtransX(other.PtransX), PtransY(other.PtransY), PRot(other.PRot), PDx(other.PDx), 
-		embedded(other.embedded), mark(other.mark), ch(other.ch), prefix(NULL), str(other.str)
+		embedded(other.embedded), mark(NULL), ch(other.ch), prefix(NULL), str(other.str)
 	{
 		glyph.more = NULL;
 		GlyphLayout *layout = &glyph;
@@ -138,6 +138,8 @@ public:
 			parstyle = new ParagraphStyle(*other.parstyle);
 		if (other.prefix)
 			prefix = new ScText(*other.prefix);
+		if (other.mark)
+			setNewMark(other.mark);
 	}
 	~ScText();
 
@@ -147,6 +149,8 @@ public:
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
 	bool isVisible(ScribusDoc *doc);
+private:
+	void setNewMark(Mark* mrk);
 };
 #endif
 

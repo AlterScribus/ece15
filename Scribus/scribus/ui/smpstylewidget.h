@@ -66,8 +66,6 @@ private:
 	void openEnhanced();
 	void closeEnhanced(bool show = false);
 
-	void openEnhanced();
-	void closeEnhanced(bool show = false);
 	void connectPESignals();
 	void disconnectPESignals();
 
