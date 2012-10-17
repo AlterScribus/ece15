@@ -275,7 +275,7 @@ void SMCStyleWidget::show(CharStyle *cstyle, QList<CharStyle> &cstyles, const QS
 		if (language_->itemText(i) == defLang || language_->itemText(i) == langMap_[defLang] || language_->itemText(i) == tl)
 // 		{
 			di = i;
-// 			qDebug() << "match on:" << di;
+//			qDebug() << "match on:" << di;
 // 		}
 	}
 

@@ -202,7 +202,7 @@ ObjType*  Digester::bottom(unsigned int offset)
 	std::cerr << "bottom(" << offset << ") of " << objects.size() << "\n";
 #endif
 	unsigned int count = objects.size();
-	assert (offset < count); 
+	assert (offset < count);
 	PRIVATE::chkcell<ObjType> (objects[offset]);
 	return static_cast<ObjType*>(objects[offset].ptr);
 }

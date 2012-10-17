@@ -581,7 +581,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
 	connect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
 	connect(pwidget_->ClearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
-	connect(pwidget_, SIGNAL(useParentClearOnApply()), this, SLOT(slotParentClearOnApply()));
+	connect(pwidget_->coaParentButton, SIGNAL(useParentClearOnApply()), this, SLOT(slotParentClearOnApply()));
 }
 
 void SMParagraphStyle::removeConnections()
@@ -929,15 +929,20 @@ void SMParagraphStyle::slotParentParaEffects()
 	{
 		selection_[i]->parentPeCharStyleName();
 		selection_[i]->parentParEffectOffset();
+		selection_[i]->parentParEffectIndent();
 		selection_[i]->parentHasDropCap();
 		selection_[i]->parentDropCapLines();
 		selection_[i]->parentHasBullet();
 		selection_[i]->parentBulletStr();
 		selection_[i]->parentHasNum();
+		selection_[i]->parentNumName();
 		selection_[i]->parentNumStyle();
 		selection_[i]->parentNumPrefix();
 		selection_[i]->parentNumSuffix();
 		selection_[i]->parentNumLevel();
+		selection_[i]->parentNumRestart();
+		selection_[i]->parentNumOther();
+		selection_[i]->parentNumHigher();
 	}
 	
 	if (!selectionIsDirty_)
@@ -1014,26 +1019,6 @@ void SMParagraphStyle::slotParEffectCharStyle(const QString& name)
 	else
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setPeCharStyleName(name);
-	
-	if (!selectionIsDirty_)
-	{
-		selectionIsDirty_ = true;
-		emit selectionDirty();
-	}
-}
-
-void SMParagraphStyle::slotBullet(bool isOn)
-{
-	for (int i = 0; i < selection_.count(); ++i)
-	{
-		selection_[i]->setHasBullet(isOn);
-		if (isOn)
-		{
-			selection_[i]->setBulletStr(pwidget_->bulletStrEdit_->currentText());
-			selection_[i]->setHasDropCap(false);
-			selection_[i]->setHasNum(false);
-		}
-	}
 	
 	if (!selectionIsDirty_)
 	{
@@ -1288,44 +1273,6 @@ void SMParagraphStyle::slotNumHigher(bool isOn)
 	}
 }
 
-void SMParagraphStyle::slotNumerationStyle(int numStyle)
-{
-	if (pwidget_->numStyleCombo->useParentValue())
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->parentNumStyle();
-	else
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setNumStyle(numStyle);
-	QList<CharStyle> cstyles;
-	for (int i = 0; i < cstyles_->count(); ++i)
-		cstyles << (*cstyles_)[i];
-	//pwidget_->showNumeration(selection_, cstyles, doc_->unitIndex());
-	if (!selectionIsDirty_)
-	{
-		selectionIsDirty_ = true;
-		emit selectionDirty();
-	}
-}
-
-void SMParagraphStyle::slotNumerationLevel(int level)
-{
-	if (pwidget_->numLevelSpin->useParentValue())
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->parentNumLevel();
-	else
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setNumLevel(level);
-	QList<CharStyle> cstyles;
-	for (int i = 0; i < cstyles_->count(); ++i)
-		cstyles << (*cstyles_)[i];
-	//pwidget_->showNumeration(selection_, cstyles, doc_->unitIndex());
-	if (!selectionIsDirty_)
-	{
-		selectionIsDirty_ = true;
-		emit selectionDirty();
-	}
-}
-
 void SMParagraphStyle::handleKeepLinesStart()
 {
 	if (pwidget_->keepLinesStart->useParentValue())
@@ -1411,7 +1358,6 @@ void SMParagraphStyle::slotParentWidowsOrphans()
 		selection_[i]->parentKeepLinesEnd();
 		selection_[i]->parentKeepLinesStart();
 	}
-	//pwidget_->showWidowsOrphans(selection_);
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1427,7 +1373,6 @@ void SMParagraphStyle::slotHyphenationMode(int mh)
 	else
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setHyphenationMode(mh);
-	//pwidget_->showHyphenationMode(selection_);
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1443,7 +1388,6 @@ void SMParagraphStyle::slotClearOnApply(bool isOn)
 	else
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setClearOnApply(isOn);
-	//pwidget_->showClearOnApply(selection_);
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;

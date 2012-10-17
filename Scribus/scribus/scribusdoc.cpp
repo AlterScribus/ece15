@@ -4588,10 +4588,10 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 
 		if (it->itemText.charStyle(e).effects() & ScStyle_SoftHyphenVisible)
 		{
-			uint gl = font->char2CMap(QChar('-'));
-			FPointArray gly(font->glyphOutline(gl));
-			if (!font->replacementName().isEmpty())
-				Really[font->replacementName()].insert(gl, gly);
+			uint gl = it->itemText.charStyle(e).font().char2CMap(QChar('-'));
+			FPointArray gly(it->itemText.charStyle(e).font().glyphOutline(gl));
+			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
+				Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
 		}
 		if ((it->itemText.charStyle(e).effects() & ScStyle_SmallCaps) || (it->itemText.charStyle(e).effects() & ScStyle_AllCaps))
 		{
@@ -4600,12 +4600,12 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 				chstr = chstr.toUpper();
 			chr = chstr.unicode();
 		}
-		if (font->canRender(chr))
+		if (it->itemText.charStyle(e).font().canRender(chr))
 		{
-			uint gl = font->char2CMap(chr);
-			gly = font->glyphOutline(gl);
-			if (!font->replacementName().isEmpty())
-				Really[font->replacementName()].insert(gl, gly);
+			uint gl = it->itemText.charStyle(e).font().char2CMap(chr);
+			gly = it->itemText.charStyle(e).font().glyphOutline(gl);
+			if (!it->itemText.charStyle(e).font().replacementName().isEmpty())
+				Really[it->itemText.charStyle(e).font().replacementName()].insert(gl, gly);
 		}
 	}
 }

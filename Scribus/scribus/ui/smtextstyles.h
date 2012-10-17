@@ -71,12 +71,12 @@ private slots:
 	// pstyle
 	void slotLineSpacingMode(int mode);
 	void slotLineSpacing();
-	void slotParentParaEffects();
-	void slotDropCap(bool isOn);
-	void slotDropCapLines(int lines);
 	void slotParaEffectOffset();
 	void slotParaEffectIndent(bool);
 	void slotParEffectCharStyle(const QString &name);
+	void slotParentParaEffects();
+	void slotDropCap(bool isOn);
+	void slotDropCapLines(int lines);
 	void slotBullet(bool isOn);
 	void slotBulletStr(const QString &str);
 	void slotNumeration(bool isOn);
@@ -90,6 +90,9 @@ private slots:
 	void slotNumRestart(int restart);
 	void slotNumOther(bool isOn);
 	void slotNumHigher(bool isOn);
+	void slotHyphenationMode(int mh);
+	void slotClearOnApply(bool isOn);
+	void slotParentClearOnApply();
 	void slotSpaceAbove();
 	void slotSpaceBelow();
 	void slotAlignment();
@@ -126,8 +129,6 @@ private slots:
 	void slotFont(QString s);
 	void slotParentChanged(const QString &parent);
 	void slotCharParentChanged(const QString &parent);
-    void slotClearOnApply(bool isOn);
-	void slotParentClearOnApply();
 };
 
 class SMCharacterStyle : public StyleItem

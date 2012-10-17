@@ -328,7 +328,7 @@ void PageItem_TextFrame::setShadow()
 		currentShadow = newShadow;
 	}
 }
-/*
+
 static void debugLineLayout(const StoryText& itemText, const LineSpec& line)
 {
 	QFile debugFile(QDir::homePath() + "/Desktop/debug_line.csv");
@@ -361,7 +361,7 @@ static void debugLineLayout(const StoryText& itemText, const LineSpec& line)
 
 	debugFile.close();
 }
-*/
+
 static void dumpIt(const ParagraphStyle& pstyle, QString indent = QString("->"))
 {
 	QString db = QString("%6%1/%2 @ %3: %4--%5 linespa%6: %7 align%8")
@@ -1620,35 +1620,8 @@ void PageItem_TextFrame::layout()
 				style = itemText.paragraphStyle(a);
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
-			if (hl->prefix && !style.hasBullet() && !style.hasNum())
-			{
-				hl->prefix->parstyle = NULL;
-				delete hl->prefix;
-				hl->prefix = NULL;
-			}
-			
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && !isNoteFrame() && (style.hasBullet() || style.hasNum()))
-			{
-				BulNumMode = true;
-				if (style.hasBullet())
-					prefixStr = style.bulletStr();
-				else if (style.hasNum())
-					prefixStr = "1. ";
-				hl->prefix = new ScText(*hl);
-				hl->prefix->embedded = 0;
-			}
-			else
-				BulNumMode = false;
-			if (hl->prefix && !BulNumMode)
-			{
-				delete hl->prefix;
-				hl->prefix = NULL;
-			}
 			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
 			const ScFace* font = &charStyle.font();
-			hlcsize10 = charStyle.fontSize() / 10.0;
-			scaleV = charStyle.scaleV() / 1000.0;
-			scaleH = charStyle.scaleH() / 1000.0;
 			QString prefixStr = QString();
 			BulNumMode = false;
 			
@@ -1686,7 +1659,6 @@ void PageItem_TextFrame::layout()
 				delete hl->prefix;
 				hl->prefix = NULL;
 			}
-			chstr = ExpandToken(a);
 
 			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
@@ -1706,7 +1678,6 @@ void PageItem_TextFrame::layout()
 					}
 				}
 			}
-
 			hlcsize10 = charStyle.fontSize() / 10.0;
 			scaleV = charStyle.scaleV() / 1000.0;
 			scaleH = charStyle.scaleH() / 1000.0;
@@ -1890,7 +1861,7 @@ void PageItem_TextFrame::layout()
 			else
 			{
 				kernVal = 0; // chs * charStyle.tracking() / 10000.0;
-				hl->setEffects(itemText.item(a)->effects() & ~ScStyle_StartOfLine);
+				hl->setEffects(hl->effects() & ~ScStyle_StartOfLine);
 			}
 			hl->glyph.yadvance = 0;
 			layoutGlyphs(*hl, chstr, hl->glyph);
@@ -2024,7 +1995,7 @@ void PageItem_TextFrame::layout()
 					//
 					for (int i = 0; i < chstrLen; ++i)
 					{
-						realCharHeight = qMax(realCharHeight, font->realCharHeight(chstr[i], charStyle.fontSize() / 10.0));
+						realCharHeight = qMax(realCharHeight, font->realCharHeight(chstr[i], hlcsize10));
 						realAsce = qMax(realAsce, font->realCharHeight(chstr[i], chsd / 10.0));
 						wide += font->realCharWidth(chstr[i], chsd / 10.0);
 					}
@@ -2108,7 +2079,7 @@ void PageItem_TextFrame::layout()
 						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
-						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
+						else if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
 						{
 							if (current.yPos <= lastLineY)
 								current.yPos = lastLineY +1;
@@ -2377,8 +2348,8 @@ void PageItem_TextFrame::layout()
 							maxDY = 0;
 						}
 					}
-					a = current.restartRow(false);
-					continue;
+					//a = current.restartRow(false);
+					//continue;
 				}
 			}
 			// right tab stuff
@@ -2748,7 +2719,7 @@ void PageItem_TextFrame::layout()
 					tabs.status = TabNONE;
 				}
 			}
-			if (!outs)
+			if (DropCmode && !outs)
 			{
 				DropCmode = false;
 				DropLinesCount = 0;
@@ -3093,7 +3064,7 @@ void PageItem_TextFrame::layout()
 			maxYAsc = qMax(maxYAsc, 0);
 			maxYDesc = (int) (current.yPos + realDesc);
 
-			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc, maxYDesc);
+			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc/100, maxYDesc/100);
 			current.finishLine(EndX);
 
 			if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
@@ -3726,8 +3697,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						}
 					}
 				}
-				if (!m_Doc->RePos)
-					CurX += hl->glyph.wide();
+				CurX += hl->glyph.wide();
 			}
 		}
 	//	else {
@@ -3805,7 +3775,10 @@ void PageItem_TextFrame::DrawObj_Post(ScPainter *p)
 							p->setStrokeMode(ScPainter::Solid);
 						}
 						else
+						{
+							no_stroke = true;
 							p->setStrokeMode(ScPainter::None);
+						}
 					}
 					else
 					{
@@ -3826,6 +3799,8 @@ void PageItem_TextFrame::DrawObj_Post(ScPainter *p)
 						p->setDash(DashValues, DashOffset);
 					p->strokePath();
 				}
+				else
+					no_stroke = true;
 			}
 			else
 			{
@@ -3867,7 +3842,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 		// added to prevent fat frame outline due to antialiasing and considering you can’t pass a cosmetic pen to scpainter - pm
 		double aestheticFactor(5.0);
 		double scpInv = 1.0 / (qMax(p->zoomFactor(), 1.0) * aestheticFactor);
-		if ((Frame) && (m_Doc->guidesPrefs().framesShown))
+		if ((Frame) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
 		{
 			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			if ((isBookmark) || (m_isAnnotation))
@@ -3917,6 +3892,16 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
 			p->drawRect(ofx, ofy, ofwh, ofwh);
+		}
+		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
+		{
+			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			if (m_Locked)
+				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setFillMode(ScPainter::None);
+			p->drawRect(0, 0, Width, Height);
+			no_fill = false;
+			no_stroke = false;
 		}
 		//if (m_Doc->selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
