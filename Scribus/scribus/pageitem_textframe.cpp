@@ -2348,8 +2348,8 @@ void PageItem_TextFrame::layout()
 							maxDY = 0;
 						}
 					}
-					//a = current.restartRow(false);
-					//continue;
+					a = current.restartRow(false);
+					continue;
 				}
 			}
 			// right tab stuff

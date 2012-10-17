@@ -240,7 +240,7 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 		if (newCurrent.hasParent())
 		{
 			const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newCurrent.parentStyle());
-			if (!parent->numName().isEmpty())
+			if (parent && !parent->numName().isEmpty())
 				numComboBox->setParentItem(numComboBox->findText(parent->numName()));
 			else
 				numComboBox->setParentItem(0);
@@ -264,7 +264,8 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 	if (newCurrent.hasParent())
 	{
 		const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newCurrent.parentStyle());
-		peIndent_->setParentValue(parent->parEffectIndent());
+		if (parent)
+			peIndent_->setParentValue(parent->parEffectIndent());
 	}
 
 	displayCharStyle(newCurrent.peCharStyleName());
