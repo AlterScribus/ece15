@@ -2364,16 +2364,22 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 	//write weld parameter
 	if (item->isWelded())
 	{
-		docu.writeAttribute("isWeldItem", 1);
+		bool isWelded = false;
 		docu.writeAttribute("WeldSource", qHash(item));
 		for (int i = 0 ; i <  item->weldList.count(); i++)
 		{
 			PageItem::weldingInfo wInf = item->weldList.at(i);
+			PageItem *pIt = wInf.weldItem;
+			if (pIt->isAutoNoteFrame())
+				continue;
+			isWelded = true;
 			docu.writeEmptyElement("WeldEntry");
 			docu.writeAttribute("Target", qHash(wInf.weldItem));
 			docu.writeAttribute("WX", wInf.weldPoint.x());
 			docu.writeAttribute("WY", wInf.weldPoint.y());
 		}
+		if (isWelded)
+			docu.writeAttribute("isWeldItem", 1);
 	}
 	if (item->asRegularPolygon())
 	{

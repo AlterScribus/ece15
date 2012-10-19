@@ -4598,10 +4598,10 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		}
 	}
 	currItem->setRotation( attrs.valueAsDouble("ROT", 0.0) );
-	currItem->setTextToFrameDist(attrs.valueAsDouble("EXTRA", 1.0),
-								attrs.valueAsDouble("REXTRA", 1.0),
-								attrs.valueAsDouble("TEXTRA", 1.0),
-								attrs.valueAsDouble("BEXTRA", 1.0));
+	currItem->setTextToFrameDist(attrs.valueAsDouble("EXTRA", 0.0),
+								attrs.valueAsDouble("REXTRA", 0.0),
+								attrs.valueAsDouble("TEXTRA", 0.0),
+								attrs.valueAsDouble("BEXTRA", 0.0));
 	currItem->setFirstLineOffset(static_cast<FirstLineOffsetPolicy>(attrs.valueAsInt("FLOP")));
 
 	currItem->PLineArt  = Qt::PenStyle(attrs.valueAsInt("PLINEART", 0));

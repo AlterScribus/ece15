@@ -10387,6 +10387,11 @@ void PageItem::unWeld()
 	{
 		weldingInfo wInf = weldList.at(a);
 		PageItem *pIt = wInf.weldItem;
+		if (pIt == NULL)
+		{
+			qDebug() << "unWeld - null pointer in weldList";
+			continue;
+		}
 		for (int b = 0 ; b < pIt->weldList.count(); b++)
 		{
 			weldingInfo wInf2 = pIt->weldList.at(b);
@@ -10394,7 +10399,7 @@ void PageItem::unWeld()
 			if (pIt2 == this)
 			{
 				pIt->weldList.removeAt(b);
-				if(undoManager->undoEnabled())
+				if(undoManager->undoEnabled() && !(isAutoNoteFrame() || pIt->isAutoNoteFrame()))
 				{
 					ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);
 					is->set("UNWELD_ITEM", "unweld_item");

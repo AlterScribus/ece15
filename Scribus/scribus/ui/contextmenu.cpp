@@ -190,10 +190,9 @@ void ContextMenu::createMenuItems_Selection()
 					addAction(m_AP->scrActions["editMark"]);
 			}
 		}
-		if (currItem->asTextFrame()->hasAnyMark())
+		if (!m_doc->marksList().isEmpty())
 		{
-			if (m_doc->appMode != modeEdit)
-				addSeparator();
+			addSeparator();
 			addAction(m_AP->scrActions["itemUpdateMarks"]);
 		}
 		if (m_actionList.contains("fileImportText"))
