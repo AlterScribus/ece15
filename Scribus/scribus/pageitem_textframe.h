@@ -156,10 +156,9 @@ public:
 	QList< QPair<int, int> > warnedList; //pairs of start-end for text indicated by Selection2
 
 	//for footnotes/endnotes
-	bool hasAnyMark() { return ((selectedMark(false) != NULL) || (selectedNoteMark(false) != NULL)); }
-	bool hasMark(NotesStyle* NS);
+	bool hasMark(NotesStyle* NS = NULL);
 	bool hasNoteFrame(NotesStyle* NS, bool inChain = false);
-	bool hasNoteFrame(PageItem_NoteFrame* nF) { return m_notesFramesMap.contains(nF); }
+	//bool hasNoteFrame(PageItem_NoteFrame* nF) { return m_notesFramesMap.contains(nF); }
 	void delAllNoteFrames(bool doUpdate = false);
 	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/

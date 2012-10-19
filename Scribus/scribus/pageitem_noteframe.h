@@ -49,6 +49,8 @@ public:
 
 	void restoreDeleteNoteText(SimpleState *state, bool isUndo);
 	void restoreInsertNoteText(SimpleState *state, bool isUndo);
+	//overloaded PageItem::unWeld()
+	void unWeld(bool doUndo=true);
 	
 private:
 	QList<TextNote*> l_notes;

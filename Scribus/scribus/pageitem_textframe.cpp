@@ -293,6 +293,8 @@ QRegion PageItem_TextFrame::calcAvailableRegion()
 			} // for all docItems
 		} // if(OnMasterPage.isEmpty()		
 	} // if(!Embedded)
+	else
+		qDebug() << "QRegion epmty";
 	return result;
 }
 
@@ -5113,7 +5115,6 @@ void PageItem_TextFrame::togleEditModeActions()
 		}
 	}
 	m_Doc->scMW()->scrActions["editMark"]->setEnabled(enableEditMark);
-	m_Doc->scMW()->scrActions["itemUpdateMarks"]->setEnabled(hasAnyMark());
 }
 
 void PageItem_TextFrame::applicableActions(QStringList & actionList)
@@ -5161,17 +5162,28 @@ QString PageItem_TextFrame::infoDescription()
 bool PageItem_TextFrame::hasMark(NotesStyle *NS)
 {
 	if (isNoteFrame())
-		return false;
+		return (asNoteFrame()->notesStyle() == NS);
+
 	if (NS == NULL)
-		return hasAnyMark();
-	for (int pos = firstInFrame(); pos <= lastInFrame(); ++pos)
 	{
-		ScText* hl = itemText.item(pos);
-		if (hl->hasMark())
-		{
-			TextNote* note = hl->mark->getNotePtr();
-			if (note != NULL && (note->notesStyle() == NS))
+		//find any mark
+		if (!m_notesFramesMap.isEmpty())
+			return true;
+		for (int i=firstInFrame(); i <= lastInFrame(); ++i)
+			if (itemText.item(i)->hasMark())
 				return true;
+	}
+	else
+	{
+		for (int pos = firstInFrame(); pos <= lastInFrame(); ++pos)
+		{
+			ScText* hl = itemText.item(pos);
+			if (hl->hasMark())
+			{
+				TextNote* note = hl->mark->getNotePtr();
+				if (note != NULL && (note->notesStyle() == NS))
+					return true;
+			}
 		}
 	}
 	return false;
@@ -5543,35 +5555,8 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	while (mrk != NULL)
 	{
 		Q_ASSERT(!mrk->isNoteType());
-		if (doUndo && UndoManager::undoEnabled())
-		{
-			ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
-			if (mrk->isUnique())
-				ims->set("MARK", QString("delete"));
-			else
-				ims->set("MARK", QString("eraseFromText"));
-			ims->set("ETEA", mrk->label);
-			ims->set("label", mrk->label);
-			ims->set("type", (int) mrk->getType());
-			ims->set("strtxt", mrk->getString());
-			PageItem* master = this;
-			if (master->isNoteFrame())
-				ims->set("noteframeName", master->getUName());
-			else
-				ims->insertItem("inItem", master);
-			ims->set("at", m_Doc->findMarkCPos(mrk, master));
-			if (mrk->isType(MARK2MarkType))
-			{
-				QString dName;
-				MarkType dType;
-				mrk->getMark(dName, dType);
-				ims->set("dName", dName);
-				ims->set("dType", (int) dType);
-			}
-			if (mrk->isType(MARK2ItemType))
-				ims->insertItem("itemPtr", mrk->getItemPtr());
-			undoManager->action(m_Doc, ims);
-		}
+		if (doUndo)
+			m_Doc->setUndoDelMark(mrk);
 		m_Doc->eraseMark(mrk, true, this);
 		mrk = selectedMark(true);
 		++num;

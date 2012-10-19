@@ -11449,7 +11449,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 	selectedItemCount = delItems.count();
 
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled() && (selectedItemCount > 1 || currItem->isNoteFrame()))
+	if (UndoManager::undoEnabled()) //always create transaction or check if item is reference for any mark or contains any mark or is welded etc
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Group + "/" + Um::Selection, Um::IGroup,
 																			  Um::Delete, tooltip, Um::IDelete));
 
@@ -11464,7 +11464,10 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 			Mark* m = m_docMarksList.at(a);
 			Q_ASSERT(m != NULL);
 			if (m->isType(MARK2ItemType) && (m->getItemPtr() == currItem))
-				m->setItemPtr(NULL);
+			{
+				setUndoDelMark(m);
+				eraseMark(m, true, NULL, true);
+			}
 		}
 		if (currItem->isNoteFrame())
 		{
@@ -11486,6 +11489,8 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			if (currItem->asTextFrame())
 			{
+				currItem->itemText.selectAll();
+				currItem->asTextFrame()->removeMarksFromText(true);
 				currItem->asTextFrame()->delAllNoteFrames(false);
 				currItem->dropLinks();
 			}
@@ -16953,8 +16958,8 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 			m->getMark(l, t);
 			if (mrk == getMarkDefinied(l, t))
 			{
-				m->setMark(NULL);
-				m->setString("");
+				setUndoDelMark(m);
+				eraseMark(m, true, NULL, true);
 			}
 		}
 	}
@@ -17986,14 +17991,17 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 
 	nF->dropLinks();
 	if (nF->isWelded())
-		nF->unWeld();
+		nF->unWeld(!nF->isAutoNoteFrame());
 	//delete marks pointed to that item
 	for (int a=0; a < m_docMarksList.count(); ++a)
 	{
 		Mark* m = m_docMarksList.at(a);
 		Q_ASSERT(m != NULL);
 		if (m->isType(MARK2ItemType) && (m->getItemPtr() == nF))
-			m->setItemPtr(NULL);
+		{
+			setUndoDelMark(m);
+			eraseMark(m,true);
+		}
 	}
 	m_Selection->delaySignalsOn();
 	if (m_Selection->findItem(nF)!=-1)

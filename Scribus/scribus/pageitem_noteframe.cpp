@@ -383,6 +383,31 @@ void PageItem_NoteFrame::restoreInsertNoteText(SimpleState *state, bool isUndo)
 	updateNotesText();
 }
 
+void PageItem_NoteFrame::unWeld(bool doUndo)
+{
+	if (doUndo)
+		PageItem::unWeld();
+	else
+	{
+		for (int a = 0 ; a < weldList.count(); a++)
+		{
+			weldingInfo wInf = weldList.at(a);
+			PageItem *pIt = wInf.weldItem;
+			for (int b = 0 ; b < pIt->weldList.count(); b++)
+			{
+				weldingInfo wInf2 = pIt->weldList.at(b);
+				PageItem *pIt2 = wInf2.weldItem;
+				if (pIt2 == this)
+				{
+					pIt->weldList.removeAt(b);
+					break;
+				}
+			}
+		}
+		weldList.clear();
+	}
+}
+
 int PageItem_NoteFrame::findNoteCpos(TextNote* note)
 {
 	//find position of note in note`s frame

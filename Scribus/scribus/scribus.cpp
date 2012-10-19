@@ -875,7 +875,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["itemEditWeld"], "Item", false);
 
 	scrMenuMgr->addMenuItem(scrActions["editMark"], "Item", false);
-	//scrMenuMgr->addMenuItem(scrActions["itemUpdateMarks"], "Item", false);
+	scrMenuMgr->addMenuItem(scrActions["itemUpdateMarks"], "Item", true);
 
 	//Insert menu
 	scrMenuMgr->createMenu("Insert", ActionManager::defaultMenuNameEntryTranslated("Insert"));
@@ -1181,7 +1181,6 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 {
 	Q_ASSERT(currItem->isTextFrame());
 	scrActions["editMark"]->setEnabled(false);
-	scrActions["itemUpdateMarks"]->setEnabled(false);
 	if (currItem->itemText.length() != 0)
 	{
 //		int ChPos = qMin(currItem->CPos, static_cast<int>(currItem->itemText.length()-1));
@@ -1208,7 +1207,6 @@ void ScribusMainWindow::setTBvals(PageItem *currItem)
 			else
 				scrActions["editMark"]->setEnabled(false);
 		}
-		scrActions["itemUpdateMarks"]->setEnabled(currItem->asTextFrame()->hasAnyMark());
 	}
 }
 
@@ -2952,7 +2950,6 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["toolsCopyProperties"]->setEnabled(true);
 		scrActions["toolsEditWithStoryEditor"]->setEnabled(true);
 		scrActions["insertSampleText"]->setEnabled(true);
-		//scrActions["itemUpdateMarks"]->setEnabled(currItem->asTextFrame()->hasAnyMark());
 		scrMenuMgr->setMenuEnabled("InsertMark",true);
 
 		if ((currItem->nextInChain() != 0) || (currItem->prevInChain() != 0))
@@ -5246,6 +5243,19 @@ void ScribusMainWindow::slotEditCopy()
 		{
 			if ((currItem->isSingleSel) && (currItem->isGroup()))
 				return;
+			//do not copy notes frames
+			if (doc->m_Selection->count() ==1 && currItem->isNoteFrame())
+				return;
+			//deselect notesframes
+			Selection tempSelection(*(doc->m_Selection));
+			for (int i = 0; i < doc->m_Selection->count(); ++i)
+			{
+				if (doc->m_Selection->itemAt(i)->isNoteFrame())
+					tempSelection.removeItem(doc->m_Selection->itemAt(i));
+			}
+			if (tempSelection.count() < doc->m_Selection->count())
+				*(doc->m_Selection) = tempSelection;
+
 			ScriXmlDoc ss;
 			QString BufferS = ss.WriteElem(doc, doc->m_Selection);
 			if (!internalCopy)
@@ -10494,7 +10504,6 @@ void ScribusMainWindow::enableTextActions(QMap<QString, QPointer<ScrAction> > *a
 		scrActions["insertMarkNote"]->setEnabled(false);
 		scrActions["editMark"]->setEnabled(false);
 	}
-	scrActions["itemUpdateMarks"]->setEnabled(enabled);
 }
 
 void ScribusMainWindow::updateGUIAfterPagesChanged()
