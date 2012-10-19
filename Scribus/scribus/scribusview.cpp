@@ -4053,7 +4053,24 @@ void ScribusView::TextToPath()
 		}
 		if (newGroupedItems.count() > 1)
 		{
-			int z = Doc->itemAdd(PageItem::Group, PageItem::Rectangle, currItem->xPos(), currItem->yPos(), currItem->width(), currItem->height(), 0, CommonStrings::None, CommonStrings::None, true);
+			double minx =  std::numeric_limits<double>::max();
+			double miny =  std::numeric_limits<double>::max();
+			double maxx = -std::numeric_limits<double>::max();
+			double maxy = -std::numeric_limits<double>::max();
+			for (int ep = 0; ep < newGroupedItems.count(); ++ep)
+			{
+				double x1, x2, y1, y2;
+				newGroupedItems.at(ep)->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+				minx = qMin(minx, x1);
+				miny = qMin(miny, y1);
+				maxx = qMax(maxx, x2);
+				maxy = qMax(maxy, y2);
+			}
+			double gx = minx;
+			double gy = miny;
+			double gw = maxx - minx;
+			double gh = maxy - miny;
+			int z = Doc->itemAdd(PageItem::Group, PageItem::Rectangle, gx, gy, gw, gh, 0, CommonStrings::None, CommonStrings::None, true);
 			PageItem *gItem = Doc->Items->takeAt(z);
 			Doc->groupObjectsToItem(gItem, newGroupedItems);
 			gItem->Parent = currItem->Parent;
