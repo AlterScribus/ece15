@@ -167,7 +167,7 @@ bool ImportCgmPlugin::import(QString fileName, int flags)
 
 QImage ImportCgmPlugin::readThumbnail(const QString& fileName)
 {
-	//bool wasUndo = false;
+	bool wasUndo = false;
 	if( fileName.isEmpty() )
 		return QImage();
 	UndoManager::instance()->setUndoEnabled(false);

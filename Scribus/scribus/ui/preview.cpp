@@ -319,7 +319,7 @@ PPreview::PPreview( QWidget* parent, ScribusView *vin, ScribusDoc *docu, QString
 	Layout6->addWidget(scaleBox);
 	QSpacerItem* spacer = new QSpacerItem( 2, 2, QSizePolicy::Expanding, QSizePolicy::Minimum );
 	Layout6->addItem( spacer );
-	PGSel = new PageSelector(this, doc);
+	PGSel = new PageSelector(this, doc->DocPages.count());
 	PGSel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	Layout6->addWidget(PGSel);
 	QSpacerItem* spacer2 = new QSpacerItem( 2, 2, QSizePolicy::Expanding, QSizePolicy::Minimum );
