@@ -27,7 +27,6 @@ for which a new license (GPL+exception) is in place.
 
 #include <QString>
 #include <QStringList>
-#include "langdef.h"
 #include "scribusapi.h"
 
 typedef std::pair<QString, QString> langPair;
