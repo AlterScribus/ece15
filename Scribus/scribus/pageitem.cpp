@@ -1174,14 +1174,14 @@ void PageItem::drawOverflowMarker(ScPainter *p)
 
 	p->save();
 
-	p->setPen(color, 0.5 / p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+	p->setPen(color, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 	p->setPenOpacity(1.0);
 	p->setBrush(Qt::white);
 	p->setBrushOpacity(1.0);
 	p->setFillMode(ScPainter::Solid);
-	p->drawRect(left, top, sideLength, sideLength);
-	p->drawLine(QPointF(left, top), QPointF(right, bottom));
-	p->drawLine(QPointF(left, bottom), QPointF(right, top));
+	p->drawSharpRect(left, top, sideLength, sideLength);
+	p->drawSharpLine(QPointF(left, top), QPointF(right, bottom));
+	p->drawSharpLine(QPointF(left, bottom), QPointF(right, top));
 
 	p->restore();
 }
@@ -1988,11 +1988,10 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 	p->rotate(Rot);
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
-		double aestheticFactor(5.0);
-		double scpInv = 1.0 / (qMax(p->zoomFactor(), 1.0) * aestheticFactor);
+		double scpInv = 0;
 		if (!isGroup())
 		{
-			if ((Frame) && (m_Doc->guidesPrefs().framesShown) && ((itemType() == ImageFrame) || (itemType() == LatexFrame) || (itemType() == OSGFrame) || (itemType() == PathText)))
+			if ((Frame) && (m_Doc->guidesPrefs().framesShown) && ((itemType() == ImageFrame) || (itemType() == LatexFrame) || (itemType() == OSGFrame) || (itemType() == PathText)) && (no_stroke))
 			{
 				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 				if ((isBookmark) || (m_isAnnotation))
@@ -2024,21 +2023,21 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 				else
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-					p->setupPolygon(&PoLine, false);
+					p->setupSharpPolygon(&PoLine, false);
 	#else
-					p->setupPolygon(&PoLine);
+					p->setupSharpPolygon(&PoLine);
 	#endif
 				p->strokePath();
 			}
 		}
 		if ((m_Doc->guidesPrefs().framesShown) && textFlowUsesContourLine() && (ContourLine.size() != 0))
 		{
-			p->setPen(Qt::darkGray, 1.0 / qMax(p->zoomFactor(), 1.0), Qt::DotLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::darkGray, 0, Qt::DotLine, Qt::FlatCap, Qt::MiterJoin);
 // Ugly Hack to fix rendering problems with cairo >=1.5.10 && <1.8.0 follows
 	#if ((CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 5, 10)) && (CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 8, 0)))
-			p->setupPolygon(&ContourLine, false);
+			p->setupSharpPolygon(&ContourLine, false);
 	#else
-			p->setupPolygon(&ContourLine);
+			p->setupSharpPolygon(&ContourLine);
 	#endif
 			p->strokePath();
 		}
@@ -2064,7 +2063,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		}
 		if ((m_Doc->guidesPrefs().layerMarkersShown) && (m_Doc->layerCount() > 1) && (!m_Doc->layerOutline(LayerID)) && (isGroup()) && (!m_Doc->drawAsPreview))
 		{
-			p->setPen(Qt::black, 0.5/ p->zoomFactor(), Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setPenOpacity(1.0);
 			p->setBrush(m_Doc->layerMarker(LayerID));
 			p->setBrushOpacity(1.0);
@@ -2072,7 +2071,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 			double ofwh = 10;
 			double ofx = Width - ofwh/2;
 			double ofy = Height - ofwh*3;
-			p->drawRect(ofx, ofy, ofwh, ofwh);
+			p->drawSharpRect(ofx, ofy, ofwh, ofwh);
 		}
 		if (no_fill && no_stroke && m_Doc->guidesPrefs().framesShown)
 		{
@@ -2080,7 +2079,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 			if (m_Locked)
 				p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameLockColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setFillMode(ScPainter::None);
-			p->drawRect(0, 0, Width, Height);
+			p->drawSharpRect(0, 0, Width, Height);
 			no_fill = false;
 			no_stroke = false;
 		}

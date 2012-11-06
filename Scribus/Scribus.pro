@@ -2237,4 +2237,19 @@ OTHER_FILES += \
     scribus/plugins/scripter/api_Scripter.dialogs.mainWindow.api \
     scribus/plugins/scripter/api_Scripter.dialogs.layers.api \
     scribus/plugins/scripter/api_Scripter.activeDocument.activePage.items.api \
-    scribus/CMakeLists.txt
+    scribus/CMakeLists.txt \
+    scribus/plugins/scriptplugin/scripts/TODO \
+    scribus/plugins/scriptplugin/scripts/ReadMe \
+    scribus/plugins/scriptplugin/scripts/NEWS \
+    scribus/plugins/scriptplugin/scripts/InfoBox.py \
+    scribus/plugins/scriptplugin/scripts/importcsv2table.py \
+    scribus/plugins/scriptplugin/scripts/FontSample.py \
+    scribus/plugins/scriptplugin/scripts/DirectImageImport.py \
+    scribus/plugins/scriptplugin/scripts/csv2color.py \
+    scribus/plugins/scriptplugin/scripts/ColorChart.py \
+    scribus/plugins/scriptplugin/scripts/color2csv.py \
+    scribus/plugins/scriptplugin/scripts/CMakeLists.txt \
+    scribus/plugins/scriptplugin/scripts/ChangeLog \
+    scribus/plugins/scriptplugin/scripts/CalendarWizard.py \
+    scribus/plugins/scriptplugin/scripts/Autoquote.py \
+    scribus/plugins/scriptplugin/scripts/clearTemplate.py

@@ -13,6 +13,7 @@ for which a new license (GPL+exception) is in place.
 #include "colorcombo.h"
 #include "commonstrings.h"
 #include "fontcombo.h"
+#include "langmgr.h"
 #include "ui/scmwmenumanager.h"
 #include "prefsmanager.h"
 #include "propertiespalette.h"
@@ -70,7 +71,9 @@ void SMParagraphStyle::setCurrentDoc(ScribusDoc *doc)
 	{
 		if (pwidget_)
 		{
-			pwidget_->cpage->fillLangCombo(doc_->scMW()->LangTransl);
+			QStringList languageList;
+			LanguageManager::instance()->fillInstalledHyphStringList(&languageList);
+			pwidget_->cpage->fillLangComboFromList(languageList);
 			pwidget_->cpage->fillColorCombo(doc_->PageColors);
 			pwidget_->cpage->fontFace_->RebuildList(doc_);
 			if (unitRatio_ != doc_->unitRatio())
@@ -137,7 +140,7 @@ void SMParagraphStyle::selected(const QStringList &styleNames)
 {
 	if (!doc_)
 		return;
-	
+
 	selection_.clear();
 	selectionIsDirty_ = false;
 	removeConnections(); // we don't want to record changes during style setup
@@ -150,7 +153,7 @@ void SMParagraphStyle::selected(const QStringList &styleNames)
 		pstyles << tmpStyles_[i];
 	for (int i = 0; i < cstyles_->count(); ++i)
 		cstyles << (*cstyles_)[i];
-	
+
 	int index;
 	for (int i = 0; i < styleNames.count(); ++i)
 	{
@@ -161,7 +164,7 @@ void SMParagraphStyle::selected(const QStringList &styleNames)
 		if (index > -1)
 			selection_.append(&tmpStyles_[index]);
 	}
-	
+
 	pwidget_->show(selection_, pstyles, cstyles, doc_->unitIndex(), PrefsManager::instance()->appPrefs.hyphPrefs.Language);
 	
 	setupConnections();
@@ -1713,14 +1716,9 @@ void SMParagraphStyle::slotLanguage()
 			selection_[i]->charStyle().resetLanguage();
 	else
 	{
-		for (it = doc_->scMW()->LangTransl.begin(); it != doc_->scMW()->LangTransl.end(); ++it)
-		{
-			if (it.value() == pwidget_->cpage->language_->currentText())
-			{
-				language = it.key();
-				break;
-			}
-		}
+		QString la=LanguageManager::instance()->getAbbrevFromLang(pwidget_->cpage->language_->currentText(), true, false);
+		if (!la.isEmpty())
+			language=la;
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->charStyle().setLanguage(language);
 	}
@@ -1968,7 +1966,9 @@ void SMCharacterStyle::setCurrentDoc(ScribusDoc *doc)
 	{
 		if (page_)
 		{
-			page_->fillLangCombo(doc_->scMW()->LangTransl);
+			QStringList languageList;
+			LanguageManager::instance()->fillInstalledHyphStringList(&languageList);
+			page_->fillLangComboFromList(languageList);
 			page_->fillColorCombo(doc_->PageColors);
 			page_->fontFace_->RebuildList(doc_);
 		}
@@ -2635,19 +2635,12 @@ void SMCharacterStyle::slotLanguage()
 			selection_[i]->resetLanguage();
 	else
 	{
-		for (it = doc_->scMW()->LangTransl.begin(); it != doc_->scMW()->LangTransl.end(); ++it)
-		{
-			if (it.value() == page_->language_->currentText())
-			{
-				language = it.key();
-				break;
-			}
-		}
+		QString tl(LanguageManager::instance()->getAbbrevFromLang(page_->language_->currentText(), true));
+		if (!tl.isEmpty())
+			language=tl;
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setLanguage(language);
 	}
-	
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2670,8 +2663,6 @@ void SMCharacterStyle::slotScaleH()
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setScaleH(qRound(value));
 	}
-	
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2694,8 +2685,6 @@ void SMCharacterStyle::slotScaleV()
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setScaleV(qRound(value));
 	}
-	
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2718,7 +2707,6 @@ void SMCharacterStyle::slotTracking()
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setTracking(qRound(value));
 	}
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2741,7 +2729,6 @@ void SMCharacterStyle::slotWordTracking()
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setWordTracking(value);
 	}
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2764,7 +2751,6 @@ void SMCharacterStyle::slotBaselineOffset()
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setBaselineOffset(qRound(value));
 	}
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2784,7 +2770,6 @@ void SMCharacterStyle::slotFont(QString s)
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setFont(sf);
 	}
-	
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -2821,10 +2806,10 @@ void SMCharacterStyle::slotParentChanged(const QString &parent)
 		}
 		sel << selection_[i]->name();
 	}
-	
+
 	if (parentLoop)
 		QMessageBox::warning(this->widget(), CommonStrings::trWarning, tr("Setting that style as parent would create an infinite loop."), CommonStrings::tr_OK);
-	
+
 	selected(sel);
 	
 	if (!selectionIsDirty_)

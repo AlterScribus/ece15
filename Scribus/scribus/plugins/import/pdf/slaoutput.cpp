@@ -1158,6 +1158,7 @@ void SlaOutputDev::restoreState(GfxState *state)
 					m_Elements->removeAll(ite);
 					m_doc->Items->removeAll(ite);
 					m_groupStack.top().Items.removeAll(ite);
+					delete ite;
 				}
 			}
 			if (m_clipStack.count() == 0)
@@ -1187,16 +1188,16 @@ void SlaOutputDev::endTransparencyGroup(GfxState *state)
 		tmpSel->clear();
 		if (gElements.Items.count() > 0)
 		{
-			for (int dre = 0; dre < gElements.Items.count(); ++dre)
-			{
-				tmpSel->addItem(gElements.Items.at(dre), true);
-				m_Elements->removeAll(gElements.Items.at(dre));
-			}
-			PageItem *ite = m_doc->groupObjectsSelection(tmpSel);
-			ite->setFillTransparency(1.0 - state->getFillOpacity());
-			ite->setFillBlendmode(getBlendMode(state));
 			if (gElements.forSoftMask)
 			{
+				for (int dre = 0; dre < gElements.Items.count(); ++dre)
+				{
+					tmpSel->addItem(gElements.Items.at(dre), true);
+					m_Elements->removeAll(gElements.Items.at(dre));
+				}
+				PageItem *ite = m_doc->groupObjectsSelection(tmpSel);
+				ite->setFillTransparency(1.0 - state->getFillOpacity());
+				ite->setFillBlendmode(getBlendMode(state));
 				ScPattern pat = ScPattern();
 				pat.setDoc(m_doc);
 				m_doc->DoDrawing = true;
@@ -1219,13 +1220,25 @@ void SlaOutputDev::endTransparencyGroup(GfxState *state)
 			}
 			else
 			{
+				PageItem *ite;
+				for (int dre = 0; dre < gElements.Items.count(); ++dre)
+				{
+					tmpSel->addItem(gElements.Items.at(dre), true);
+					m_Elements->removeAll(gElements.Items.at(dre));
+				}
+				if (gElements.Items.count() != 1)
+					ite = m_doc->groupObjectsSelection(tmpSel);
+				else
+					ite = gElements.Items.first();
+				ite->setFillTransparency(1.0 - state->getFillOpacity());
+				ite->setFillBlendmode(getBlendMode(state));
 				for (int as = 0; as < tmpSel->count(); ++as)
 				{
 					m_Elements->append(tmpSel->itemAt(as));
 				}
+				if (m_groupStack.count() != 0)
+					applyMask(ite);
 			}
-			if (m_groupStack.count() != 0)
-				applyMask(ite);
 		}
 		if (m_groupStack.count() != 0)
 		{
@@ -1274,6 +1287,8 @@ void SlaOutputDev::clip(GfxState *state)
 	QString output = convertPath(state->getPath());
 	FPointArray out;
 	out.parseSVG(output);
+	if (!pathIsClosed)
+		out.svgClosePath();
 	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 	out.map(m_ctm);
 	double xmin, ymin, xmax, ymax;
@@ -1284,7 +1299,9 @@ void SlaOutputDev::clip(GfxState *state)
 	PageItem *ite = m_doc->Items->at(z);
 	FPoint wh(getMinClipF(&out));
 	out.translate(-wh.x(), -wh.y());
-	ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
+	FPoint dim = out.WidthHeight();
+	if (!((dim.x() == 0.0) || (dim.y() == 0.0)))		// avoid degenerate clipping paths
+		ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
 	ite->setFillEvenOdd(false);
@@ -1299,7 +1316,6 @@ void SlaOutputDev::clip(GfxState *state)
 		applyMask(ite);
 	}
 	clipEntry clp;
-	clp.ClipCoords = out.copy();
 	clp.ClipItem = ite;
 	clp.grStackDepth = grStackDepth;
 	m_clipStack.push(clp);
@@ -1315,6 +1331,8 @@ void SlaOutputDev::eoClip(GfxState *state)
 	QString output = convertPath(state->getPath());
 	FPointArray out;
 	out.parseSVG(output);
+	if (!pathIsClosed)
+		out.svgClosePath();
 	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 	out.map(m_ctm);
 	double xmin, ymin, xmax, ymax;
@@ -1325,7 +1343,9 @@ void SlaOutputDev::eoClip(GfxState *state)
 	PageItem *ite = m_doc->Items->at(z);
 	FPoint wh(getMinClipF(&out));
 	out.translate(-wh.x(), -wh.y());
-	ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
+	FPoint dim = out.WidthHeight();
+	if (!((dim.x() == 0.0) || (dim.y() == 0.0)))		// avoid degenerate clipping paths
+		ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
 	ite->setFillEvenOdd(true);
@@ -1340,7 +1360,6 @@ void SlaOutputDev::eoClip(GfxState *state)
 		applyMask(ite);
 	}
 	clipEntry clp;
-	clp.ClipCoords = out.copy();
 	clp.ClipItem = ite;
 	clp.grStackDepth = grStackDepth;
 	m_clipStack.push(clp);
@@ -1389,19 +1408,54 @@ void SlaOutputDev::stroke(GfxState *state)
 			ite->PoLine = out.copy();
 			ite->ClipEdited = true;
 			ite->FrameType = 3;
-			ite->setLineShade(shade);
-			ite->setLineTransparency(1.0 - state->getStrokeOpacity());
-			ite->setLineBlendmode(getBlendMode(state));
-			ite->setLineEnd(PLineEnd);
-			ite->setLineJoin(PLineJoin);
-			ite->setDashes(DashValues);
-			ite->setDashOffset(DashOffset);
 			ite->setWidthHeight(wh.x(),wh.y());
-			ite->setTextFlowMode(PageItem::TextFlowDisabled);
 			m_doc->AdjustItemSize(ite);
-			m_Elements->append(ite);
-			if (m_groupStack.count() != 0)
-				m_groupStack.top().Items.append(ite);
+			if (m_Elements->count() != 0)
+			{
+				PageItem* lItem = m_Elements->last();
+				if ((lItem->lineColor() == CommonStrings::None) && (lItem->PoLine == ite->PoLine))
+				{
+					lItem->setLineColor(CurrColorStroke);
+					lItem->setLineWidth(state->getTransformedLineWidth());
+					lItem->setLineShade(shade);
+					lItem->setLineTransparency(1.0 - state->getStrokeOpacity());
+					lItem->setLineBlendmode(getBlendMode(state));
+					lItem->setLineEnd(PLineEnd);
+					lItem->setLineJoin(PLineJoin);
+					lItem->setDashes(DashValues);
+					lItem->setDashOffset(DashOffset);
+					lItem->setTextFlowMode(PageItem::TextFlowDisabled);
+					m_doc->Items->removeAll(ite);
+				}
+				else
+				{
+					ite->setLineShade(shade);
+					ite->setLineTransparency(1.0 - state->getStrokeOpacity());
+					ite->setLineBlendmode(getBlendMode(state));
+					ite->setLineEnd(PLineEnd);
+					ite->setLineJoin(PLineJoin);
+					ite->setDashes(DashValues);
+					ite->setDashOffset(DashOffset);
+					ite->setTextFlowMode(PageItem::TextFlowDisabled);
+					m_Elements->append(ite);
+					if (m_groupStack.count() != 0)
+						m_groupStack.top().Items.append(ite);
+				}
+			}
+			else
+			{
+				ite->setLineShade(shade);
+				ite->setLineTransparency(1.0 - state->getStrokeOpacity());
+				ite->setLineBlendmode(getBlendMode(state));
+				ite->setLineEnd(PLineEnd);
+				ite->setLineJoin(PLineJoin);
+				ite->setDashes(DashValues);
+				ite->setDashOffset(DashOffset);
+				ite->setTextFlowMode(PageItem::TextFlowDisabled);
+				m_Elements->append(ite);
+				if (m_groupStack.count() != 0)
+					m_groupStack.top().Items.append(ite);
+			}
 		}
 	}
 }
