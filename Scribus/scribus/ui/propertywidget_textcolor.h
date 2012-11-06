@@ -24,13 +24,12 @@ public:
 	~PropertyWidget_TextColor() {};
 
 	void updateColorList();
+	void connectSignals();
+	void disconnectSignals();
 
 protected:
 	PageItem *         m_item;
 	ScribusMainWindow* m_ScMW;
-
-	void connectSignals();
-	void disconnectSignals();
 
 	void configureWidgets(void);
 	void setCurrentItem(PageItem *i);

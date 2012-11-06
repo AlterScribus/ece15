@@ -21,7 +21,9 @@ class PropertyWidget_PathText : public QFrame, public Ui::PropertyWidget_PathTex
 
 public:
 	PropertyWidget_PathText(QWidget* parent);
-	~PropertyWidget_PathText() {};
+	~PropertyWidget_PathText() {}
+	void connectSignals();
+	void disconnectSignals();
 
 protected:
 	PageItem *         m_item;
@@ -29,9 +31,6 @@ protected:
 
 	double m_unitRatio;
 	int    m_unitIndex;
-
-	void connectSignals();
-	void disconnectSignals();
 
 	void configureWidgets(void);
 	void setCurrentItem(PageItem *item);
