@@ -190,6 +190,7 @@ public:
 	void setHyphAutoCheck(bool b) { docPrefsData.hyphPrefs.AutoCheck=b; }
 	bool autoSave() const { return docPrefsData.docSetupPrefs.AutoSave; }
 	int autoSaveTime() const  { return docPrefsData.docSetupPrefs.AutoSaveTime; }
+	bool autoSaveClockDisplay() const  { return docPrefsData.displayPrefs.showAutosaveClockOnCanvas; }
 	void setAutoSave(bool b) { docPrefsData.docSetupPrefs.AutoSave=b; }
 	void setAutoSaveTime(int i) { docPrefsData.docSetupPrefs.AutoSaveTime=i; }
 	//FIXME (maybe) :non const, the loaders make a mess here
@@ -937,7 +938,7 @@ public:
 	 * @brief Add a section to the document sections list
 	 * Set number to -1 to add in the default section if the map is empty
 	 */
-	void addSection(const int number=0, const QString& name=QString::null, const uint fromindex=0, const uint toindex=0, const  DocumentSectionType type=Type_1_2_3, const uint sectionstartindex=0, const bool reversed=false, const bool active=true, const QChar fillChar=QChar(), int fieldWidth=0);
+	void addSection(const int number=0, const QString& name=QString::null, const uint fromindex=0, const uint toindex=0, const  NumFormat type=Type_1_2_3, const uint sectionstartindex=0, const bool reversed=false, const bool active=true, const QChar fillChar=QChar(), int fieldWidth=0);
 	/**
 	 * @brief Delete a section from the document sections list
 	 */
@@ -1177,6 +1178,8 @@ public:
 	void beginUpdate();
 	void endUpdate();
 	int addToInlineFrames(PageItem *item);
+	void removeInlineFrame(int fIndex);
+	void checkItemForFrames(PageItem *it, int fIndex);
 
 protected:
 	void addSymbols();
@@ -1393,6 +1396,7 @@ signals:
 	//! Signal a change in rotation mode (aka basepoint)
 	void rotationMode(int);
 	void updateEditItem();
+	void updateAutoSaveClock();
 	
 public slots:
 	void selectionChanged();
@@ -1748,7 +1752,7 @@ private:
 	//renumber notes with given notes style for given frame starting from number num
 	void updateItemNotesNums(PageItem_TextFrame *frame, NotesStyle* nStyle, int &num);
 	//update notesframes text styles
-	void updateItemNotesFramesStyles(PageItem *item);
+	void updateItemNotesFramesStyles(PageItem *item, ParagraphStyle newStyle);
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
@@ -1764,6 +1768,7 @@ public slots:
 	void itemSelection_UnWeld();
 	void itemSelection_Weld();
 	void itemSelection_EditWeld();
+	void restartAutoSaveTimer();
 
 //auto-numerations
 public:

@@ -75,9 +75,10 @@ public:
 	void setNewPos(int oldPos, int len, int dir);
 	void ExpandSel(int dir, int oldPos);
 	void deselectAll();
-
+	
 	//for speed up updates when changed was only one frame from chain
-	virtual void invalidateLayout(bool wholeChain = false);
+	virtual void invalidateLayout(bool wholeChain);
+	using PageItem::invalidateLayout;
 	virtual void layout();
 	//return true if all previouse frames from chain are valid (including that one)
 	bool isValidChainFromBegin();
@@ -143,18 +144,11 @@ private:
 	QMap<int,SEColumn> SEColumnsMap; //contains start/end data for columns in frame
 	bool setColumnSE(int col, int Cstart, int Cend); // sets start/end positions for column col in QMap startendColumn field
 	bool isWarnedText(int pos);
-
+	
 private slots:
 	void slotInvalidateLayout();
 
 public:
-	ScText * firstVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
-	
-	int getColumnSE(int col, bool start); // return start or end position for column col from QMap startendColumn field, start default value is true
-	void setTextFrameHeight();
-	//preflight warnings
-	QList< QPair<int, int> > warnedList; //pairs of start-end for text indicated by Selection2
-
 	//for footnotes/endnotes
 	bool hasMark(NotesStyle* NS = NULL);
 	bool hasNoteFrame(NotesStyle* NS, bool inChain = false);
@@ -182,11 +176,17 @@ private:
 	Mark* selectedMark(bool onlySelection = true);
 	TextNote* selectedNoteMark(ScText* &hl, bool onlySelection = true);
 	TextNote* selectedNoteMark(bool onlySelection = true);
-
 protected:
 	// set text frame height to last line of text
 	long long maxY;
 	void setMaxY(long long y);
+
+public:
+	ScText * firstVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
+	
+	int getColumnSE(int col, bool start); // return start or end position for column col from QMap startendColumn field, start default value is true
+	void setTextFrameHeight();
+	QList<QPair<int, int> > warnedList;
 };
 
 #endif

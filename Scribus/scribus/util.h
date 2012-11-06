@@ -23,6 +23,7 @@ for which a new license (GPL+exception) is in place.
 #include <QStringList>
 #include <QVector>
 
+#include "numeration.h"
 #include "pagestructs.h"
 // #include "style.h"
 // #include "styles/charstyle.h"
@@ -131,7 +132,7 @@ QString SCRIBUS_API getFileNameByPage(ScribusDoc* currDoc, uint pageNo, QString 
 void SCRIBUS_API sDebug(QString message);
 //asterix is QString used in numeration when number is presented as few chars, like *, **, *** etc
 //default is '*' but can be used any string
-const QString SCRIBUS_API getStringFromSequence(DocumentSectionType type, uint position, QString asterix="*");
+const QString SCRIBUS_API getStringFromSequence(NumFormat type, uint position, QString asterix="*");
 const QString SCRIBUS_API arabicToRoman(uint i);
 const QString SCRIBUS_API numberToLetterSequence(uint i);
 void SCRIBUS_API parsePagesString(QString pages, std::vector<int>* pageNs, int sourcePageCount);

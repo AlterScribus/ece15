@@ -2134,7 +2134,6 @@ public:
 			Xml_attr::iterator iIt = attr.find("item");
 			Xml_attr::iterator m_lIt = attr.find("mark_l");
 			Xml_attr::iterator m_tIt = attr.find("mark_t");
-			//Xml_attr::iterator nf_It = attr.find("noteframe");
 			if (lIt != attr.end())
 				l = Xml_data(lIt);
 			if (tIt != attr.end())

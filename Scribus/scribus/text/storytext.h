@@ -135,7 +135,7 @@ class SCRIBUS_API StoryText : public QObject, public SaxIO
 	void insertObject(int pos, int obj);
 	// Insert mark at cursor or specific position
 	void insertMark(Mark* Mark, int pos = -1);
-	void replaceChar(int pos, QChar ch);
+ 	void replaceChar(int pos, QChar ch);
  	// Replaced a word, and return the difference in length between old and new
 	int replaceWord(int pos, QString newWord);
 	void replaceObject(int pos, int obj);

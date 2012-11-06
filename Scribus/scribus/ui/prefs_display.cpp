@@ -104,6 +104,7 @@ void Prefs_Display::restoreDefaults(struct ApplicationPrefs *prefsData)
 	showBleedAreaCheckBox->setChecked(prefsData->guidesPrefs.showBleed);
 	showPageShadowCheckBox->setChecked(prefsData->displayPrefs.showPageShadow);
 	showVerifierWarningsOnCanvasCheckBox->setChecked(prefsData->displayPrefs.showVerifierWarningsOnCanvas);
+	showAutosaveClockOnCanvasCheckBox->setChecked(prefsData->displayPrefs.showAutosaveClockOnCanvas);
 
 	scratchSpaceLeftSpinBox->setMaximum(1000);
 	scratchSpaceRightSpinBox->setMaximum(1000);
@@ -427,6 +428,7 @@ void Prefs_Display::saveGuiToPrefs(struct ApplicationPrefs *prefsData) const
 	prefsData->guidesPrefs.showBleed=showBleedAreaCheckBox->isChecked();
 	prefsData->displayPrefs.showPageShadow=showPageShadowCheckBox->isChecked();
 	prefsData->displayPrefs.showVerifierWarningsOnCanvas=showVerifierWarningsOnCanvasCheckBox->isChecked();
+	prefsData->displayPrefs.showAutosaveClockOnCanvas=showAutosaveClockOnCanvasCheckBox->isChecked();
 	double unitRatio = unitGetRatioFromIndex(docUnitIndex);
 	prefsData->displayPrefs.scratch.Left=scratchSpaceLeftSpinBox->value()/unitRatio;
 	prefsData->displayPrefs.scratch.Right=scratchSpaceRightSpinBox->value()/unitRatio;

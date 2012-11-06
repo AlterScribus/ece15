@@ -27,6 +27,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QString>
 #include <QStringList>
+#include "langdef.h"
 #include "scribusapi.h"
 
 typedef std::pair<QString, QString> langPair;
@@ -36,7 +37,7 @@ typedef std::pair<QString, QString> langPair;
 class SCRIBUS_API LanguageManager
 {
 	static LanguageManager* m_instance;
-	LanguageManager() {};
+	LanguageManager() {}
 	~LanguageManager();
 	void init(bool generateInstalledList = true);
 	

@@ -526,6 +526,18 @@ public slots:
 	void updateTableMenuActions();
 	void emitUpdateRequest(int updateFlags) { emit UpdateRequest(updateFlags); }
 
+	//inserting marks
+	void slotInsertMark2Mark() { insertMark(MARK2MarkType); }
+	void slotInsertMarkAnchor() { insertMark(MARKAnchorType); }
+	void slotInsertMarkVariableText() { insertMark(MARKVariableTextType); }
+	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
+	void slotInsertMarkNote();
+	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
+	void slotEditMark();
+	//connected to signal emited by actions when "Update Marks" menu item is triggered
+	void slotUpdateMarks();
+	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
+
 signals:
 	void AppModeChanged(int oldMode, int newMode);
 	void TextStyle(const ParagraphStyle&);
@@ -618,27 +630,17 @@ private:
 
 	QPointer<HelpBrowser> helpBrowser;
 
-public slots:
-	//inserting marks
-	void slotInsertMark2Mark() { insertMark(MARK2MarkType); }
-	void slotInsertMarkAnchor() { insertMark(MARKAnchorType); }
-	void slotInsertMarkVariableText() { insertMark(MARKVariableTextType); }
-	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
-	void slotInsertMarkNote();
-	void slotInsertMarkIndex() { insertMark(MARKIndexType); }
-	void slotEditMark();
-	//connected to signal emited by actions when "Update Marks" menu item is triggered
-	void slotUpdateMarks();
-	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
 private:
 	void insertMark(MarkType);
-	bool insertMarkDlg(PageItem_TextFrame* item, MarkType mT, ScItemsState* &is);
+	bool insertMarkDialog(PageItem_TextFrame* item, MarkType mT, ScItemsState* &is);
 	int m_marksCount; //remember marks count from last call
+
 //for styles shortcuts
 public:
 	bool stylesShortcutKeyEvent(const QKeyEvent*);
 	//! \brief check for missing externals files (images for now)
 	void checkExternals();
+
 };
 
 #endif

@@ -1125,7 +1125,9 @@ HEADERS += scribus/actionmanager.h \
     scribus/ui/markanchor.h \
     scribus/ui/mark2mark.h \
     scribus/ui/mark2item.h \
-    scribus/numeration.h
+    scribus/numeration.h \
+    scribus/ui/clockwidget.h \
+    scribus/langdef.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -2173,7 +2175,9 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/ui/markanchor.cpp \
     scribus/ui/mark2mark.cpp \
     scribus/canvasmode_imageimport.cpp \
-    scribus/numeration.cpp
+    scribus/numeration.cpp \
+    scribus/ui/clockwidget.cpp \
+    scribus/langdef.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
@@ -2232,4 +2236,5 @@ OTHER_FILES += \
     scribus/plugins/scripter/api_Scripter.dialogs.nodes.api \
     scribus/plugins/scripter/api_Scripter.dialogs.mainWindow.api \
     scribus/plugins/scripter/api_Scripter.dialogs.layers.api \
-    scribus/plugins/scripter/api_Scripter.activeDocument.activePage.items.api
+    scribus/plugins/scripter/api_Scripter.activeDocument.activePage.items.api \
+    scribus/CMakeLists.txt

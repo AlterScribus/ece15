@@ -1263,7 +1263,7 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 			//docu.writeAttribute("itemName", item->itemName());
 		}
 		else if (mrk->isType(MARKVariableTextType) && mrk->hasString())
-			docu.writeAttribute("strtxt", mrk->getString());
+			docu.writeAttribute("str", mrk->getString());
 		else if (mrk->isType(MARK2MarkType) && mrk->hasMark())
 		{
 			QString label;
@@ -1913,7 +1913,7 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 				if (item->isNoteFrame())
 					docu.writeAttribute("isNoteFrame", 1);
 				else
-					writeITEXTs(doc, docu, item);
+				writeITEXTs(doc, docu, item);
 			}
 		}
 
@@ -2398,6 +2398,11 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		{
 			PageItem::weldingInfo wInf = item->weldList.at(i);
 			PageItem *pIt = wInf.weldItem;
+			if (pIt == NULL)
+			{
+				qDebug() << "Saving welding info - empty pointer!!!";
+				continue;
+			}
 			if (pIt->isAutoNoteFrame())
 				continue;
 			isWelded = true;
@@ -2408,9 +2413,9 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		}
 		if (isWelded)
 		{
-			docu.writeAttribute("isWeldItem", 1);
-			docu.writeAttribute("WeldSource", qHash(item));
-		}
+		docu.writeAttribute("isWeldItem", 1);
+		docu.writeAttribute("WeldSource", qHash(item));
+	}
 	}
 	if (item->asRegularPolygon())
 	{

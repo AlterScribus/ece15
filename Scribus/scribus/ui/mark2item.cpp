@@ -1,9 +1,8 @@
 #include "mark2item.h"
-//#include "notesstyles.h"
 #include "pageitem_noteframe.h"
 #include "scribus.h"
 
-Mark2ItemDlg::Mark2ItemDlg(QWidget *parent) : MarkInsertDlg(parent)
+Mark2Item::Mark2Item(QWidget *parent) : MarkInsert(parent)
 {
 	setupUi(this);
 	ScribusMainWindow* scmw = (ScribusMainWindow*) parent;
@@ -20,7 +19,7 @@ Mark2ItemDlg::Mark2ItemDlg(QWidget *parent) : MarkInsertDlg(parent)
 	setWindowTitle(tr("Mark to Item"));
 }
 
-void Mark2ItemDlg::values(QString &label, PageItem* &ptr)
+void Mark2Item::values(QString &label, PageItem* &ptr)
 {
 	QString itemName = ItemList->currentText();
 	if (itemName != "")
@@ -31,14 +30,14 @@ void Mark2ItemDlg::values(QString &label, PageItem* &ptr)
 	}
 }
 
-void Mark2ItemDlg::setValues(const QString label, const PageItem* ptr)
+void Mark2Item::setValues(const QString label, const PageItem* ptr)
 {
 	int index = (ptr == NULL)? -1:ItemList->findText(ptr->itemName());
 	ItemList->setCurrentIndex(index);
 	labelEdit->setText(label);
 }
 
-void Mark2ItemDlg::changeEvent(QEvent *e)
+void Mark2Item::changeEvent(QEvent *e)
 {
     QDialog::changeEvent(e);
     switch (e->type()) {

@@ -19,7 +19,9 @@ enum MarkType
 	MARKVariableTextType = 3,//mark contain dynamic text
 	MARKNoteMasterType = 4,  //mark contain footnote reference
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
-	MARKIndexType = 6 // index entry
+	MARKIndexType = 6, // index entry
+	MARKBulletType = 7,
+	MARKNumType = 8
 };
 
 struct MarkData
@@ -87,7 +89,8 @@ public:
 	bool hasString() { return !data.strtxt.isEmpty(); }
 	bool hasMark() { return data.destmarkName != ""; }
 	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType)); }
-	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
+	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ == MARKNoteFrameType)); }
+	bool isBullNumType() { return ((typ == MARKBulletType) || (typ == MARKNumType)); }
 	bool isType(const MarkType t) { return t==typ; }
 
 protected:

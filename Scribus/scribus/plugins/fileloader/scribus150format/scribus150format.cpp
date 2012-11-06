@@ -11,6 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "ui/missing.h"
 #include "hyphenator.h"
+#include "langmgr.h"
 #include "notesstyles.h"
 #include "pageitem_latexframe.h"
 #include "pageitem_noteframe.h"
@@ -1889,7 +1890,9 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	}
 
 	// start auto save timer if needed
-	m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+	if (m_Doc->autoSave()  && ScCore->usingGUI())
+		m_Doc->restartAutoSaveTimer();
+//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -2438,7 +2441,18 @@ void Scribus150Format::readCharacterStyleAttrs(ScribusDoc *doc, ScXmlStreamAttri
 
 	static const QString LANGUAGE("LANGUAGE");
 	if (attrs.hasAttribute(LANGUAGE))
-		newStyle.setLanguage(attrs.valueAsString(LANGUAGE));
+	{
+		QString l(attrs.valueAsString(LANGUAGE));
+		if (LanguageManager::instance()->langTableIndex(l)!=-1)
+			newStyle.setLanguage(l); //new style storage
+		else
+		{ //old style storage
+			QString lnew=LanguageManager::instance()->getAbbrevFromLang(l, true, false);
+			if (lnew.isEmpty())
+				lnew=LanguageManager::instance()->getAbbrevFromLang(l, false, false);
+			newStyle.setLanguage(lnew);
+		}
+	}
 
 	static const QString SHORTCUT("SHORTCUT");
 	if (attrs.hasAttribute(SHORTCUT))
@@ -3344,8 +3358,8 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 				mark->label=attrs.valueAsString("label");
 				mark->setType(type);
 
-                if (type == MARKVariableTextType && attrs.hasAttribute("strtxt"))
-                    mark->setString(attrs.valueAsString("strtxt"));
+				if (type == MARKVariableTextType && attrs.hasAttribute("str"))
+					mark->setString(attrs.valueAsString("str"));
 				if (type == MARK2ItemType && attrs.hasAttribute("ItemID"))
 				{
 					//QString itemName = attrs.valueAsString("itemName");

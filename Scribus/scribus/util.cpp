@@ -537,7 +537,7 @@ QString getFileNameByPage(ScribusDoc* currDoc, uint pageNo, QString extension)
 	return QString("%1-%2%3.%4").arg(defaultName).arg(QObject::tr("page", "page export")).arg(number, 3, 10, QChar('0')).arg(extension);
 }
 
-const QString getStringFromSequence(DocumentSectionType type, uint position, QString asterix)
+const QString getStringFromSequence(NumFormat type, uint position, QString asterix)
 {
 	QString retVal("");
 	switch( type )

@@ -9,13 +9,16 @@ for which a new license (GPL+exception) is in place.
 #include <QCursor>
 #include <QDrag>
 #include <QFile>
+#include <QInputDialog>
 #include <QList>
 #include <QMimeData>
 #include <QRegExp>
 #include <QStack>
 #include <QDebug>
 #include "slaoutput.h"
+#include <ErrorCodes.h>
 #include <GlobalParams.h>
+#include <ViewerPreferences.h>
 #include <poppler-config.h>
 
 #include "importpdf.h"
@@ -25,6 +28,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "loadsaveplugin.h"
 #include "pagesize.h"
+#include "pdfoptions.h"
 #include "prefscontext.h"
 #include "prefsfile.h"
 #include "prefsmanager.h"
@@ -295,6 +299,7 @@ bool PdfPlug::convert(QString fn)
 	}
 
 	globalParams = new GlobalParams();
+	GooString *userPW = NULL;
 	if (globalParams)
 	{
 		GooString *fname = new GooString(QFile::encodeName(fn).data());
@@ -302,9 +307,37 @@ bool PdfPlug::convert(QString fn)
 		GBool hasOcg = gFalse;
 		QList<OptionalContentGroup*> ocgGroups;
 //		globalParams->setPrintCommands(gTrue);
-		PDFDoc *pdfDoc = new PDFDoc(fname, 0, 0, 0);
+		PDFDoc *pdfDoc = new PDFDoc(fname, NULL, NULL, NULL);
 		if (pdfDoc)
 		{
+			if (pdfDoc->getErrorCode() == errEncrypted)
+			{
+				delete pdfDoc;
+				pdfDoc = NULL;
+				if (progressDialog)
+					progressDialog->hide();
+				qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
+				ScribusMainWindow* mw = (m_Doc==0) ? ScCore->primaryMainWindow() : m_Doc->scMW();
+				bool ok;
+				QString text = QInputDialog::getText(mw, tr("Open PDF-File"), tr("Password"), QLineEdit::Normal, "", &ok);
+				if (ok && !text.isEmpty())
+				{
+					fname = new GooString(QFile::encodeName(fn).data());
+					userPW = new GooString(text.toLocal8Bit().data());
+					pdfDoc = new PDFDoc(fname, userPW, userPW, NULL);
+					qApp->changeOverrideCursor(QCursor(Qt::WaitCursor));
+				}
+				if ((!pdfDoc) || (pdfDoc->getErrorCode() != errNone))
+				{
+					if (progressDialog)
+						progressDialog->close();
+					delete pdfDoc;
+					delete globalParams;
+					return false;
+				}
+				if (progressDialog)
+					progressDialog->show();
+			}
 			if (pdfDoc->isOk())
 			{
 				double hDPI = 72.0;
@@ -460,6 +493,9 @@ bool PdfPlug::convert(QString fn)
 							}
 						}
 						info.free();
+						m_Doc->setPageHeight(pdfDoc->getPageMediaHeight(1));
+						m_Doc->setPageWidth(pdfDoc->getPageMediaWidth(1));
+						m_Doc->setPageSize("Custom");
 						for (int pp = 0; pp < lastPage; pp++)
 						{
 							m_Doc->setActiveLayer(baseLayer);
@@ -473,7 +509,6 @@ bool PdfPlug::convert(QString fn)
 							m_Doc->currentPage()->setWidth(pdfDoc->getPageMediaWidth(pp + 1));
 							m_Doc->currentPage()->MPageNam = CommonStrings::trMasterPageNormal;
 							m_Doc->currentPage()->m_pageSize = "Custom";
-							m_Doc->setPageSize("Custom");
 							m_Doc->reformPages(true);
 							if (hasOcg)
 							{
@@ -486,11 +521,60 @@ bool PdfPlug::convert(QString fn)
 								//	pdfDoc->displayPage(dev, pp + 1, hDPI, vDPI, rotate, useMediaBox, crop, printing);
 								//	oc->setState(OptionalContentGroup::Off);
 								}
-								pdfDoc->displayPage(dev, pp + 1, hDPI, vDPI, rotate, useMediaBox, crop, printing);
+								pdfDoc->displayPage(dev, pp + 1, hDPI, vDPI, rotate, useMediaBox, crop, printing, NULL, NULL, dev->annotations_callback, dev);
 							}
 							else
-								pdfDoc->displayPage(dev, pp + 1, hDPI, vDPI, rotate, useMediaBox, crop, printing);
+								pdfDoc->displayPage(dev, pp + 1, hDPI, vDPI, rotate, useMediaBox, crop, printing, NULL, NULL, dev->annotations_callback, dev);
 						}
+						int numjs = pdfDoc->getCatalog()->numJS();
+						if (numjs > 0)
+						{
+							NameTree *jsNameTreeP = new NameTree();
+							Object names;
+							Object catDict;
+							pdfDoc->getXRef()->getCatalog(&catDict);
+							if (catDict.isDict())
+							{
+								catDict.dictLookup("Names", &names);
+								if (names.isDict())
+								{
+									Object obj;
+									names.dictLookup("JavaScript", &obj);
+									jsNameTreeP->init(pdfDoc->getXRef(), &obj);
+									obj.free();
+								}
+								for (int a = 0; a < numjs; a++)
+								{
+									m_Doc->JavaScripts.insert(UnicodeParsedString(jsNameTreeP->getName(a)), UnicodeParsedString(pdfDoc->getCatalog()->getJS(a)));
+								}
+								names.free();
+							}
+							catDict.free();
+							delete jsNameTreeP;
+						}
+						m_Doc->pdfOptions().Version = (PDFOptions::PDFVersion)qMin(15, qMax(13, pdfDoc->getPDFMajorVersion() * 10 + pdfDoc->getPDFMinorVersion()));
+						ViewerPreferences *viewPrefs = pdfDoc->getCatalog()->getViewerPreferences();
+						if (viewPrefs)
+						{
+							m_Doc->pdfOptions().Binding = viewPrefs->getDirection() == ViewerPreferences::directionL2R ? 0 : 1;
+							m_Doc->pdfOptions().hideMenuBar = viewPrefs->getHideMenubar();
+							m_Doc->pdfOptions().hideToolBar = viewPrefs->getHideToolbar();
+							m_Doc->pdfOptions().fitWindow = viewPrefs->getFitWindow();
+						}
+						Catalog::PageMode pgm = pdfDoc->getCatalog()->getPageMode();
+						m_Doc->pdfOptions().displayFullscreen = (pgm == Catalog::pageModeFullScreen);
+						m_Doc->pdfOptions().displayThumbs = (pgm == Catalog::pageModeThumbs);
+						m_Doc->pdfOptions().displayBookmarks = (pgm == Catalog::pageModeOutlines);
+						m_Doc->pdfOptions().displayLayers = (pgm == Catalog::pageModeOC);
+						Catalog::PageLayout pgl = pdfDoc->getCatalog()->getPageLayout();
+						if (pgl == Catalog::pageLayoutSinglePage)
+							m_Doc->pdfOptions().PageLayout = PDFOptions::SinglePage;
+						else if (pgl == Catalog::pageLayoutOneColumn)
+							m_Doc->pdfOptions().PageLayout = PDFOptions::OneColumn;
+						else if (pgl == Catalog::pageLayoutTwoColumnLeft)
+							m_Doc->pdfOptions().PageLayout = PDFOptions::TwoColumnLeft;
+						else if (pgl == Catalog::pageLayoutTwoColumnRight)
+							m_Doc->pdfOptions().PageLayout = PDFOptions::TwoColumnRight;
 					}
 					else
 					{
@@ -501,7 +585,7 @@ bool PdfPlug::convert(QString fn)
 								ocgGroups[a]->setState(OptionalContentGroup::On);
 							}
 						}
-						pdfDoc->displayPage(dev, firstPage, hDPI, vDPI, rotate, useMediaBox, crop, printing);
+						pdfDoc->displayPage(dev, firstPage, hDPI, vDPI, rotate, useMediaBox, crop, printing, NULL, NULL, dev->annotations_callback, dev);
 					}
 				}
 				delete dev;

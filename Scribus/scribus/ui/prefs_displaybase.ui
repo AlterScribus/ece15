@@ -124,6 +124,13 @@
            </property>
           </widget>
          </item>
+		 <item>
+          <widget class="QCheckBox" name="showAutosaveClockOnCanvasCheckBox">
+           <property name="text">
+            <string>Show Autosave Countdown Clock on the Canvas</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

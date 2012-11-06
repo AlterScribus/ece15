@@ -918,8 +918,8 @@ void PageItem::moveBy(const double dX, const double dY, bool drawingOnly)
 	}
 	if (drawingOnly || m_Doc->isLoading())
 		return;
-	checkChanges();
 	moveWelded(dX, dY);
+	checkChanges();
 }
 
 void PageItem::setWidth(const double newWidth)
@@ -981,8 +981,8 @@ void PageItem::setRotation(const double newRotation, bool drawingOnly)
 	Rot = newRotation;
 	if (drawingOnly || m_Doc->isLoading())
 		return;
-	checkChanges();
 	rotateWelded(dR, oldRot);
+	checkChanges();
 }
 
 void PageItem::rotateBy(const double dR)
@@ -4688,20 +4688,20 @@ void PageItem::resizeUndoAction()
                                           Um::IResize);
 		if (!isNoteFrame() || !asNoteFrame()->isAutoWidth())
 		{
-			ss->set("OLD_WIDTH", oldWidth);
-			ss->set("NEW_WIDTH", Width);
+		ss->set("OLD_WIDTH", oldWidth);
+		ss->set("NEW_WIDTH", Width);
 		}
 		if (!isNoteFrame() || !asNoteFrame()->isAutoHeight())
 		{
 			ss->set("OLD_HEIGHT", oldHeight);
-			ss->set("NEW_HEIGHT", Height);
+		ss->set("NEW_HEIGHT", Height);
 		}
 		if (!isNoteFrame() || !asNoteFrame()->isAutoWelded())
 		{
-			ss->set("OLD_RXPOS", oldXpos);
-			ss->set("OLD_RYPOS", oldYpos);
-			ss->set("NEW_RXPOS", Xpos);
-			ss->set("NEW_RYPOS", Ypos);
+		ss->set("OLD_RXPOS", oldXpos);
+		ss->set("OLD_RYPOS", oldYpos);
+		ss->set("NEW_RXPOS", Xpos);
+		ss->set("NEW_RYPOS", Ypos);
 		}
 		ss->set("OLD_RROT", oldRot);
 		ss->set("NEW_RROT", Rot);
@@ -4713,8 +4713,8 @@ void PageItem::resizeUndoAction()
 		oldHeight = Height;
 	if (!isNoteFrame() || !asNoteFrame()->isAutoWelded())
 	{
-		oldXpos = Xpos;
-		oldYpos = Ypos;
+	oldXpos = Xpos;
+	oldYpos = Ypos;
 	}
 	oldOwnPage = OwnPage;
 	oldRot = Rot;
@@ -4733,15 +4733,15 @@ void PageItem::rotateUndoAction()
 		ss->set("NEW_ROT", Rot);
 		if (!isNoteFrame() || !asNoteFrame()->isAutoWelded())
 		{
-			ss->set("OLD_RXPOS", oldXpos);
-			ss->set("OLD_RYPOS", oldYpos);
-			ss->set("NEW_RXPOS", Xpos);
-			ss->set("NEW_RYPOS", Ypos);
+		ss->set("OLD_RXPOS", oldXpos);
+		ss->set("OLD_RYPOS", oldYpos);
+		ss->set("NEW_RXPOS", Xpos);
+		ss->set("NEW_RYPOS", Ypos);
 		}
 		if (!isNoteFrame() || !asNoteFrame()->isAutoHeight())
 		{
-			ss->set("OLD_RHEIGHT", oldHeight);
-			ss->set("NEW_RHEIGHT", Height);
+		ss->set("OLD_RHEIGHT", oldHeight);
+		ss->set("NEW_RHEIGHT", Height);
 		}
 		if (!isNoteFrame() || !asNoteFrame()->isAutoWidth())
 		{
@@ -5064,22 +5064,6 @@ void PageItem::restoreConnectPath(SimpleState *state, bool isUndo)
 	ContourLine = PoLine.copy();
 }
 
-void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
-{
-	if (isUndo)
-	{
-		unWeld();
-	}
-	else
-	{
-		ScItemState<PageItem*> *is = dynamic_cast<ScItemState<PageItem*>*>(state);
-		PageItem* wIt = is->getItem();
-		weldTo(wIt);
-	}
-	m_Doc->changed();
-	m_Doc->regionsChanged()->update(QRectF());
-}
-
 void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
 {
 	if (isUndo)
@@ -5107,6 +5091,22 @@ void PageItem::restoreUnWeldItem(SimpleState *state, bool isUndo)
 	else
 	{
 		unWeld();
+	}
+	m_Doc->changed();
+	m_Doc->regionsChanged()->update(QRectF());
+}
+
+void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
+{
+	if (isUndo)
+	{
+		unWeld();
+	}
+	else
+	{
+		ScItemState<PageItem*> *is = dynamic_cast<ScItemState<PageItem*>*>(state);
+		PageItem* wIt = is->getItem();
+		weldTo(wIt);
 	}
 	m_Doc->changed();
 	m_Doc->regionsChanged()->update(QRectF());
@@ -9994,9 +9994,9 @@ void PageItem::updateClip(bool updateWelded)
 				}
 				if (updateWelded)
 				{
-					for (int i = 0 ; i < weldList.count(); i++)
-					{
-						weldingInfo wInf = weldList.at(i);
+				for (int i = 0 ; i < weldList.count(); i++)
+				{
+					weldingInfo wInf = weldList.at(i);
 						if (wInf.weldItem->isNoteFrame())
 						{
 							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
@@ -10016,17 +10016,17 @@ void PageItem::updateClip(bool updateWelded)
 								continue;
 							}
 						}
-						FPointArray gr4;
-						FPoint wp = wInf.weldPoint;
-						gr4.addPoint(wp);
-						gr4.map(ma);
-						double dx = gr4.point(0).x() - wp.x();
-						double dy = gr4.point(0).y() - wp.y();
-						moveWelded(dx, dy, i);
-						wInf.weldPoint = gr4.point(0);
-						weldList[i] = wInf;
-					}
+					FPointArray gr4;
+					FPoint wp = wInf.weldPoint;
+					gr4.addPoint(wp);
+					gr4.map(ma);
+					double dx = gr4.point(0).x() - wp.x();
+					double dy = gr4.point(0).y() - wp.y();
+					moveWelded(dx, dy, i);
+					wInf.weldPoint = gr4.point(0);
+					weldList[i] = wInf;
 				}
+			}
 			}
 			OldB2 = width();
 			OldH2 = height();
@@ -10129,9 +10129,9 @@ void PageItem::updateClip(bool updateWelded)
 			OldH2 = height();
 			if (updateWelded)
 			{
-				for (int i = 0 ; i < weldList.count(); i++)
-				{
-					weldingInfo wInf = weldList.at(i);
+			for (int i = 0 ; i < weldList.count(); i++)
+			{
+				weldingInfo wInf = weldList.at(i);
 					if (wInf.weldItem->isNoteFrame())
 					{
 						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
@@ -10150,17 +10150,17 @@ void PageItem::updateClip(bool updateWelded)
 							continue;
 						}
 					}
-					FPointArray gr4;
-					FPoint wp = wInf.weldPoint;
-					gr4.addPoint(wp);
-					gr4.map(ma);
-					double dx = gr4.point(0).x() - wp.x();
-					double dy = gr4.point(0).y() - wp.y();
-					moveWelded(dx, dy, i);
-					wInf.weldPoint = gr4.point(0);
-					weldList[i] = wInf;
-				}
+				FPointArray gr4;
+				FPoint wp = wInf.weldPoint;
+				gr4.addPoint(wp);
+				gr4.map(ma);
+				double dx = gr4.point(0).x() - wp.x();
+				double dy = gr4.point(0).y() - wp.y();
+				moveWelded(dx, dy, i);
+				wInf.weldPoint = gr4.point(0);
+				weldList[i] = wInf;
 			}
+		}
 		}
 		break;
 	}
@@ -10473,7 +10473,7 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 {
 	if (selStart < 0 || selLength < 0)
 		return QString();
-	
+
 	StoryText it(m_Doc);
 	it.setDefaultStyle(itemText.defaultStyle());
 
@@ -10493,3 +10493,5 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 	std::string xml(xmlString.str());
 	return QString(xml.c_str());
 }
+
+

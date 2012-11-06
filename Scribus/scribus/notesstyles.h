@@ -5,7 +5,6 @@
 #include <QObject>
 #include <QString>
 #include <QList>
-
 #include "numeration.h"
 #include "pagestructs.h"
 #include "scpage.h"
@@ -30,7 +29,7 @@ typedef union
 class SCRIBUS_API NotesStyle
 {
 public:
-	NotesStyle() : nameStr ("default"), startNum(1), m_endNotesStyle(false), numeration(), numRange(NSRdocument), prefixStr(""), suffixStr(")"),
+	NotesStyle() : nameStr ("Default"), startNum(1), m_endNotesStyle(false), numeration(), numRange(NSRdocument), prefixStr(""), suffixStr(")"),
 		autoNotesHeight(true), autoNotesWidth(true), autoRemoveEmptyNotesFrames(true), autoWeldNotesFrames(true),
 		superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle("") {}
 	~NotesStyle() {}
@@ -46,8 +45,8 @@ public:
 	void setPrefix (const QString str) { prefixStr = str; }
 	const QString suffix() { return suffixStr; }
 	void setSuffix (const QString str) { suffixStr = str; }
-
-	const QString numString(const uint num) { return numeration.numString(num); }
+	const QString numString(const int num) { return numeration.numString(num); }
+	
 	void setFormat(const NumFormat format) { numeration.numFormat = format; }
 	const NumFormat getFormat() { return numeration.numFormat; }
 
@@ -94,31 +93,32 @@ class SCRIBUS_API TextNote : public QObject
 {
     Q_OBJECT
 	friend class ScribusDoc;
+
 private:
 	//only ScribusDoc can create and delete notes
-	TextNote(NotesStyle *nStyle) : _notesStyle(nStyle), _noteSaxedText(""), _noteMasterMark(NULL), _noteFrameMark(NULL), _number(0) { }
+	TextNote(NotesStyle *nStyle) : m_notesStyle(nStyle), m_noteSaxedText(""), m_noteMasterMark(NULL), m_noteFrameMark(NULL), m_number(0) { }
 	~TextNote() {}
 public:
-	void setNotesStyle (NotesStyle* NS) { _notesStyle = NS; }
-	NotesStyle* notesStyle() { return _notesStyle; }
-	const int num() { return _number; }
-	void setNum(const int x) { _number = x; }
-	const QString numString() { return notesStyle()->numString(_number); }
-	Mark* masterMark() { return _noteMasterMark; }
-	void setMasterMark(Mark* MRK) { _noteMasterMark = MRK; }
-	Mark* noteMark() { return _noteFrameMark; }
-	void setNoteMark(Mark* MRK) { _noteFrameMark = MRK; }
-	const QString saxedText() { return _noteSaxedText; }
-	void setSaxedText(const QString string) { _noteSaxedText = string; }
-	bool isEndNote() { return _notesStyle->isEndNotes(); }
+	void setNotesStyle (NotesStyle* ns) { m_notesStyle = ns; }
+	NotesStyle* notesStyle() { return m_notesStyle; }
+	const int num() { return  m_number; }
+	void setNum(const int i) { m_number = i; }
+	const QString numString() { return m_notesStyle->numString(m_number); }
+	Mark* masterMark() { return m_noteMasterMark; }
+	void setMasterMark(Mark* m) { m_noteMasterMark = m; }
+	Mark* noteMark() { return m_noteFrameMark; }
+	void setNoteMark(Mark* m) { m_noteFrameMark = m; }
+	const QString saxedText() { return m_noteSaxedText; }
+	void setSaxedText(const QString string) { m_noteSaxedText = string; }
+	bool isEndNote() { return m_notesStyle->isEndNotes(); }
 	int textLen;
 
 protected:
-	NotesStyle *_notesStyle;
-	QString _noteSaxedText;
-	Mark *_noteMasterMark;
-	Mark *_noteFrameMark;
-	int _number;
+	NotesStyle *m_notesStyle;
+	QString m_noteSaxedText;
+	Mark *m_noteMasterMark;
+	Mark *m_noteFrameMark;
+	int m_number;
 };
 
 #endif // NOTESSTYLES_H

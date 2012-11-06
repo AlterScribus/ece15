@@ -172,7 +172,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/markanchor.h"
 #include "ui/marknote.h"
 #include "ui/markvariabletext.h"
-#include "ui/MarkInsertDlg.h"
+#include "ui/markinsert.h"
 #include "ui/marksmanager.h"
 #include "ui/masterpagepalette.h"
 #include "ui/mergedoc.h"
@@ -394,7 +394,7 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 
 	QString preLang(prefsManager->appPrefs.hyphPrefs.Language);
 	initHyphenator();
-	if (!LanguageManager::instance()->getHyphFilename( preLang, true ).isEmpty() )
+	if (!LanguageManager::instance()->getHyphFilename( preLang ).isEmpty() )
 		prefsManager->appPrefs.hyphPrefs.Language = preLang;
 	if (primaryMainWindow)
 		ScCore->setSplashStatus( tr("Reading Scrapbook") );
@@ -1179,7 +1179,6 @@ void ScribusMainWindow::setStatusBarInfoText(QString newText)
 //AV to be replaced with Selection::update and listener in PropertiesPalette
 void ScribusMainWindow::setTBvals(PageItem *currItem)
 {
-	Q_ASSERT(currItem->isTextFrame());
 	scrActions["editMark"]->setEnabled(false);
 	if (currItem->itemText.length() != 0)
 	{
@@ -2110,6 +2109,8 @@ ScribusDoc *ScribusMainWindow::doFileNew(double width, double height, double top
 		connect(ScCore->fileWatcher, SIGNAL(fileChanged(QString)), tempDoc, SLOT(updatePict(QString)));
 		connect(ScCore->fileWatcher, SIGNAL(fileDeleted(QString)), tempDoc, SLOT(removePict(QString)));
 		connect(ScCore->fileWatcher, SIGNAL(dirChanged(QString )), tempDoc, SLOT(updatePictDir(QString )));
+		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
+		view->clockLabel->resetTime();
 		//scrActions["fileSave"]->setEnabled(false);
 		tempView->cmsToolbarButton->setChecked(tempDoc->HasCMS);
 		undoManager->switchStack(tempDoc->DocName);
@@ -4308,6 +4309,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		doc->connectDocSignals();
 		if (doc->autoSave())
 			doc->autoSaveTimer->start(doc->autoSaveTime());
+		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
+		view->clockLabel->resetTime();
 // 		scrActions["fileSave"]->setEnabled(false);
 		doc->NrItems = bookmarkPalette->BView->NrItems;
 		doc->First = bookmarkPalette->BView->First;
@@ -5324,6 +5327,7 @@ void ScribusMainWindow::slotEditPaste()
 				textSerializer->parseMemory(xml, xml.length());
 
 				StoryText* story = textSerializer->result<StoryText>();
+
 				//avoid pasting notes marks into notes frames
 				if (currItem->isNoteFrame())
 				{
@@ -6791,14 +6795,14 @@ void ScribusMainWindow::setAppMode(int mode)
 //					view->requestMode(modeEditClip);
 //					return;
 //				}
+				//setTBvals before placing cursor has no effect
+				currItem->itemText.setCursorPosition(0);
+				setTBvals(currItem);
 			}
 			scrActions["editPaste"]->setEnabled(false);
 			charPalette->setEnabled(true, currItem);
 			if (currItem!=NULL && currItem->asTextFrame())
 			{
-				//setTBvals before placing cursor has no effect
-				currItem->itemText.setCursorPosition(0);
-				setTBvals(currItem);
 				enableTextActions(&scrActions, true, currItem->currentCharStyle().font().scName());
 				currItem->asTextFrame()->togleEditModeActions();
 			}
@@ -9524,27 +9528,28 @@ void ScribusMainWindow::showLayer()
 
 void ScribusMainWindow::initHyphenator()
 {
-	InstLang.clear();
+//IL	InstLang.clear();
 	//Build our list of hyphenation dictionaries we have in the install dir
 	//Grab the language abbreviation from it, get the full language text
 	//Insert the name as key and a new string list into the map
 	QString hyphDirName = QDir::toNativeSeparators(ScPaths::instance().dictDir());
 	QDir hyphDir(hyphDirName, "hyph*.dic", QDir::Name, QDir::Files | QDir::NoSymLinks);
-	if ((hyphDir.exists()) && (hyphDir.count() != 0))
-	{
+//IL	if ((hyphDir.exists()) && (hyphDir.count() != 0))
+//IL	{
 // 		LanguageManager langmgr;
 // 		langmgr.init(false);
-		for (uint dc = 0; dc < hyphDir.count(); ++dc)
-		{
-			QFileInfo fi(hyphDir[dc]);
-			QString fileLangAbbrev=fi.baseName().section('_', 1);
-			InstLang.insert(fileLangAbbrev, QStringList());
+//IL		QString languageOfHyphFile;
+//IL		for (uint dc = 0; dc < hyphDir.count(); ++dc)
+//IL		{
+//IL			QFileInfo fi(hyphDir[dc]);
+//IL			QString fileLangAbbrev=fi.baseName().section('_', 1);
+//IL			InstLang.insert(fileLangAbbrev, QStringList());
 //<<hunspell
 //			languageOfHyphFile = LanguageManager::instance()->getLangFromAbbrev(fileLangAbbrev, false);
 //			InstLang.insert(languageOfHyphFile, QStringList());
 //>>hunspell
-		}
-	}
+//IL		}
+//IL	}
 
 	//For each qm file existing, load the file and find the translations of the names
 	QString pfad = ScPaths::instance().translationDir();
@@ -9557,25 +9562,29 @@ void ScribusMainWindow::initHyphenator()
 			QString ext = fi.suffix().toLower();
 			if (ext == "qm")
 			{
-				QTranslator *trans = new QTranslator(0);
-				trans->load(pfad + d2[dc]);
+ //IL   			QTranslator *trans = new QTranslator(0);
+//IL				trans->load(pfad + d2[dc]);
 
-				QString translatedLang;
-				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
-				{
-					translatedLang="";
-					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
-					if (!translatedLang.isEmpty())
-						it.value().append(translatedLang);
-				}
-				delete trans;
+//IL				QString translatedLang;
+//IL				for (QMap<QString, QStringList>::Iterator it=InstLang.begin(); it!=InstLang.end(); ++it)
+//IL				{
+//IL					translatedLang="";
+//IL					translatedLang = trans->translate("QObject", LanguageManager::instance()->getLangFromAbbrev(it.key(), false).toLocal8Bit().data(), "");
+//IL					if (!translatedLang.isEmpty())
+//IL						it.value().append(translatedLang);
+//IL				}
+//IL				delete trans;
 			}
 		}
 	}
 	//For each hyphenation file, grab the strings and the hyphenation data.
 	QString lang = QString(QLocale::system().name()).left(2);
-	LangTransl.clear();
+//IL	LangTransl.clear();
 	prefsManager->appPrefs.hyphPrefs.Language = "en_GB";
+	if (!LanguageManager::instance()->getHyphFilename(lang).isEmpty() )
+		prefsManager->appPrefs.hyphPrefs.Language = lang;
+
+/*
 	if ((hyphDir.exists()) && (hyphDir.count() != 0))
 	{
 		LanguageManager *langmgr(LanguageManager::instance());
@@ -9586,7 +9595,7 @@ void ScribusMainWindow::initHyphenator()
 			QFileInfo fi(hyphDir[dc]);
 			QString fileLangAbbrev = fi.baseName().section('_', 1);
 			tLang = langmgr->getLangFromAbbrev(fileLangAbbrev);
-			LangTransl.insert(fileLangAbbrev, tLang);
+//IL			LangTransl.insert(fileLangAbbrev, tLang);
 			langmgr->addHyphLang(fileLangAbbrev, hyphDir[dc]);
 			if (fileLangAbbrev == lang)
 				prefsManager->appPrefs.hyphPrefs.Language = fileLangAbbrev;
@@ -9594,6 +9603,7 @@ void ScribusMainWindow::initHyphenator()
 		if (tLang.isEmpty())
 			prefsManager->appPrefs.hyphPrefs.Language = "en_GB";
 	}
+	*/
 }
 
 QString ScribusMainWindow::GetLang(QString inLang)
@@ -10575,7 +10585,7 @@ void ScribusMainWindow::insertMark(MarkType mType)
 			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 		}
 		ScItemsState* is = NULL;
-		if (insertMarkDlg(currItem->asTextFrame(), mType, is))
+		if (insertMarkDialog(currItem->asTextFrame(), mType, is))
 		{
 			Mark* mrk = currItem->itemText.item(currItem->itemText.cursorPosition() -1)->mark;
 			view->updatesOn(false);
@@ -10715,29 +10725,29 @@ void ScribusMainWindow::slotInsertMarkNote()
 		insertMark(MARKNoteMasterType);
 }
 
-bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrkType, ScItemsState* &is)
+bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType mrkType, ScItemsState* &is)
 {
 	if (doc->masterPageMode() && (mrkType != MARKVariableTextType))
 		//avoid inserting in master pages other marks than Variable Text
 		return false;
 	
-	MarkInsertDlg* insertMDialog = NULL;
+	MarkInsert* insertMDialog = NULL;
 	switch (mrkType)
 	{
 	case MARKAnchorType:
-		insertMDialog = (MarkInsertDlg*) new MarkAnchorDlg(this);
+		insertMDialog = (MarkInsert*) new MarkAnchor(this);
 		break;
 	case MARKVariableTextType:
-			insertMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->marksList(), this);
+		insertMDialog = (MarkInsert*) new MarkVariableText(doc->marksList(), this);
 		break;
 	case MARK2ItemType:
-		insertMDialog = (MarkInsertDlg*) new Mark2ItemDlg(this);
+		insertMDialog = (MarkInsert*) new Mark2Item(this);
 		break;
 	case MARK2MarkType:
-			insertMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->marksList(), NULL, this);
+		insertMDialog = (MarkInsert*) new Mark2Mark(doc->marksList(), NULL, this);
 		break;
 	case MARKNoteMasterType:
-		insertMDialog = (MarkInsertDlg*) new MarkNoteDlg(doc->m_docNotesStylesList, this);
+		insertMDialog = (MarkInsert*) new MarkNote(doc->m_docNotesStylesList, this);
 		break;
 	case MARKIndexType:
 		break;
@@ -10800,11 +10810,11 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 			d.destmarkType = mrkPtr->getType();
 			break;
 		case MARKNoteMasterType:
-			//gets pointer to choosed notes style
+			//gets pointer to chosen notes style
 			NStyle = insertMDialog->values();
 			if (NStyle == NULL)
 				return false;
-			
+
 			d.notePtr = doc->newNote(NStyle);
 			label = "NoteMark_" + NStyle->name();
 			if (NStyle->range() == NSRsection)
@@ -10915,29 +10925,29 @@ bool ScribusMainWindow::insertMarkDlg(PageItem_TextFrame* currItem, MarkType mrk
 
 bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 {
-	MarkInsertDlg* editMDialog = NULL;
+	MarkInsert* editMDialog = NULL;
 	switch (mrk->getType())
 	{
 		case MARKAnchorType:
-			editMDialog = (MarkInsertDlg*) new MarkAnchorDlg(this);
+			editMDialog = (MarkInsert*) new MarkAnchor(this);
 			editMDialog->setValues(mrk->label);
 			break;
 		case MARKVariableTextType:
 			if (currItem == NULL)
 				//invoked from Marks Manager
-				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(mrk, this);
+				editMDialog = (MarkInsert*) new MarkVariableText(mrk, this);
 			else
 				//invoked from mark`s entry in text
-				editMDialog = (MarkInsertDlg*) new MarkVariableTextDlg(doc->marksList(), this);
+				editMDialog = (MarkInsert*) new MarkVariableText(doc->marksList(), this);
 			editMDialog->setValues(mrk->label, mrk->getString());
 			break;
 		case MARK2ItemType:
-			editMDialog = (MarkInsertDlg*) new Mark2ItemDlg(this);
+			editMDialog = (MarkInsert*) new Mark2Item(this);
 			editMDialog->setValues(mrk->label, mrk->getItemPtr());
 			break;
 		case MARK2MarkType:
 			{
-			editMDialog = (MarkInsertDlg*) new Mark2MarkDlg(doc->marksList(), mrk, this);
+			editMDialog = (MarkInsert*) new Mark2Mark(doc->marksList(), mrk, this);
 				QString l;
 				MarkType t;
 				mrk->getMark(l,t);
