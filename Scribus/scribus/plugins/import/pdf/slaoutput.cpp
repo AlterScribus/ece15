@@ -1105,9 +1105,53 @@ void SlaOutputDev::restoreState(GfxState *state)
 					{
 						m_Elements->removeAll(gElements.Items.at(d));
 					}
-					m_doc->groupObjectsToItem(ite, gElements.Items);
-					ite->setFillTransparency(1.0 - state->getFillOpacity());
-					ite->setFillBlendmode(getBlendMode(state));
+					PageItem *sing = gElements.Items.first();
+					if ((gElements.Items.count() == 1)
+						 && (sing->isImageFrame() || sing->isGroup() || sing->isPolygon() || sing->isPolyLine())
+						 && (ite->patternMask().isEmpty() || sing->patternMask().isEmpty() || (sing->patternMask() == ite->patternMask()))
+						 && (state->getFillOpacity() == (1.0 - ite->fillTransparency()))
+					   )
+					{
+						m_Elements->replace(m_Elements->indexOf(ite), sing);
+						m_doc->Items->removeAll(sing);
+						m_doc->Items->replace(m_doc->Items->indexOf(ite), sing);
+						m_groupStack.top().Items.replace(m_groupStack.top().Items.indexOf(ite), sing);
+						sing->setFillTransparency(1.0 - (state->getFillOpacity() * (1.0 - ite->fillTransparency())));
+						sing->setFillBlendmode(getBlendMode(state));
+						if (!ite->patternMask().isEmpty())
+						{
+							sing->setPatternMask(ite->patternMask());
+							sing->setMaskType(ite->maskType());
+						}
+						if (sing->isGroup() || (sing->lineColor() == CommonStrings::None))
+						{
+							double dx = sing->xPos() - ite->xPos();
+							double dy = sing->yPos() - ite->yPos();
+							sing->PoLine.translate(dx, dy);
+							QPainterPath input1 = sing->PoLine.toQPainterPath(true);
+							if (sing->fillEvenOdd())
+								input1.setFillRule(Qt::OddEvenFill);
+							else
+								input1.setFillRule(Qt::WindingFill);
+							QPainterPath input2 = ite->PoLine.toQPainterPath(true);
+							if (ite->fillEvenOdd())
+								input2.setFillRule(Qt::OddEvenFill);
+							else
+								input2.setFillRule(Qt::WindingFill);
+							QPainterPath result = input1.intersected(input2);
+							sing->setXYPos(ite->xPos(), ite->yPos(), true);
+							sing->setWidthHeight(ite->width(), ite->height(), true);
+							sing->PoLine.fromQPainterPath(result);
+							m_doc->AdjustItemSize(sing);
+						}
+						delete ite;
+					}
+					else
+					{
+						m_doc->groupObjectsToItem(ite, gElements.Items);
+						ite->setFillTransparency(1.0 - state->getFillOpacity());
+						ite->setFillBlendmode(getBlendMode(state));
+					}
 				}
 				else
 				{
