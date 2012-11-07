@@ -185,7 +185,6 @@ struct GuidesPrefs
 	QColor majorGridColor; //! Color of major grid
 	QColor minorGridColor; //! Color of minor grid
 	QColor baselineGridColor; //! Color of baseline grid
-	QColor preflightColor;  //! Color if preflight warnings
 };
 
 struct ItemToolPrefs

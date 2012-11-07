@@ -3322,6 +3322,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->fillPath();
 		}
 	}
+	double S_TExtra = TExtra;
+	double S_Extra = Extra;
+	double S_RExtra = RExtra;
+	double S_BExtra = BExtra;
 	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && ((annotation().Type() > 1) && (annotation().Type() < 7)))
 	{
 		QColor fontColor;
@@ -3644,10 +3648,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		LineSpec ls;
 		double CurX;
 		bool previousWasObject;
-		QRectF selectedFrame;
-		QList<QRectF> sFList;
-		QRectF warnFrame;
-		QList<QRectF> wFList;
 		double selX;
 		ScText *hls;
 		int last;
@@ -3658,7 +3658,11 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			ls = itemText.line(ll);
 			CurX = ls.x;
 
-			// Draw text selection rectangles
+			// Draw text selection and preflight rectangles
+			QRectF selectedFrame;
+			QList<QRectF> sFList;
+			QRectF warnFrame;
+			QList<QRectF> wFList;
 			previousWasObject = false;
 			selX = ls.x;
 			hls = 0;
@@ -3783,7 +3787,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				p->save();//SA3
 				p->setFillMode(1);
 				p->setBrush(qApp->palette().color(QPalette::Active, QPalette::Highlight));
-				p->setOpacity(1.0);
 				p->setLineWidth(0);
 				p->setPen(qApp->palette().color(QPalette::Active, QPalette::Highlight));
 				for(int sfc(0);sfc < sFList.count();++sfc)
@@ -3794,22 +3797,22 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			}
 			//	End of selection
 
-			//Spreflight warnings
+			//preflight warnings
 			if(!warnFrame.isNull())
 				wFList << warnFrame;
 			if (!wFList.isEmpty())
 			{
 				double brushOpacity = p->getBrushOpacity();
 				double penOpacity = p->getPenOpacity();
-				p->save();//SA3
+				p->save();//SA4
 				p->setFillMode(1);
-				p->setBrush(m_Doc->guidesPrefs().preflightColor);
-				p->setOpacity(m_Doc->guidesPrefs().preflightColor.alphaF());
-				p->setPen(m_Doc->guidesPrefs().preflightColor);
+				p->setBrush(m_Doc->displayPrefs().preflightColor);
+				p->setOpacity(m_Doc->displayPrefs().preflightColor.alphaF());
+				p->setPen(m_Doc->displayPrefs().preflightColor);
 				p->setLineWidth(0);
 				for(int sfc(0);sfc < wFList.count();++sfc)
 					p->drawRect(wFList[sfc].x(), wFList[sfc].y(), wFList[sfc].width(), wFList[sfc].height());
-				p->restore();//RE3
+				p->restore();//RE4
 				p->setBrushOpacity(brushOpacity);
 				p->setPenOpacity(penOpacity);
 			}
@@ -3889,32 +3892,28 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						}
 						p->restore();//RE4
 					}
-				}
-				if (hl->prefix)
-				{
-					Q_ASSERT(!isNoteFrame());
-					const CharStyle& prefCharStyle(dynamic_cast<const CharStyle&>(*hl->prefix));
-					actFill = prefCharStyle.fillColor();
-					actFillShade = prefCharStyle.fillShade();
-					if (actFill != CommonStrings::None)
+					if (hl->prefix)
 					{
-						p->setFillMode(ScPainter::Solid);
-						if ((cachedFillShade != actFillShade) || (cachedFill != actFill))
+						const CharStyle& prefCharStyle(dynamic_cast<const CharStyle&>(*hl->prefix));
+						actFill = prefCharStyle.fillColor();
+						actFillShade = prefCharStyle.fillShade();
+						if (actFill != CommonStrings::None)
 						{
-							SetQColor(&tmp, actFill, actFillShade);
-							p->setBrush(tmp);
-							cachedFillQ = tmp;
-							cachedFill = actFill;
-							cachedFillShade = actFillShade;
+							p->setFillMode(ScPainter::Solid);
+							if ((cachedFillShade != actFillShade) || (cachedFill != actFill))
+							{
+								SetQColor(&tmp, actFill, actFillShade);
+								p->setBrush(tmp);
+								cachedFillQ = tmp;
+								cachedFill = actFill;
+								cachedFillShade = actFillShade;
+							}
+							else
+								p->setBrush(cachedFillQ);
 						}
 						else
-							p->setBrush(cachedFillQ);
-					}
-					else
-						p->setFillMode(ScPainter::None);
-	
-					if (!m_Doc->RePos)
-					{
+							p->setFillMode(ScPainter::None);
+						
 						const ScFace* font = &prefCharStyle.font();
 						double fontSize = prefCharStyle.fontSize() / 10.0;
 						desc = - font->descent(fontSize);
@@ -3924,7 +3923,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							// set text color to highlight if its selected
 							p->setBrush(qApp->palette().color(QPalette::Active, QPalette::HighlightedText));
 						}
-	
+						
 						actStroke = prefCharStyle.strokeColor();
 						actStrokeShade = prefCharStyle.strokeShade();
 						if (actStroke != CommonStrings::None)
@@ -3958,6 +3957,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	//	}
 		//	pf2.end();
 	}
+	TExtra = S_TExtra;
+	Extra = S_Extra;
+	RExtra = S_RExtra;
+	BExtra = S_BExtra;
 	p->restore();//RE1
 }
 

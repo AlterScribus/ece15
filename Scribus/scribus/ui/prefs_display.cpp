@@ -26,6 +26,7 @@ Prefs_Display::Prefs_Display(QWidget* parent, ScribusDoc* doc) : Prefs_Pane(pare
 	buttonRestoreDPI->setIcon(QIcon(loadIcon("screen.png")));
 
 	connect(pageFillColorButton, SIGNAL(clicked()), this, SLOT(changePaperColor()));
+	connect(preflightButton, SIGNAL(clicked()), this, SLOT(changePreflightColor()));
 
 	if (m_doc == NULL && !ScCore->primaryMainWindow()->HaveDoc)
 	{
@@ -38,7 +39,7 @@ Prefs_Display::Prefs_Display(QWidget* parent, ScribusDoc* doc) : Prefs_Pane(pare
 		connect(frameAnnotationColorButton, SIGNAL(clicked()), this, SLOT(changeAnnotFrameColor()));
 		connect(selectedPageBorderButton, SIGNAL(clicked()), this, SLOT(changePageBorderColor()));
 		connect(textControlCharsButton, SIGNAL(clicked()), this, SLOT(changeControlCharsColor()));
-		connect(preflightButton, SIGNAL(clicked()), this, SLOT(changePreflightColor()));
+//		connect(preflightButton, SIGNAL(clicked()), this, SLOT(changePreflightColor()));
 		connect(buttonRestoreDPI, SIGNAL(clicked()), this, SLOT(restoreDisScale()));
 		connect(adjustDisplaySlider, SIGNAL(valueChanged(int)), this, SLOT(setDisScale()));
 		connect(rulerUnitComboBox, SIGNAL(activated(int)), this, SLOT(drawRuler()));
@@ -54,7 +55,7 @@ Prefs_Display::Prefs_Display(QWidget* parent, ScribusDoc* doc) : Prefs_Pane(pare
 		frameAnnotationColorButton->setEnabled(false);
 		selectedPageBorderButton->setEnabled(false);
 		textControlCharsButton->setEnabled(false);
-		preflightButton->setEnabled(false);
+//		preflightButton->setEnabled(false);
 		buttonRestoreDPI->setEnabled(false);
 		adjustDisplaySlider->setEnabled(false);
 		rulerUnitComboBox->setEnabled(false);

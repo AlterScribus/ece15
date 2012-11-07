@@ -185,7 +185,6 @@ void PrefsManager::initDefaults()
 	appPrefs.guidesPrefs.marginColor = QColor(Qt::blue);
 	appPrefs.guidesPrefs.guideColor = QColor(Qt::darkBlue);
 	appPrefs.guidesPrefs.baselineGridColor = QColor(Qt::lightGray);
-	appPrefs.guidesPrefs.preflightColor = QColor(255,44,44,22);
 	appPrefs.guidesPrefs.renderStackOrder << 0 << 1 << 2 << 3 << 4;
 	appPrefs.guidesPrefs.gridType = 0;
 	appPrefs.typoPrefs.valueSuperScript = 33;
@@ -252,6 +251,7 @@ void PrefsManager::initDefaults()
 	appPrefs.displayPrefs.frameAnnotationColor = QColor(Qt::blue);
 	appPrefs.displayPrefs.pageBorderColor = QColor(Qt::red);
 	appPrefs.displayPrefs.controlCharColor = QColor(Qt::darkRed);
+	appPrefs.displayPrefs.preflightColor = QColor(255,44,44,22);
 	appPrefs.itemToolPrefs.textColumns = 1;
 	appPrefs.itemToolPrefs.textColumnGap = 0.0;
 	appPrefs.itemToolPrefs.lineColorShade = 100;
@@ -1357,8 +1357,6 @@ bool PrefsManager::WritePref(QString ho)
 	deGuides.setAttribute("MajorGridColor",appPrefs.guidesPrefs.majorGridColor.name());
 	deGuides.setAttribute("GuidesColor", appPrefs.guidesPrefs.guideColor.name());
 	deGuides.setAttribute("MarginColor",appPrefs.guidesPrefs.marginColor.name());
-	deGuides.setAttribute("PreflightColor",appPrefs.guidesPrefs.preflightColor.name());
-	deGuides.setAttribute("PreflightAlpha",ScCLocale::toQStringC(appPrefs.guidesPrefs.preflightColor.alphaF()));
 	deGuides.setAttribute("BaselineGridColor", appPrefs.guidesPrefs.baselineGridColor.name());
 	deGuides.setAttribute("ObjectToGuideSnapRadius", ScCLocale::toQStringC(appPrefs.guidesPrefs.guideRad));
 	QString renderStack = "";
@@ -1407,6 +1405,8 @@ bool PrefsManager::WritePref(QString ho)
 	deDisplay.setAttribute("FrameAnnotationColor",appPrefs.displayPrefs.frameAnnotationColor.name());
 	deDisplay.setAttribute("PageBorderColor",appPrefs.displayPrefs.pageBorderColor.name());
 	deDisplay.setAttribute("ControlCharColor",appPrefs.displayPrefs.controlCharColor.name());
+	deDisplay.setAttribute("PreflightColor",appPrefs.displayPrefs.preflightColor.name());
+	deDisplay.setAttribute("PreflightAlpha",ScCLocale::toQStringC(appPrefs.displayPrefs.preflightColor.alphaF()));
 	deDisplay.setAttribute("ShowMarginsFilled", static_cast<int>(appPrefs.displayPrefs.marginColored));
 	deDisplay.setAttribute("DisplayScale", ScCLocale::toQStringC(appPrefs.displayPrefs.displayScale, 8));
 	deDisplay.setAttribute("ShowVerifierWarningsOnCanvas",static_cast<int>(appPrefs.displayPrefs.showVerifierWarningsOnCanvas));
@@ -1976,6 +1976,8 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.displayPrefs.frameAnnotationColor = QColor(dc.attribute("FrameAnnotationColor","#0000ff"));
 			appPrefs.displayPrefs.pageBorderColor = QColor(dc.attribute("PageBorderColor","#ff0000"));
 			appPrefs.displayPrefs.controlCharColor = QColor(dc.attribute("ControlCharColor","#800000"));
+			appPrefs.displayPrefs.preflightColor = QColor(dc.attribute("PreflightColor","#800000"));
+			appPrefs.displayPrefs.preflightColor.setAlphaF(ScCLocale::toDoubleC(dc.attribute("PreflightAlpha"), 0.5));
 			appPrefs.displayPrefs.marginColored = static_cast<bool>(dc.attribute("ShowMarginsFilled", "0").toInt());
 			appPrefs.displayPrefs.displayScale = qRound(ScCLocale::toDoubleC(dc.attribute("DisplayScale"), appPrefs.displayPrefs.displayScale)*72)/72.0;
 			appPrefs.displayPrefs.showVerifierWarningsOnCanvas = static_cast<bool>(dc.attribute("ShowVerifierWarningsOnCanvas", "1").toInt());
@@ -2003,8 +2005,6 @@ bool PrefsManager::ReadPref(QString ho)
 			appPrefs.guidesPrefs.showPic = static_cast<bool>(dc.attribute("ShowImages", "1").toInt());
 			appPrefs.guidesPrefs.showControls = static_cast<bool>(dc.attribute("ShowControls", "0").toInt());
 			appPrefs.guidesPrefs.showPreflight = static_cast<bool>(dc.attribute("ShowPreflight", "0").toInt());
-			appPrefs.guidesPrefs.preflightColor = QColor(dc.attribute("PreflightColor","#800000"));
-			appPrefs.guidesPrefs.preflightColor.setAlphaF(ScCLocale::toDoubleC(dc.attribute("PreflightAlpha"), 0.1));
 			appPrefs.guidesPrefs.rulersShown = static_cast<bool>(dc.attribute("ShowRulers", "1").toInt());
 			appPrefs.guidesPrefs.showBleed = static_cast<bool>(dc.attribute("ShowBleed", "1").toInt());
 			appPrefs.guidesPrefs.rulerMode = static_cast<bool>(dc.attribute("RulerMode", "1").toInt());

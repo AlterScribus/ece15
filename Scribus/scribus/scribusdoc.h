@@ -232,6 +232,7 @@ public:
 	ItemToolPrefs& itemToolPrefs() { return docPrefsData.itemToolPrefs; }
 	OperatorToolPrefs& opToolPrefs() { return docPrefsData.opToolPrefs; }
 	ColorPrefs& colorPrefs() { return docPrefsData.colorPrefs; }
+	DisplayPrefs& displayPrefs() { return docPrefsData.displayPrefs; }
 	CMSData& cmsSettings() { return docPrefsData.colorPrefs.DCMSset; }
 	DocumentInformation& documentInfo() { return docPrefsData.docInfo; }
 	void setDocumentInfo(DocumentInformation di) { docPrefsData.docInfo=di; }
