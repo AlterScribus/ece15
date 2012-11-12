@@ -1169,7 +1169,11 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 		allItems.clear();
 	}
 
-	m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+	// start auto save timer if needed
+	if (m_Doc->autoSave() && ScCore->usingGUI())
+		m_Doc->restartAutoSaveTimer();
+//	m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(DOC.childNodes().count());
 

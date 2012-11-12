@@ -292,7 +292,8 @@ typedef enum {
 	FontNotEmbedded=15,
 	EmbeddedFontIsOpenType=16,
 	OffConflictLayers=17,
-	PartFilledImageFrame= 18
+	PartFilledImageFrame= 18,
+	MarksChanged = 19
 } PreflightError;
 
 typedef QMap<PreflightError, int> errorCodes;
@@ -380,6 +381,7 @@ enum UpdateRequests
 	reqCmsOptionsUpdate  = 512,
 	reqCustomShapeUpdate = 1024,
 	reqInlinePalUpdate   = 2048,
+	reqMarksUpdate       = 4096,
 	reqUpdateAll = 65535
 };
 

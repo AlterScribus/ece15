@@ -194,31 +194,15 @@ void gtParagraphStyle::setTabValue(double newTabValue, TabType ttype)
 	flags |= tabValueWasSet;
 }
 
-bool gtParagraphStyle::hasBullet()
+bool gtParagraphStyle::hasDropCap()
 {
-	return bullet;
-}
-QString  gtParagraphStyle::getBullet()
-{
-	return bulletStr;
+	return dropCap;
 }
 
 void gtParagraphStyle::setDropCap(bool newDropCap)
 {
 	dropCap = newDropCap;
 	flags |= dropCapWasSet;
-}
-
-void gtParagraphStyle::setBullet(bool newBullet, QString str)
-{
-	bullet = newBullet;
-	bulletStr = str;
-	flags |= bulletWasSet;
-}
-
-bool gtParagraphStyle::hasDropCap()
-{
-	return dropCap;
 }
 
 void gtParagraphStyle::setDropCap(int newHeight)
@@ -237,6 +221,23 @@ void   gtParagraphStyle::setDropCapHeight(int newHeight)
 {
 	dropCapHeight = newHeight;
 	flags |= dropCapHeightWasSet;
+}
+
+bool gtParagraphStyle::hasBullet()
+{
+	return bullet;
+}
+
+QString  gtParagraphStyle::getBullet()
+{
+	return bulletStr;
+}
+
+void gtParagraphStyle::setBullet(bool newBullet, QString str)
+{
+	bullet = newBullet;
+	bulletStr = str;
+	flags |= bulletWasSet;
 }
 
 bool gtParagraphStyle::isAdjToBaseline()

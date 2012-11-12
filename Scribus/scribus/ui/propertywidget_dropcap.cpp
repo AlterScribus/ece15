@@ -282,8 +282,8 @@ void PropertyWidget_DropCap::connectSignals()
 	connect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)), Qt::UniqueConnection);
 	connect(numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(handleNumLevel(int)), Qt::UniqueConnection);
 	connect(numStyleCombo, SIGNAL(activated(int)), this, SLOT(handleNumStyle(int)), Qt::UniqueConnection);
-	connect(numPrefix, SIGNAL(textEdited(QString)), this, SLOT(handleNumPrefix(QString)), Qt::UniqueConnection);
-	connect(numSuffix, SIGNAL(textEdited(QString)), this, SLOT(handleNumSufffix(QString)), Qt::UniqueConnection);
+//	connect(numPrefix, SIGNAL(textEdited(QString)), this, SLOT(handleNumPrefix(QString)), Qt::UniqueConnection);
+//	connect(numSuffix, SIGNAL(textEdited(QString)), this, SLOT(handleNumSufffix(QString)), Qt::UniqueConnection);
 	connect(peOffset_, SIGNAL(valueChanged(double)), this, SLOT(handlePEOffset()), Qt::UniqueConnection);
 	connect(peIndent_, SIGNAL(toggled(bool)), this, SLOT(handlePEIndent()), Qt::UniqueConnection);
 	connect(peCharStyleCombo, SIGNAL(activated(int)), this, SLOT(handlePECharStyle()), Qt::UniqueConnection);
@@ -300,8 +300,8 @@ void PropertyWidget_DropCap::disconnectSignals()
 	disconnect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)));
 	disconnect(numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(handleNumLevel(int)));
 	disconnect(numStyleCombo, SIGNAL(activated(int)), this, SLOT(handleNumStyle(int)));
-	disconnect(numPrefix, SIGNAL(textEdited(QString)), this, SLOT(handleNumPrefix(QString)));
-	disconnect(numSuffix, SIGNAL(textEdited(QString)), this, SLOT(handleNumSufffix(QString)));
+//	disconnect(numPrefix, SIGNAL(textEdited(QString)), this, SLOT(handleNumPrefix(QString)));
+//	disconnect(numSuffix, SIGNAL(textEdited(QString)), this, SLOT(handleNumSufffix(QString)));
 	disconnect(peOffset_, SIGNAL(valueChanged(double)), this, SLOT(handlePEOffset()));
 	disconnect(peIndent_, SIGNAL(toggled(bool)), this, SLOT(handlePEIndent()));
 	disconnect(peOffset_, SIGNAL(valueChanged(double)), this, SLOT(handlePEOffset()));

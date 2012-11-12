@@ -24,6 +24,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusview.h"
 
 #include "scconfig.h"
+#include "sclimits.h"
 
 #include <QColor>
 #include <QDebug>
@@ -336,6 +337,9 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 //	connect(m_dragTimer, SIGNAL(timeout()), this, SLOT(dragTimerTimeOut()));
 //	m_dragTimer->stop();
 	m_dragTimerFired = false;
+	clockLabel = new ClockWidget(this, Doc);
+	clockLabel->setGeometry(m_vhRulerHW + 1, height() - m_vhRulerHW - 61, 60, 60);
+	clockLabel->setVisible(false);
 }
 
 ScribusView::~ScribusView()
@@ -877,6 +881,40 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 		emit DocChanged();
 		update();
 		return;
+	}
+	else if (e->mimeData()->hasFormat("text/inline"))
+	{
+		if (((Doc->appMode == modeEditTable) || (Doc->appMode == modeEdit)) && (!Doc->m_Selection->isEmpty()))
+		{
+			PageItem *b = Doc->m_Selection->itemAt(0);
+			if (b->isTextFrame() || b->isTable())
+			{
+				e->acceptProposedAction();
+				activateWindow();
+				if (!m_ScMW->scriptIsRunning())
+					raise();
+				m_ScMW->newActWin(((ScribusWin*)(Doc->WinHan))->getSubWin());
+				updateContents();
+				QString patternVal = e->mimeData()->data("text/inline");
+				int id = patternVal.toInt();
+				PageItem_TextFrame *cItem;
+				if (Doc->appMode == modeEditTable)
+					cItem = b->asTable()->activeCell().textFrame();
+				else
+					cItem = b->asTextFrame();
+				if (cItem->HasSel)
+					cItem->deleteSelectedTextFromFrame();
+				cItem->invalidateLayout(false);
+				cItem->itemText.insertObject(id);
+				if (b->isTable())
+					b->asTable()->update();
+				else
+					b->update();
+				emit DocChanged();
+				update();
+				return;
+			}
+		}
 	}
 //	qDebug() << "ScribusView::contentsDropEvent" << e->mimeData()->formats() << url;
 	if (!url.isEmpty())
@@ -1715,7 +1753,7 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	{
 		if (Doc->appMode == modeRotation)
 			qApp->changeOverrideCursor(QCursor(loadIcon("Rotieren2.png")));
-		else
+		else if (!currItem->sizeHLocked() && ! currItem->sizeVLocked())
 		{
 			double rr = fabs(currItem->rotation());
 			if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) ||
@@ -2027,6 +2065,16 @@ void ScribusView::resizeEvent ( QResizeEvent * event )
 	horizRuler->setGeometry(m_vhRulerHW, 1, width()-m_vhRulerHW-1, m_vhRulerHW);
 	vertRuler->setGeometry(1, m_vhRulerHW, m_vhRulerHW, height()-m_vhRulerHW-1);
 	rulerMover->setGeometry(1, 1, m_vhRulerHW, m_vhRulerHW);
+	if (clockLabel->isExpanded())
+	{
+		clockLabel->setGeometry(m_vhRulerHW + 1, height() - m_vhRulerHW - 61, 60, 60);
+		clockLabel->setFixedSize(60, 60);
+	}
+	else
+	{
+		clockLabel->setGeometry(m_vhRulerHW + 1, height() - m_vhRulerHW - 16, 15, 15);
+		clockLabel->setFixedSize(15, 15);
+	}
 	m_canvas->m_viewMode.forceRedraw = true;
 	m_canvas->resetRenderMode();
 	// Per Qt doc, not painting should be done in a resizeEvent,
@@ -2764,7 +2812,8 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 		for (int layerLevel = 0; layerLevel < layerCount; ++layerLevel)
 		{
 			Doc->Layers.levelToLayer(layer, layerLevel);
-			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph));
+			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
+			m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
 		}
 		painter->endLayer();
 		painter->end();
@@ -2895,7 +2944,8 @@ QImage ScribusView::PageToPixmap(int Nr, int maxGr, bool drawFrame)
 			{
 				Doc->Layers.levelToLayer(layer, layerLevel);
 				m_canvas->DrawMasterItems(painter, Doc->DocPages.at(Nr), layer, QRect(clipx, clipy, clipw, cliph));
-				m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph));
+				m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), false);
+				m_canvas->DrawPageItems(painter, layer, QRect(clipx, clipy, clipw, cliph), true);
 			}
 			painter->endLayer();
 			painter->end();
@@ -4025,16 +4075,19 @@ void ScribusView::TextToPath()
 			}
 			if (currItem->asTextFrame())
 			{
-				PageItem* newItem = new PageItem_Polygon(*currItem);
-				newItem->convertTo(PageItem::Polygon);
-				newItem->Frame = false;
-				newItem->ClipEdited = true;
-				newItem->FrameType = 3;
-				newItem->OldB2 = newItem->width();
-				newItem->OldH2 = newItem->height();
-				newItem->Clip = FlattenPath(newItem->PoLine, newItem->Segments);
-				newItem->ContourLine = newItem->PoLine.copy();
-				newGroupedItems.prepend(newItem);
+				if ((!currItem->NamedLStyle.isEmpty()) || (currItem->lineColor() != CommonStrings::None) || (!currItem->strokePattern().isEmpty()) || (!currItem->strokeGradient().isEmpty()))
+				{
+					PageItem* newItem = new PageItem_Polygon(*currItem);
+					newItem->convertTo(PageItem::Polygon);
+					newItem->Frame = false;
+					newItem->ClipEdited = true;
+					newItem->FrameType = 3;
+					newItem->OldB2 = newItem->width();
+					newItem->OldH2 = newItem->height();
+					newItem->Clip = FlattenPath(newItem->PoLine, newItem->Segments);
+					newItem->ContourLine = newItem->PoLine.copy();
+					newGroupedItems.prepend(newItem);
+				}
 			}
 			delItems.append(tmpSelection.takeItem(offset));
 		}
@@ -4048,7 +4101,24 @@ void ScribusView::TextToPath()
 		}
 		if (newGroupedItems.count() > 1)
 		{
-			int z = Doc->itemAdd(PageItem::Group, PageItem::Rectangle, currItem->xPos(), currItem->yPos(), currItem->width(), currItem->height(), 0, CommonStrings::None, CommonStrings::None, true);
+			double minx =  std::numeric_limits<double>::max();
+			double miny =  std::numeric_limits<double>::max();
+			double maxx = -std::numeric_limits<double>::max();
+			double maxy = -std::numeric_limits<double>::max();
+			for (int ep = 0; ep < newGroupedItems.count(); ++ep)
+			{
+				double x1, x2, y1, y2;
+				newGroupedItems.at(ep)->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+				minx = qMin(minx, x1);
+				miny = qMin(miny, y1);
+				maxx = qMax(maxx, x2);
+				maxy = qMax(maxy, y2);
+			}
+			double gx = minx;
+			double gy = miny;
+			double gw = maxx - minx;
+			double gh = maxy - miny;
+			int z = Doc->itemAdd(PageItem::Group, PageItem::Rectangle, gx, gy, gw, gh, 0, CommonStrings::None, CommonStrings::None, true);
 			PageItem *gItem = Doc->Items->takeAt(z);
 			Doc->groupObjectsToItem(gItem, newGroupedItems);
 			gItem->Parent = currItem->Parent;
@@ -4075,8 +4145,9 @@ void ScribusView::TextToPath()
 				tmpSelection.addItem(delItems.takeAt(0)); //yes, 0, remove the first
 			Doc->itemSelection_DeleteItem(&tmpSelection);
 		}
-		Doc->m_Selection->copy(tmpSelection, true);
+//		Doc->m_Selection->copy(tmpSelection, true);
 		m_ScMW->HaveNewSel(-1);
+		Deselect(true);
 		trans.commit();
 	}
 #endif

@@ -241,6 +241,9 @@ void CanvasMode_Normal::mouseDoubleClickEvent(QMouseEvent *m)
 			{
 				m_view->requestMode(modeEdit);
 				m_view->slotSetCurs(m->globalPos().x(), m->globalPos().y());
+				//used for updating Notes Styles Editor and menu actions for marks
+				//if cursor is in mark`s place
+				m_ScMW->setTBvals(currItem);
 				//CB ignore the double click and go with a single one
 				//if we werent in mode edit before.
 				//unsure if this is correct, but its ok given we had no
@@ -514,9 +517,9 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 								m_doc->ApplyGuides(&nx, &ny,true);
 								m_objectDeltaPos += FPoint(nx - nxo, ny - nyo);
 								if(ny != nyo)
-									ySnap = ny * m_canvas->scale();
+									ySnap = ny;
 								if(nx != nxo)
-									xSnap = nx * m_canvas->scale();
+									xSnap = nx;
 							}
 						}
 						if (m_doc->useRaster)
@@ -600,9 +603,9 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 							m_doc->ApplyGuides(&nx, &ny,true);
 							m_objectDeltaPos += FPoint(nx - nxo, ny - nyo);
 							if(ny != nyo)
-								ySnap = ny * m_canvas->scale();
+								ySnap = ny;
 							if(nx != nxo)
-								xSnap = nx * m_canvas->scale();
+								xSnap = nx;
 						}
 					}
 					if (m_doc->useRaster)
@@ -716,7 +719,11 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 					if(currItem->asLine())
 						qApp->changeOverrideCursor(QCursor(Qt::SizeAllCursor));
 					else if(!currItem->locked() && !currItem->sizeLocked())
+					{
+						if ((!currItem->sizeHLocked() && !currItem->sizeVLocked()) || (currItem->sizeHLocked() && (how == 5 || how == 8))
+							|| (currItem->sizeVLocked() && (how == 6 || how == 7)))
 						setResizeCursor(how, currItem->rotation());
+				}
 				}
 				else if (how == 0)
 					qApp->changeOverrideCursor(QCursor(Qt::OpenHandCursor));
@@ -957,7 +964,7 @@ void CanvasMode_Normal::mouseReleaseEvent(QMouseEvent *m)
 			while(underItem)
 			{
 				if(underItem->asTextFrame())
-					underItem->asTextFrame()->invalidateLayout();
+					underItem->asTextFrame()->invalidateLayout(false);
 				else
 					underItem->invalidateLayout();
 				

@@ -4877,42 +4877,42 @@ QString PDFLibCore::setTextSt(PageItem *ite, uint PNr, const ScPage* pag)
 			tabDist = ls.x;
 			double CurX = ls.x;
 			int d = ls.firstItem;
-			if (ite->itemText.item(d)->prefix)
-			{
-				ScText *hl = ite->itemText.item(d)->prefix;
-				const ParagraphStyle& pstyle(ite->itemText.paragraphStyle(d));
-				QString peChName = pstyle.peCharStyleName();
-				const CharStyle & cstyle(((peChName != tr("No Style")) && (peChName != "")) ? doc.charStyle(peChName) : ite->itemText.charStyle(d));
-				if ((cstyle.effects() & ScStyle_Shadowed) && (cstyle.strokeColor() != CommonStrings::None))
-				{
-					ScText hl2;
-					static_cast<CharStyle&>(hl2) = static_cast<const CharStyle&>(*hl);
-					hl2.ch = hl->ch;
-					hl2.glyph.glyph = hl->glyph.glyph;
-					const GlyphLayout *gl1 = &hl->glyph;
-					GlyphLayout	*gl2 = &hl2.glyph;
-					while (gl1->more)
-					{
-						gl2->more = new GlyphLayout(*gl1->more);
-						gl2->more->yoffset -= (cstyle.fontSize() * cstyle.shadowYOffset() / 10000.0);
-						gl2->more->xoffset += (cstyle.fontSize() * cstyle.shadowXOffset() / 10000.0);
-						gl2->more->more = NULL;
-						gl1 = gl1->more;
-						gl2 = gl2->more;
-					}
-					hl2.setFillColor(cstyle.strokeColor());
-					hl2.setFillShade(cstyle.strokeShade());
-					hl2.glyph.xadvance = hl->glyph.xadvance;
-					hl2.glyph.yadvance = hl->glyph.yadvance;
-					hl2.glyph.yoffset = hl->glyph.yoffset - (cstyle.fontSize() * cstyle.shadowYOffset() / 10000.0);
-					hl2.glyph.xoffset = hl->glyph.xoffset + (cstyle.fontSize() * cstyle.shadowXOffset() / 10000.0);
-					hl2.glyph.scaleH = hl->glyph.scaleH;
-					hl2.glyph.scaleV = hl->glyph.scaleV;
+//			if (ite->itemText.item(d)->prefix)
+//			{
+//				ScText *hl = ite->itemText.item(d)->prefix;
+//				const ParagraphStyle& pstyle(ite->itemText.paragraphStyle(d));
+//				QString peChName = pstyle.peCharStyleName();
+//				const CharStyle & cstyle(((peChName != tr("No Style")) && (peChName != "")) ? doc.charStyle(peChName) : ite->itemText.charStyle(d));
+//				if ((cstyle.effects() & ScStyle_Shadowed) && (cstyle.strokeColor() != CommonStrings::None))
+//				{
+//					ScText hl2;
+//					static_cast<CharStyle&>(hl2) = static_cast<const CharStyle&>(*hl);
+//					hl2.ch = hl->ch;
+//					hl2.glyph.glyph = hl->glyph.glyph;
+//					const GlyphLayout *gl1 = &hl->glyph;
+//					GlyphLayout	*gl2 = &hl2.glyph;
+//					while (gl1->more)
+//					{
+//						gl2->more = new GlyphLayout(*gl1->more);
+//						gl2->more->yoffset -= (cstyle.fontSize() * cstyle.shadowYOffset() / 10000.0);
+//						gl2->more->xoffset += (cstyle.fontSize() * cstyle.shadowXOffset() / 10000.0);
+//						gl2->more->more = NULL;
+//						gl1 = gl1->more;
+//						gl2 = gl2->more;
+//					}
+//					hl2.setFillColor(cstyle.strokeColor());
+//					hl2.setFillShade(cstyle.strokeShade());
+//					hl2.glyph.xadvance = hl->glyph.xadvance;
+//					hl2.glyph.yadvance = hl->glyph.yadvance;
+//					hl2.glyph.yoffset = hl->glyph.yoffset - (cstyle.fontSize() * cstyle.shadowYOffset() / 10000.0);
+//					hl2.glyph.xoffset = hl->glyph.xoffset + (cstyle.fontSize() * cstyle.shadowXOffset() / 10000.0);
+//					hl2.glyph.scaleH = hl->glyph.scaleH;
+//					hl2.glyph.scaleV = hl->glyph.scaleV;
 					
-					setTextCh(ite, PNr, CurX, ls.y, d, tmp, tmp2, &hl2, pstyle, pag);
-				}
-				setTextCh(ite, PNr, CurX, ls.y, d, tmp, tmp2, hl, pstyle, pag);
-			}
+//					setTextCh(ite, PNr, CurX, ls.y, d, tmp, tmp2, &hl2, pstyle, pag);
+//				}
+//				setTextCh(ite, PNr, CurX, ls.y, d, tmp, tmp2, hl, pstyle, pag);
+//			}
 			for (int d = ls.firstItem; d <= ls.lastItem; ++d)
 			{
 				ScText *hl = ite->itemText.item(d);
@@ -8648,6 +8648,13 @@ bool PDFLibCore::PDF_Annotation(PageItem *ite, uint)
 					de.Act = ite->annotation().Action();
 					NamedDest.append(de);
 					NDnum++;
+				}
+				if (ite->annotation().ActionType() == 10)
+				{
+					if (!ite->annotation().Action().isEmpty())
+					{
+						PutDoc("/A << /Type /Action /S /Named /N /" + ite->annotation().Action() + " >>\n");
+					}
 				}
 			}
 			break;
