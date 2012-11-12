@@ -15,7 +15,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_icon.h"
 
-PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent), m_item(NULL), m_ScMW(NULL), m_enhanced(NULL)
+PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent), m_enhanced(NULL), m_item(NULL), m_ScMW(NULL)
 {
 	setupUi(this);
 	setFrameStyle(QFrame::Box | QFrame::Plain);
@@ -264,7 +264,8 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 	if (newCurrent.hasParent())
 	{
 		const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newCurrent.parentStyle());
-		peIndent_->setParentValue(parent->parEffectIndent());
+		if (parent)
+			peIndent_->setParentValue(parent->parEffectIndent());
 	}
 
 	displayCharStyle(newCurrent.peCharStyleName());

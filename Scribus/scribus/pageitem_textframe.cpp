@@ -1583,27 +1583,23 @@ void PageItem_TextFrame::layout()
 				if (style.hasBullet() || style.hasNum())
 				{
 					BulNumMode = true;
-					if (hl->mark == NULL || hl->mark->isType(MARKBulNumType))
+					if (hl->mark == NULL || !hl->mark->isType(MARKBulNumType))
 					{
 						BulNumMark* bnMark = new BulNumMark();
-						if (style.hasBullet())
-							bnMark->setString(style.bulletStr());
-						else if (style.hasNum())
-						{
-							if (bnMark->getString().isEmpty())
-							{
-								bnMark->setString("?");
-								m_Doc->m_flagRenumber = true;
-							}
-						}
 						itemText.insertMark(bnMark,a);
-//						bnMark.applyCharStyle(charStyle);
-//						bnMark.setEffects(ScStyle_Default);
-//						const StyleContext* cStyleContext = itemText.paragraphStyle(a).charStyleContext();
-//						bnMark->setContext(cStyleContext);
 						a--;
 						itLen = itemText.length();
 						continue;
+					}
+					if (style.hasBullet())
+						hl->mark->setString(style.bulletStr());
+					else if (style.hasNum())
+					{
+						if (hl->mark->getString().isEmpty())
+						{
+							hl->mark->setString("?");
+							m_Doc->m_flagRenumber = true;
+						}
 					}
 				}
 			}
@@ -1798,7 +1794,13 @@ void PageItem_TextFrame::layout()
 			layoutGlyphs(*hl, chstr, hl->glyph);
 			if (BulNumMode)
 			{
-				double xoff = hl->glyph.wide() + style.parEffectOffset();
+//				double xoff = hl->glyph.wide() + style.parEffectOffset();
+				double xoff = style.parEffectOffset();
+				if (style.parEffectIndent())
+				{
+					hl->glyph.xadvance = 0;
+					xoff -= hl->glyph.wide();
+				}
 				hl->glyph.xoffset -= xoff;
 				GlyphLayout* moreGL = hl->glyph.more;
 				while (moreGL)
@@ -2047,11 +2049,11 @@ void PageItem_TextFrame::layout()
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
-						if (BulNumMode)
-						{
-							if (!style.parEffectIndent())
-								current.leftIndent += style.parEffectOffset() + hl->glyph.wide();
-						}
+//						if (BulNumMode)
+//						{
+//							if (!style.parEffectIndent())
+//								current.leftIndent += style.parEffectOffset();// + hl->glyph.wide();
+//						}
 					}
 					current.addLeftIndent = false;
 				}

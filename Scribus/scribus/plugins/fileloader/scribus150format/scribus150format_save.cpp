@@ -1590,9 +1590,12 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		else if (ch == SpecialChars::OBJECT && item->itemText.item(k)->mark != NULL)
 		{
 			Mark* mark = item->itemText.item(k)->mark;
-			docu.writeEmptyElement("MARK");
-			docu.writeAttribute("label", mark->label);
-			docu.writeAttribute("type", mark->getType());
+			if (!mark->isType(MARKBulNumType))
+			{ //dont save marks for bullets and numbering
+				docu.writeEmptyElement("MARK");
+				docu.writeAttribute("label", mark->label);
+				docu.writeAttribute("type", mark->getType());
+			}
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
 			putPStyle(docu, item->itemText.paragraphStyle(k), "para");

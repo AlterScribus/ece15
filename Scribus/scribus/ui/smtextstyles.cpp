@@ -517,8 +517,8 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	connect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	connect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParaEffectOffset()));
-	connect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParaEffectIndent(bool)));
+	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParEffectOffset()));
+	connect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParEffectIndent(bool)));
 	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	connect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
@@ -611,7 +611,7 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	disconnect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
 	disconnect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParEffectOffset()));
-	disconnect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParaEffectIndent(bool)));
+	disconnect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParEffectIndent(bool)));
 	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
@@ -931,7 +931,7 @@ void SMParagraphStyle::slotDropCapLines(int lines)
 	}
 }
 
-void SMParagraphStyle::slotParaEffectOffset()
+void SMParagraphStyle::slotParEffectOffset()
 {
 	if (pwidget_->parEffectOffset_->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
@@ -954,7 +954,7 @@ void SMParagraphStyle::slotParaEffectOffset()
 	}
 }
 
-void SMParagraphStyle::slotParaEffectIndent(bool isOn)
+void SMParagraphStyle::slotParEffectIndent(bool isOn)
 {
 	if (pwidget_->parEffectIndentBox->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
