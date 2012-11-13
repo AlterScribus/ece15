@@ -1792,23 +1792,6 @@ void PageItem_TextFrame::layout()
 			}
 			hl->glyph.yadvance = 0;
 			layoutGlyphs(*hl, chstr, hl->glyph);
-			if (BulNumMode)
-			{
-//				double xoff = hl->glyph.wide() + style.parEffectOffset();
-				double xoff = style.parEffectOffset();
-				if (style.parEffectIndent())
-				{
-					hl->glyph.xadvance = 0;
-					xoff -= hl->glyph.wide();
-				}
-				hl->glyph.xoffset -= xoff;
-				GlyphLayout* moreGL = hl->glyph.more;
-				while (moreGL)
-				{
-					moreGL->xoffset -= xoff;
-					moreGL = moreGL->more;
-				}
-			}
 			// find out width, ascent and descent of char
 			if (HasObject)
 			{
@@ -1983,6 +1966,8 @@ void PageItem_TextFrame::layout()
 					}
 				}
 			}
+			if (BulNumMode)
+				hl->glyph.last()->xadvance += style.parEffectOffset();
 			//check for Y position at beginning of line
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2049,11 +2034,11 @@ void PageItem_TextFrame::layout()
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
-//						if (BulNumMode)
-//						{
-//							if (!style.parEffectIndent())
-//								current.leftIndent += style.parEffectOffset();// + hl->glyph.wide();
-//						}
+						if (BulNumMode)
+						{
+							if(style.parEffectIndent())
+								current.leftIndent -= style.parEffectOffset() + wide;
+						}
 					}
 					current.addLeftIndent = false;
 				}
