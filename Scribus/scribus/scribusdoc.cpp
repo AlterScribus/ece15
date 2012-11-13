@@ -271,12 +271,12 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	m_currentPage(NULL),
 	m_updateManager(),
 	m_docUpdater(NULL),
-	m_flagRenumber(false),
 	flag_notesChanged(false),
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true)
+	flag_layoutNotesFrames(true),
+	flag_Renumber(false)
 {
 	docUnitRatio=unitGetRatioFromIndex(docPrefsData.docSetupPrefs.docUnitIndex);
 	docPrefsData.docSetupPrefs.pageHeight=0;
@@ -373,12 +373,12 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	m_currentPage(NULL),
 	m_updateManager(),
 	m_docUpdater(NULL),
-	m_flagRenumber(false),
 	flag_notesChanged(false),
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
-	flag_layoutNotesFrames(true)
+	flag_layoutNotesFrames(true),
+	flag_Renumber(false)
 {
 	docPrefsData.docSetupPrefs.docUnitIndex=unitindex;
 	docPrefsData.docSetupPrefs.pageHeight=pagesize.height();
@@ -573,7 +573,7 @@ void ScribusDoc::init()
 	m_masterPageMode=true; // quick hack to force the change of pointers in setMasterPageMode();
 	setMasterPageMode(false);
 	addSymbols();
-	m_flagRenumber = true;
+	flag_Renumber = true;
 	//for loading old documents where default notes style is not saved
 	if (m_docNotesStylesList.isEmpty())
 		m_docNotesStylesList.append(new NotesStyle());
@@ -1491,7 +1491,7 @@ void ScribusDoc::redefineStyles(const StyleSet<ParagraphStyle>& newStyles, bool 
 	docParagraphStyles.invalidate();
 	setupNumerations();
 	if (!isLoading())
-		m_flagRenumber = true;
+		flag_Renumber = true;
 }
 
 void ScribusDoc::redefineCharStyles(const StyleSet<CharStyle>& newStyles, bool removeUnused)
@@ -9056,6 +9056,62 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 	regionsChanged()->update(QRectF());
 }
 
+void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
+{
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	assert(itemSelection!=0);
+	uint selectedItemCount=itemSelection->count();
+	if (selectedItemCount == 0)
+		return;
+	for (uint aa = 0; aa < selectedItemCount; ++aa)
+	{
+		PageItem *currItem = itemSelection->itemAt(aa);
+		if (currItem->itemText.length() == 0)
+			continue;
+		int currItemTextCount = currItem->itemText.length();
+		if ((appMode != modeEdit) && (appMode != modeEditTable))
+		{
+			for (int pos = 0; pos < currItemTextCount; ++pos)
+			{
+				ScText* hl = currItem->itemText.item(pos);
+				if (hl->hasMark() && hl->mark->isType(MARKBulNumType))
+				{
+					if (UndoManager::undoEnabled())
+					{
+						ScItemState<QPair<int,QString> > *is = new ScItemState<QPair <int,QString> >(Um::SetStyle);
+						is->set("CLEARMARK", "clear_mark_string");
+						is->setItem(qMakePair(pos, hl->mark->getString()));
+						undoManager->action(currItem, is);
+					}
+					hl->mark->setString(QString());
+				}
+			}
+		}
+		else
+		{
+			int start = currItem->itemText.startOfSelection();
+			int stop = currItem->itemText.endOfSelection();
+			if (start >= stop)
+				start = stop = currItem->itemText.normalizedCursorPosition();
+			for (int pos=start; pos < stop; ++pos)
+			{
+				ScText* hl = currItem->itemText.item(pos);
+				if (hl->hasMark() && hl->mark->isType(MARKBulNumType))
+				{
+					if (UndoManager::undoEnabled())
+					{
+						ScItemState<QPair<int,QString> > *is = new ScItemState<QPair <int,QString> >(Um::SetStyle);
+						is->set("CLEARMARKSTRING", "clear_mark_string");
+						is->setItem(qMakePair(pos, hl->mark->getString()));
+						undoManager->action(currItem, is);
+					}
+					hl->mark->setString(QString());
+				}
+			}
+		}
+	}
+}
+
 void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection, bool rmDirectFormatting)
 {
 	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
@@ -9063,6 +9119,8 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 	uint selectedItemCount=itemSelection->count();
 	if (selectedItemCount == 0)
 		return;
+	if (flag_Renumber)
+		itemSelection_ClearBulNumStrings(itemSelection);
 	UndoTransaction* activeTransaction = NULL;
 	if (UndoManager::undoEnabled() && selectedItemCount > 1)
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
@@ -16587,25 +16645,22 @@ void ScribusDoc::restartAutoSaveTimer()
 
 void ScribusDoc::setupNumerations()
 {
-	foreach (numstruct* ns, numerations.values())
-		delete ns;
-	numerations.clear();
-//create default numeration
-	numstruct * numS = new numstruct;
-	numS->name = "default";
 	Numeration num;
-	numS->nums.insert(0,num);
-	numS->counters.insert(0, 0);
-	numerations.insert(numS->name, numS);
-
+	numstruct * numS = NULL;
+	if (numerations.isEmpty())
+	{
+		//create default numeration
+		numS = new numstruct;
+		numS->name = "default";
+		numS->nums.insert(0,num);
+		numS->counters.insert(0, 0);
+		numerations.insert(numS->name, numS);
+	}
+	
 	for (int i=0; i < docParagraphStyles.count(); ++i)
 	{
 		if (docParagraphStyles[i].hasNum())
 		{
-			num.numFormat = (NumFormat) docParagraphStyles[i].numStyle();
-			num.prefix = docParagraphStyles[i].numPrefix();
-			num.suffix = docParagraphStyles[i].numSuffix();
-			num.start = docParagraphStyles[i].numStart() -1;
 			QString name = docParagraphStyles[i].numName();
 			if (numerations.contains(name))
 				numS = numerations.value(name);
@@ -16614,6 +16669,10 @@ void ScribusDoc::setupNumerations()
 				numS = new numstruct;
 				numS->name = name;
 			}
+			num.numFormat = (NumFormat) docParagraphStyles[i].numStyle();
+			num.prefix = docParagraphStyles[i].numPrefix();
+			num.suffix = docParagraphStyles[i].numSuffix();
+			num.start = docParagraphStyles[i].numStart() -1;
 			int level = docParagraphStyles[i].numLevel();
 			if (level >= numS->counters.count())
 			{
@@ -16679,7 +16738,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 			for (int l = 0; l < numS->nums.count(); ++l)
 				numS->counters[l] = numS->nums[l].start;
 	}
-	m_flagRenumber = false;
+	flag_Renumber = false;
 
 	//renumbering for doc, sections, page and frame range
 	for (int sec = 0; sec < sections().count(); ++sec)
@@ -16764,7 +16823,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 						{
 							hl->mark->setString(prefixStr);
 							item->invalid = true;
-							m_flagRenumber = true;
+							flag_Renumber = true;
 						}
 					}
 					if (pos == last)

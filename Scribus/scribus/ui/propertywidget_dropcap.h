@@ -82,7 +82,8 @@ private:
 		bulletStrEdit_->addItem("<");
 		bulletStrEdit_->addItem(">");
 		bulletStrEdit_->setMinimumWidth(50);
-		bulletStrEdit_->setEditText(QChar(0x2022));
+		if (bulletStrEdit_->currentText().isEmpty())
+			bulletStrEdit_->setEditText(QChar(0x2022));
 	}
 	
 	void fillNumStyleCombo()
@@ -92,7 +93,6 @@ private:
 		numStyleCombo->addItem("i_ii_iii");
 		numStyleCombo->addItem("I_II_III");
 		numStyleCombo->addItem("a_b_c");
-		numStyleCombo->addItem("i_ii_iii");
 		numStyleCombo->addItem("A_B_C");
 		numStyleCombo->addItem("*");
 	}

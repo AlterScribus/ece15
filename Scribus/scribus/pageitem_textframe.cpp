@@ -1598,7 +1598,7 @@ void PageItem_TextFrame::layout()
 						if (hl->mark->getString().isEmpty())
 						{
 							hl->mark->setString("?");
-							m_Doc->m_flagRenumber = true;
+							m_Doc->flag_Renumber = true;
 						}
 					}
 				}
@@ -2034,7 +2034,7 @@ void PageItem_TextFrame::layout()
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
-						if (BulNumMode)
+						if (BulNumMode || DropCmode)
 						{
 							if(style.parEffectIndent())
 								current.leftIndent -= style.parEffectOffset() + wide;

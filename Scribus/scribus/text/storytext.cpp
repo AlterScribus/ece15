@@ -375,7 +375,7 @@ void StoryText::insertParSep(int pos)
 //		it->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
 	}
 	if (it->parstyle->hasNum())
-		doc->m_flagRenumber = true;
+		doc->flag_Renumber = true;
 	d->replaceCharStyleContextInParagraph(pos, it->parstyle->charStyleContext());
 }
 /**
@@ -387,7 +387,7 @@ void StoryText::removeParSep(int pos)
 	ScText* it = item_p(pos);
 	if (it->parstyle) {
 		if (it->parstyle->hasNum())
-			doc->m_flagRenumber = true;
+			doc->flag_Renumber = true;
 //		const CharStyle* oldP = & it->parstyle->charStyle();
 //		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
 //		d->replaceParentStyle(pos, oldP, newP);

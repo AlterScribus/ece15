@@ -1773,8 +1773,9 @@ public:
 	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
 	QString getNumberStr(QString numName, int level, bool increment=true, bool resetlower=true);
 	void setNumerationCounter(QString numName, int level, int number);
-	bool m_flagRenumber;
+	bool flag_Renumber;
 	void updateNumbers(bool updateNumerations = false);
+	void itemSelection_ClearBulNumStrings(Selection *customSelection);
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

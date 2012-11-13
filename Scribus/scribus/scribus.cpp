@@ -1698,7 +1698,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 				}
 //FIXME:av		view->oldCp = currItem->CPos;
-				if (currItem->itemType() == PageItem::TextFrame)
+				if (currItem->isTextFrame())
 				{
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
@@ -1713,7 +1713,8 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					}
 					keyrep=kr;
 				}
-				slotDocCh(false);
+				if (!currItem->isTextFrame() || (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty()))
+					slotDocCh(false);
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -2354,6 +2355,7 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 	scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 	scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());
+	scrActions["extrasUpdateDocument"]->setEnabled(true);
 	if (!doc->masterPageMode())
 		pagePalette->Rebuild();
 	outlinePalette->setDoc(doc);
@@ -3429,10 +3431,11 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
-	while (doc->m_flagRenumber)
+	while (doc->flag_Renumber)
 	{
 		doc->updateNumbers();
-		if (!doc->m_flagRenumber)
+		emit UpdateRequest(reqCharStylesUpdate);
+		if (!doc->flag_Renumber)
 			doc->regionsChanged()->update(QRect());
 	}
 	if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
@@ -4267,7 +4270,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		/*QTime t;
 		t.start();*/
 		int docItemsCount=doc->Items->count();
-		doc->m_flagRenumber = false;
+		doc->flag_Renumber = false;
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -8074,6 +8077,7 @@ void ScribusMainWindow::slotDocSetup()
 		scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 		scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 		scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());
+		scrActions["extrasUpdateDocument"]->setEnabled(true);
 		view->cmsToolbarButton->setChecked(doc->HasCMS);
 		//doc emits changed() via this
 		doc->setMasterPageMode(true);

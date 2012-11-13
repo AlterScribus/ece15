@@ -12,6 +12,8 @@ for which a new license (GPL+exception) is in place.
 #include "scribusdoc.h"
 #include "selection.h"
 #include "units.h"
+#include "undomanager.h"
+#include "undostate.h"
 #include "util.h"
 #include "util_icon.h"
 
@@ -240,12 +242,15 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newCurrent)
 		if (newCurrent.hasParent())
 		{
 			const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newCurrent.parentStyle());
-			if (parent && !parent->numName().isEmpty())
-				numComboBox->setParentItem(numComboBox->findText(parent->numName()));
+			if (parent)
+			{
+				if (!parent->numName().isEmpty())
+					numComboBox->setParentItem(numComboBox->findText(parent->numName()));
+				numStyleCombo->setParentItem(parent->numStyle());
+				numLevelSpin->setParentValue(parent->numLevel());
+			}
 			else
 				numComboBox->setParentItem(0);
-			numStyleCombo->setParentItem(parent->numStyle());
-			numLevelSpin->setParentValue(parent->numLevel());
 		}
 		setWidgetBoldFont(numPrefixLabel, !newCurrent.isInhNumPrefix());
 		setWidgetBoldFont(numSuffixLabel, !newCurrent.isInhNumSuffix());
@@ -367,10 +372,10 @@ void PropertyWidget_DropCap::handleParEffectUse()
 	{
 		enableBullet(true);
 		newStyle.setHasBullet(true);
-		QString bStr = bulletStrEdit_->currentText();
-		if (bStr.isEmpty())
-			bStr = QChar(0x2022);
-		newStyle.setBulletStr(bStr);
+//		QString bStr = bulletStrEdit_->currentText();
+//		if (bStr.isEmpty())
+//			bStr = QChar(0x2022);
+//		newStyle.setBulletStr(bStr);
 		newStyle.setHasNum(false);
 		newStyle.setHasDropCap(false);
 	}
@@ -394,6 +399,7 @@ void PropertyWidget_DropCap::handleParEffectUse()
 	{
 		Selection tempSelection(this, false);
 		tempSelection.addItem(item, true);
+		m_doc->flag_Renumber = true;
 		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
 	}
 }
@@ -446,10 +452,33 @@ void PropertyWidget_DropCap::handleNumName(QString)
 		newStyle.setNumHigher(true);
 		newStyle.setNumRestart(NSRstory);
 		int suffix = 1;
-		while (m_doc->numerations.contains(numName + "_"+ QString(suffix)))
+		while (m_doc->numerations.contains(numName + "_"+ QString::number(suffix)))
 			++suffix;
-		numName.append("_" + QString(suffix));
-		m_doc->m_flagRenumber = true;
+		numName.append("_" + QString::number(suffix));
+
+		numstruct * numS = new numstruct;
+		numS->name = numName;
+		Numeration num;
+		numS->nums.insert(0,num);
+		numS->counters.insert(0, 0);
+		num.numFormat = (NumFormat) numStyleCombo->currentIndex();
+		num.prefix = numPrefix->text();
+		num.suffix = numSuffix->text();
+		num.start = 1;
+		int level = numLevelSpin->value();
+		if (level >= numS->counters.count())
+		{
+			for (int i=numS->counters.count(); i <= level; ++i)
+			{
+				numS->nums.insert(i,num);
+				numS->counters.insert(i, 0);
+			}
+		}
+		numS->nums.replace(level, num);
+		numS->counters.replace(level, num.start);
+		numS->lastlevel = 0;
+		m_doc->numerations.insert(numS->name, numS);
+		m_doc->flag_Renumber = true;
 	}
 	newStyle.setNumName(numName);
 	PageItem *item = m_item;
