@@ -1572,14 +1572,10 @@ void PageItem_TextFrame::layout()
 					}
 				}
 			}
-			if (a > 0 && itemText.text(a-1) == SpecialChars::PARSEP)
-				style = itemText.paragraphStyle(a);
-			if (current.itemsInLine == 0)
-				opticalMargins = style.opticalMargins();
-			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
 			BulNumMode = false;
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP))
+			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
+				style = itemText.paragraphStyle(a);
 				if (style.hasBullet() || style.hasNum())
 				{
 					BulNumMode = true;
@@ -1612,6 +1608,9 @@ void PageItem_TextFrame::layout()
 				itLen = itemText.length();
 				continue;
 			}
+			if (current.itemsInLine == 0)
+				opticalMargins = style.opticalMargins();
+			CharStyle charStyle = ((hl->ch != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
 			chstr = ExpandToken(a);
 			int chstrLen = chstr.length();
 			if (chstr.isEmpty())
@@ -1624,25 +1623,23 @@ void PageItem_TextFrame::layout()
 			{
 				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
 				{
-					if (style.peCharStyleName() == tr("No Style") || style.peCharStyleName().isEmpty())
-					{
-						const QString& curParent(style.hasParent() ? style.parent() : style.name());
-						CharStyle newStyle;
-						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-						charStyle.setStyle(newStyle);
-					}
-					else if (charStyle.name() != style.peCharStyleName())
-						charStyle.setStyle(m_Doc->charStyle(style.peCharStyleName()));
-					itemText.setCharStyle(a, chstrLen ,charStyle);
-				}
-				else if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-				//hasDropCap is cleared but is set dcCharStyleName = clear drop cap char style
-				{
 					const QString& curParent(style.hasParent() ? style.parent() : style.name());
 					CharStyle newStyle;
-					newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+					if (style.peCharStyleName() == tr("No Style") || style.peCharStyleName().isEmpty())
+						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+					else if (charStyle.name() != style.peCharStyleName())
+						newStyle.setParent(m_Doc->charStyle(style.peCharStyleName()).name());
+					newStyle.applyCharStyle(charStyle);
 					charStyle.setStyle(newStyle);
-					itemText.setCharStyle(a, chstr.length(),charStyle);
+					itemText.setCharStyle(a, 1 , charStyle);
+				}
+				else if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
+				//par effect is cleared but is set dcCharStyleName = clear drop cap char style
+				{
+					const QString& curParent(style.hasParent() ? style.parent() : style.name());
+					charStyle.eraseCharStyle(m_Doc->charStyle(style.peCharStyleName()));
+					charStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+					itemText.setCharStyle(a, 1,charStyle);
 				}
 			}
 
@@ -1792,6 +1789,7 @@ void PageItem_TextFrame::layout()
 			}
 			hl->glyph.yadvance = 0;
 			layoutGlyphs(*hl, chstr, hl->glyph);
+			
 			// find out width, ascent and descent of char
 			if (HasObject)
 			{
@@ -1805,9 +1803,9 @@ void PageItem_TextFrame::layout()
 				if (a+1 < itemText.length())
 				{
 					uint glyph2 = font.char2CMap(itemText.text(a+1));
-					double kern= font.glyphKerning(hl->glyph.glyph, glyph2, chs / 10.0) * hl->glyph.scaleH;
+					double kern= font.glyphKerning(hl->glyph.last()->glyph, glyph2, chs / 10.0) * hl->glyph.scaleH;
 					wide += kern;
-					hl->glyph.xadvance += kern;
+					hl->glyph.last()->xadvance += kern;
 					// change xadvance, xoffset according to JIS X4051
 					ScText *hl2 = itemText.item(a+1);
 					int nextStat = SpecialChars::getCJKAttr(hl2->ch);
@@ -1821,7 +1819,7 @@ void PageItem_TextFrame::layout()
 							case SpecialChars::CJK_NOTOP:
 								kern = wide / 4;
 								wide += kern;
-								hl->glyph.xadvance += kern;
+								hl->glyph.last()->xadvance += kern;
 							}
 						} else {	// next char is CJK, too
 							switch(curStat & SpecialChars::CJK_CHAR_MASK){
@@ -1834,7 +1832,7 @@ void PageItem_TextFrame::layout()
 								case SpecialChars::CJK_MIDPOINT:
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
+									hl->glyph.last()->xadvance += kern;
 								}
 								break;
 							case SpecialChars::CJK_COMMA:
@@ -1844,7 +1842,7 @@ void PageItem_TextFrame::layout()
 								case SpecialChars::CJK_FENCE_END:
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
+									hl->glyph.last()->xadvance += kern;
 								}
 								break;
 							case SpecialChars::CJK_MIDPOINT:
@@ -1852,7 +1850,7 @@ void PageItem_TextFrame::layout()
 								case SpecialChars::CJK_FENCE_BEGIN:
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
+									hl->glyph.last()->xadvance += kern;
 								}
 								break;
 							case SpecialChars::CJK_FENCE_BEGIN:
@@ -1865,8 +1863,8 @@ void PageItem_TextFrame::layout()
 								if(prevStat == SpecialChars::CJK_FENCE_BEGIN){
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
-									hl->glyph.xoffset += kern;
+									hl->glyph.last()->xadvance += kern;
+									hl->glyph.last()->xoffset += kern;
 								}
 								break;
 							}
@@ -1880,7 +1878,7 @@ void PageItem_TextFrame::layout()
 							case SpecialChars::CJK_NOTOP:
 								kern = hl2->glyph.wide() / 4;
 								wide += kern;
-								hl->glyph.xadvance += kern;
+								hl->glyph.last()->xadvance += kern;
 							}
 						}
 					}
@@ -1930,7 +1928,6 @@ void PageItem_TextFrame::layout()
 				if (SpecialChars::isExpandingSpace(hl->ch))
 				{
 					double wordtracking = charStyle.wordTracking();
-					hl->glyph.xadvance *= wordtracking;
 					wide *= wordtracking;
 				}
 				// find ascent / descent
@@ -1966,8 +1963,8 @@ void PageItem_TextFrame::layout()
 					}
 				}
 			}
-			if (BulNumMode)
-				hl->glyph.last()->xadvance += style.parEffectOffset();
+//			if (BulNumMode)
+//				hl->glyph.last()->xadvance += style.parEffectOffset();
 			//check for Y position at beginning of line
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2045,9 +2042,9 @@ void PageItem_TextFrame::layout()
 			}
 			current.recalculateY = true;
 			maxYAsc = 0.0, maxYDesc = 0.0;
+			double addAsce = 0.0;
 			if (current.startOfCol)
 			{
-				double addAsce;
 				if (DropCmode)
 					addAsce = qMax(realAsce, asce + offset);
 				else
@@ -2136,18 +2133,18 @@ void PageItem_TextFrame::layout()
 						lastLineY = maxYAsc;
 						if (current.startOfCol)
 						{
-							double addAsce;
-							if (DropCmode)
-								addAsce = qMax(realAsce, asce + offset);
-							else
-								addAsce = asce + offset;
-							if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
-							{
-								if (firstLineOffset() == FLOPRealGlyphHeight)
-									addAsce = realAsce;
-								else if (firstLineOffset() == FLOPLineSpacing)
-									addAsce = style.lineSpacing() + offset;
-							}
+//							double addAsce;
+//							if (DropCmode)
+//								addAsce = qMax(realAsce, asce + offset);
+//							else
+//								addAsce = asce + offset;
+//							if (style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing)
+//							{
+//								if (firstLineOffset() == FLOPRealGlyphHeight)
+//									addAsce = realAsce;
+//								else if (firstLineOffset() == FLOPLineSpacing)
+//									addAsce = style.lineSpacing() + offset;
+//							}
 							maxYAsc = current.yPos - addAsce;
 						}
 						else
@@ -2349,7 +2346,7 @@ void PageItem_TextFrame::layout()
 					current.rememberBreak(a, breakPos, style.rightMargin());
 				}
 			}
-			if  ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
+			if  (hl->hasObject(m_Doc))
 				current.rememberBreak(a, breakPos, style.rightMargin());
 			// CJK break
 			if(a > current.line.firstItem)
@@ -2607,20 +2604,23 @@ void PageItem_TextFrame::layout()
 					tabs.status = TabNONE;
 				}
 			}
-			if (DropCmode && !outs)
+			if ((DropCmode || BulNumMode) && !outs)
 			{
-				DropCmode = false;
-				DropLinesCount = 0;
-				maxDY = current.yPos;
-				current.hasDropCap = true;
 				current.xPos += style.parEffectOffset();
-				hl->glyph.xadvance += style.parEffectOffset();
-				maxDX = current.xPos;
-				double spacing = calculateLineSpacing (style, this);
-				current.yPos -= spacing * (DropLines-1);
-				if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
-					current.yPos = adjustToBaselineGrid (current, this, OwnPage);
-				current.recalculateY = false;
+				hl->glyph.last()->xadvance += style.parEffectOffset();
+				if (DropCmode)
+				{
+					DropCmode = false;
+					DropLinesCount = 0;
+					maxDY = current.yPos;
+					current.hasDropCap = true;
+					maxDX = current.xPos;
+					double spacing = calculateLineSpacing (style, this);
+					current.yPos -= spacing * (DropLines-1);
+					if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+						current.yPos = adjustToBaselineGrid (current, this, OwnPage);
+					current.recalculateY = false;
+				}
 			}
 			// end of line
 			if (outs)

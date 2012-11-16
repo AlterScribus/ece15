@@ -182,7 +182,7 @@ void PageItem_PathText::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		CharStyle nstyle = itemText.charStyle(a);
 		ParagraphStyle pstyle = itemText.paragraphStyle(a);
 		chstr = hl->ch;
-		if ((itemText.item(a)->ch == SpecialChars::OBJECT) && (itemText.item(a)->hasObject(m_Doc)))
+		if (itemText.item(a)->hasObject(m_Doc))
 		{
 			int pot = itemRenderText.length();
 			itemRenderText.insertObject(pot, itemText.object(a)->inlineCharID);

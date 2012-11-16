@@ -31,6 +31,7 @@ pageitem.cpp  -  description
 #include <cassert>
 
 #include "marks.h"
+#include "numeration.h"
 //#include "text/paragraphlayout.h"
 #include "text/frect.h"
 #include "text/specialchars.h"
@@ -272,7 +273,11 @@ public:
 	/// layouts the text -- FIXME: better interface for this
  	int layout(int startItem);
  	uint nrOfItems() const;
-//private:
+
+// for local numeration of paragraphs
+	bool updateLocalNums(); //return tru if any num strings were updated and item need s invalidation
+
+	//private:
  	ScText * item(uint index);
  	const ScText * item(uint index) const;
 public:

@@ -3434,7 +3434,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 	while (doc->flag_Renumber)
 	{
 		doc->updateNumbers();
-		emit UpdateRequest(reqCharStylesUpdate);
+		emit UpdateRequest(reqNumUpdate);
 		if (!doc->flag_Renumber)
 			doc->regionsChanged()->update(QRect());
 	}

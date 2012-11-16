@@ -1769,7 +1769,7 @@ public slots:
 
 //auto-numerations
 public:
-	QMap<QString, numstruct*> numerations;
+	QMap<QString, NumStruct*> numerations;
 	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
 	QString getNumberStr(QString numName, int level, bool increment=true, bool resetlower=true);
 	void setNumerationCounter(QString numName, int level, int number);

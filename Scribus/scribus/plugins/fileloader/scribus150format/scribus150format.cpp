@@ -2614,7 +2614,7 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 
 	static const QString NUMSTART("NUMSTART");
 	if (attrs.hasAttribute(NUMSTART))
-		newStyle.setNumLevel(attrs.valueAsInt(NUMSTART));
+		newStyle.setNumStart(attrs.valueAsInt(NUMSTART));
 
 	static const QString NUMPREFIX("NUMPREFIX");
 	if (attrs.hasAttribute(NUMPREFIX))

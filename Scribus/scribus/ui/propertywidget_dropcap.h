@@ -18,7 +18,7 @@ public:
 	PropertyWidget_DropCap(QWidget *parent = 0);
 	~PropertyWidget_DropCap() {}
 
-	void updateStyle(const ParagraphStyle& newCurrent);
+	void updateStyle(const ParagraphStyle& newPStyle);
 	void updateCharStyles();
 
 	void displayCharStyle(const QString& name);
@@ -52,15 +52,16 @@ public slots:
 
 	void handleParEffectUse();
 	void handleBulletStr(QString);
-	void handleDropCapLines();
+	void handleDropCapLines(int);
 	void handleNumName(QString);
 	void handleNumStyle(int);
 	void handleNumLevel(int);
-	void hnadleNumPrefix(QString);
+	void handleNumPrefix(QString);
 	void handleNumSuffix(QString);
-	void handlePEOffset();
-	void handlePEIndent();
-	void handlePECharStyle();
+	void handleNumStart(int);
+	void handlePEOffset(double);
+	void handlePEIndent(bool);
+	void handlePECharStyle(QString);
 
 private slots:
 	void on_bulletCharTableButton__toggled(bool checked);
@@ -79,8 +80,6 @@ private:
 		bulletStrEdit_->addItem(QChar(0x2022));
 		bulletStrEdit_->addItem("*");
 		bulletStrEdit_->addItem("-");
-		bulletStrEdit_->addItem("<");
-		bulletStrEdit_->addItem(">");
 		bulletStrEdit_->setMinimumWidth(50);
 		if (bulletStrEdit_->currentText().isEmpty())
 			bulletStrEdit_->setEditText(QChar(0x2022));

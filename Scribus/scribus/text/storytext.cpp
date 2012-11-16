@@ -24,9 +24,11 @@ pageitem.cpp  -  description
 //#include <QDebug>
 //FIXME: this include must go to sctextstruct.h !
 #include <QList>
+#include <QPair>
 #include <cassert>  //added to make Fedora-5 happy
 #include "fpoint.h"
 #include "notesstyles.h"
+#include "numeration.h"
 #include "scfonts.h"
 #include "scribusdoc.h"
 #include "sctext_shared.h"
@@ -832,7 +834,7 @@ const CharStyle & StoryText::charStyle(int pos) const
 	if (text(pos) == SpecialChars::PARSEP)
 		return paragraphStyle(pos).charStyle();
 	StoryText* that = const_cast<StoryText *>(this);
-	return dynamic_cast<const CharStyle &> (*that->d->at(pos));
+	return reinterpret_cast<const CharStyle &> (*that->d->at(pos));
 }
 
 const ParagraphStyle & StoryText::paragraphStyle() const
@@ -1813,6 +1815,70 @@ int StoryText::layout(int startItem)
 uint StoryText::nrOfItems() const
 {
 	return length();
+}
+
+bool StoryText::updateLocalNums()
+{
+	int m_lastlevel = 0;
+	QList<Numeration> m_nums;
+	QList<int> m_counters;
+	bool needUpdate = false;
+	for (int pos = 0; pos < length(); ++pos)
+	{
+		if (pos != 0 && text(pos-1) != SpecialChars::PARSEP)
+			continue;
+		ScText* hl = item(pos);
+		if (hl->mark != NULL && hl->mark->isType(MARKBulNumType) && paragraphStyle(pos).hasNum())
+		{
+			ParagraphStyle style = paragraphStyle(pos);
+			if (style.numName() == "<local block>")
+			{
+				int level = style.numLevel();
+				while (m_counters.count() < (level + 1))
+				{
+					m_counters.append(0);
+					Numeration num((NumFormat) style.numStyle());
+					m_nums.append(num);
+				}
+				Numeration num = m_nums.at(level);
+				int count = m_counters.at(level);
+				bool reset = false;
+				if ((level == 0) && (style.numStyle() != (int) num.numFormat))
+				{
+					reset = true;
+					m_counters.clear();
+					m_counters.append(0);
+					m_nums.clear();
+					Numeration num((NumFormat) style.numStyle());
+					num.prefix = style.numPrefix();
+					num.suffix = style.numSuffix();
+					m_nums.append(num);
+				}
+				else if (level > m_lastlevel)
+					reset = true;
+				
+				if (reset)
+					count = style.numStart()-1;
+				count++;
+				m_lastlevel = level;
+				m_counters.insert(level, count);
+				//m_nums.insert(level, num);
+				QString result = QString();
+				for (int i=0; i <= level; ++i)
+				{
+					result.append(m_nums.at(i).prefix);
+					result.append(getStringFromNum(m_nums.at(i).numFormat, m_counters.at(i)));
+					result.append(m_nums.at(i).suffix);
+				}
+				if (hl->mark->getString() != result)
+				{
+					hl->mark->setString(result);
+					needUpdate = true;
+				}
+			}
+		}
+	}
+	return needUpdate;
 }
 
 

@@ -385,9 +385,9 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numStyleCombo->setCurrentItem(pstyle->numStyle());
 		numStyleCombo->setParentItem(parent->numStyle());
 		numLevelSpin->setValue(pstyle->numLevel(), pstyle->isInhNumLevel());
-		numstruct * numS = m_Doc->numerations.value(pstyle->numName());
+		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
-			numLevelSpin->setMaximum(numS->counters.count());
+			numLevelSpin->setMaximum(numS->m_counters.count());
 		else
 			numLevelSpin->setMaximum(0);
 		numLevelSpin->setParentValue(parent->numLevel());
@@ -437,9 +437,9 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numNewLineEdit->clear();
 		numStyleCombo->setCurrentIndex(pstyle->numStyle());
 		numLevelSpin->setValue(pstyle->numLevel());
-		numstruct * numS = m_Doc->numerations.value(pstyle->numName());
+		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
-			numLevelSpin->setMaximum(numS->counters.count());
+			numLevelSpin->setMaximum(numS->m_counters.count());
 		else
 			numLevelSpin->setMaximum(0);
 		numPrefix->setText(pstyle->numPrefix());

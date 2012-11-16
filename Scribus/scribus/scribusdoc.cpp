@@ -573,7 +573,6 @@ void ScribusDoc::init()
 	m_masterPageMode=true; // quick hack to force the change of pointers in setMasterPageMode();
 	setMasterPageMode(false);
 	addSymbols();
-	flag_Renumber = true;
 	//for loading old documents where default notes style is not saved
 	if (m_docNotesStylesList.isEmpty())
 		m_docNotesStylesList.append(new NotesStyle());
@@ -687,7 +686,7 @@ ScribusDoc::~ScribusDoc()
 		delete m_docNotesStylesList.takeFirst();
 	docPatterns.clear();
 	docGradients.clear();
-	foreach (numstruct* ns, numerations.values())
+	foreach (NumStruct* ns, numerations.values())
 		delete ns;
 	numerations.clear();
 	while (!DocItems.isEmpty())
@@ -16578,7 +16577,7 @@ void ScribusDoc::checkItemForFrames(PageItem *it, int fIndex)
 	for (int e = start; e < stop; ++e)
 	{
 		ScText *hl = it->itemText.item(e);
-		if ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(this)))
+		if (hl->hasObject(this))
 		{
 			if (hl->getItem(this)->inlineCharID == fIndex)
 				deleteList.prepend(e);
@@ -16646,15 +16645,15 @@ void ScribusDoc::restartAutoSaveTimer()
 void ScribusDoc::setupNumerations()
 {
 	Numeration num;
-	numstruct * numS = NULL;
+	NumStruct * numS = NULL;
 	if (numerations.isEmpty())
 	{
 		//create default numeration
-		numS = new numstruct;
-		numS->name = "default";
-		numS->nums.insert(0,num);
-		numS->counters.insert(0, 0);
-		numerations.insert(numS->name, numS);
+		numS = new NumStruct;
+		numS->m_name = "default";
+		numS->m_nums.insert(0,num);
+		numS->m_counters.insert(0, 0);
+		numerations.insert(numS->m_name, numS);
 	}
 	
 	for (int i=0; i < docParagraphStyles.count(); ++i)
@@ -16666,26 +16665,26 @@ void ScribusDoc::setupNumerations()
 				numS = numerations.value(name);
 			else
 			{
-				numS = new numstruct;
-				numS->name = name;
+				numS = new NumStruct;
+				numS->m_name = name;
 			}
 			num.numFormat = (NumFormat) docParagraphStyles[i].numStyle();
 			num.prefix = docParagraphStyles[i].numPrefix();
 			num.suffix = docParagraphStyles[i].numSuffix();
 			num.start = docParagraphStyles[i].numStart() -1;
 			int level = docParagraphStyles[i].numLevel();
-			if (level >= numS->counters.count())
+			if (level >= numS->m_counters.count())
 			{
-				for (int i=numS->counters.count(); i <= level; ++i)
+				for (int i=numS->m_counters.count(); i <= level; ++i)
 				{
-					numS->nums.insert(i,num);
-					numS->counters.insert(i, 0);
+					numS->m_nums.insert(i,num);
+					numS->m_counters.insert(i, 0);
 				}
 			}
-			numS->nums.replace(level, num);
-			numS->counters.replace(level, num.start);
-			numS->lastlevel = 0;
-			numerations.insert(numS->name, numS);
+			numS->m_nums.replace(level, num);
+			numS->m_counters.replace(level, num.start);
+			numS->m_lastlevel = 0;
+			numerations.insert(numS->m_name, numS);
 		}
 	}
 }
@@ -16693,37 +16692,37 @@ void ScribusDoc::setupNumerations()
 QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, bool resetlower)
 {
 	Q_ASSERT(numerations.contains(numName));
-	numstruct * numS = numerations.value(numName);
-	numS->lastlevel = level;
+	NumStruct * numS = numerations.value(numName);
+	numS->m_lastlevel = level;
 	if (resetlower)
 	{
-		for (int l = 0; l < numS->counters.count(); ++l)
+		for (int l = 0; l < numS->m_counters.count(); ++l)
 			if (l >= level)
-				setNumerationCounter(numName, l, numS->nums[l].start);
+				setNumerationCounter(numName, l, numS->m_nums[l].start);
 	}
 	if (increment)
 	{
-		int currNum = numS->counters.at(level);
+		int currNum = numS->m_counters.at(level);
 		++currNum;
 		setNumerationCounter(numName, level, currNum);
 	}
 	QString result = QString();
 	for (int i=0; i <= level; ++i)
 	{
-		result.append(numS->nums[i].prefix);
-		result.append(numS->nums[i].numString(numS->counters.at(i)));
-		result.append(numS->nums[i].suffix);
+		result.append(numS->m_nums[i].prefix);
+		result.append(numS->m_nums[i].numString(numS->m_counters.at(i)));
+		result.append(numS->m_nums[i].suffix);
 	}
 	return result;
 }
 
 void ScribusDoc::setNumerationCounter(QString numName, int level, int number)
 {
-	numstruct * numS = numerations.value(numName);
-	if (level > numS->counters.count())
-		numS->counters.insert(level, number);
+	NumStruct * numS = numerations.value(numName);
+	if (level > numS->m_counters.count())
+		numS->m_counters.insert(level, number);
 	else
-		numS->counters.replace(level, number);
+		numS->m_counters.replace(level, number);
 }
 
 void ScribusDoc::updateNumbers(bool updateNumerations)
@@ -16731,33 +16730,36 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 	if (updateNumerations)
 		//after stles change reset all numerations settings
 		setupNumerations();
-	else
+	//reset ALL counters
+	foreach (NumStruct * numS, numerations.values())
+		for (int l = 0; l < numS->m_nums.count(); ++l)
+			numS->m_counters[l] = numS->m_nums[l].start;
+	foreach (PageItem* item, DocItems)
 	{
-		//reset ALL counters
-		foreach (numstruct * numS, numerations.values())
-			for (int l = 0; l < numS->nums.count(); ++l)
-				numS->counters[l] = numS->nums[l].start;
+		if (item->itemText.length() > 0)
+			if (item->itemText.updateLocalNums())
+				item->invalid = true;
 	}
-	flag_Renumber = false;
 
+	flag_Renumber = false;
 	//renumbering for doc, sections, page and frame range
 	for (int sec = 0; sec < sections().count(); ++sec)
 	{
 		//reset section range counters
-		foreach (numstruct * numS, numerations.values())
-			for (int l = 0; l < numS->nums.count(); ++l)
-				if (numS->nums[l].range == NSRsection)
-					numS->counters[l] = numS->nums[l].start;
+		foreach (NumStruct * numS, numerations.values())
+			for (int l = 0; l < numS->m_nums.count(); ++l)
+				if (numS->m_nums[l].range == NSRsection)
+					numS->m_counters[l] = numS->m_nums[l].start;
 
 		int start = sections().value(sec).fromindex;
 		int stop = sections().value(sec).toindex;
 		for (int page = start; page <= stop; ++page)
 		{
 			//reset page range counters
-			foreach (numstruct * numS, numerations.values())
-				for (int l = 0; l < numS->nums.count(); ++l)
-					if (numS->nums[l].range == NSRpage)
-						numS->counters[l] = numS->nums[l].start;
+			foreach (NumStruct * numS, numerations.values())
+				for (int l = 0; l < numS->m_nums.count(); ++l)
+					if (numS->m_nums[l].range == NSRpage)
+						numS->m_counters[l] = numS->m_nums[l].start;
 			for (int i=0; i < DocItems.count(); ++i)
 			{
 				PageItem* item = DocItems.at(i);
@@ -16767,10 +16769,10 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 					continue;
 
 				//reset items and stories range counters
-				foreach (numstruct * numS, numerations.values())
-					for (int l = 0; l < numS->nums.count(); ++l)
-						if ((numS->nums[l].range == NSRframe) || ((numS->nums[l].range == NSRstory) && (item->prevInChain() == NULL)))
-							numS->counters[l] = numS->nums[l].start;
+				foreach (NumStruct * numS, numerations.values())
+					for (int l = 0; l < numS->m_nums.count(); ++l)
+						if ((numS->m_nums[l].range == NSRframe) || ((numS->m_nums[l].range == NSRstory) && (item->prevInChain() == NULL)))
+							numS->m_counters[l] = numS->m_nums[l].start;
 
 				int pos = item->firstInFrame();
 				if ((pos != 0) && (item->itemText.text(pos-1) != SpecialChars::PARSEP))
@@ -16780,7 +16782,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 				while (pos <= last)
 				{
 					ParagraphStyle style = item->itemText.paragraphStyle(pos);
-					if (style.hasNum())
+					if (style.hasNum() && style.numName()!="<local block>")
 					{
 						ScText * hl = item->itemText.item(pos);
 						bool resetlowerlevel = false;
@@ -16800,12 +16802,12 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 							if (resetlowerlevel && (style.numLevel() > 0))
 							{
 								for (int l = 0; l < style.numLevel(); ++l)
-									setNumerationCounter(style.numName(), l, numerations.value(style.numName())->counters[l] +1);
+									setNumerationCounter(style.numName(), l, numerations.value(style.numName())->m_counters[l] +1);
 							}
 						}
 						if (style.numHigher() && (style.numLevel() > 0))
 						{
-							if (numerations.value(style.numName())->lastlevel < style.numLevel())
+							if (numerations.value(style.numName())->m_lastlevel < style.numLevel())
 								resetlowerlevel = true;
 						}
 						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel);
