@@ -1858,8 +1858,23 @@ bool StoryText::updateLocalNums()
 					m_nums.append(num);
 				}
 				Numeration num = m_nums.at(level);
+				num.prefix = style.numPrefix();
+				num.suffix = style.numSuffix();
+				num.start = style.numStart();
+				m_nums.replace(level, num);
 				int count = m_counters.at(level);
 				bool reset = false;
+				if (pos == 0)
+					reset = true;
+				else if (pos > 0)
+				{
+					ParagraphStyle prevStyle;
+					prevStyle = paragraphStyle(pos -1);
+					reset = !prevStyle.hasNum()
+					        || prevStyle.numName() != "<local block>"
+					        || prevStyle.numLevel() != level
+					        || prevStyle.numStyle() != style.numStyle();
+				}
 				if ((level == 0) && (style.numStyle() != (int) num.numFormat))
 				{
 					reset = true;
@@ -1878,7 +1893,7 @@ bool StoryText::updateLocalNums()
 					count = style.numStart()-1;
 				count++;
 				m_lastlevel = level;
-				m_counters.insert(level, count);
+				m_counters.replace(level, count);
 				//m_nums.insert(level, num);
 				QString result = QString();
 				for (int i=0; i <= level; ++i)

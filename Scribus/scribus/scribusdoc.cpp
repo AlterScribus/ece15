@@ -9088,10 +9088,16 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 		}
 		else
 		{
-			int start = currItem->itemText.startOfSelection();
-			int stop = currItem->itemText.endOfSelection();
-			if (start >= stop)
-				start = stop = currItem->itemText.normalizedCursorPosition();
+			int start;
+			int stop;
+			start = stop = currItem->itemText.normalizedCursorPosition();
+			if (currItem->HasSel)
+			{
+				start = currItem->itemText.startOfSelection();
+				stop = currItem->itemText.endOfSelection();
+			}
+			start = currItem->itemText.startOfParagraph(currItem->itemText.nrOfParagraph(start));
+			stop = currItem->itemText.endOfParagraph(currItem->itemText.nrOfParagraph(stop));
 			for (int pos=start; pos < stop; ++pos)
 			{
 				ScText* hl = currItem->itemText.item(pos);

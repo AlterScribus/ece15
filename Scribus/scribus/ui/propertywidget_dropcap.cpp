@@ -33,6 +33,7 @@ PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent)
 	fillNumStyleCombo();
 	enableParEffect(false);
 	bulletCharTableButton_->setIcon(loadIcon("22/insert-table.png"));
+	numStart->setMinimum(1);
 	numStart->setMaximum(9999);
 }
 
