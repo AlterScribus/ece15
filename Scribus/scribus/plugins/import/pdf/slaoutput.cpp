@@ -1,8 +1,7 @@
 #include "slaoutput.h"
-#include <GlobalParams.h>
-#include <poppler-config.h>
-#include <Form.h>
-#include <FileSpec.h>
+#include <poppler/GlobalParams.h>
+#include <poppler/poppler-config.h>
+#include <poppler/FileSpec.h>
 #include <QApplication>
 #include <QFile>
 #include "commonstrings.h"
@@ -1107,7 +1106,7 @@ void SlaOutputDev::restoreState(GfxState *state)
 					}
 					PageItem *sing = gElements.Items.first();
 					if ((gElements.Items.count() == 1)
-						 && (sing->isImageFrame()  || sing->isGroup() || sing->isPolygon() || sing->isPolyLine())
+						 && (sing->isImageFrame() || sing->isGroup() || sing->isPolygon() || sing->isPolyLine())
 						 && (ite->patternMask().isEmpty() || sing->patternMask().isEmpty() || (sing->patternMask() == ite->patternMask()))
 						 && (state->getFillOpacity() == (1.0 - ite->fillTransparency()))
 					   )
@@ -1125,21 +1124,36 @@ void SlaOutputDev::restoreState(GfxState *state)
 						}
 						if (sing->isGroup() || (sing->lineColor() == CommonStrings::None))
 						{
-							if (!sing->isPolyLine())
+							double dx = sing->xPos() - ite->xPos();
+							double dy = sing->yPos() - ite->yPos();
+							sing->PoLine.translate(dx, dy);
+							if (sing->isGroup())
 							{
-								QPainterPath input1 = sing->PoLine.toQPainterPath(true);
-								if (sing->fillEvenOdd())
-									input1.setFillRule(Qt::OddEvenFill);
-								else
-									input1.setFillRule(Qt::WindingFill);
-								QPainterPath input2 = ite->PoLine.toQPainterPath(true);
-								if (ite->fillEvenOdd())
-									input2.setFillRule(Qt::OddEvenFill);
-								else
-									input2.setFillRule(Qt::WindingFill);
-								QPainterPath result = input1.intersected(input2);
-								sing->PoLine.fromQPainterPath(result);
+								QList<PageItem*> allItems = sing->asGroupFrame()->getItemList();
+								for (int si = 0; si < allItems.count(); si++)
+								{
+									allItems[si]->moveBy(dx, dy, true);
+								}
 							}
+							QPainterPath input1 = sing->PoLine.toQPainterPath(true);
+							if (sing->fillEvenOdd())
+								input1.setFillRule(Qt::OddEvenFill);
+							else
+								input1.setFillRule(Qt::WindingFill);
+							QPainterPath input2 = ite->PoLine.toQPainterPath(true);
+							if (ite->fillEvenOdd())
+								input2.setFillRule(Qt::OddEvenFill);
+							else
+								input2.setFillRule(Qt::WindingFill);
+							QPainterPath result = input1.intersected(input2);
+							sing->setXYPos(ite->xPos(), ite->yPos(), true);
+							sing->setWidthHeight(ite->width(), ite->height(), true);
+							sing->groupWidth = ite->width();
+							sing->groupHeight = ite->height();
+							sing->PoLine.fromQPainterPath(result);
+							m_doc->AdjustItemSize(sing);
+							if (sing->isGroup())
+								sing->asGroupFrame()->adjustXYPosition();
 						}
 						delete ite;
 					}
