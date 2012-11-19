@@ -1774,6 +1774,8 @@ public:
 	QString getNumberStr(QString numName, int level, bool increment=true, bool resetlower=true);
 	void setNumerationCounter(QString numName, int level, int number);
 	bool flag_Renumber;
+	// for local numeration of paragraphs
+	bool updateLocalNums(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
 	void updateNumbers(bool updateNumerations = false);
 	void itemSelection_ClearBulNumStrings(Selection *customSelection);
 };

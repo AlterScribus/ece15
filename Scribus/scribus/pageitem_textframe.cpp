@@ -1579,7 +1579,7 @@ void PageItem_TextFrame::layout()
 				if (style.hasBullet() || style.hasNum())
 				{
 					BulNumMode = true;
-					if (hl->mark == NULL || !hl->mark->isType(MARKBulNumType))
+					if (hl->mark == NULL || !hl->mark->isType(MARKBullNumType))
 					{
 						BulNumMark* bnMark = new BulNumMark();
 						itemText.insertMark(bnMark,a);
@@ -1599,7 +1599,7 @@ void PageItem_TextFrame::layout()
 					}
 				}
 			}
-			if (!BulNumMode && hl->mark && hl->mark->isType(MARKBulNumType))
+			if (!BulNumMode && hl->mark && hl->mark->isType(MARKBullNumType))
 			{
 				delete (BulNumMark*) hl->mark;
 				hl->mark = NULL;
@@ -5108,7 +5108,7 @@ QString PageItem_TextFrame::infoDescription()
 	return QString();
 }
 
-bool PageItem_TextFrame::hasMark(NotesStyle *NS)
+bool PageItem_TextFrame::hasNoteMark(NotesStyle *NS)
 {
 	if (isNoteFrame())
 		return (asNoteFrame()->notesStyle() == NS);
@@ -5250,6 +5250,8 @@ Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
 		if (hl->hasMark())
 		{
 			if (omitNotes && (hl->mark->isType(MARKNoteMasterType) || hl->mark->isType(MARKNoteFrameType)))
+				continue;
+			if (hl->mark->isType(MARKBullNumType))
 				continue;
 			return hl->mark;
 		}
@@ -5503,12 +5505,14 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	Mark* mrk = selectedMark(true);
 	while (mrk != NULL)
 	{
-		Q_ASSERT(!mrk->isNoteType());
-		if (doUndo)
-			m_Doc->setUndoDelMark(mrk);
-		m_Doc->eraseMark(mrk, true, this);
+		if (!mrk->isType(MARKBullNumType))
+		{
+			if (doUndo)
+				m_Doc->setUndoDelMark(mrk);
+			m_Doc->eraseMark(mrk, true, this);
+			++num;
+		}
 		mrk = selectedMark(true);
-		++num;
 	}
 	return num;
 }

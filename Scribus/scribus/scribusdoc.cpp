@@ -9073,7 +9073,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 			for (int pos = 0; pos < currItemTextCount; ++pos)
 			{
 				ScText* hl = currItem->itemText.item(pos);
-				if (hl->hasMark() && hl->mark->isType(MARKBulNumType))
+				if (hl->hasMark() && hl->mark->isType(MARKBullNumType))
 				{
 					if (UndoManager::undoEnabled())
 					{
@@ -9101,7 +9101,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 			for (int pos=start; pos < stop; ++pos)
 			{
 				ScText* hl = currItem->itemText.item(pos);
-				if (hl->hasMark() && hl->mark->isType(MARKBulNumType))
+				if (hl->hasMark() && hl->mark->isType(MARKBullNumType))
 				{
 					if (UndoManager::undoEnabled())
 					{
@@ -16731,6 +16731,78 @@ void ScribusDoc::setNumerationCounter(QString numName, int level, int number)
 		numS->m_counters.replace(level, number);
 }
 
+bool ScribusDoc::updateLocalNums(StoryText& itemText)
+{
+	QList<Numeration> m_nums;
+	QList<int> m_counters;
+	bool needUpdate = false;
+	for (int pos = 0; pos < itemText.length(); ++pos)
+	{
+		if (pos != 0 && itemText.text(pos-1) != SpecialChars::PARSEP)
+			continue;
+		ScText* hl = itemText.item(pos);
+		if (hl->mark != NULL && hl->mark->isType(MARKBullNumType) && itemText.paragraphStyle(pos).hasNum())
+		{
+			ParagraphStyle style = itemText.paragraphStyle(pos);
+			if (style.numName() == "<local block>")
+			{
+				int level = style.numLevel();
+				while (m_counters.count() < (level + 1))
+				{
+					m_counters.append(0);
+					Numeration num((NumFormat) style.numStyle());
+					m_nums.append(num);
+				}
+				Numeration num = m_nums.at(level);
+				num.prefix = style.numPrefix();
+				num.suffix = style.numSuffix();
+				num.start = style.numStart();
+				num.numFormat = (NumFormat) style.numStyle();
+				m_nums.replace(level, num);
+				int count = m_counters.at(level);
+				bool reset = false;
+				if (pos == 0)
+					reset = true;
+				else if (pos > 0)
+				{
+					ParagraphStyle prevStyle;
+					prevStyle = itemText.paragraphStyle(pos -1);
+					reset = !prevStyle.hasNum()
+					        || prevStyle.numName() != "<local block>"
+					        || prevStyle.numLevel() < level
+					        || prevStyle.numStyle() != style.numStyle();
+				}
+				if ((level == 0) && (style.numStyle() != (int) num.numFormat))
+				{
+					reset = true;
+					m_counters.clear();
+					m_counters.append(0);
+					m_nums.clear();
+					m_nums.append(num);
+				}
+				if (reset)
+					count = style.numStart()-1;
+				count++;
+				m_counters.replace(level, count);
+				//m_nums.insert(level, num);
+				QString result = QString();
+				for (int i=0; i <= level; ++i)
+				{
+					result.append(m_nums.at(i).prefix);
+					result.append(getStringFromNum(m_nums.at(i).numFormat, m_counters.at(i)));
+					result.append(m_nums.at(i).suffix);
+				}
+				if (hl->mark->getString() != result)
+				{
+					hl->mark->setString(result);
+					needUpdate = true;
+				}
+			}
+		}
+	}
+	return needUpdate;
+}
+
 void ScribusDoc::updateNumbers(bool updateNumerations)
 {
 	if (updateNumerations)
@@ -16743,8 +16815,16 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 	foreach (PageItem* item, DocItems)
 	{
 		if (item->itemText.length() > 0)
-			if (item->itemText.updateLocalNums())
-				item->invalid = true;
+		{
+			PageItem* itemFirst = item->firstInChain();
+			if (updateLocalNums(itemFirst->itemText))
+			{
+				if (itemFirst->isTextFrame())
+					itemFirst->asTextFrame()->invalidateLayout(true);
+				else
+					itemFirst->invalidateLayout();
+			}
+		}
 	}
 
 	flag_Renumber = false;
@@ -17149,7 +17229,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 			{
 				PageItem* mItem = findFirstMarkItem(mrk);
 				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
-				mrk->setItemName((mItem != NULL) ? mItem->itemName() : "");
+				mrk->setItemName((mItem != NULL) ? mItem->itemName() : QString());
 			}
 		}
 	}

@@ -851,7 +851,8 @@ PageItem::~PageItem()
 				if (itemText.item(pos)->hasMark())
 				{
 					Mark* mrk = itemText.item(pos)->mark;
-					m_Doc->eraseMark(mrk);
+					if (!mrk->isType(MARKBullNumType))
+						m_Doc->eraseMark(mrk);
 				}
 			}
 		}

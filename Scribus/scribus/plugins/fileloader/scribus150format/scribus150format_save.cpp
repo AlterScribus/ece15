@@ -1590,7 +1590,7 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		else if (ch == SpecialChars::OBJECT && item->itemText.item(k)->mark != NULL)
 		{
 			Mark* mark = item->itemText.item(k)->mark;
-			if (!mark->isType(MARKBulNumType))
+			if (!mark->isType(MARKBullNumType))
 			{ //dont save marks for bullets and numbering
 				docu.writeEmptyElement("MARK");
 				docu.writeAttribute("label", mark->label);

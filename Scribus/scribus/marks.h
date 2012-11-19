@@ -20,7 +20,7 @@ enum MarkType
 	MARKNoteMasterType = 4,  //mark contain footnote reference
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
 	MARKIndexType = 6, // index entry
-	MARKBulNumType = 7
+	MARKBullNumType = 7
 };
 
 struct MarkData
@@ -88,7 +88,7 @@ public:
 	bool hasItemPtr() { return data.itemPtr != NULL; }
 	bool hasString() { return !data.strtxt.isEmpty(); }
 	bool hasMark() { return data.destmarkName != ""; }
-	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType)); }
+	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
 	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) { return t==typ; }
 
@@ -100,7 +100,7 @@ protected:
 class SCRIBUS_API BulNumMark : public Mark
 {
 public:
-	BulNumMark() : Mark() { label = "Bullet"; typ = MARKBulNumType; }
+	BulNumMark() : Mark() { label = "BullNumMark"; typ = MARKBullNumType; }
 	~BulNumMark() {}
 };
 

@@ -275,9 +275,6 @@ public:
  	int layout(int startItem);
  	uint nrOfItems() const;
 
-// for local numeration of paragraphs
-	bool updateLocalNums(); //return tru if any num strings were updated and item need s invalidation
-
 	//private:
  	ScText * item(uint index);
  	const ScText * item(uint index) const;

@@ -332,7 +332,7 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 				//invalidate all text frames with marks from current changed notes style
 				foreach (PageItem* item, m_Doc->DocItems)
 				{
-					if (item->isTextFrame() && !item->isNoteFrame() && item->asTextFrame()->hasMark(NS))
+					if (item->isTextFrame() && !item->isNoteFrame() && item->asTextFrame()->hasNoteMark(NS))
 						item->invalid = true;
 				}
 				m_Doc->updateNotesNums(NS);
