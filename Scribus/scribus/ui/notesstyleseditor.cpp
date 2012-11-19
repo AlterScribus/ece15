@@ -315,7 +315,7 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 					ss->set("NEWname", NS->name());
 					ss->set("NEWstart", NS->start());
 					ss->set("NEWendNotes", NS->isEndNotes());
-					ss->set("NEWnumStyle", (int) NS->getType());
+					ss->set("NEWnumFormat", (int) NS->getType());
 					ss->set("NEWrange", (int) NS->range());
 					ss->set("NEWprefix", NS->prefix());
 					ss->set("NEWsuffix", NS->suffix());

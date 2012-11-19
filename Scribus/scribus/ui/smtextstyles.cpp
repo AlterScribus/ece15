@@ -526,7 +526,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	connect(pwidget_->numComboBox, SIGNAL(activated(QString)), this, SLOT(slotNumName(QString)));
 	connect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumLevel(int)));
-	connect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumStyle(int)));
+	connect(pwidget_->numFormatCombo, SIGNAL(activated(int)), this, SLOT(slotNumFormat(int)));
 	connect(pwidget_->numStartSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumStart(int)));
 	connect(pwidget_->numRestartCombo, SIGNAL(activated(int)), this, SLOT(slotNumRestart(int)));
 	connect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
@@ -617,7 +617,7 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	disconnect(pwidget_->bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
-	disconnect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumStyle(int)));
+	disconnect(pwidget_->numFormatCombo, SIGNAL(activated(int)), this, SLOT(slotNumFormat(int)));
 	disconnect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumLevel(int)));
 	disconnect(pwidget_->numStartSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumStart(int)));
 	disconnect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
@@ -1095,14 +1095,14 @@ void SMParagraphStyle::slotNumNew()
 	}
 }
 
-void SMParagraphStyle::slotNumStyle(int numStyle)
+void SMParagraphStyle::slotNumFormat(int numFormat)
 {
-	if (pwidget_->numStyleCombo->useParentValue())
+	if (pwidget_->numFormatCombo->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->resetNumStyle();
+			selection_[i]->resetNumFormat();
 	else
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setNumStyle(numStyle);
+			selection_[i]->setNumFormat(numFormat);
 
 	if (!selectionIsDirty_)
 	{

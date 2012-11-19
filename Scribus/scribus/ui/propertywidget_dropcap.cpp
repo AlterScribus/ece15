@@ -30,7 +30,7 @@ PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent)
 	if (m_doc)
 		peCharStyleCombo->updateFormatList();
 	fillBulletStrEditCombo();
-	fillNumStyleCombo();
+	fillNumFormatCombo();
 	enableParEffect(false);
 	bulletCharTableButton_->setIcon(loadIcon("22/insert-table.png"));
 	numStart->setMinimum(1);
@@ -171,10 +171,10 @@ void PropertyWidget_DropCap::enableNum(bool enable)
 	numLevelSpin->setEnabled(enable);
 	numPrefix->setEnabled(enable);
 	numSuffix->setEnabled(enable);
-	numStyleCombo->setEnabled(enable);
+	numFormatCombo->setEnabled(enable);
 	if (enable)
 	{
-		fillNumStyleCombo();
+		fillNumFormatCombo();
 		enableBullet(false);
 		enableDropCap(false);
 	}
@@ -232,7 +232,7 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 				numName = "<local block>";
 		}
 		numComboBox->setCurrentItem(numComboBox->findText(numName), newPStyle.isInhNumName());
-		numStyleCombo->setCurrentItem(newPStyle.numStyle(), newPStyle.isInhNumStyle());
+		numFormatCombo->setCurrentItem(newPStyle.numFormat(), newPStyle.isInhNumFormat());
 		numPrefix->setText(newPStyle.numPrefix());
 		setWidgetBoldFont(numPrefixLabel, !newPStyle.isInhNumPrefix());
 		numSuffix->setText(newPStyle.numSuffix());
@@ -252,7 +252,7 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 			{
 				if (!parent->numName().isEmpty())
 					numComboBox->setParentItem(numComboBox->findText(parent->numName()));
-				numStyleCombo->setParentItem(parent->numStyle());
+				numFormatCombo->setParentItem(parent->numFormat());
 			}
 			else
 				numComboBox->setParentItem(0);
@@ -290,7 +290,7 @@ void PropertyWidget_DropCap::connectSignals()
 	connect(bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(handleBulletStr(QString)), Qt::UniqueConnection);
 	connect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)), Qt::UniqueConnection);
 	connect(numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(handleNumLevel(int)), Qt::UniqueConnection);
-	connect(numStyleCombo, SIGNAL(activated(int)), this, SLOT(handleNumStyle(int)), Qt::UniqueConnection);
+	connect(numFormatCombo, SIGNAL(activated(int)), this, SLOT(handleNumFormat(int)), Qt::UniqueConnection);
 	connect(numPrefix, SIGNAL(textChanged(QString)), this, SLOT(handleNumPrefix(QString)), Qt::UniqueConnection);
 	connect(numSuffix, SIGNAL(textChanged(QString)), this, SLOT(handleNumSuffix(QString)), Qt::UniqueConnection);
 	connect(numStart, SIGNAL(valueChanged(int)), this, SLOT(handleNumStart(int)), Qt::UniqueConnection);
@@ -309,7 +309,7 @@ void PropertyWidget_DropCap::disconnectSignals()
 	disconnect(bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(handleBulletStr(QString)));
 	disconnect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)));
 	disconnect(numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(handleNumLevel(int)));
-	disconnect(numStyleCombo, SIGNAL(activated(int)), this, SLOT(handleNumStyle(int)));
+	disconnect(numFormatCombo, SIGNAL(activated(int)), this, SLOT(handleNumFormat(int)));
 	disconnect(numPrefix, SIGNAL(textChanged(QString)), this, SLOT(handleNumPrefix(QString)));
 	disconnect(numSuffix, SIGNAL(textChanged(QString)), this, SLOT(handleNumSuffix(QString)));
 	disconnect(numStart, SIGNAL(valueChanged(int)), this, SLOT(handleNumStart(int)));
@@ -393,7 +393,7 @@ void PropertyWidget_DropCap::handleParEffectUse()
 		newStyle.setHasBullet(false);
 		newStyle.setHasNum(true);
 		newStyle.setNumName(numComboBox->currentText());
-		newStyle.setNumStyle(numStyleCombo->currentIndex());
+		newStyle.setNumFormat(numFormatCombo->currentIndex());
 		newStyle.setNumLevel(numLevelSpin->value());
 		newStyle.setNumStart(numStart->value());
 		newStyle.setNumPrefix(numPrefix->text());
@@ -474,7 +474,7 @@ void PropertyWidget_DropCap::handleNumName(QString numName)
 		newStyle.setNumRestart(NSRstory);
 		newStyle.setNumPrefix(numPrefix->text());
 		newStyle.setNumSuffix(numSuffix->text());
-		newStyle.setNumStyle((NumFormat) numStyleCombo->currentIndex());
+		newStyle.setNumFormat((NumFormat) numFormatCombo->currentIndex());
 	}
 	newStyle.setNumName(numName);
 	PageItem *item = m_item;
@@ -489,12 +489,12 @@ void PropertyWidget_DropCap::handleNumName(QString numName)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumStyle(int style)
+void PropertyWidget_DropCap::handleNumFormat(int style)
 {
 	if (!m_doc || !m_item)
 		return;
 	ParagraphStyle newStyle;
-	newStyle.setNumStyle(style);
+	newStyle.setNumFormat(style);
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();

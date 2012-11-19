@@ -42,7 +42,7 @@ private:
 	ParagraphStyle* currPStyle;
 
 	void fillBulletStrEditCombo();
-	void fillNumStyleCombo();
+	void fillNumFormatCombo();
 	void fillNumerationsCombo(QList<ParagraphStyle> &pstyles);
 	void fillNumRestartCombo();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);

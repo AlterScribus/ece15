@@ -1871,7 +1871,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				NS->setName(ss->get("name"));
 				NS->setStart(ss->getInt("start"));
 				NS->setEndNotes(ss->getBool("endNotes"));
-				NS->setType((NumFormat) ss->getInt("numStyle"));
+				NS->setType((NumFormat) ss->getInt("numFormat"));
 				NS->setRange((NumerationRange) ss->getInt("range"));
 				NS->setPrefix(ss->get("prefix"));
 				NS->setSuffix(ss->get("suffix"));
@@ -1912,7 +1912,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					NS->setStart(ss->getInt("start"));
 					NS->setRange((NumerationRange) ss->getInt("range"));
 					NS->setEndNotes(ss->getBool("endNotes"));
-					NS->setType((NumFormat) ss->getInt("numStyle"));
+					NS->setType((NumFormat) ss->getInt("numFormat"));
 					NS->setPrefix(ss->get("prefix"));
 					NS->setSuffix(ss->get("suffix"));
 					NS->setAutoNotesHeight(ss->getBool("autoH"));
@@ -1930,7 +1930,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					NS->setStart(ss->getInt("NEWstart"));
 					NS->setRange((NumerationRange) ss->getInt("NEWrange"));
 					NS->setEndNotes(ss->getBool("NEWendNotes"));
-					NS->setType((NumFormat) ss->getInt("NEWnumStyle"));
+					NS->setType((NumFormat) ss->getInt("NEWnumFormat"));
 					NS->setPrefix(ss->get("NEWprefix"));
 					NS->setSuffix(ss->get("NEWsuffix"));
 					NS->setAutoNotesHeight(ss->getBool("NEWautoH"));
@@ -16674,7 +16674,7 @@ void ScribusDoc::setupNumerations()
 				numS = new NumStruct;
 				numS->m_name = name;
 			}
-			num.numFormat = (NumFormat) docParagraphStyles[i].numStyle();
+			num.numFormat = (NumFormat) docParagraphStyles[i].numFormat();
 			num.prefix = docParagraphStyles[i].numPrefix();
 			num.suffix = docParagraphStyles[i].numSuffix();
 			num.start = docParagraphStyles[i].numStart() -1;
@@ -16750,14 +16750,14 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 				while (m_counters.count() < (level + 1))
 				{
 					m_counters.append(0);
-					Numeration num((NumFormat) style.numStyle());
+					Numeration num((NumFormat) style.numFormat());
 					m_nums.append(num);
 				}
 				Numeration num = m_nums.at(level);
 				num.prefix = style.numPrefix();
 				num.suffix = style.numSuffix();
 				num.start = style.numStart();
-				num.numFormat = (NumFormat) style.numStyle();
+				num.numFormat = (NumFormat) style.numFormat();
 				m_nums.replace(level, num);
 				int count = m_counters.at(level);
 				bool reset = false;
@@ -16770,9 +16770,9 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 					reset = !prevStyle.hasNum()
 					        || prevStyle.numName() != "<local block>"
 					        || prevStyle.numLevel() < level
-					        || prevStyle.numStyle() != style.numStyle();
+					        || prevStyle.numFormat() != style.numFormat();
 				}
-				if ((level == 0) && (style.numStyle() != (int) num.numFormat))
+				if ((level == 0) && (style.numFormat() != (int) num.numFormat))
 				{
 					reset = true;
 					m_counters.clear();
@@ -17419,7 +17419,7 @@ void ScribusDoc::undoSetNotesStyle(SimpleState* ss, NotesStyle *NS)
 		ss->set("name", NS->name());
 		ss->set("start", NS->start());
 		ss->set("endNotes", NS->isEndNotes());
-		ss->set("numStyle", (int) NS->getType());
+		ss->set("numFormat", (int) NS->getType());
 		ss->set("range", (int) NS->range());
 		ss->set("prefix", NS->prefix());
 		ss->set("suffix", NS->suffix());

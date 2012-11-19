@@ -53,7 +53,7 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	
 	fillBulletStrEditCombo();
 	bulletCharTableButton_->setIcon(loadIcon("22/insert-table.png"));
-	fillNumStyleCombo();
+	fillNumFormatCombo();
 
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 	minGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
@@ -155,12 +155,12 @@ void SMPStyleWidget::languageChange()
 	dropCapsLineLabel->setText( tr("Lines:"));
 	bulletCharLabel->setText(tr("Bullet Char/String"));
 	bulletCharTableButton_->setText(tr("Char Table"));
-	numStyleLabel->setText(tr("Numbering Style"));
+	numFormatLabel->setText(tr("Numbering Style"));
 	numLevelLabel->setText(tr("Level"));
 	numPrefixLabel->setText(tr("Prefix"));
 	numSuffixLabel->setText(tr("Suffix"));
 	numStartLabel->setText(tr("Start with"));
-	numRestartOtherBox->setText(tr("Restart after other style"));
+	numRestartOtherBox->setText(tr("Restart after other format"));
 	numRestartHigherBox->setText(tr("Restart after higher level"));
 
 	parEffectCharStyleComboLabel->setText(tr("Character Style for Effect:"));
@@ -212,16 +212,16 @@ void SMPStyleWidget::fillBulletStrEditCombo()
 	bulletStrEdit_->setMinimumWidth(50);
 }
 
-void SMPStyleWidget::fillNumStyleCombo()
+void SMPStyleWidget::fillNumFormatCombo()
 {
-	numStyleCombo->clear();
-	numStyleCombo->addItem("1_2_3");
-	numStyleCombo->addItem("i_ii_iii");
-	numStyleCombo->addItem("I_II_III");
-	numStyleCombo->addItem("a_b_c");
-	numStyleCombo->addItem("i_ii_iii");
-	numStyleCombo->addItem("A_B_C");
-	numStyleCombo->addItem("*");
+	numFormatCombo->clear();
+	numFormatCombo->addItem("1_2_3");
+	numFormatCombo->addItem("i_ii_iii");
+	numFormatCombo->addItem("I_II_III");
+	numFormatCombo->addItem("a_b_c");
+	numFormatCombo->addItem("i_ii_iii");
+	numFormatCombo->addItem("A_B_C");
+	numFormatCombo->addItem("*");
 }
 
 void SMPStyleWidget::fillNumerationsCombo(QList<ParagraphStyle> &pstyles)
@@ -277,7 +277,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	maxGlyphExtSpin->setRange(100.0,110.0);
 	
 	fillBulletStrEditCombo();
-	fillNumStyleCombo();
+	fillNumFormatCombo();
 	fillNumerationsCombo(pstyles);
 	fillNumRestartCombo();
 
@@ -382,8 +382,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 			numComboBox->setParentItem(numComboBox->findText(parent->numName()));
 		else
 			numComboBox->setParentItem(0);
-		numStyleCombo->setCurrentItem(pstyle->numStyle());
-		numStyleCombo->setParentItem(parent->numStyle());
+		numFormatCombo->setCurrentItem(pstyle->numFormat());
+		numFormatCombo->setParentItem(parent->numFormat());
 		numLevelSpin->setValue(pstyle->numLevel(), pstyle->isInhNumLevel());
 		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
@@ -435,7 +435,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 			numName = "default";
 		numComboBox->setCurrentItem(numComboBox->findText(numName));
 		numNewLineEdit->clear();
-		numStyleCombo->setCurrentIndex(pstyle->numStyle());
+		numFormatCombo->setCurrentIndex(pstyle->numFormat());
 		numLevelSpin->setValue(pstyle->numLevel());
 		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
@@ -711,7 +711,7 @@ void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Char
 	}
 	numSuffix->setText(suffix);
 
-	numStyleCombo->setEnabled(true);
+	numFormatCombo->setEnabled(true);
 	numLevelSpin->setEnabled(true);
 	connectPESignals();
 }
@@ -1016,7 +1016,7 @@ void SMPStyleWidget::slotDropCap(bool isOn)
 		bulletCharTableButton_->setEnabled(false);
 
 		numBox->setChecked(false);
-		numStyleCombo->setEnabled(false);
+		numFormatCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
 		numComboBox->setEnabled(false);
 		numRestartCombo->setEnabled(false);
@@ -1042,7 +1042,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 		bulletCharTableButton_->setEnabled(true);
 
 		numBox->setChecked(false);
-		numStyleCombo->setEnabled(false);
+		numFormatCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
 		numComboBox->setEnabled(false);
 		numRestartCombo->setEnabled(false);
@@ -1073,7 +1073,7 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 	disconnectPESignals();
 	if (isOn)
 	{
-		numStyleCombo->setEnabled(true);
+		numFormatCombo->setEnabled(true);
 		numLevelSpin->setEnabled(true);
 		numComboBox->setEnabled(true);
 		numRestartCombo->setEnabled(true);
@@ -1088,7 +1088,7 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 	}
 	else
 	{
-		numStyleCombo->setEnabled(false);
+		numFormatCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
 	}
 	if (hasParent_)

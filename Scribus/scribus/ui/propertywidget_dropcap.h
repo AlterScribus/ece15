@@ -54,7 +54,7 @@ public slots:
 	void handleBulletStr(QString);
 	void handleDropCapLines(int);
 	void handleNumName(QString);
-	void handleNumStyle(int);
+	void handleNumFormat(int);
 	void handleNumLevel(int);
 	void handleNumPrefix(QString);
 	void handleNumSuffix(QString);
@@ -85,15 +85,15 @@ private:
 			bulletStrEdit_->setEditText(QChar(0x2022));
 	}
 	
-	void fillNumStyleCombo()
+	void fillNumFormatCombo()
 	{
-		numStyleCombo->clear();
-		numStyleCombo->addItem("1_2_3");
-		numStyleCombo->addItem("i_ii_iii");
-		numStyleCombo->addItem("I_II_III");
-		numStyleCombo->addItem("a_b_c");
-		numStyleCombo->addItem("A_B_C");
-		numStyleCombo->addItem("*");
+		numFormatCombo->clear();
+		numFormatCombo->addItem("1_2_3");
+		numFormatCombo->addItem("i_ii_iii");
+		numFormatCombo->addItem("I_II_III");
+		numFormatCombo->addItem("a_b_c");
+		numFormatCombo->addItem("A_B_C");
+		numFormatCombo->addItem("*");
 	}
 //	void SMPStyleWidget::fillNumRestartCombo()
 //	{

@@ -2604,12 +2604,12 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(NUMNAME))
 		newStyle.setNumName(attrs.valueAsString(NUMNAME));
 
-	static const QString NUMSTYLE("NUMSTYLE");
-	if (attrs.hasAttribute(NUMSTYLE))
-		newStyle.setNumStyle(attrs.valueAsInt(NUMSTYLE));
+	static const QString NUMFORMAT("NUMFORMAT");
+	if (attrs.hasAttribute(NUMFORMAT))
+		newStyle.setNumFormat(attrs.valueAsInt(NUMFORMAT));
 
 	static const QString NUMLEVEL("NUMLEVEL");
-	if (attrs.hasAttribute(NUMSTYLE))
+	if (attrs.hasAttribute(NUMFORMAT))
 		newStyle.setNumLevel(attrs.valueAsInt(NUMLEVEL));
 
 	static const QString NUMSTART("NUMSTART");

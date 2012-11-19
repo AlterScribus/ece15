@@ -655,8 +655,8 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("BULLETSTR", style.bulletStr());
 	if ( ! style.isInhHasNum())
 		docu.writeAttribute("NUMERATION", static_cast<int>(style.hasNum()));
-	if ( ! style.isInhNumStyle())
-		docu.writeAttribute("NUMSTYLE", style.numStyle());
+	if ( ! style.isInhNumFormat())
+		docu.writeAttribute("NUMFORMAT", style.numFormat());
 	if ( ! style.isInhNumName())
 		docu.writeAttribute("NUMNAME", style.numName());
 	if ( ! style.isInhNumLevel())
