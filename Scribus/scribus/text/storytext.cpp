@@ -24,11 +24,9 @@ pageitem.cpp  -  description
 //#include <QDebug>
 //FIXME: this include must go to sctextstruct.h !
 #include <QList>
-#include <QPair>
 #include <cassert>  //added to make Fedora-5 happy
 #include "fpoint.h"
 #include "notesstyles.h"
-#include "numeration.h"
 #include "scfonts.h"
 #include "scribusdoc.h"
 #include "sctext_shared.h"
@@ -376,8 +374,6 @@ void StoryText::insertParSep(int pos)
 //		it->parstyle->charStyle().setName("cpara"); // DONT TRANSLATE
 //		it->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
 	}
-	if (doc && it->parstyle->hasNum())
-		doc->flag_Renumber = true;
 	d->replaceCharStyleContextInParagraph(pos, it->parstyle->charStyleContext());
 }
 /**
@@ -388,8 +384,6 @@ void StoryText::removeParSep(int pos)
 {
 	ScText* it = item_p(pos);
 	if (it->parstyle) {
-		if (doc && it->parstyle->hasNum())
-			doc->flag_Renumber = true;
 //		const CharStyle* oldP = & it->parstyle->charStyle();
 //		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
 //		d->replaceParentStyle(pos, oldP, newP);
@@ -834,7 +828,7 @@ const CharStyle & StoryText::charStyle(int pos) const
 	if (text(pos) == SpecialChars::PARSEP)
 		return paragraphStyle(pos).charStyle();
 	StoryText* that = const_cast<StoryText *>(this);
-	return reinterpret_cast<const CharStyle &> (*that->d->at(pos));
+	return dynamic_cast<const CharStyle &> (*that->d->at(pos));
 }
 
 const ParagraphStyle & StoryText::paragraphStyle() const
@@ -1833,6 +1827,7 @@ uint StoryText::nrOfItems() const
 {
 	return length();
 }
+
 
 ScText*  StoryText::item(uint itm)
 {

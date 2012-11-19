@@ -164,17 +164,13 @@ void PageSelector::setFont ( const QFont &fo )
 	QWidget::setFont(fo);
 }
 
-int PageSelector::getCurrentPage()
-{
-	return APage;
-}
-
 void PageSelector::GotoPgE(int a)
 {
 	clearFocus();
 	GotoPg(a);
 	emit GotoPage(a+1);
 }
+
 
 void PageSelector::GotoPage()
 {
@@ -187,6 +183,7 @@ void PageSelector::GotoPage()
 	GotoPg(p-1);
 	emit GotoPage(p);
 }
+
 
 void PageSelector::GotoPg(int a)
 {

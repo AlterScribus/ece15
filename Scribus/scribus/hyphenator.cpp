@@ -105,12 +105,11 @@ void Hyphenator::NewDict(const QString& name)
 		Language = name;
 
 		char *filename = NULL;
-		QString pfad = ScPaths::instance().dictDir();
+		QString pfad = LanguageManager::instance()->getHyphFilename(Language);
 		
 		if (hdict != NULL)
 			hnj_hyphen_free(hdict);
 
-		pfad +=  LanguageManager::instance()->getHyphFilename(Language) ;
 		QFile f(pfad);
 		if (f.open(QIODevice::ReadOnly))
 		{
@@ -142,7 +141,7 @@ void Hyphenator::slotNewSettings(int Wordlen, bool Autom, bool ACheck, int Num)
 	doc->setHyphMinimumWordLength(Wordlen);
 	doc->setHyphAutomatic(Autom);
 	doc->setHyphAutoCheck(AutoCheck);
-	doc->setHyphAutoCheck(Num);
+	doc->setHyphConsecutiveLines(Num);
 }
 
 void Hyphenator::slotHyphenateWord(PageItem* it, const QString& text, int firstC)
