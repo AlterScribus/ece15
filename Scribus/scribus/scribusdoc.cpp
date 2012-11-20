@@ -9190,8 +9190,9 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		return;
 	if (flag_Renumber)
 		itemSelection_ClearBulNumStrings(itemSelection);
+	bool doUndo = UndoManager::undoEnabled();
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled() && selectedItemCount > 1)
+	if (doUndo && selectedItemCount > 1)
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
@@ -9201,7 +9202,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		{
 			ParagraphStyle dstyle(currItem->itemText.defaultStyle());
 			dstyle.applyStyle(newStyle);
-			if (UndoManager::undoEnabled())
+			if (doUndo)
 			{
 				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
 				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
@@ -9231,7 +9232,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 			{
 				if (currItem->itemText.text(pos) == SpecialChars::PARSEP)
 				{
-					if (UndoManager::undoEnabled())
+					if (doUndo)
 					{
 						ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
 						is->set("APPLY_PARASTYLE", "apply_parastyle");
@@ -9242,7 +9243,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 					currItem->itemText.applyStyle(pos, newStyle, rmDirectFormatting);
 				}
 			}
-			if (UndoManager::undoEnabled())
+			if (doUndo)
 			{
 				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
 				is->set("APPLY_PARASTYLE", "apply_parastyle");
@@ -9376,7 +9377,8 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 	if (selectedItemCount == 0)
 		return;
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled())
+	bool doUndo = UndoManager::undoEnabled();
+	if (doUndo)
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
@@ -9410,7 +9412,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 				const CharStyle& curParent(currItem->itemText.charStyle(i));
 				if (!curParent.equiv(lastParent) || i==stop)
 				{
-					if (UndoManager::undoEnabled())
+					if (doUndo)
 					{
 						UndoState* state = undoManager->getLastUndo();
 						ScItemState<QPair<CharStyle,CharStyle> > *is = NULL;
@@ -9447,7 +9449,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 		{
 			ParagraphStyle dstyle(currItem->itemText.defaultStyle());
 			dstyle.charStyle().applyCharStyle(newStyle);
-			if (UndoManager::undoEnabled())
+			if (doUndo)
 			{
 				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
 				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
@@ -9462,7 +9464,7 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 				const CharStyle& curParent(currItem->itemText.charStyle(i));
 				if (!curParent.equiv(lastParent) || i==stop)
 				{
-					if (UndoManager::undoEnabled())
+					if (doUndo)
 					{
 						ScItemState<QPair<CharStyle,CharStyle> > *ist = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
 						ist->set("APPLY_CHARSTYLE", "apply_charstyle");
@@ -9508,7 +9510,8 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 	if (selectedItemCount == 0)
 		return;
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled())
+	bool doUndo = UndoManager::undoEnabled();
+	if (doUndo)
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
@@ -9534,7 +9537,7 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 					length = start < currItem->itemText.length() ? 1 : 0;
 				}
 			}
-			if (UndoManager::undoEnabled())
+			if (doUndo)
 			{
 				ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
 				is->set("SET_CHARSTYLE", "set_charstyle");
@@ -9550,7 +9553,7 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 		{
 			ParagraphStyle dstyle(currItem->itemText.defaultStyle());
 			dstyle.charStyle().setStyle(newStyle);
-			if (UndoManager::undoEnabled())
+			if (doUndo)
 			{
 				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
 				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
@@ -9596,7 +9599,8 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 	if (selectedItemCount == 0)
 		return;
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled())
+	bool doUndo = UndoManager::undoEnabled();
+	if (doUndo)
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::RemoveTextStyle, tr( "remove direct char formatting" ), Um::IFont));
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
@@ -9633,7 +9637,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 				{
 					if ( i-lastPos > 0)
 					{
-						if (UndoManager::undoEnabled())
+						if (doUndo)
 						{
 							ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
 							is->set("SET_CHARSTYLE", "set_charstyle");
@@ -9653,7 +9657,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 				const CharStyle& curStyle(currItem->itemText.charStyle(lastPos));
 				if (!curStyle.equiv(defStyle))
 				{
-					if (UndoManager::undoEnabled())
+					if (doUndo)
 					{
 						ScItemState<QPair<CharStyle,CharStyle> > *is = new ScItemState<QPair <CharStyle,CharStyle> >(Um::ApplyTextStyle);
 						is->set("SET_CHARSTYLE", "set_charstyle");
@@ -9672,7 +9676,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 			CharStyle newStyle;
 			newStyle.setParent(defStyle.charStyle().parent());
 			defStyle.charStyle() = newStyle;
-			if (UndoManager::undoEnabled())
+			if (doUndo)
 			{
 				ScItemState<QPair<ParagraphStyle,ParagraphStyle> > *is = new ScItemState<QPair <ParagraphStyle,ParagraphStyle> >(Um::SetStyle);
 				is->set("APPLY_DEFAULTPARASTYLE", "apply_defaultparastyle");
