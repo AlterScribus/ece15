@@ -27,28 +27,28 @@
     <number>5</number>
    </property>
    <item>
-    <widget class="QRadioButton" name="optMarginRadioNone">
+    <widget class="SMRadioButton" name="optMarginRadioNone">
      <property name="text">
       <string>None</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QRadioButton" name="optMarginRadioBoth">
+    <widget class="SMRadioButton" name="optMarginRadioBoth">
      <property name="text">
       <string>Both Sides</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QRadioButton" name="optMarginRadioLeft">
+    <widget class="SMRadioButton" name="optMarginRadioLeft">
      <property name="text">
       <string>Left Only</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QRadioButton" name="optMarginRadioRight">
+    <widget class="SMRadioButton" name="optMarginRadioRight">
      <property name="text">
       <string>Right Only</string>
      </property>
@@ -63,6 +63,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SMRadioButton</class>
+   <extends>QRadioButton</extends>
+   <header location="global">ui/smradiobutton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

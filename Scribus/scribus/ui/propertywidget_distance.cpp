@@ -43,9 +43,6 @@ PropertyWidget_Distance::PropertyWidget_Distance(QWidget* parent) : QFrame(paren
 	rightDistance->setValues(0, 300, 2, 0);
 	rightLabel->setBuddy(rightDistance);
 
-	columns->setDecimals(0);
-	columns->setSuffix("");
-
 	languageChange();
 
 	columnGapLabel->setCurrentIndex(0);
@@ -82,7 +79,6 @@ void PropertyWidget_Distance::setDoc(ScribusDoc *d)
 	m_unitRatio   = m_doc->unitRatio();
 	m_unitIndex   = m_doc->unitIndex();
 
-	columns->setDecimals(0);
 	columnGap->setDecimals(2);
 	topDistance->setDecimals(2);
 	leftDistance->setDecimals(2);
@@ -154,7 +150,7 @@ void PropertyWidget_Distance::setCurrentItem(PageItem *item)
 
 void PropertyWidget_Distance::connectSignals()
 {
-	connect(columns       , SIGNAL(valueChanged(double))   , this, SLOT(handleColumns()), Qt::UniqueConnection);
+	connect(columns       , SIGNAL(valueChanged(int))   , this, SLOT(handleColumns()), Qt::UniqueConnection);
 	connect(columnGap     , SIGNAL(valueChanged(double)), this, SLOT(handleColumnGap()), Qt::UniqueConnection);
 	connect(columnGapLabel, SIGNAL(activated(int))      , this, SLOT(handleGapSwitch()), Qt::UniqueConnection);
 	connect(topDistance   , SIGNAL(valueChanged(double)), this, SLOT(handleTextDistances()), Qt::UniqueConnection);
@@ -166,7 +162,7 @@ void PropertyWidget_Distance::connectSignals()
 
 void PropertyWidget_Distance::disconnectSignals()
 {
-	disconnect(columns       , SIGNAL(valueChanged(double))   , this, SLOT(handleColumns()));
+	disconnect(columns       , SIGNAL(valueChanged(int))   , this, SLOT(handleColumns()));
 	disconnect(columnGap     , SIGNAL(valueChanged(double)), this, SLOT(handleColumnGap()));
 	disconnect(columnGapLabel, SIGNAL(activated(int))      , this, SLOT(handleGapSwitch()));
 	disconnect(topDistance   , SIGNAL(valueChanged(double)), this, SLOT(handleTextDistances()));
@@ -282,7 +278,7 @@ void PropertyWidget_Distance::handleColumns()
 
 	if (textItem)
 	{
-		textItem->setColumns(static_cast<int>(columns->value()));
+		textItem->setColumns(columns->value());
 		displayColumns(textItem->Cols, textItem->ColGap);
 		//this is already done in displayColumns()
 		/*if (static_cast<int>(columns->value()) == 1)

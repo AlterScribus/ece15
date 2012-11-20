@@ -14,13 +14,6 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
-   <item row="24" column="0">
-    <widget class="SMCheckBox" name="peIndent_">
-     <property name="text">
-      <string>AutoIndent</string>
-     </property>
-    </widget>
-   </item>
    <item row="10" column="1">
     <widget class="SMScComboBox" name="bulletStrEdit_">
      <property name="sizePolicy">
@@ -77,7 +70,7 @@
     </widget>
    </item>
    <item row="18" column="0">
-    <widget class="QSpinBox" name="numLevelSpin"/>
+    <widget class="SMSpinBox" name="numLevelSpin"/>
    </item>
    <item row="20" column="0">
     <widget class="QLineEdit" name="numPrefix"/>
@@ -126,14 +119,14 @@
     </widget>
    </item>
    <item row="25" column="1">
-    <widget class="ScrSpinBox" name="peOffset_">
+    <widget class="SMScrSpinBox" name="peOffset_">
      <property name="minimum">
-      <double>-99.989999999999995</double>
+      <number>-100</number>
      </property>
     </widget>
    </item>
    <item row="18" column="1">
-    <widget class="QSpinBox" name="numStart"/>
+    <widget class="SMSpinBox" name="numStart"/>
    </item>
    <item row="23" column="0" colspan="2">
     <widget class="Line" name="line_3">
@@ -242,7 +235,14 @@
     </widget>
    </item>
    <item row="5" column="1">
-    <widget class="QSpinBox" name="dropCapLines"/>
+    <widget class="SMSpinBox" name="dropCapLines"/>
+   </item>
+   <item row="24" column="0">
+    <widget class="SMCheckBox" name="peIndent_">
+     <property name="text">
+      <string>CheckBox</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -250,27 +250,32 @@
   <customwidget>
    <class>SMScComboBox</class>
    <extends>QComboBox</extends>
-   <header>ui/smsccombobox.h</header>
+   <header location="global">ui/smsccombobox.h</header>
   </customwidget>
   <customwidget>
    <class>SMRadioButton</class>
    <extends>QRadioButton</extends>
-   <header>ui/smradiobutton.h</header>
+   <header location="global">ui/smradiobutton.h</header>
   </customwidget>
   <customwidget>
-   <class>SMCheckBox</class>
-   <extends>QCheckBox</extends>
-   <header>ui/smcheckbox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ScrSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>ui/scrspinbox.h</header>
+   <class>SMScrSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">ui/smscrspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>CharStyleComboBox</class>
    <extends>QComboBox</extends>
-   <header>ui/spalette.h</header>
+   <header location="global">ui/spalette.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMCheckBox</class>
+   <extends>QCheckBox</extends>
+   <header location="global">ui/smcheckbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">ui/smspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

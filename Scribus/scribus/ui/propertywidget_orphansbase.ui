@@ -25,7 +25,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="ScrSpinBox" name="keepLinesStart">
+    <widget class="SMSpinBox" name="keepLinesStart">
      <property name="suffix">
       <string> lines</string>
      </property>
@@ -42,7 +42,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="ScrSpinBox" name="keepLinesEnd">
+    <widget class="SMSpinBox" name="keepLinesEnd">
      <property name="suffix">
       <string> lines</string>
      </property>
@@ -52,14 +52,14 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="QCheckBox" name="keepTogether">
+    <widget class="SMCheckBox" name="keepTogether">
      <property name="text">
       <string>Do not split paragraph</string>
      </property>
     </widget>
    </item>
    <item row="3" column="0" colspan="2">
-    <widget class="QCheckBox" name="keepWithNext">
+    <widget class="SMCheckBox" name="keepWithNext">
      <property name="text">
       <string>Keep with next paragraph</string>
      </property>
@@ -69,9 +69,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ScrSpinBox</class>
+   <class>SMCheckBox</class>
+   <extends>QCheckBox</extends>
+   <header location="global">ui/smcheckbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMSpinBox</class>
    <extends>QSpinBox</extends>
-   <header location="global">ui/scrspinbox.h</header>
+   <header location="global">ui/smspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -27,23 +27,23 @@
     <number>2</number>
    </property>
    <item row="4" column="1">
-    <widget class="ScrSpinBox" name="spaceBelow">
+    <widget class="SMScrSpinBox" name="spaceBelow">
      <property name="maximum">
-      <double>9999.000000000000000</double>
+      <number>9999</number>
      </property>
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="ScrSpinBox" name="rightIndent">
+    <widget class="SMScrSpinBox" name="rightIndent">
      <property name="maximum">
-      <double>9999.000000000000000</double>
+      <number>9999</number>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="ScrSpinBox" name="leftIndent">
+    <widget class="SMScrSpinBox" name="leftIndent">
      <property name="maximum">
-      <double>9999.000000000000000</double>
+      <number>9999</number>
      </property>
     </widget>
    </item>
@@ -89,9 +89,9 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="ScrSpinBox" name="spaceAbove">
+    <widget class="SMScrSpinBox" name="spaceAbove">
      <property name="maximum">
-      <double>9999.000000000000000</double>
+      <number>9999</number>
      </property>
     </widget>
    </item>
@@ -103,15 +103,15 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="ScrSpinBox" name="firstLine">
+    <widget class="SMScrSpinBox" name="firstLine">
      <property name="minimum">
-      <double>-9999.000000000000000</double>
+      <number>-9999</number>
      </property>
      <property name="maximum">
-      <double>9999.000000000000000</double>
+      <number>9999</number>
      </property>
      <property name="value">
-      <double>0.000000000000000</double>
+      <number>0</number>
      </property>
     </widget>
    </item>
@@ -119,9 +119,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ScrSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>ui/scrspinbox.h</header>
+   <class>SMScrSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">ui/smscrspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

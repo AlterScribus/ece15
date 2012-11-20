@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>210</width>
-    <height>165</height>
+    <height>188</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,15 +26,38 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="columnsLabel">
+   <item row="3" column="0">
+    <widget class="QLabel" name="bottomLabel">
      <property name="text">
-      <string>Colu&amp;mns:</string>
+      <string>&amp;Bottom:</string>
      </property>
     </widget>
    </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="rightLabel">
+     <property name="text">
+      <string>&amp;Right:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="SMScrSpinBox" name="rightDistance"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="leftLabel">
+     <property name="text">
+      <string>&amp;Left:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="SMScrSpinBox" name="bottomDistance"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="SMScrSpinBox" name="columnGap"/>
+   </item>
    <item row="0" column="1">
-    <widget class="ScrSpinBox" name="columns">
+    <widget class="SMSpinBox" name="columns">
      <property name="minimum">
       <number>1</number>
      </property>
@@ -42,6 +65,22 @@
       <number>3000</number>
      </property>
     </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QToolButton" name="tabsButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>T&amp;abulators...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="SMScrSpinBox" name="leftDistance"/>
    </item>
    <item row="1" column="0">
     <widget class="ScComboBox" name="columnGapLabel">
@@ -57,8 +96,15 @@
      </item>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="ScrSpinBox" name="columnGap"/>
+   <item row="0" column="0">
+    <widget class="QLabel" name="columnsLabel">
+     <property name="text">
+      <string>Colu&amp;mns:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="SMScrSpinBox" name="topDistance"/>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="topLabel">
@@ -67,59 +113,18 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="ScrSpinBox" name="topDistance"/>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="bottomLabel">
-     <property name="text">
-      <string>&amp;Bottom:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="ScrSpinBox" name="bottomDistance"/>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="leftLabel">
-     <property name="text">
-      <string>&amp;Left:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="ScrSpinBox" name="leftDistance"/>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="rightLabel">
-     <property name="text">
-      <string>&amp;Right:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="ScrSpinBox" name="rightDistance"/>
-   </item>
-   <item row="6" column="0" colspan="2">
-    <widget class="QToolButton" name="tabsButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>T&amp;abulators...</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ScrSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>ui/scrspinbox.h</header>
+   <class>SMScrSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">ui/smscrspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SMSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">ui/smspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>ScComboBox</class>

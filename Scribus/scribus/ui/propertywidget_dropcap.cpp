@@ -223,7 +223,7 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 		if (!numRadio_->isChecked())
 			enableNum(true);
 		QString numName = newPStyle.numName();
-		numLevelSpin->setValue(newPStyle.numLevel());
+		numLevelSpin->setValue(newPStyle.numLevel(), newPStyle.isInhNumLevel());
 		setWidgetBoldFont(numLevelLabel, !newPStyle.isInhNumLevel());
 		NumStruct * numS = m_doc->numerations.value(newPStyle.numName());
 		if (numS)
@@ -240,7 +240,7 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 		setWidgetBoldFont(numPrefixLabel, !newPStyle.isInhNumPrefix());
 		numSuffix->setText(newPStyle.numSuffix());
 		setWidgetBoldFont(numSuffixLabel, !newPStyle.isInhNumSuffix());
-		numStart->setValue(newPStyle.numStart());
+		numStart->setValue(newPStyle.numStart(), newPStyle.isInhNumStart());
 		setWidgetBoldFont(numStartLabel, !newPStyle.isInhNumLevel());
 	//	numRestartCombo->setCurrentItem(pstyle->numRestart(), pstyle->isInhNumRestart());
 	//	numRestartCombo->setParentItem(parent->numRestart());
@@ -256,6 +256,8 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 				if (!parent->numName().isEmpty())
 					numComboBox->setParentItem(numComboBox->findText(parent->numName()));
 				numFormatCombo->setParentItem(parent->numFormat());
+				numStart->setParentValue(parent->numStart());
+				numLevelSpin->setParentValue(parent->numLevel());
 			}
 			else
 				numComboBox->setParentItem(0);
@@ -269,14 +271,17 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 	}
 	enableParEffect(true);
 
-	peOffset_->setValue(newPStyle.parEffectOffset() * m_unitRatio);
+	peOffset_->setValue(newPStyle.parEffectOffset() * m_unitRatio, newPStyle.isInhParEffectOffset());
 	setWidgetBoldFont(peOffsetLabel, !newPStyle.isInhParEffectOffset());
 	peIndent_->setChecked(newPStyle.parEffectIndent(), newPStyle.isInhParEffectIndent());
 	if (newPStyle.hasParent())
 	{
 		const ParagraphStyle *parent = dynamic_cast<const ParagraphStyle*>(newPStyle.parentStyle());
 		if (parent)
+		{
 			peIndent_->setParentValue(parent->parEffectIndent());
+			peOffset_->setParentValue(parent->parEffectOffset());
+		}
 	}
 
 	displayCharStyle(newPStyle.peCharStyleName());
