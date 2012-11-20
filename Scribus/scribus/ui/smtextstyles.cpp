@@ -519,8 +519,8 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	connect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	connect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParaEffectOffset()));
-	connect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParaEffectIndent(bool)));
+	connect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParEffectOffset()));
+	connect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParEffectIndent(bool)));
 	connect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	connect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
@@ -528,7 +528,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
 	connect(pwidget_->numComboBox, SIGNAL(activated(QString)), this, SLOT(slotNumName(QString)));
 	connect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumLevel(int)));
-	connect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumStyle(int)));
+	connect(pwidget_->numFormatCombo, SIGNAL(activated(int)), this, SLOT(slotNumFormat(int)));
 	connect(pwidget_->numStartSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumStart(int)));
 	connect(pwidget_->numRestartCombo, SIGNAL(activated(int)), this, SLOT(slotNumRestart(int)));
 	connect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
@@ -615,13 +615,14 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_, SIGNAL(useParentParaEffects()), this, SLOT(slotParentParaEffects()));
 	disconnect(pwidget_->dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
 	disconnect(pwidget_->dropCapLines_, SIGNAL(valueChanged(int)), this, SLOT(slotDropCapLines(int)));
-	disconnect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParaEffectIndent(bool)));
+	disconnect(pwidget_->parEffectOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotParEffectOffset()));
+	disconnect(pwidget_->parEffectIndentBox, SIGNAL(toggled(bool)), this, SLOT(slotParEffectIndent(bool)));
 	disconnect(pwidget_->parEffectCharStyleCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParEffectCharStyle(const QString&)));
 
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	disconnect(pwidget_->bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
-	disconnect(pwidget_->numStyleCombo, SIGNAL(activated(int)), this, SLOT(slotNumStyle(int)));
+	disconnect(pwidget_->numFormatCombo, SIGNAL(activated(int)), this, SLOT(slotNumFormat(int)));
 	disconnect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumLevel(int)));
 	disconnect(pwidget_->numStartSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumStart(int)));
 	disconnect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
@@ -939,7 +940,7 @@ void SMParagraphStyle::slotParentParaEffects()
 		selection_[i]->parentBulletStr();
 		selection_[i]->parentHasNum();
 		selection_[i]->parentNumName();
-		selection_[i]->parentNumStyle();
+		selection_[i]->parentNumFormat();
 		selection_[i]->parentNumPrefix();
 		selection_[i]->parentNumSuffix();
 		selection_[i]->parentNumLevel();
@@ -974,7 +975,7 @@ void SMParagraphStyle::slotDropCapLines(int lines)
 	}
 }
 
-void SMParagraphStyle::slotParaEffectOffset()
+void SMParagraphStyle::slotParEffectOffset()
 {
 	if (pwidget_->parEffectOffset_->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
@@ -996,7 +997,7 @@ void SMParagraphStyle::slotParaEffectOffset()
 	}
 }
 
-void SMParagraphStyle::slotParaEffectIndent(bool isOn)
+void SMParagraphStyle::slotParEffectIndent(bool isOn)
 {
 	if (pwidget_->parEffectIndentBox->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
@@ -1061,9 +1062,9 @@ void SMParagraphStyle::slotNumName(const QString &str)
 			selection_[i]->setNumName(bstr);
 		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
 		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel());
-		numstruct * numS = doc_->numerations.value(selection_[0]->numName());
+		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
 		if (numS)
-			pwidget_->numLevelSpin->setMaximum(numS->counters.count());
+			pwidget_->numLevelSpin->setMaximum(numS->m_counters.count());
 	}
 
 	if (!selectionIsDirty_)
@@ -1082,8 +1083,8 @@ void SMParagraphStyle::slotNumNew()
 			selection_[i]->resetNumName();
 		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
 		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel());
-		numstruct * numS = doc_->numerations.value(selection_[0]->numName());
-		pwidget_->numLevelSpin->setMaximum(numS->counters.count());
+		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
+		pwidget_->numLevelSpin->setMaximum(numS->m_counters.count());
 	}
 	else
 	{
@@ -1099,14 +1100,14 @@ void SMParagraphStyle::slotNumNew()
 	}
 }
 
-void SMParagraphStyle::slotNumStyle(int numStyle)
+void SMParagraphStyle::slotNumFormat(int numFormat)
 {
-	if (pwidget_->numStyleCombo->useParentValue())
+	if (pwidget_->numFormatCombo->useParentValue())
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->resetNumStyle();
+			selection_[i]->resetNumFormat();
 	else
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setNumStyle(numStyle);
+			selection_[i]->setNumFormat(numFormat);
 
 	if (!selectionIsDirty_)
 	{
@@ -1712,8 +1713,10 @@ void SMParagraphStyle::slotLanguage()
 	QString language = doc_->paragraphStyle("").charStyle().language();
 	
 	if (pwidget_->cpage->language_->useParentValue())
+	{
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->charStyle().resetLanguage();
+	}
 	else
 	{
 		QString la=LanguageManager::instance()->getAbbrevFromLang(pwidget_->cpage->language_->currentText(), true, false);

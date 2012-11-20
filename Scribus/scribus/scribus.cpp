@@ -188,6 +188,8 @@ for which a new license (GPL+exception) is in place.
 #include "ui/notesstyleseditor.h"
 #ifdef HAVE_OSG
 	#include "ui/osgeditor.h"
+	#include <osgDB/ReaderWriter>
+	#include <osgDB/PluginQuery>
 #endif
 #include "ui/outlinepalette.h"
 #include "ui/pageitemattributes.h"
@@ -489,6 +491,37 @@ void ScribusMainWindow::initDefaultValues()
 	ClipB = QApplication::clipboard();
 	palettesStatus[0] = false;
 	guidesStatus[0] = false;
+#ifdef HAVE_OSG
+	QStringList supportedExts;
+	supportedExts << "osg" << "dxf" << "flt" << "ive" << "geo" << "sta" << "stl" << "logo" << "3ds" << "ac" << "obj";
+	QStringList realSupportedExts;
+	QMap<QString, QString> formats;
+	osgDB::FileNameList plugins = osgDB::listAllAvailablePlugins();
+	for(osgDB::FileNameList::iterator itr = plugins.begin(); itr != plugins.end(); ++itr)
+	{
+		osgDB::ReaderWriterInfoList infoList;
+		if (osgDB::queryPlugin(*itr, infoList))
+		{
+			for(osgDB::ReaderWriterInfoList::iterator rwi_itr = infoList.begin(); rwi_itr != infoList.end(); ++rwi_itr)
+			{
+				osgDB::ReaderWriterInfo& info = *(*rwi_itr);
+				osgDB::ReaderWriter::FormatDescriptionMap::iterator fdm_itr;
+				for(fdm_itr = info.extensions.begin(); fdm_itr != info.extensions.end(); ++fdm_itr)
+				{
+					if (supportedExts.contains(QString::fromStdString(fdm_itr->first)))
+					{
+						formats.insert("*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper(), QString::fromStdString(fdm_itr->second) + " (*." + QString::fromStdString(fdm_itr->first) + " *." + QString::fromStdString(fdm_itr->first).toUpper() + ")");
+					}
+				}
+			}
+		}
+	}
+	realSupportedExts = formats.keys();
+	QString docexts = realSupportedExts.join(" ");
+	QStringList longList = formats.values();
+	QString longDesc = longList.join(";;") + ";;";
+	osgFilterString = tr("All Supported Formats (%1);;%2All Files (*)").arg(docexts).arg(longDesc);
+#endif
 }
 
 
@@ -573,6 +606,7 @@ void ScribusMainWindow::initPalettes()
 	connect(symbolPalette, SIGNAL(paletteShown(bool)), scrActions["toolsSymbols"], SLOT(setChecked(bool)));
 	connect(symbolPalette, SIGNAL(startEdit(QString)), this, SLOT(editSymbolStart(QString)));
 	connect(symbolPalette, SIGNAL(endEdit()), this, SLOT(editSymbolEnd()));
+	connect(symbolPalette, SIGNAL(objectDropped()), this, SLOT(PutToPatterns()));
 	symbolPalette->installEventFilter(this);
 	symbolPalette->hide();
 
@@ -1047,8 +1081,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["extrasHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasDeHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasGenerateTableOfContents"], "Extras", false);
-	scrMenuMgr->addMenuItem(scrActions["extrasUpdateDocument"], "Extras", true);
-	scrMenuMgr->setMenuEnabled("Extras", false);
+	scrMenuMgr->addMenuItem(scrActions["extrasUpdateDocument"], "Extras", false);
 	connect(scrMenuMgr->getLocalPopupMenu("Extras"), SIGNAL(aboutToShow()), this, SLOT(extrasMenuAboutToShow()));
 
 	//Window menu
@@ -1664,7 +1697,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->handleModeEditKey(k, keyrep);
 				}
 //FIXME:av		view->oldCp = currItem->CPos;
-				if (currItem->itemType() == PageItem::TextFrame)
+				if (currItem->isTextFrame())
 				{
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
@@ -1679,7 +1712,8 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					}
 					keyrep=kr;
 				}
-				slotDocCh(false);
+				if (!currItem->isTextFrame() || (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty()))
+					slotDocCh(false);
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -2322,6 +2356,7 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 	scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 	scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());
+	scrActions["extrasUpdateDocument"]->setEnabled(true);
 	if (!doc->masterPageMode())
 		pagePalette->Rebuild();
 	outlinePalette->setDoc(doc);
@@ -2940,7 +2975,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemAttributes"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(false);
 		//scrMenuMgr->setMenuEnabled("ItemShapes", !(currItem->isTableItem && currItem->isSingleSel));
-//		scrMenuMgr->setMenuEnabled("ItemConvertTo", true);
+		scrMenuMgr->setMenuEnabled("ItemConvertTo", !((doc->appMode == modeEdit) || (currItem->isAnnotation())));
 		scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 		scrActions["itemConvertToImageFrame"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToOutlines"]->setEnabled(doc->appMode != modeEdit);
@@ -3400,6 +3435,13 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
+	while (doc->flag_Renumber)
+	{
+		doc->updateNumbers();
+		emit UpdateRequest(reqNumUpdate);
+		if (!doc->flag_Renumber)
+			doc->regionsChanged()->update(QRect());
+	}
 	if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 	{
 		bool sendUpdateReqest = false;
@@ -3413,12 +3455,6 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		doc->setNotesChanged(false);
 		doc->flag_updateEndNotes = false;
 		doc->flag_updateMarksLabels = false;
-	}
-	while (doc->m_flagRenumber)
-	{
-		doc->updateNumbers();
-		if (!doc->m_flagRenumber)
-			doc->regionsChanged()->update(QRect());
 	}
 }
 
@@ -4242,7 +4278,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		/*QTime t;
 		t.start();*/
 		int docItemsCount=doc->Items->count();
-		doc->m_flagRenumber = false;
+		doc->flag_Renumber = false;
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -8063,6 +8099,7 @@ void ScribusMainWindow::slotDocSetup()
 		scrActions["viewShowRulers"]->setChecked(doc->guidesPrefs().rulersShown);
 		scrActions["viewRulerMode"]->setChecked(doc->guidesPrefs().rulerMode);
 		scrActions["extrasGenerateTableOfContents"]->setEnabled(doc->hasTOCSetup());
+		scrActions["extrasUpdateDocument"]->setEnabled(true);
 		view->cmsToolbarButton->setChecked(doc->HasCMS);
 		//doc emits changed() via this
 		setStatusBarInfoText( tr("Reform Pages"));
@@ -9797,7 +9834,7 @@ void ScribusMainWindow::callImageEditor()
 #ifdef HAVE_OSG
 		if (currItem->asOSGFrame())
 		{
-			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame());
+			OSGEditorDialog *dia = new OSGEditorDialog(this, currItem->asOSGFrame(), osgFilterString);
 			dia->exec();
 			return;
 		}

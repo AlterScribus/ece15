@@ -71,10 +71,10 @@ private slots:
 	// pstyle
 	void slotLineSpacingMode(int mode);
 	void slotLineSpacing();
-	void slotParaEffectOffset();
-	void slotParaEffectIndent(bool);
-	void slotParEffectCharStyle(const QString &name);
 	void slotParentParaEffects();
+	void slotParEffectOffset();
+	void slotParEffectIndent(bool);
+	void slotParEffectCharStyle(const QString &name);
 	void slotDropCap(bool isOn);
 	void slotDropCapLines(int lines);
 	void slotBullet(bool isOn);
@@ -82,7 +82,7 @@ private slots:
 	void slotNumeration(bool isOn);
 	void slotNumName(const QString &str);
 	void slotNumNew();
-	void slotNumStyle(int numStyle);
+	void slotNumFormat(int numFormat);
 	void slotNumLevel(int level);
 	void slotNumPrefix(const QString &str);
 	void slotNumSuffix(const QString &str);

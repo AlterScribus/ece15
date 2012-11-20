@@ -66,7 +66,7 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 
 	fillBulletStrEditCombo();
 	bulletCharTableButton_->setIcon(loadIcon("22/insert-table.png"));
-	fillNumStyleCombo();
+	fillNumFormatCombo();
 
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 	minGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
@@ -178,7 +178,7 @@ void SMPStyleWidget::languageChange()
 	dropCapsLineLabel->setText( tr("Lines:"));
 	bulletCharLabel->setText(tr("Bullet Char/String"));
 	bulletCharTableButton_->setText(tr("Char Table"));
-	numStyleLabel->setText(tr("Numbering Style"));
+	numFormatLabel->setText(tr("Numbering Style"));
 	numLevelLabel->setText(tr("Level"));
 	numPrefixLabel->setText(tr("Prefix"));
 	numSuffixLabel->setText(tr("Suffix"));
@@ -186,7 +186,7 @@ void SMPStyleWidget::languageChange()
 	parEffectCharStyleComboLabel->setText(tr("Character Style for Effect:"));
 	distFromTextLabel->setText(tr("Distance from Text:"));
 	numStartLabel->setText(tr("Start with"));
-	numRestartOtherBox->setText(tr("Restart after other style"));
+	numRestartOtherBox->setText(tr("Restart after other format"));
 	numRestartHigherBox->setText(tr("Restart after higher level"));
 
 	parEffectCharStyleComboLabel->setText(tr("Character Style for Effect:"));
@@ -247,16 +247,16 @@ void SMPStyleWidget::fillBulletStrEditCombo()
 	bulletStrEdit_->setEditText(QChar(0x2022));
 }
 
-void SMPStyleWidget::fillNumStyleCombo()
+void SMPStyleWidget::fillNumFormatCombo()
 {
-	numStyleCombo->clear();
-	numStyleCombo->addItem("1_2_3");
-	numStyleCombo->addItem("i_ii_iii");
-	numStyleCombo->addItem("I_II_III");
-	numStyleCombo->addItem("a_b_c");
-	numStyleCombo->addItem("i_ii_iii");
-	numStyleCombo->addItem("A_B_C");
-	numStyleCombo->addItem("*");
+	numFormatCombo->clear();
+	numFormatCombo->addItem("1_2_3");
+	numFormatCombo->addItem("i_ii_iii");
+	numFormatCombo->addItem("I_II_III");
+	numFormatCombo->addItem("a_b_c");
+	numFormatCombo->addItem("i_ii_iii");
+	numFormatCombo->addItem("A_B_C");
+	numFormatCombo->addItem("*");
 }
 
 void SMPStyleWidget::fillNumerationsCombo(QList<ParagraphStyle> &pstyles)
@@ -321,7 +321,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	for (int i =0; i < cstyles.count(); i++)
 		parEffectCharStyleCombo->addItem(cstyles.at(i).name());
 	fillBulletStrEditCombo();
-	fillNumStyleCombo();
+	fillNumFormatCombo();
 	fillNumerationsCombo(pstyles);
 	fillNumRestartCombo();
 
@@ -411,8 +411,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		setWidgetBoldFont(bulletCharLabel, pstyle->isInhBulletStr());
 		numBox->setChecked(pstyle->hasNum());
 		setWidgetBoldFont(numBox, pstyle->isInhHasNum());
-		numStyleCombo->setCurrentItem(pstyle->numStyle(), pstyle->isInhNumStyle());
-		numStyleCombo->setParentItem(pstyle->numStyle());
+		numFormatCombo->setCurrentItem(pstyle->numFormat(), pstyle->isInhNumFormat());
+		numFormatCombo->setParentItem(pstyle->numFormat());
 		numPrefix->setText(pstyle->numPrefix());
 		setWidgetBoldFont(numPrefix, pstyle->isInhNumPrefix());
 		numSuffix->setText(pstyle->numSuffix());
@@ -463,12 +463,12 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 			numComboBox->setParentItem(numComboBox->findText(parent->numName()));
 		else
 			numComboBox->setParentItem(0);
-		numStyleCombo->setCurrentItem(pstyle->numStyle());
-		numStyleCombo->setParentItem(parent->numStyle());
+		numFormatCombo->setCurrentItem(pstyle->numFormat());
+		numFormatCombo->setParentItem(parent->numFormat());
 		numLevelSpin->setValue(pstyle->numLevel(), pstyle->isInhNumLevel());
-		numstruct * numS = m_Doc->numerations.value(pstyle->numName());
+		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
-			numLevelSpin->setMaximum(numS->counters.count());
+			numLevelSpin->setMaximum(numS->m_counters.count());
 		else
 			numLevelSpin->setMaximum(0);
 		numLevelSpin->setParentValue(parent->numLevel());
@@ -510,7 +510,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		setWidgetBoldFont(bulletCharLabel, true);
 		numBox->setChecked(pstyle->hasNum());
 		setWidgetBoldFont(numBox, true);
-		numStyleCombo->setCurrentItem(pstyle->numStyle());
+		numFormatCombo->setCurrentItem(pstyle->numFormat());
 		numPrefix->setText(pstyle->numPrefix());
 		setWidgetBoldFont(numPrefix, true);
 		numSuffix->setText(pstyle->numSuffix());
@@ -534,11 +534,11 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 			numName = "default";
 		numComboBox->setCurrentItem(numComboBox->findText(numName));
 		numNewLineEdit->clear();
-		numStyleCombo->setCurrentIndex(pstyle->numStyle());
+		numFormatCombo->setCurrentIndex(pstyle->numFormat());
 		numLevelSpin->setValue(pstyle->numLevel());
-		numstruct * numS = m_Doc->numerations.value(pstyle->numName());
+		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
-			numLevelSpin->setMaximum(numS->counters.count());
+			numLevelSpin->setMaximum(numS->m_counters.count());
 		else
 			numLevelSpin->setMaximum(0);
 		numPrefix->setText(pstyle->numPrefix());
@@ -841,7 +841,7 @@ void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Char
 	setWidgetBoldFont(numBox, (hasParent_ && pstyles[0]->isInhHasNum()));
 	if (hn)
 	{
-		setWidgetBoldFont(numStyleCombo, pstyles[0]->isInhNumStyle());
+		setWidgetBoldFont(numFormatCombo, pstyles[0]->isInhNumFormat());
 		setWidgetBoldFont(numLevelSpin, pstyles[0]->isInhNumLevel());
 		setWidgetBoldFont(numPrefix, pstyles[0]->isInhNumPrefix());
 		setWidgetBoldFont(numSuffix, pstyles[0]->isInhNumSuffix());
@@ -877,21 +877,9 @@ void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Char
 	numSuffix->setText(suffix);
 	setWidgetBoldFont(numSuffix, (hasParent_ && pstyles[0]->isInhNumSuffix()));
 
-	int level = pstyles[0]->numLevel();
-	for (int i = 0; i < pstyles.count(); ++i)
-	{
-		if (level != pstyles[i]->numLevel())
-		{
-			level = 0;
-			break;
-		}
-		else
-			level = pstyles[i]->numLevel();
-	}
-	numLevelSpin->setValue(level, (hasParent_ && pstyles[0]->isInhNumLevel()));
-
-	numStyleCombo->setEnabled(hn);
-	numLevelSpin->setEnabled(hn);
+	numFormatCombo->setEnabled(true);
+	numLevelSpin->setEnabled(true);
+	connectPESignals();
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
@@ -1190,7 +1178,7 @@ void SMPStyleWidget::slotDropCap(bool isOn)
 		bulletCharTableButton_->setEnabled(false);
 
 		numBox->setChecked(false);
-		numStyleCombo->setEnabled(false);
+		numFormatCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
 		numComboBox->setEnabled(false);
 		numRestartCombo->setEnabled(false);
@@ -1217,7 +1205,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 		bulletCharTableButton_->setEnabled(true);
 
 		numBox->setChecked(false);
-		numStyleCombo->setEnabled(false);
+		numFormatCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
 		numComboBox->setEnabled(false);
 		numRestartCombo->setEnabled(false);
@@ -1248,7 +1236,7 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 	disconnectPESignals();
 	if (isOn)
 	{
-		numStyleCombo->setEnabled(true);
+		numFormatCombo->setEnabled(true);
 		numLevelSpin->setEnabled(true);
 		numComboBox->setEnabled(true);
 		numRestartCombo->setEnabled(true);
@@ -1263,7 +1251,7 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 	}
 	else
 	{
-		numStyleCombo->setEnabled(false);
+		numFormatCombo->setEnabled(false);
 		numLevelSpin->setEnabled(false);
 	}
 	if (hasParent_)

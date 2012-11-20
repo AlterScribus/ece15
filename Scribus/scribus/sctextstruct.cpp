@@ -33,9 +33,6 @@ ScText::~ScText()
 		delete parstyle;
 	parstyle = NULL;
 	mark = NULL;
-	if (prefix)
-		delete prefix;
-	prefix = NULL;
 }
 
 bool ScText::hasObject(ScribusDoc *doc) const

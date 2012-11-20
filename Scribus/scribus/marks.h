@@ -20,8 +20,7 @@ enum MarkType
 	MARKNoteMasterType = 4,  //mark contain footnote reference
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
 	MARKIndexType = 6, // index entry
-	MARKBulletType = 7,
-	MARKNumType = 8
+	MARKBullNumType = 7
 };
 
 struct MarkData
@@ -42,6 +41,7 @@ class SCRIBUS_API Mark
 {
 	friend class ScribusDoc;
 	friend class ScribusMainWindow;
+	friend class BulNumMark;
 	//only ScribusDoc && ScribusMainWindow can create and delete marks
 private:
 	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
@@ -88,14 +88,20 @@ public:
 	bool hasItemPtr() { return data.itemPtr != NULL; }
 	bool hasString() { return !data.strtxt.isEmpty(); }
 	bool hasMark() { return data.destmarkName != ""; }
-	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType)); }
-	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ == MARKNoteFrameType)); }
-	bool isBullNumType() { return ((typ == MARKBulletType) || (typ == MARKNumType)); }
+	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
+	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) { return t==typ; }
 
 protected:
 	MarkType typ;
 	MarkData data;
+};
+
+class SCRIBUS_API BulNumMark : public Mark
+{
+public:
+	BulNumMark() : Mark() { label = "BullNumMark"; typ = MARKBullNumType; }
+	~BulNumMark() {}
 };
 
 #endif // MARKS_H

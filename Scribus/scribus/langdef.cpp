@@ -26,7 +26,7 @@ LangDef::LangDef()
 	m_hyphAvailable=false;
 	m_spellAvailable=false;
 	m_transAvailable=false;
-}
+};
 
 LangDef::LangDef(const QString& pri,
 			 const QString& alt,
@@ -41,4 +41,4 @@ LangDef::LangDef(const QString& pri,
 	m_altAbbrev=alt;
 	m_name=name;
 	m_transName=transName;
-}
+};

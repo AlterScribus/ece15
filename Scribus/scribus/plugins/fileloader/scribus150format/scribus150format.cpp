@@ -1890,9 +1890,9 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	}
 
 	// start auto save timer if needed
-	if (m_Doc->autoSave()  && ScCore->usingGUI())
+	if (m_Doc->autoSave() && ScCore->usingGUI())
 		m_Doc->restartAutoSaveTimer();
-//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+//	m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -2602,17 +2602,17 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(NUMNAME))
 		newStyle.setNumName(attrs.valueAsString(NUMNAME));
 
-	static const QString NUMSTYLE("NUMSTYLE");
-	if (attrs.hasAttribute(NUMSTYLE))
-		newStyle.setNumStyle(attrs.valueAsInt(NUMSTYLE));
+	static const QString NUMFORMAT("NUMFORMAT");
+	if (attrs.hasAttribute(NUMFORMAT))
+		newStyle.setNumFormat(attrs.valueAsInt(NUMFORMAT));
 
 	static const QString NUMLEVEL("NUMLEVEL");
-	if (attrs.hasAttribute(NUMSTYLE))
+	if (attrs.hasAttribute(NUMFORMAT))
 		newStyle.setNumLevel(attrs.valueAsInt(NUMLEVEL));
 
 	static const QString NUMSTART("NUMSTART");
 	if (attrs.hasAttribute(NUMSTART))
-		newStyle.setNumLevel(attrs.valueAsInt(NUMSTART));
+		newStyle.setNumStart(attrs.valueAsInt(NUMSTART));
 
 	static const QString NUMPREFIX("NUMPREFIX");
 	if (attrs.hasAttribute(NUMPREFIX))
@@ -6222,6 +6222,7 @@ bool Scribus150Format::readCharStyles(const QString& fileName, ScribusDoc* doc, 
 		if (tagName == "CHARSTYLE")
 		{
 			cstyle.erase();
+			attrs = reader.scAttributes();
 			readNamedCharacterStyleAttrs(doc, attrs, cstyle);
 			docCharStyles.create(cstyle);
 		}

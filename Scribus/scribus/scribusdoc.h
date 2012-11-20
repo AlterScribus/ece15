@@ -41,9 +41,9 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 #include "colormgmt/sccolormgmtengine.h"
 #include "documentinformation.h"
+#include "numeration.h"
 #include "marks.h"
 #include "notesstyles.h"
-#include "numeration.h"
 #include "observable.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
@@ -1773,12 +1773,15 @@ public slots:
 
 //auto-numerations
 public:
-	QMap<QString, numstruct*> numerations;
+	QMap<QString, NumStruct*> numerations;
 	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
 	QString getNumberStr(QString numName, int level, bool increment=true, bool resetlower=true);
 	void setNumerationCounter(QString numName, int level, int number);
-	bool m_flagRenumber;
+	bool flag_Renumber;
+	// for local numeration of paragraphs
+	bool updateLocalNums(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
 	void updateNumbers(bool updateNumerations = false);
+	void itemSelection_ClearBulNumStrings(Selection *customSelection);
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

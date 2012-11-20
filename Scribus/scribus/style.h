@@ -53,7 +53,7 @@ public:
 	{ //assert(typeinfo() == o.typeinfo()); 
 		m_isDefaultStyle = o.m_isDefaultStyle;
 		m_name = o.m_name;
-		m_context = NULL; 
+//		m_context = o.m_context; 
 		m_contextversion = -1; 
 		m_parent = o.m_parent;
 		m_shortcut = o.m_shortcut;

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>792</width>
+    <width>798</width>
     <height>755</height>
    </rect>
   </property>
@@ -513,17 +513,17 @@
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_10">
                    <item>
-                    <widget class="QLabel" name="numStyleLabel">
+                    <widget class="QLabel" name="numFormatLabel">
                      <property name="text">
-                      <string>Style</string>
+                      <string>Nums Format</string>
                      </property>
                      <property name="buddy">
-                      <cstring>numStyleCombo</cstring>
+                      <cstring>numFormatCombo</cstring>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="SMScComboBox" name="numStyleCombo">
+                    <widget class="SMScComboBox" name="numFormatCombo">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -605,7 +605,7 @@
                    <item>
                     <widget class="SMCheckBox" name="numRestartOtherBox">
                      <property name="text">
-                      <string>Restart after other style</string>
+                      <string>Restart after other format</string>
                      </property>
                     </widget>
                    </item>
@@ -1279,11 +1279,6 @@
    <header>ui/smsccombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>SMSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>ui/smspinbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>SMRadioButton</class>
    <extends>QRadioButton</extends>
    <header>ui/smradiobutton.h</header>
@@ -1310,11 +1305,6 @@
    <extends>QWidget</extends>
    <header>ui/smcstylewidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SMCheckBox</class>
-   <extends>QCheckBox</extends>
-   <header>ui/smcheckbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

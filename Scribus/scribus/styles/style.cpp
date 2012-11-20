@@ -68,6 +68,7 @@ const Style* Style::parentStyle() const
 	if (par == this) return NULL; else return par;
 }
 
+
 void Style::saxxAttributes(Xml_attr& attr) const
 {
 	if (!name().isEmpty())

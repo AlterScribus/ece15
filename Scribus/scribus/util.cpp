@@ -1129,6 +1129,13 @@ void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, 
 	delete gItem;
 }
 
+void setWidgetBoldFont(QWidget* w, bool wantBold)
+{
+	QFont f(w->font());
+	f.setBold(wantBold);
+	w->setFont(f);
+}
+
 void getUniqueName(QString &name, QStringList list, QString separator, bool prepend)
 {
 	if (!list.contains(name))
@@ -1143,12 +1150,5 @@ void getUniqueName(QString &name, QStringList list, QString separator, bool prep
 			newName = name + separator + QString::number(token);
 	} while (list.contains(newName));
 	name = newName;
-}
-
-void setWidgetBoldFont(QWidget* w, bool wantBold)
-{
-	QFont f(w->font());
-	f.setBold(wantBold);
-	w->setFont(f);
 }
 

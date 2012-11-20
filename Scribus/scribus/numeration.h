@@ -43,11 +43,11 @@ public:
 
 //struct used by ScribusDoc for storing numerations used in document
 typedef struct {
-	QString name;
-	QList<Numeration> nums;
-	QList<int> counters; // <level, count>
-	int lastlevel;
-} numstruct;
+	QString m_name;
+	QList<Numeration> m_nums;
+	QList<int> m_counters;
+	int m_lastlevel;
+} NumStruct;
 
 //util functions for use without Numeration class
 //convert passed num to string using numeration style

@@ -917,7 +917,6 @@ void ActionManager::initExtrasMenuActions()
 	connect( (*scrActions)["extrasManageImages"], SIGNAL(triggered()), mainWindow, SLOT(StatusPic()) );
 	connect( (*scrActions)["extrasGenerateTableOfContents"], SIGNAL(triggered()), mainWindow, SLOT(generateTableOfContents()) );
 	connect( (*scrActions)["extrasUpdateDocument"], SIGNAL(triggered()), mainWindow, SLOT(updateDocument()) );
-	
 }
 
 

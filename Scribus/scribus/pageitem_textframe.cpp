@@ -36,9 +36,9 @@ for which a new license (GPL+exception) is in place.
 #include "canvas.h"
 #include "commonstrings.h"
 #include "hyphenator.h"
+#include "numeration.h"
 #include "marks.h"
 #include "notesstyles.h"
-#include "numeration.h"
 #include "pageitem.h"
 #include "pageitem_group.h"
 #include "pageitem_textframe.h"
@@ -294,7 +294,7 @@ QRegion PageItem_TextFrame::calcAvailableRegion()
 		} // if(OnMasterPage.isEmpty()		
 	} // if(!Embedded)
 	else
-		qDebug() << "QRegion epmty";
+		qDebug() << "QRegion empty";
 	return result;
 }
 
@@ -330,7 +330,6 @@ void PageItem_TextFrame::setShadow()
 		currentShadow = newShadow;
 	}
 }
-
 /*
 static void debugLineLayout(const StoryText& itemText, const LineSpec& line)
 {
@@ -1609,74 +1608,77 @@ void PageItem_TextFrame::layout()
 					}
 				}
 			}
+			BulNumMode = false;
+			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
+			{
+				style = itemText.paragraphStyle(a);
+				if (style.hasBullet() || style.hasNum())
+				{
+					BulNumMode = true;
+					if (hl->mark == NULL || !hl->mark->isType(MARKBullNumType))
+					{
+						BulNumMark* bnMark = new BulNumMark();
+						itemText.insertMark(bnMark,a);
+						a--;
+						itLen = itemText.length();
+						continue;
+					}
+					if (style.hasBullet())
+						hl->mark->setString(style.bulletStr());
+					else if (style.hasNum())
+					{
+						if (hl->mark->getString().isEmpty())
+						{
+							hl->mark->setString("?");
+							m_Doc->flag_Renumber = true;
+						}
+					}
+				}
+			}
+			if (!BulNumMode && hl->mark && hl->mark->isType(MARKBullNumType))
+			{
+				delete (BulNumMark*) hl->mark;
+				hl->mark = NULL;
+				itemText.removeChars(a,1);
+				a--;
+				itLen = itemText.length();
+				continue;
+			}
+			if (current.itemsInLine == 0)
+				opticalMargins = style.opticalMargins();
+			CharStyle charStyle = ((hl->ch != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
 			chstr = ExpandToken(a);
 			int chstrLen = chstr.length();
 			if (chstr.isEmpty())
 				chstr = SpecialChars::ZWNBSPACE;
 
 			curStat = SpecialChars::getCJKAttr(hl->ch);
-			if (a > 0 && itemText.text(a-1) == SpecialChars::PARSEP)
-				style = itemText.paragraphStyle(a);
-			if (current.itemsInLine == 0)
-				opticalMargins = style.opticalMargins();
-			CharStyle charStyle = (hl->ch != SpecialChars::PARSEP? itemText.charStyle(a) : style.charStyle());
-			const ScFace* font = &charStyle.font();
-			QString prefixStr = QString();
-			BulNumMode = false;
-			
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP))
-			{
-				if (style.hasBullet() || style.hasNum())
-				{
-					BulNumMode = true;
-					if (hl->prefix == NULL)
-					{
-						ScText clone;
-						clone.applyCharStyle(charStyle);
-						clone.setEffects(ScStyle_Default);
-						hl->prefix = new ScText(clone);
-						const StyleContext* cStyleContext = itemText.paragraphStyle(a).charStyleContext();
-						hl->prefix->setContext(cStyleContext);
-					}
-					if (style.hasBullet())
-						prefixStr = style.bulletStr();
-					else if (style.hasNum())
-					{
-						if (hl->prefix->str.isEmpty())
-						{
-							prefixStr = "?";
-							m_Doc->m_flagRenumber = true;
-						}
-						else
-							prefixStr = hl->prefix->str;
-					}
-				}
-			}
-			if (!BulNumMode && hl->prefix)
-			{
-				hl->prefix->parstyle = NULL;
-				delete hl->prefix;
-				hl->prefix = NULL;
-			}
 
+			//set style for paragraph effects
 			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
 				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
 				{
-					CharStyle peStyle(charStyle);
-					if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-					{
-						peStyle.setParent(style.peCharStyleName());
-						if (style.hasDropCap())
-						{
-							charStyle.applyStyle(peStyle);
-							itemText.setCharStyle(a, chstr.length(), charStyle);
-						}
-						else if (hl->prefix)
-							hl->prefix->setStyle(peStyle);
-					}
+					const QString& curParent(style.hasParent() ? style.parent() : style.name());
+					CharStyle newStyle;
+					if (style.peCharStyleName() == tr("No Style") || style.peCharStyleName().isEmpty())
+						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+					else if (charStyle.name() != style.peCharStyleName())
+						newStyle.setParent(m_Doc->charStyle(style.peCharStyleName()).name());
+					newStyle.applyCharStyle(charStyle);
+					charStyle.setStyle(newStyle);
+					itemText.setCharStyle(a, 1 , charStyle);
+				}
+				else if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
+				//par effect is cleared but is set dcCharStyleName = clear drop cap char style
+				{
+					const QString& curParent(style.hasParent() ? style.parent() : style.name());
+					charStyle.eraseCharStyle(m_Doc->charStyle(style.peCharStyleName()));
+					charStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
+					itemText.setCharStyle(a, 1,charStyle);
 				}
 			}
+
 			double hlcsize10 = charStyle.fontSize() / 10.0;
 			double scaleV = charStyle.scaleV() / 1000.0;
 			double scaleH = charStyle.scaleH() / 1000.0;
@@ -1709,34 +1711,8 @@ void PageItem_TextFrame::layout()
 						DropCmode = false;
 				}
 			}
-			if ((a == 0 || itemText.text(a-1) == SpecialChars::PARSEP) && !isNoteFrame())
-			{
-				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
-				{
-					if (style.peCharStyleName() == tr("No Style") || style.peCharStyleName().isEmpty())
-					{
-						const QString& curParent(style.hasParent() ? style.parent() : style.name());
-						CharStyle newStyle;
-						newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-						charStyle.setStyle(newStyle);
-					}
-					else if (charStyle.name() != style.peCharStyleName())
-						charStyle.setStyle(m_Doc->charStyle(style.peCharStyleName()));
-					if (hl->prefix)
-						hl->prefix->setStyle(charStyle);
-					else
-						itemText.setCharStyle(a, chstrLen ,charStyle);
-				}
-				else if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())
-				//hasDropCap is cleared but is set dcCharStyleName = clear drop cap char style
-				{
-					const QString& curParent(style.hasParent() ? style.parent() : style.name());
-					CharStyle newStyle;
-					newStyle.setParent(m_Doc->paragraphStyle(curParent).charStyle().name());
-					charStyle.setStyle(newStyle);
-					itemText.setCharStyle(a, chstr.length(),charStyle);
-				}
-			}
+
+			const ScFace font = charStyle.font();
 
 			{  // local block for 'fl'
 				StyleFlag fl = hl->effects();
@@ -1815,7 +1791,7 @@ void PageItem_TextFrame::layout()
 			// find charsize factors
 			if (DropCmode)
 			{
-				//DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
+//				DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
 
 				// FIXME : we should ensure that fonts are loaded before calls to layout()
 				// ScFace::realCharHeight()/Ascent() ensure font is loaded thanks to an indirect call to char2CMap()
@@ -1826,12 +1802,12 @@ void PageItem_TextFrame::layout()
 				double realCharHeight = 0.0, realCharAscent = 0.0;
 				for (int i = 0; i < chstrLen; ++i)
 				{
-					realCharHeight = qMax(realCharHeight, font->realCharHeight(chstr[i], 1));
-					realCharAscent = qMax(realCharAscent, font->realCharAscent(chstr[i], 1));
+					realCharHeight = qMax(realCharHeight, font.realCharHeight(chstr[i], 1));
+					realCharAscent = qMax(realCharAscent, font.realCharAscent(chstr[i], 1));
 				}
-				double fontAscent     = font->ascent(style.charStyle().fontSize() / 10.0);
+				double fontAscent     = font.ascent(style.charStyle().fontSize() / 10.0);
 				if (realCharHeight == 0.0)
-					realCharHeight = font->height(style.charStyle().fontSize() / 10.0);
+					realCharHeight = font.height(style.charStyle().fontSize() / 10.0);
 				if (realCharAscent == 0.0)
 					realCharAscent = fontAscent;
 				chsd = (10 * ((DropCapDrop + fontAscent) / realCharHeight));
@@ -1864,20 +1840,7 @@ void PageItem_TextFrame::layout()
 			}
 			hl->glyph.yadvance = 0;
 			layoutGlyphs(*hl, chstr, hl->glyph);
-			if (BulNumMode && !prefixStr.isEmpty())
-			{
-				hl->prefix->glyph.yadvance = 0;
-				hl->prefix->ch = prefixStr[0];
-				layoutGlyphs(*(hl->prefix), prefixStr, hl->prefix->glyph);
-				double xoff = hl->prefix->glyph.wide() + style.parEffectOffset();
-				hl->prefix->glyph.xoffset -= xoff;
-				GlyphLayout* moreGL = hl->prefix->glyph.more;
-				while (moreGL)
-				{
-					moreGL->xoffset -= xoff;
-					moreGL = moreGL->more;
-				}
-			}
+			
 			// find out width, ascent and descent of char
 			if (HasObject)
 			{
@@ -1890,10 +1853,10 @@ void PageItem_TextFrame::layout()
 				// apply kerning
 				if (a+1 < itemText.length())
 				{
-					uint glyph2 = font->char2CMap(itemText.text(a+1));
-					double kern= font->glyphKerning(hl->glyph.glyph, glyph2, chs / 10.0) * hl->glyph.scaleH;
+					uint glyph2 = font.char2CMap(itemText.text(a+1));
+					double kern= font.glyphKerning(hl->glyph.last()->glyph, glyph2, chs / 10.0) * hl->glyph.scaleH;
 					wide += kern;
-					hl->glyph.xadvance += kern;
+					hl->glyph.last()->xadvance += kern;
 					// change xadvance, xoffset according to JIS X4051
 					ScText *hl2 = itemText.item(a+1);
 					int nextStat = SpecialChars::getCJKAttr(hl2->ch);
@@ -1907,7 +1870,7 @@ void PageItem_TextFrame::layout()
 							case SpecialChars::CJK_NOTOP:
 								kern = wide / 4;
 								wide += kern;
-								hl->glyph.xadvance += kern;
+								hl->glyph.last()->xadvance += kern;
 							}
 						} else {	// next char is CJK, too
 							switch(curStat & SpecialChars::CJK_CHAR_MASK){
@@ -1920,7 +1883,7 @@ void PageItem_TextFrame::layout()
 								case SpecialChars::CJK_MIDPOINT:
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
+									hl->glyph.last()->xadvance += kern;
 								}
 								break;
 							case SpecialChars::CJK_COMMA:
@@ -1930,7 +1893,7 @@ void PageItem_TextFrame::layout()
 								case SpecialChars::CJK_FENCE_END:
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
+									hl->glyph.last()->xadvance += kern;
 								}
 								break;
 							case SpecialChars::CJK_MIDPOINT:
@@ -1938,7 +1901,7 @@ void PageItem_TextFrame::layout()
 								case SpecialChars::CJK_FENCE_BEGIN:
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
+									hl->glyph.last()->xadvance += kern;
 								}
 								break;
 							case SpecialChars::CJK_FENCE_BEGIN:
@@ -1951,8 +1914,8 @@ void PageItem_TextFrame::layout()
 								if(prevStat == SpecialChars::CJK_FENCE_BEGIN){
 									kern = -wide / 2;
 									wide += kern;
-									hl->glyph.xadvance += kern;
-									hl->glyph.xoffset += kern;
+									hl->glyph.last()->xadvance += kern;
+									hl->glyph.last()->xoffset += kern;
 								}
 								break;
 							}
@@ -1966,7 +1929,7 @@ void PageItem_TextFrame::layout()
 							case SpecialChars::CJK_NOTOP:
 								kern = hl2->glyph.wide() / 4;
 								wide += kern;
-								hl->glyph.xadvance += kern;
+								hl->glyph.last()->xadvance += kern;
 							}
 						}
 					}
@@ -1979,7 +1942,7 @@ void PageItem_TextFrame::layout()
 				{
 					double itemHeight = hl->getItem(m_Doc)->height() + hl->getItem(m_Doc)->lineWidth();
 					if (itemHeight == 0)
-						itemHeight = font->height(style.charStyle().fontSize() / 10.0);
+						itemHeight = font.height(style.charStyle().fontSize() / 10.0);
 					wide = hl->getItem(m_Doc)->width() + hl->getItem(m_Doc)->lineWidth();
 					asce = hl->getItem(m_Doc)->height() + hl->getItem(m_Doc)->lineWidth();
 					realAsce = calculateLineSpacing (style, this) * DropLines;
@@ -1991,18 +1954,17 @@ void PageItem_TextFrame::layout()
 				{
 					double realCharHeight = 0.0;
 					wide = 0.0; realAsce = 0.0;
-					//
 					for (int i = 0; i < chstrLen; ++i)
 					{
-						realCharHeight = qMax(realCharHeight, font->realCharHeight(chstr[i], hlcsize10));
-						realAsce = qMax(realAsce, font->realCharHeight(chstr[i], chsd / 10.0));
-						wide += font->realCharWidth(chstr[i], chsd / 10.0);
+						realCharHeight = qMax(realCharHeight, font.realCharHeight(chstr[i], hlcsize10));
+						realAsce = qMax(realAsce, font.realCharHeight(chstr[i], chsd / 10.0));
+						wide += font.realCharWidth(chstr[i], chsd / 10.0);
 					}
 					wide = (wide* scaleH) + (1 - scaleH);
 					realAsce = realAsce  * scaleV + offset;
 					if (realCharHeight == 0)
-						realCharHeight = font->height(style.charStyle().fontSize() / 10.0);
-					asce = font->ascent(hlcsize10);
+						realCharHeight = font.height(style.charStyle().fontSize() / 10.0);
+					asce = font.ascent(hlcsize10);
 					// qDebug() QString("dropcaps pre: chsd=%1 realCharHeight = %2 chstr=%3").arg(chsd).arg(asce).arg(chstr2[0]);
 					hl->glyph.scaleH /= hl->glyph.scaleV;
 					hl->glyph.scaleV = (realAsce / realCharHeight);
@@ -2017,7 +1979,6 @@ void PageItem_TextFrame::layout()
 				if (SpecialChars::isExpandingSpace(hl->ch))
 				{
 					double wordtracking = charStyle.wordTracking();
-					hl->glyph.xadvance *= wordtracking;
 					wide *= wordtracking;
 				}
 				// find ascent / descent
@@ -2029,11 +1990,11 @@ void PageItem_TextFrame::layout()
 					{
 						if (chstr[i] == SpecialChars::OBJECT)
 							continue;
-						realDesc = qMax(realDesc, font->realCharDescent(chstr[i], hlcsize10));
-						realAsce = font->realCharAscent(chstr[i], hlcsize10);
+						realDesc = qMax(realDesc, font.realCharDescent(chstr[i], hlcsize10));
+						realAsce = font.realCharAscent(chstr[i], hlcsize10);
 					}
 					realDesc =  realDesc * scaleV - offset;
-					desc = -font->descent(hlcsize10);
+					desc = -font.descent(hlcsize10);
 					current.rememberShrinkStretch(hl->ch, wide, style);
 				}
 				if (HasObject)
@@ -2043,29 +2004,18 @@ void PageItem_TextFrame::layout()
 				}
 				else
 				{
-					asce = font->ascent(hlcsize10);
-					for (int i = 0; i < chstrLen; ++i)
-						realAsce = qMax(realAsce, font->realCharAscent(chstr[i], hlcsize10));
-					realAsce = realAsce  * scaleV + offset;
-				}
-				if (BulNumMode)
-				{
-					const ScFace* PEfont = &(*(hl->prefix)).font();
-					double PEhlcsize10 = hl->prefix->fontSize() / 10.0;
-					double PEscaleV = hl->prefix->scaleV() / 1000.0;
-					double PEoffset = PEhlcsize10 * (hl->prefix->baselineOffset() / 1000.0);
-
-					if (PEfont->descent(PEhlcsize10) > font->descent(hlcsize10))
-						desc -= PEfont->descent(PEhlcsize10) - font->descent(hlcsize10);
-					asce = qMax(asce, PEfont->ascent(PEhlcsize10));
-					for (int i=0; i < prefixStr.length(); ++i)
+					asce = font.ascent(hlcsize10);
+					if (HasMark && !BulNumMode)
+						realAsce = asce * scaleV + offset;
+					else
 					{
-						realDesc = qMax(realDesc, PEfont->realCharDescent(prefixStr[i], PEhlcsize10) * PEscaleV - PEoffset);
-						realAsce = qMax(realAsce, PEfont->realCharAscent(prefixStr[i], PEhlcsize10) * PEscaleV + PEoffset);
+						for (int i = 0; i < chstrLen; ++i)
+							realAsce = qMax(realAsce, font.realCharAscent(chstr[i], hlcsize10) * scaleV + offset);
 					}
 				}
 			}
-
+//			if (BulNumMode)
+//				hl->glyph.last()->xadvance += style.parEffectOffset();
 			//check for Y position at beginning of line
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2132,20 +2082,20 @@ void PageItem_TextFrame::layout()
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
-						if (BulNumMode)
+						if (BulNumMode || DropCmode)
 						{
-							if (!style.parEffectIndent())
-								current.leftIndent += style.parEffectOffset() + hl->prefix->glyph.wide();
+							if(style.parEffectIndent())
+								current.leftIndent -= style.parEffectOffset() + wide;
 						}
 					}
 					current.addLeftIndent = false;
 				}
 			}
 			current.recalculateY = true;
-			maxYAsc = 0, maxYDesc = 0;
+			maxYAsc = 0.0, maxYDesc = 0.0;
+			double addAsce = 0.0;
 			if (current.startOfCol)
 			{
-				double addAsce;
 				if (DropCmode)
 					addAsce = qMax(realAsce, asce + offset);
 				else
@@ -2233,21 +2183,7 @@ void PageItem_TextFrame::layout()
 							current.yPos++;
 						lastLineY = (double) maxYAsc / 100.0;
 						if (current.startOfCol)
-						{
-							double addAsce;
-							if (DropCmode)
-								addAsce = qMax(realAsce, asce + offset);
-							else
-								addAsce = asce + offset;
-							if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaselineGrid))
-							{
-								if (firstLineOffset() == FLOPRealGlyphHeight)
-									addAsce = realAsce;
-								else if (firstLineOffset() == FLOPLineSpacing)
-									addAsce = style.lineSpacing() + offset;
-							}
-							maxYAsc = (int) ((current.yPos - addAsce) *100);
-						}
+							maxYAsc = (int) ((current.yPos - addAsce)*100);
 						else
 							maxYAsc = (int) ((current.yPos - realAsce) * 100);
 						maxYDesc = (int) ((current.yPos + realDesc) * 100);
@@ -2304,7 +2240,7 @@ void PageItem_TextFrame::layout()
 					if (HasObject)
 						diff = (hl->getItem(m_Doc)->height() + hl->getItem(m_Doc)->lineWidth()) * scaleV + offset - (current.yPos - lastLineY);
 					else
-						diff = font->realCharAscent(QChar('l'), hlcsize10) * scaleV + offset - (current.yPos - lastLineY);
+						diff = font.realCharAscent(QChar('l'), hlcsize10) * scaleV + offset - (current.yPos - lastLineY);
 				}
 				else
 				{
@@ -2405,7 +2341,7 @@ void PageItem_TextFrame::layout()
 							if (tglyph)
 							{
 								tglyph->fillChar = tabs.fillChar;
-								tglyph->glyph    = font->char2CMap(tabs.fillChar);
+								tglyph->glyph    = font.char2CMap(tabs.fillChar);
 								tglyph->yoffset  = hl->glyph.yoffset;
 								tglyph->scaleV   = tglyph->scaleH = chs / charStyle.fontSize();
 								tglyph->xadvance = 0;
@@ -2424,7 +2360,7 @@ void PageItem_TextFrame::layout()
 			{
 				double yoffset = 0.0;
 				for (int i = 0; i < chstrLen; ++i)
-					yoffset = qMax(yoffset, font->realCharHeight(chstr[i], chsd / 10.0) - font->realCharAscent(chstr[i], chsd / 10.0));
+					yoffset = qMax(yoffset, font.realCharHeight(chstr[i], chsd / 10.0) - font.realCharAscent(chstr[i], chsd / 10.0));
 				hl->glyph.yoffset -= yoffset;
 			}
 			// remember x pos
@@ -2451,7 +2387,7 @@ void PageItem_TextFrame::layout()
 					current.rememberBreak(a, breakPos, style.rightMargin());
 				}
 			}
-			if  ((hl->ch == SpecialChars::OBJECT) && (hl->hasObject(m_Doc)))
+			if  (hl->hasObject(m_Doc))
 				current.rememberBreak(a, breakPos, style.rightMargin());
 			// CJK break
 			if(a > current.line.firstItem)
@@ -2488,7 +2424,7 @@ void PageItem_TextFrame::layout()
 			int maxYDesc100 = maxYDesc/100;
 			inOverflow = false;
 			if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
-				hyphWidth = font->charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
+				hyphWidth = font.charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
 			{
 				//end of row reached - right column, end of column, break char or line must end
@@ -2718,19 +2654,23 @@ void PageItem_TextFrame::layout()
 					tabs.status = TabNONE;
 				}
 			}
-			if (DropCmode && !outs)
+			if ((DropCmode || BulNumMode) && !outs)
 			{
-				DropCmode = false;
-				DropLinesCount = 0;
-				maxDY = current.yPos;
-				current.hasDropCap = true;
 				current.xPos += style.parEffectOffset();
-				hl->glyph.xadvance += style.parEffectOffset();
-				maxDX = current.xPos;
-				current.yPos -= calculateLineSpacing (style, this) * (DropLines-1);
-				if ((style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing) || (firstLineOffset() == FLOPBaselineGrid))
-					current.yPos = adjustToBaselineGrid (current, this, OwnPage);
-				current.recalculateY = false;
+				hl->glyph.last()->xadvance += style.parEffectOffset();
+				if (DropCmode)
+				{
+					DropCmode = false;
+					DropLinesCount = 0;
+					maxDY = current.yPos;
+					current.hasDropCap = true;
+					maxDX = current.xPos;
+					double spacing = calculateLineSpacing (style, this);
+					current.yPos -= spacing * (DropLines-1);
+					if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
+						current.yPos = adjustToBaselineGrid (current, this, OwnPage);
+					current.recalculateY = false;
+				}
 			}
 			// end of line
 			if (outs)
@@ -2807,7 +2747,7 @@ void PageItem_TextFrame::layout()
 						// go back to last break position
 						style = itemText.paragraphStyle(a);
 						if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
-							style.setLineSpacing(font->height(hlcsize10) * autoLS);
+							style.setLineSpacing(font.height(hlcsize10) * autoLS);
 						else if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
 							style.setLineSpacing(m_Doc->guidesPrefs().valueBaselineGrid);
 						
@@ -2831,8 +2771,8 @@ void PageItem_TextFrame::layout()
 								current.hyphenCount++;
 							hl->setEffects(hl->effects() | ScStyle_SoftHyphenVisible);
 							hl->glyph.grow();
-							hl->glyph.more->glyph = font->char2CMap(QChar('-'));
-							hl->glyph.more->xadvance = font->charWidth('-', itemText.charStyle(a).fontSize() / 10.0) * scaleH; //FIX ME - hyphen is not rendered with proper width - check yhis with large glyphs horizontal scaling eg. 20%
+							hl->glyph.more->glyph = font.char2CMap(QChar('-'));
+							hl->glyph.more->xadvance = font.charWidth('-', itemText.charStyle(a).fontSize() / 10.0) * scaleH; //FIX ME - hyphen is not rendered with proper width - check yhis with large glyphs horizontal scaling eg. 20%
 							hyphWidth = hl->glyph.more->xadvance;
 						}
 						else
@@ -3056,12 +2996,12 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = (int) (current.yPos - addAsce);
+				maxYAsc = (int) ((current.yPos - addAsce)*100);
 			}
 			else
-				maxYAsc = (int) (current.yPos - realAsce);
+				maxYAsc = (int) ((current.yPos - realAsce)*100);
 			maxYAsc = qMax(maxYAsc, 0);
-			maxYDesc = (int) (current.yPos + realDesc);
+			maxYDesc = (int) ((current.yPos + realDesc)*100);
 
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc/100, maxYDesc/100);
 			current.finishLine(EndX);
@@ -3701,15 +3641,11 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 									xcoZli -= hls->glyph.xoffset;
 								}
 							}
-							if (hls->prefix)
-								xcoZli += hls->prefix->glyph.xoffset;
-							const ScFace* font = &charStyleS.font();
+							const ScFace font = charStyleS.font();
 							double fontSize = charStyleS.fontSize() / 10.0;
-							desc = - font->descent(fontSize);
-							asce = font->ascent(fontSize);
+							desc = - font.descent(fontSize);
+							asce = font.ascent(fontSize);
 							wide = hls->glyph.wide();
-							if (hls->prefix)
-								wide += hls->prefix->glyph.wide();
 							QRectF scr;
 							if (HasObject)
 							{
@@ -3847,10 +3783,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 
 				if (!m_Doc->RePos)
 				{
-					const ScFace* font = &charStyle.font();
+					const ScFace font = charStyle.font();
 					double fontSize = charStyle.fontSize() / 10.0;
-					desc = - font->descent(fontSize);
-					asce = font->ascent(fontSize);
+					desc = - font.descent(fontSize);
+					asce = font.ascent(fontSize);
 					if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
@@ -3892,64 +3828,12 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						}
 						p->restore();//RE4
 					}
-					if (hl->prefix)
-					{
-						const CharStyle& prefCharStyle(dynamic_cast<const CharStyle&>(*hl->prefix));
-						actFill = prefCharStyle.fillColor();
-						actFillShade = prefCharStyle.fillShade();
-						if (actFill != CommonStrings::None)
-						{
-							p->setFillMode(ScPainter::Solid);
-							if ((cachedFillShade != actFillShade) || (cachedFill != actFill))
-							{
-								SetQColor(&tmp, actFill, actFillShade);
-								p->setBrush(tmp);
-								cachedFillQ = tmp;
-								cachedFill = actFill;
-								cachedFillShade = actFillShade;
-							}
-							else
-								p->setBrush(cachedFillQ);
-						}
-						else
-							p->setFillMode(ScPainter::None);
-						
-						const ScFace* font = &prefCharStyle.font();
-						double fontSize = prefCharStyle.fontSize() / 10.0;
-						desc = - font->descent(fontSize);
-						asce = font->ascent(fontSize);
-						if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
-						{
-							// set text color to highlight if its selected
-							p->setBrush(qApp->palette().color(QPalette::Active, QPalette::HighlightedText));
-						}
-						
-						actStroke = prefCharStyle.strokeColor();
-						actStrokeShade = prefCharStyle.strokeShade();
-						if (actStroke != CommonStrings::None)
-						{
-							if ((cachedStrokeShade != actStrokeShade) || (cachedStroke != actStroke))
-							{
-								SetQColor(&tmp, actStroke, actStrokeShade);
-								p->setPen(tmp, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
-								cachedStrokeQ = tmp;
-								cachedStroke = actStroke;
-								cachedStrokeShade = actStrokeShade;
-							}
-							else
-								p->setPen(cachedStrokeQ, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
-						}
-						// paint glyphs
-						if (cullingArea.intersects(pf2.mapRect(QRect(qRound(CurX + hl->prefix->glyph.xoffset),qRound(ls.y + hl->prefix->glyph.yoffset-asce), qRound(hl->prefix->glyph.xadvance+1), qRound(asce+desc)))))
-						{
-							p->save();//SA4
-							p->translate(CurX, ls.y);
-							drawGlyphs(p, prefCharStyle, hl->prefix->glyph);
-							p->restore();//RE4
-						}
-					}
+					// Unneeded now that glyph xadvance is set appropriately for inline objects by layout() - JG
+					/*if ((hl->ch == SpecialChars::OBJECT) && (hl->embedded.hasItem()))
+						CurX += (hl->embedded.getItem()->gWidth + hl->embedded.getItem()->lineWidth()) * hl->glyph.scaleH;
+					else*/
+					CurX += hl->glyph.wide();
 				}
-				CurX += hl->glyph.wide();
 			}
 		}
 	//	else {
@@ -4165,7 +4049,6 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 		//if (m_Doc->selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
 	}
-//	Tinput = false;
 	FrameOnly = false;
 	p->restore();
 }
@@ -4344,7 +4227,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					asNoteFrame()->masterFrame()->invalid = true;
 				}
 				else
-				update();
+					update();
 				keyRepeat = false;
 				return;
 			}
@@ -4642,7 +4525,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					}
 				}
 				else
-				update();
+					update();
 //				view->RefreshItem(this);
 			}
 			keyRepeat = false;
@@ -4696,7 +4579,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					}
 				}
 				else
-				update();
+					update();
 			}
 			break;
 		}
@@ -4899,29 +4782,31 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 
 void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 {
+	if (itemText.length() <= 0)
+		return;
 	if (itemText.lengthOfSelection() == 0)
 	{
 		itemText.select(itemText.cursorPosition(),1);
 		HasSel = true;
 	}
-			int start = itemText.startOfSelection();
-			int stop = itemText.endOfSelection();
+	int start = itemText.startOfSelection();
+	int stop = itemText.endOfSelection();
 	int marksNum = 0;
 	if(UndoManager::undoEnabled()) {
-			int lastPos = start;
-			CharStyle lastParent = itemText.charStyle(start);
-			UndoState* state = undoManager->getLastUndo();
-			ScItemState<CharStyle> *is = NULL;
-			TransactionState *ts = NULL;
-			bool added = false;
-			bool lastIsDelete = false;
-			while(state && state->isTransaction()){
-				ts = dynamic_cast<TransactionState*>(state);
-				is = dynamic_cast<ScItemState<CharStyle>*>(ts->at(ts->sizet()-1));
-				state = ts->at(0);
-			}
+		int lastPos = start;
+		CharStyle lastParent = itemText.charStyle(start);
+		UndoState* state = undoManager->getLastUndo();
+		ScItemState<CharStyle> *is = NULL;
+		TransactionState *ts = NULL;
+		bool added = false;
+		bool lastIsDelete = false;
+		while(state && state->isTransaction()){
+			ts = dynamic_cast<TransactionState*>(state);
+			is = dynamic_cast<ScItemState<CharStyle>*>(ts->at(ts->sizet()-1));
+			state = ts->at(0);
+		}
 		UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
-
+		
 		//find and delete notes and marks in selected text
 		QList<QPair<TextNote*, int> > notes2DEL;
 		if (isNoteFrame()/* && findNotes*/)
@@ -4934,7 +4819,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					break;
 				ScText* hl = itemText.item(i);
 				if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
-//					notes2DEL.append(QPair<TextNote*, int>(hl->mark->getNotePtr(), i));
+					//					notes2DEL.append(QPair<TextNote*, int>(hl->mark->getNotePtr(), i));
 					notes2DEL.append(qMakePair(hl->mark->getNotePtr(), i));
 			}
 		}
@@ -4945,8 +4830,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			stop -= marksNum;
 		}
 		//delete text
-			for (int i=start; i <= stop; ++i)
-			{
+		for (int i=start; i < stop; ++i)
+		{
 			ScText* hl = NULL;
 			if (i < itemText.length())
 				hl = itemText.item(i);
@@ -4979,12 +4864,12 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					is = NULL;
 					if (i - lastPos > 0)
 					{
-					is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
-					is->set("DELETE_FRAMETEXT", "delete_frametext");
-					is->set("ETEA", QString("delete_frametext"));
-					is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
-					is->set("START", start);
-					is->setItem(lastParent);
+						is = new ScItemState<CharStyle>(Um::DeleteText,"",Um::IDelete);
+						is->set("DELETE_FRAMETEXT", "delete_frametext");
+						is->set("ETEA", QString("delete_frametext"));
+						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
+						is->set("START", start);
+						is->setItem(lastParent);
 					}
 					//delete selected notes from notes frame
 					if (isNoteFrame())
@@ -5027,11 +4912,11 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					}
 					if (is)
 					{
-					if(!ts || !lastIsDelete){
+						if(!ts || !lastIsDelete){
 							undoManager->action(undoTarget, is);
-						ts = NULL;
-					}
-					else
+							ts = NULL;
+						}
+						else
 							ts->pushBack(undoTarget,is);
 					}
 				}
@@ -5051,8 +4936,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	itemText.setCursorPosition( start );
 	//for sure text is still selected
 	itemText.select(start, stop - start - marksNum);
-		itemText.removeSelection();
-		HasSel = false;
+	itemText.removeSelection();
+	HasSel = false;
 //	m_Doc->updateFrameItems();
 	m_Doc->scMW()->DisableTxEdit();
 }
@@ -5417,7 +5302,7 @@ QString PageItem_TextFrame::infoDescription()
 	return QString();
 }
 
-bool PageItem_TextFrame::hasMark(NotesStyle *NS)
+bool PageItem_TextFrame::hasNoteMark(NotesStyle *NS)
 {
 	if (isNoteFrame())
 		return (asNoteFrame()->notesStyle() == NS);
@@ -5559,6 +5444,8 @@ Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
 		if (hl->hasMark())
 		{
 			if (omitNotes && (hl->mark->isType(MARKNoteMasterType) || hl->mark->isType(MARKNoteFrameType)))
+				continue;
+			if (hl->mark->isType(MARKBullNumType))
 				continue;
 			return hl->mark;
 		}
@@ -5812,12 +5699,14 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	Mark* mrk = selectedMark(true);
 	while (mrk != NULL)
 	{
-		Q_ASSERT(!mrk->isNoteType());
-		if (doUndo)
-			m_Doc->setUndoDelMark(mrk);
-		m_Doc->eraseMark(mrk, true, this);
+		if (!mrk->isType(MARKBullNumType))
+		{
+			if (doUndo)
+				m_Doc->setUndoDelMark(mrk);
+			m_Doc->eraseMark(mrk, true, this);
+			++num;
+		}
 		mrk = selectedMark(true);
-		++num;
 	}
 	return num;
 }

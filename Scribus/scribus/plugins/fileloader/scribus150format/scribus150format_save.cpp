@@ -21,15 +21,15 @@ for which a new license (GPL+exception) is in place.
 #include "scribusview.h"
 #include "hyphenator.h"
 #include "notesstyles.h"
+#include "pageitem_arc.h"
 #include "pageitem_latexframe.h"
+#include "pageitem_noteframe.h"
 #ifdef HAVE_OSG
 	#include "pageitem_osgframe.h"
 #endif
 #include "pageitem_regularpolygon.h"
-#include "pageitem_arc.h"
 #include "pageitem_spiral.h"
 #include "pageitem_table.h"
-#include "pageitem_noteframe.h"
 
 #include "units.h"
 #include "util.h"
@@ -656,8 +656,8 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("BULLETSTR", style.bulletStr());
 	if ( ! style.isInhHasNum())
 		docu.writeAttribute("NUMERATION", static_cast<int>(style.hasNum()));
-	if ( ! style.isInhNumStyle())
-		docu.writeAttribute("NUMSTYLE", style.numStyle());
+	if ( ! style.isInhNumFormat())
+		docu.writeAttribute("NUMFORMAT", style.numFormat());
 	if ( ! style.isInhNumName())
 		docu.writeAttribute("NUMNAME", style.numName());
 	if ( ! style.isInhNumLevel())
@@ -1593,9 +1593,12 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
 		else if (ch == SpecialChars::OBJECT && item->itemText.item(k)->mark != NULL)
 		{
 			Mark* mark = item->itemText.item(k)->mark;
-			docu.writeEmptyElement("MARK");
-			docu.writeAttribute("label", mark->label);
-			docu.writeAttribute("type", mark->getType());
+			if (!mark->isType(MARKBullNumType))
+			{ //dont save marks for bullets and numbering
+				docu.writeEmptyElement("MARK");
+				docu.writeAttribute("label", mark->label);
+				docu.writeAttribute("type", mark->getType());
+			}
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
 			putPStyle(docu, item->itemText.paragraphStyle(k), "para");

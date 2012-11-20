@@ -629,6 +629,7 @@ private:
 	FormatsManager *formatsManager;
 
 	QPointer<HelpBrowser> helpBrowser;
+	QString osgFilterString;
 
 private:
 	void insertMark(MarkType);

@@ -851,7 +851,8 @@ PageItem::~PageItem()
 				if (itemText.item(pos)->hasMark())
 				{
 					Mark* mrk = itemText.item(pos)->mark;
-					m_Doc->eraseMark(mrk);
+					if (!mrk->isType(MARKBullNumType))
+						m_Doc->eraseMark(mrk);
 				}
 			}
 		}
@@ -2087,7 +2088,6 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		//if (m_Doc->m_Selection->findItem(this)!=-1)
 		//	drawLockedMarker(p);
 	}
-//	Tinput = false;
 	FrameOnly = false;
 	p->restore();
 }
@@ -4800,6 +4800,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	bool useRasterBackup = m_Doc->useRaster;
 	bool SnapGuidesBackup = m_Doc->SnapGuides;
 	bool SnapElementBackup = m_Doc->SnapElement;
+	int dummy = 0;
 	m_Doc->SnapElement = false;
 	m_Doc->useRaster = false;
 	m_Doc->SnapGuides = false;
@@ -4816,7 +4817,7 @@ void PageItem::restore(UndoState *state, bool isUndo)
 	{
 		bool actionFound = checkGradientUndoRedo(ss, isUndo);
 		if (actionFound)
-			int dummy = 0;
+			dummy = 0;
 		else if (ss->contains("ARC"))
 			restoreArc(ss, isUndo);
 		else if (ss->contains("MASKTYPE"))
@@ -5033,6 +5034,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreWeldItems(ss, isUndo);
 		else if (ss->contains("UNWELD_ITEM"))
 			restoreUnWeldItem(ss, isUndo);
+		else if (ss->contains("CLEARMARKSTRING"))
+			restoreMarkString(ss, isUndo);
 	}
 	if (!OnMasterPage.isEmpty())
 		m_Doc->setCurrentPage(oldCurrentPage);
@@ -5109,6 +5112,17 @@ void PageItem::restoreWeldItems(SimpleState *state, bool isUndo)
 	}
 	m_Doc->changed();
 	m_Doc->regionsChanged()->update(QRectF());
+}
+
+void PageItem::restoreMarkString(SimpleState *state, bool isUndo)
+{
+	ScItemState< QPair<int,QString> > *is = dynamic_cast<ScItemState< QPair<int,QString> >*>(state);
+	ScText * hl = itemText.item(is->getItem().first);
+	Q_ASSERT(hl->hasMark());
+	if (isUndo)
+		hl->mark->setString(is->getItem().second);
+	else
+		hl->mark->setString(QString());
 }
 
 bool PageItem::checkGradientUndoRedo(SimpleState *ss, bool isUndo)

@@ -274,7 +274,6 @@ void SMCStyleWidget::show(CharStyle *cstyle, QList<CharStyle> &cstyles, const QS
 	int ci = -1, pi = -1, di = -1;
 // 	LanguageManager langmgr;
 // 	langmgr.init(true);
-	QString tl;
 	for (int i = 0; i < language_->count(); ++i)
 	{
 		QString ltAbbrev=LanguageManager::instance()->getAbbrevFromLang(language_->itemText(i), true, false);
@@ -284,9 +283,8 @@ void SMCStyleWidget::show(CharStyle *cstyle, QList<CharStyle> &cstyles, const QS
 		
 		if (hasParent && ltAbbrev == plang)
 			pi = i;
-		tl=defLang;
 		//qDebug() << i << language_->itemText(i) << defLang << langMap_[defLang] << tl;
-		if (ltAbbrev == defLang || ltAbbrev == tl)
+		if (ltAbbrev == defLang)
 // 		{
 			di = i;
 			//qDebug() << "match on:" << di;

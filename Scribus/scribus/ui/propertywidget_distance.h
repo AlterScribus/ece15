@@ -22,9 +22,9 @@ class PropertyWidget_Distance : public QFrame, public Ui::PropertyWidget_Distanc
 public:
 	PropertyWidget_Distance(QWidget* parent);
 	~PropertyWidget_Distance() {};
-
 	void connectSignals();
 	void disconnectSignals();
+
 protected:
 	PageItem *         m_item;
 	ScribusMainWindow* m_ScMW;

@@ -38,7 +38,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -124,7 +124,7 @@
            </property>
           </widget>
          </item>
-		 <item>
+         <item>
           <widget class="QCheckBox" name="showAutosaveClockOnCanvasCheckBox">
            <property name="text">
             <string>Show Autosave Countdown Clock on the Canvas</string>
@@ -378,9 +378,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>432</width>
-            <height>350</height>
+            <y>-16</y>
+            <width>462</width>
+            <height>342</height>
            </rect>
           </property>
           <layout class="QFormLayout" name="formLayout_2">
