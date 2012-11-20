@@ -1359,7 +1359,6 @@ void PageItem_TextFrame::layout()
 	double chs, chsd = 0;
 	double EndX, OFs, wide, kernVal;
 	QString chstr;
-	QString prefixStr;
 	ScText *hl;
 	ParagraphStyle style;
 	int opticalMargins = ParagraphStyle::OM_None;
@@ -1424,7 +1423,7 @@ void PageItem_TextFrame::layout()
 	
 	setShadow();
 	SEColumnsMap.clear();
-	int startColumn = 0;
+	int startColumn = -1;
 	int itLen = itemText.length();
 	//fast validate empty frames
 	warnedList.clear();
@@ -1544,7 +1543,7 @@ void PageItem_TextFrame::layout()
 
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
-			if (startColumn == 0)  //for widows/orphans checking
+			if (startColumn == -1)  //for widows/orphans checking
 				startColumn = a;
 			hl = itemText.item(a);
 			bool HasObject = hl->hasObject(m_Doc);
@@ -2194,7 +2193,7 @@ void PageItem_TextFrame::layout()
 					if (current.isEndOfCol(realDesc))
 					{
 						setColumnSE(current.column,startColumn,a); //for widows/orphans checking
-						startColumn = 0;
+						startColumn = -1;
 						current.column++;
 						if (current.column < Cols)
 						{
@@ -2929,7 +2928,7 @@ void PageItem_TextFrame::layout()
 				{
 					goNextColumn = false;
 					setColumnSE(current.column,startColumn,a); //for widows/orphans checking
-					startColumn = 0;
+					startColumn = -1;
 					current.column++;
 					if (current.column < Cols)
 					{

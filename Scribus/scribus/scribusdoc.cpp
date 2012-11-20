@@ -9251,7 +9251,6 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 				undoManager->action(currItem, is);
 			}
 			currItem->itemText.applyStyle(stop, newStyle, rmDirectFormatting);
-			currItem->invalid = true;
 		}
 		if (currItem->asPathText())
 			currItem->updatePolyClip();
