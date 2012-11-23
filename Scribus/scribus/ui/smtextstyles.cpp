@@ -617,14 +617,17 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	disconnect(pwidget_->bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
+	disconnect(pwidget_->numComboBox, SIGNAL(activated(QString)), this, SLOT(slotNumName(QString)));
 	disconnect(pwidget_->numFormatCombo, SIGNAL(activated(int)), this, SLOT(slotNumFormat(int)));
 	disconnect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumLevel(int)));
 	disconnect(pwidget_->numStartSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumStart(int)));
+	disconnect(pwidget_->numRestartCombo, SIGNAL(activated(int)), this, SLOT(slotNumRestart(int)));
 	disconnect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
 	disconnect(pwidget_->numRestartHigherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumHigher(bool)));
 	disconnect(pwidget_->numPrefix, SIGNAL(textEdited(QString)), this, SLOT(slotNumPrefix(QString)));
 	disconnect(pwidget_->numSuffix, SIGNAL(textEdited(QString)), this, SLOT(slotNumSuffix(QString)));
-
+	disconnect(pwidget_->numNewLineEdit, SIGNAL(editingFinished()), this, SLOT(slotNumNew()));
+	
 	disconnect(pwidget_->parentCombo, SIGNAL(activated(const QString&)),
 			this, SLOT(slotParentChanged(const QString&)));
 
