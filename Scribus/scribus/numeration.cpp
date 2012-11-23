@@ -36,6 +36,13 @@ const QString getFormatName(int format)
 	return name;
 }
 
+const QStringList getFormatList()
+{
+	QStringList list;
+	list << "1_2_3" << "i_ii_iii" << "I_II_III" << "a_b_c" << "A_B_C" << "*";
+	return list;
+}
+
 const QString Numeration::numString(const int num)
 {
 	if (numFormat == Type_asterix)

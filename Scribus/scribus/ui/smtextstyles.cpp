@@ -1059,7 +1059,7 @@ void SMParagraphStyle::slotNumName(const QString &str)
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setNumName(bstr);
 		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
-		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel());
+		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel()+1);
 		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
 		if (numS)
 			pwidget_->numLevelSpin->setMaximum(numS->m_counters.count());
@@ -1080,7 +1080,7 @@ void SMParagraphStyle::slotNumNew()
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->resetNumName();
 		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
-		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel());
+		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel()+1);
 		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
 		pwidget_->numLevelSpin->setMaximum(numS->m_counters.count());
 	}
@@ -1122,7 +1122,7 @@ void SMParagraphStyle::slotNumLevel(int level)
 	else
 		for (int i = 0; i < selection_.count(); ++i)
 		{
-			selection_[i]->setNumLevel(level);
+			selection_[i]->setNumLevel(level-1);
 		}
 	
 	if (level == 0)

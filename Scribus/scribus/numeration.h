@@ -2,6 +2,7 @@
 #define NUMERATION_H
 
 #include <QString>
+#include <QStringList>
 #include <QMap>
 
 typedef enum 
@@ -56,5 +57,6 @@ const QString getStringFromNum(NumFormat format, int num, const QChar leadingCha
 const QString getAsterixStringFromNum(int num, QString asterix, const QChar leadingChar='_', const int charsLen=0);
 //return numeration name from type
 const QString getFormatName(int format);
+const QStringList getFormatList();
 
 #endif // NUMERATION_H
