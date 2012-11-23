@@ -9,13 +9,13 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_table.h"
 #include "propertywidget_dropcap.h"
 #include "scribus.h"
-#include "scribusdoc.h"
+//#include "scribusdoc.h"
 #include "selection.h"
 #include "units.h"
-#include "undomanager.h"
-#include "undostate.h"
+//#include "undomanager.h"
+//#include "undostate.h"
 #include "util.h"
-#include "util_icon.h"
+//#include "util_icon.h"
 
 PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent), m_enhanced(NULL), m_item(NULL), m_ScMW(NULL)
 {

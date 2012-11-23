@@ -672,7 +672,7 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 	if ( ! style.isInhNumOther())
 		docu.writeAttribute("NUMOTHER", static_cast<int>(style.numOther()));
 	if ( ! style.isInhNumHigher())
-		docu.writeAttribute("NUMHigher", static_cast<int>(style.numHigher()));
+		docu.writeAttribute("NUMHIGHER", static_cast<int>(style.numHigher()));
 	if ( ! style.isInhOpticalMargins())
 		docu.writeAttribute("OpticalMargins", style.opticalMargins());
 	if ( ! style.isInhHyphenationMode())
