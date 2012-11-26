@@ -16890,7 +16890,7 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 void ScribusDoc::updateNumbers(bool updateNumerations)
 {
 	if (updateNumerations)
-		//after stles change reset all numerations settings
+		//after styles change reset all numerations settings
 		setupNumerations();
 	//reset ALL counters
 	foreach (NumStruct * numS, numerations.values())

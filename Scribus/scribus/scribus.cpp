@@ -9944,7 +9944,7 @@ void ScribusMainWindow::updateDocument()
 	if (HaveDoc)
 	{
 		doc->updateNumbers(true);
-//		doc->view()->repaint();
+		doc->updateMarks(true);
 		doc->regionsChanged()->update(QRect());
 	}
 }
