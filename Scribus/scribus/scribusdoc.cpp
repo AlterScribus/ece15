@@ -54,6 +54,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/inserttablecolumnsdialog.h"
 #include "ui/inserttablerowsdialog.h"
 #include "notesstyles.h"
+#include "numeration.h"
 #include "ui/notesstyleseditor.h"
 #include "pageitem.h"
 #include "pageitem_imageframe.h"
@@ -16764,9 +16765,10 @@ void ScribusDoc::setupNumerations()
 			numerations.insert(numS->m_name, numS);
 		}
 	}
+	orgNumerations = numerations;
 }
 
-QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, bool resetlower)
+QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, bool resetlower, ParagraphStyle &style)
 {
 	Q_ASSERT(numerations.contains(numName));
 	NumStruct * numS = numerations.value(numName);
@@ -16774,9 +16776,20 @@ QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, boo
 	if (resetlower)
 	{
 		for (int l = 0; l < numS->m_counters.count(); ++l)
+		{
 			if (l >= level)
+			{
 				setNumerationCounter(numName, l, numS->m_nums[l].start);
+				numS->m_nums[l] = orgNumerations.value(numName)->m_nums[l];
+			}
+		}
 	}
+	Numeration num = numS->m_nums[level];
+	num.numFormat = (NumFormat) style.numFormat();
+	num.start = style.numStart();
+	num.prefix = style.numPrefix();
+	num.suffix = style.numSuffix();
+	numS->m_nums.replace(level, num);
 	if (increment)
 	{
 		int currNum = numS->m_counters.at(level);
@@ -16967,7 +16980,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 							if (numerations.value(style.numName())->m_lastlevel < style.numLevel())
 								resetlowerlevel = true;
 						}
-						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel);
+						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel, style);
 						if (hl->mark == NULL)
 						{
 							BulNumMark* bnMark = new BulNumMark;

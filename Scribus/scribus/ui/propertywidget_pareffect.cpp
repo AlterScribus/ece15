@@ -34,7 +34,7 @@ PropertyWidget_ParEffect::PropertyWidget_ParEffect(QWidget *parent) : QFrame(par
 	numStart->setMinimum(1);
 	numStart->setMaximum(9999);
 	numLevelSpin->setMinimum(1);
-	numLevelSpin->setMaximum(9);
+	numLevelSpin->setMaximum(3);
 	dropCapLines->setMinimum(2);
 	dropCapLines->setMaximum(99);
 }
@@ -83,21 +83,17 @@ void PropertyWidget_ParEffect::setCurrentItem(PageItem *item)
 
 	m_item = item;
 
-	disconnectSignals();
-	configureWidgets();
-
 	if (!m_item) return;
 
 	if (m_item->asTextFrame() || m_item->asPathText() || m_item->asTable())
 	{
+		configureWidgets();
 		ParagraphStyle parStyle =  m_item->itemText.defaultStyle();
 		if (m_doc->appMode == modeEdit)
 			m_item->currentTextProps(parStyle);
 		else if (m_doc->appMode == modeEditTable)
 			m_item->asTable()->activeCell().textFrame()->currentTextProps(parStyle);
 		updateStyle(parStyle);
-
-		connectSignals();
 	}
 }
 
@@ -218,7 +214,7 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 	nFormat = newPStyle.numFormat();
 	NumStruct * numS = m_doc->numerations.value(numName);
 	if (numS)
-		numLevelSpin->setMaximum(numS->m_counters.count());
+		numLevelSpin->setMaximum(numS->m_counters.count()+1);
 	else
 		numLevelSpin->setMaximum(3);
 	numLevelSpin->setValue(newPStyle.numLevel() +1);
@@ -422,17 +418,31 @@ void PropertyWidget_ParEffect::handleNumName(QString numName)
 {
 	if (!m_doc || !m_item)
 		return;
+	disconnectSignals();
 	ParagraphStyle newStyle;
 	if (numName == "<local block>")
 	{
 		newStyle.setNumOther(true);
 		newStyle.setNumHigher(true);
 		newStyle.setNumRestart(NSRstory);
-		newStyle.setNumPrefix(numPrefix->text());
-		newStyle.setNumSuffix(numSuffix->text());
-		newStyle.setNumFormat((NumFormat) numFormatCombo->currentIndex());
 	}
+	else
+	{
+		NumStruct * numS = m_doc->numerations.value(numName);
+		Q_ASSERT(numS);
+		int level = qMin(numLevelSpin->value(), numS->m_counters.count()) -1;
+		numLevelSpin->setValue(level +1);
+		newStyle.setNumLevel(level);
+		Numeration num = numS->m_nums[level];
+		numFormatCombo->setCurrentIndex((int) num.numFormat);
+		numStart->setValue(num.start);
+		numPrefix->setText(num.prefix);
+		numSuffix->setText(num.suffix);
+	}
+	newStyle.setNumPrefix(numPrefix->text());
+	newStyle.setNumSuffix(numSuffix->text());
 	newStyle.setNumName(numName);
+	newStyle.setNumFormat((NumFormat) numFormatCombo->currentIndex());
 	PageItem *item = m_item;
 	if (m_doc->appMode == modeEditTable)
 		item = item->asTable()->activeCell().textFrame();
@@ -443,6 +453,7 @@ void PropertyWidget_ParEffect::handleNumName(QString numName)
 		m_doc->flag_Renumber = true;
 		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
 	}
+	connectSignals();
 }
 
 void PropertyWidget_ParEffect::handleNumFormat(int style)
@@ -467,6 +478,21 @@ void PropertyWidget_ParEffect::handleNumLevel(int level)
 {
 	if (!m_doc || !m_item)
 		return;
+	if ((numComboBox->currentText() != "<local block>") && level == numLevelSpin->maximum())
+	{
+		NumStruct * numS = m_doc->numerations.value(numComboBox->currentText());
+		Q_ASSERT(numS);
+		while (level > numS->m_counters.count())
+		{
+			numS->m_counters.append(0);
+			Numeration num;
+			num.numFormat = (NumFormat) numFormatCombo->currentIndex();
+			num.prefix = numPrefix->text();
+			num.suffix = numSuffix->text();
+			num.start = numStart->value() -1;
+			numS->m_nums.append(num);
+		}
+	}
 	ParagraphStyle newStyle;
 	newStyle.setNumLevel(level -1);
 	PageItem *item = m_item;

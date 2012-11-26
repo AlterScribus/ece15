@@ -134,7 +134,7 @@ protected:
 	PropertyWidget_Orphans* orphanBox;
 	QTreeWidgetItem* orphanItem;
 
-	PropertyWidget_ParEffect* ParEffectBox;
+	PropertyWidget_ParEffect* parEffectWidgets;
 	QTreeWidgetItem* parEffectItem;
 
 	PropertyWidget_PathText* pathTextWidgets;
