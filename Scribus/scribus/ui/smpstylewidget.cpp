@@ -57,7 +57,8 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	numStartSpin->setMinimum(1);
 	numStartSpin->setMaximum(9999);
 	numLevelSpin->setMinimum(1);
-	numLevelSpin->setMaximum(9);
+	numLevelSpin->setMaximum(1);
+	fillNumRestartCombo();
 	dropCapLines_->setMinimum(2);
 	dropCapLines_->setMaximum(99);
 
@@ -221,7 +222,8 @@ void SMPStyleWidget::fillBulletStrEditCombo()
 void SMPStyleWidget::fillNumFormatCombo()
 {
 	numFormatCombo->clear();
-	numFormatCombo->addItems(getFormatList());}
+	numFormatCombo->addItems(getFormatList());
+}
 
 void SMPStyleWidget::fillNumerationsCombo(QList<ParagraphStyle> &pstyles)
 {
@@ -397,7 +399,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numLevelSpin->setValue(pstyle->numLevel() +1, pstyle->isInhNumLevel());
 		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
-			numLevelSpin->setMaximum(numS->m_counters.count());
+			numLevelSpin->setMaximum(numS->m_counters.count()+1);
 		else
 			numLevelSpin->setMaximum(1);
 		numLevelSpin->setParentValue(parent->numLevel()+1);
@@ -449,7 +451,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numLevelSpin->setValue(pstyle->numLevel()+1);
 		NumStruct * numS = m_Doc->numerations.value(pstyle->numName());
 		if (numS)
-			numLevelSpin->setMaximum(numS->m_counters.count());
+			numLevelSpin->setMaximum(numS->m_counters.count()+1);
 		else
 			numLevelSpin->setMaximum(1);
 		numPrefix->setText(pstyle->numPrefix());
