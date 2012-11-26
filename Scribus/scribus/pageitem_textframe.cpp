@@ -1507,6 +1507,7 @@ void PageItem_TextFrame::layout()
 		itemText.blockSignals(true);
 		setMaxY(-1);
 		double maxYAsc = 0.0, maxYDesc = 0.0;
+		double autoLeftIndent = 0.0;
 
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
@@ -1575,6 +1576,7 @@ void PageItem_TextFrame::layout()
 			BulNumMode = false;
 			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
+				autoLeftIndent = 0.0;
 				style = itemText.paragraphStyle(a);
 				if (style.hasBullet() || style.hasNum())
 				{
@@ -2025,16 +2027,21 @@ void PageItem_TextFrame::layout()
 				current.leftIndent = 0.0;
 				if (current.addLeftIndent && (maxDX == 0 || DropCmode || BulNumMode))
 				{
-					current.leftIndent = style.leftMargin();
-//					if (current.hasDropCap)
-//						current.leftIndent = 0;
+					current.leftIndent = style.leftMargin() + autoLeftIndent;
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
 						if (BulNumMode || DropCmode)
 						{
 							if(style.parEffectIndent())
+							{
 								current.leftIndent -= style.parEffectOffset() + wide;
+								if (current.leftIndent < 0.0)
+								{
+									autoLeftIndent = abs(current.leftIndent);
+									current.leftIndent = 0.0;
+								}
+							}
 						}
 					}
 					current.addLeftIndent = false;
