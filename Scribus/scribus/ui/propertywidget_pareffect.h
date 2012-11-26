@@ -1,7 +1,7 @@
-#ifndef PROPERTYWIDGET_DropCap_H
-#define PROPERTYWIDGET_DropCap_H
+#ifndef PROPERTYWIDGET_PAREFFECT_H
+#define PROPERTYWIDGET_PAREFFECT_H
 
-#include "ui_propertywidget_dropcapbase.h"
+#include "ui_propertywidget_pareffectbase.h"
 #include "numeration.h"
 #include "propertywidgetbase.h"
 #include "ui/charselectenhanced.h"
@@ -10,13 +10,13 @@ class PageItem;
 class ParagraphStyle;
 class ScribusMainWindow;
 
-class PropertyWidget_DropCap : public QFrame, private Ui::PropertyWidget_DropCapBase, public PropertyWidgetBase
+class PropertyWidget_ParEffect : public QFrame, private Ui::PropertyWidget_ParEffectBase, public PropertyWidgetBase
 {
     Q_OBJECT
 
 public:
-	PropertyWidget_DropCap(QWidget *parent = 0);
-	~PropertyWidget_DropCap() {}
+	PropertyWidget_ParEffect(QWidget *parent = 0);
+	~PropertyWidget_ParEffect() {}
 
 	void updateStyle(const ParagraphStyle& newPStyle);
 	void updateCharStyles();
@@ -101,4 +101,4 @@ private:
 //	}
 };
 
-#endif // PROPERTYWIDGET_DropCap_H
+#endif // PROPERTYWIDGET_PAREFFECT_H

@@ -7,7 +7,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "pageitem.h"
 #include "pageitem_table.h"
-#include "propertywidget_dropcap.h"
+#include "propertywidget_pareffect.h"
 #include "scribus.h"
 #include "scribusdoc.h"
 #include "selection.h"
@@ -15,7 +15,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_icon.h"
 
-PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent), m_enhanced(NULL), m_item(NULL), m_ScMW(NULL)
+PropertyWidget_ParEffect::PropertyWidget_ParEffect(QWidget *parent) : QFrame(parent), m_enhanced(NULL), m_item(NULL), m_ScMW(NULL)
 {
 	setupUi(this);
 	setFrameStyle(QFrame::Box | QFrame::Plain);
@@ -39,7 +39,7 @@ PropertyWidget_DropCap::PropertyWidget_DropCap(QWidget *parent) : QFrame(parent)
 	dropCapLines->setMaximum(99);
 }
 
-void PropertyWidget_DropCap::setMainWindow(ScribusMainWindow* mw)
+void PropertyWidget_ParEffect::setMainWindow(ScribusMainWindow* mw)
 {
 	m_ScMW = mw;
 
@@ -47,7 +47,7 @@ void PropertyWidget_DropCap::setMainWindow(ScribusMainWindow* mw)
 	connect(m_ScMW, SIGNAL(UpdateRequest(int)), this  , SLOT(handleUpdateRequest(int)));
 }
 
-void PropertyWidget_DropCap::setDoc(ScribusDoc *doc)
+void PropertyWidget_ParEffect::setDoc(ScribusDoc *doc)
 {
 	if(doc == (ScribusDoc*) m_doc)
 		return;
@@ -76,7 +76,7 @@ void PropertyWidget_DropCap::setDoc(ScribusDoc *doc)
 	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
-void PropertyWidget_DropCap::setCurrentItem(PageItem *item)
+void PropertyWidget_ParEffect::setCurrentItem(PageItem *item)
 {
 	if (item && m_doc.isNull())
 		setDoc(item->doc());
@@ -101,7 +101,7 @@ void PropertyWidget_DropCap::setCurrentItem(PageItem *item)
 	}
 }
 
-void PropertyWidget_DropCap::unitChange()
+void PropertyWidget_ParEffect::unitChange()
 {
 	if (!m_doc)
 		return;
@@ -114,7 +114,7 @@ void PropertyWidget_DropCap::unitChange()
 	peOffset_->blockSignals(false);
 }
 
-void PropertyWidget_DropCap::fillNumerationsCombo()
+void PropertyWidget_ParEffect::fillNumerationsCombo()
 {
 	QStringList numNames;
 	for (int i = 0; i < m_doc->paragraphStyles().count(); ++i)
@@ -132,19 +132,19 @@ void PropertyWidget_DropCap::fillNumerationsCombo()
 	numComboBox->insertItems(0, numNames);
 }
 
-void PropertyWidget_DropCap::updateCharStyles()
+void PropertyWidget_ParEffect::updateCharStyles()
 {
 	peCharStyleCombo->updateFormatList();
 }
 
-void PropertyWidget_DropCap::displayCharStyle(const QString& name)
+void PropertyWidget_ParEffect::displayCharStyle(const QString& name)
 {
 	bool blocked = peCharStyleCombo->blockSignals(true);
 	peCharStyleCombo->setFormat(name);
 	peCharStyleCombo->blockSignals(blocked);
 }
 
-void PropertyWidget_DropCap::enableDropCap(bool enable)
+void PropertyWidget_ParEffect::enableDropCap(bool enable)
 {
 	dropCapRadio_->setChecked(enable);
 	dropCapLines->setEnabled(enable);
@@ -154,7 +154,7 @@ void PropertyWidget_DropCap::enableDropCap(bool enable)
 		enableNum(false);
 	}
 }
-void PropertyWidget_DropCap::enableBullet(bool enable)
+void PropertyWidget_ParEffect::enableBullet(bool enable)
 {
 	bulletRadio_->setChecked(enable);
 	bulletStrEdit_->setEnabled(enable);
@@ -165,7 +165,7 @@ void PropertyWidget_DropCap::enableBullet(bool enable)
 		enableNum(false);
 	}
 }
-void PropertyWidget_DropCap::enableNum(bool enable)
+void PropertyWidget_ParEffect::enableNum(bool enable)
 {
 	numRadio_->setChecked(enable);
 	numComboBox->setEnabled(enable);
@@ -180,7 +180,7 @@ void PropertyWidget_DropCap::enableNum(bool enable)
 		enableDropCap(false);
 	}
 }
-void PropertyWidget_DropCap::enableParEffect(bool enable)
+void PropertyWidget_ParEffect::enableParEffect(bool enable)
 {
 	peOffRadio->setChecked(!enable);
 	peOffset_->setEnabled(enable);
@@ -194,7 +194,7 @@ void PropertyWidget_DropCap::enableParEffect(bool enable)
 	}
 }
 
-void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
+void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 {
 	if (peOffRadio->isChecked() && !newPStyle.hasBullet() && !newPStyle.hasDropCap() && !newPStyle.hasNum())
 		return;
@@ -236,7 +236,7 @@ void PropertyWidget_DropCap::updateStyle(const ParagraphStyle& newPStyle)
 	connectSignals ();
 }
 
-void PropertyWidget_DropCap::connectSignals()
+void PropertyWidget_ParEffect::connectSignals()
 {
 	connect(peOffRadio, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
 	connect(dropCapRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
@@ -255,7 +255,7 @@ void PropertyWidget_DropCap::connectSignals()
 	connect(peCharStyleCombo, SIGNAL(activated(QString)), this, SLOT(handlePECharStyle(QString)), Qt::UniqueConnection);
 }
 
-void PropertyWidget_DropCap::disconnectSignals()
+void PropertyWidget_ParEffect::disconnectSignals()
 {
 	disconnect(peOffRadio, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
 	disconnect(dropCapRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
@@ -274,7 +274,7 @@ void PropertyWidget_DropCap::disconnectSignals()
 	disconnect(peCharStyleCombo, SIGNAL(activated(QString)), this, SLOT(handlePECharStyle(QString)));
 }
 
-void PropertyWidget_DropCap::configureWidgets(void)
+void PropertyWidget_ParEffect::configureWidgets(void)
 {
 	bool enabled = false;
 	if (m_item && m_doc)
@@ -288,7 +288,7 @@ void PropertyWidget_DropCap::configureWidgets(void)
 	setEnabled(enabled);
 }
 
-void PropertyWidget_DropCap::handleAppModeChanged(int oldMode, int mode)
+void PropertyWidget_ParEffect::handleAppModeChanged(int oldMode, int mode)
 {
 	if (oldMode == modeEditTable || mode == modeEditTable)
 	{
@@ -296,7 +296,7 @@ void PropertyWidget_DropCap::handleAppModeChanged(int oldMode, int mode)
 	}
 }
 
-void PropertyWidget_DropCap::handleSelectionChanged()
+void PropertyWidget_ParEffect::handleSelectionChanged()
 {
 	if (!m_doc || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
@@ -307,7 +307,7 @@ void PropertyWidget_DropCap::handleSelectionChanged()
 	repaint();
 }
 
-void PropertyWidget_DropCap::handleUpdateRequest(int updateFlags)
+void PropertyWidget_ParEffect::handleUpdateRequest(int updateFlags)
 {
 	if (updateFlags & reqCharStylesUpdate)
 		updateCharStyles();
@@ -317,7 +317,7 @@ void PropertyWidget_DropCap::handleUpdateRequest(int updateFlags)
 		fillNumerationsCombo();
 }
 
-void PropertyWidget_DropCap::handleParEffectUse()
+void PropertyWidget_ParEffect::handleParEffectUse()
 {
 	if (!m_doc || !m_item)
 		return;
@@ -380,7 +380,7 @@ void PropertyWidget_DropCap::handleParEffectUse()
 	}
 }
 
-void PropertyWidget_DropCap::handleBulletStr(QString bulStr)
+void PropertyWidget_ParEffect::handleBulletStr(QString bulStr)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -400,7 +400,7 @@ void PropertyWidget_DropCap::handleBulletStr(QString bulStr)
 	}
 }
 
-void PropertyWidget_DropCap::handleDropCapLines(int dcLines)
+void PropertyWidget_ParEffect::handleDropCapLines(int dcLines)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -418,7 +418,7 @@ void PropertyWidget_DropCap::handleDropCapLines(int dcLines)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumName(QString numName)
+void PropertyWidget_ParEffect::handleNumName(QString numName)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -445,7 +445,7 @@ void PropertyWidget_DropCap::handleNumName(QString numName)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumFormat(int style)
+void PropertyWidget_ParEffect::handleNumFormat(int style)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -463,7 +463,7 @@ void PropertyWidget_DropCap::handleNumFormat(int style)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumLevel(int level)
+void PropertyWidget_ParEffect::handleNumLevel(int level)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -481,7 +481,7 @@ void PropertyWidget_DropCap::handleNumLevel(int level)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumPrefix(QString prefix)
+void PropertyWidget_ParEffect::handleNumPrefix(QString prefix)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -499,7 +499,7 @@ void PropertyWidget_DropCap::handleNumPrefix(QString prefix)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumSuffix(QString suffix)
+void PropertyWidget_ParEffect::handleNumSuffix(QString suffix)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -517,7 +517,7 @@ void PropertyWidget_DropCap::handleNumSuffix(QString suffix)
 	}
 }
 
-void PropertyWidget_DropCap::handleNumStart(int start)
+void PropertyWidget_ParEffect::handleNumStart(int start)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -535,7 +535,7 @@ void PropertyWidget_DropCap::handleNumStart(int start)
 	}
 }
 
-void PropertyWidget_DropCap::handlePEOffset(double offset)
+void PropertyWidget_ParEffect::handlePEOffset(double offset)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -552,7 +552,7 @@ void PropertyWidget_DropCap::handlePEOffset(double offset)
 	}
 }
 
-void PropertyWidget_DropCap::handlePEIndent(bool indent)
+void PropertyWidget_ParEffect::handlePEIndent(bool indent)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -569,7 +569,7 @@ void PropertyWidget_DropCap::handlePEIndent(bool indent)
 	}
 }
 
-void PropertyWidget_DropCap::handlePECharStyle(QString name)
+void PropertyWidget_ParEffect::handlePECharStyle(QString name)
 {
 	if (!m_doc || !m_item)
 		return;
@@ -587,7 +587,7 @@ void PropertyWidget_DropCap::handlePECharStyle(QString name)
 	}
 }
 
-void PropertyWidget_DropCap::changeEvent(QEvent *e)
+void PropertyWidget_ParEffect::changeEvent(QEvent *e)
 {
 	if (e->type() == QEvent::LanguageChange)
 	{
@@ -597,7 +597,7 @@ void PropertyWidget_DropCap::changeEvent(QEvent *e)
 	QWidget::changeEvent(e);
 }
 
-void PropertyWidget_DropCap::languageChange()
+void PropertyWidget_ParEffect::languageChange()
 {
 	peOffRadio->setText(tr("No Paragraph Effects"));
 	dropCapRadio_->setText(tr("Use Drop Caps"));
@@ -609,7 +609,7 @@ void PropertyWidget_DropCap::languageChange()
 	bulletCharTableButton_->setText(tr("Char Table"));
 }
 
-void PropertyWidget_DropCap::openEnhanced()
+void PropertyWidget_ParEffect::openEnhanced()
 {
 	if (m_enhanced)
 		return;
@@ -628,7 +628,7 @@ void PropertyWidget_DropCap::openEnhanced()
 	QApplication::changeOverrideCursor(Qt::ArrowCursor);
 }
 
-void PropertyWidget_DropCap::closeEnhanced(bool show)
+void PropertyWidget_ParEffect::closeEnhanced(bool show)
 {
 	if (!m_enhanced || show)
 		return;
@@ -639,14 +639,14 @@ void PropertyWidget_DropCap::closeEnhanced(bool show)
 	m_enhanced = NULL;
 }
 
-void PropertyWidget_DropCap::on_bulletCharTableButton__toggled(bool checked)
+void PropertyWidget_ParEffect::on_bulletCharTableButton__toggled(bool checked)
 {
 	if (m_enhanced && !checked)
 		closeEnhanced();
 	else if (!m_enhanced && checked)
 		openEnhanced();
 }
-void PropertyWidget_DropCap::insertSpecialChars(const QString &chars)
+void PropertyWidget_ParEffect::insertSpecialChars(const QString &chars)
 {
 	bulletStrEdit_->lineEdit()->insert(chars);
 }

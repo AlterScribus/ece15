@@ -20,7 +20,7 @@ for which a new license (GPL+exception) is in place.
 #include "propertiespalette_utils.h"
 #include "propertywidget_advanced.h"
 #include "propertywidget_distance.h"
-#include "propertywidget_dropcap.h"
+#include "propertywidget_pareffect.h"
 #include "propertywidget_flop.h"
 #include "propertywidget_optmargins.h"
 #include "propertywidget_orphans.h"
@@ -77,7 +77,7 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	orphanBox = new PropertyWidget_Orphans(textTree);
 	orphanItem = textTree->addWidget( tr("Orphans and Widows"), orphanBox);
 
-	ParEffectBox = new PropertyWidget_DropCap(textTree);
+	ParEffectBox = new PropertyWidget_ParEffect(textTree);
 	parEffectItem = textTree->addWidget( tr("Paragraph Effects"), ParEffectBox);
 
 	distanceWidgets = new PropertyWidget_Distance(textTree);

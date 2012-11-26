@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PropertyWidget_DropCapBase</class>
- <widget class="QFrame" name="PropertyWidget_DropCapBase">
+ <class>PropertyWidget_ParEffectBase</class>
+ <widget class="QFrame" name="PropertyWidget_ParEffectBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -150,7 +150,7 @@
     </widget>
    </item>
    <item row="9" column="0">
-    <widget class="SMRadioButton" name="bulletRadio_">
+    <widget class="QRadioButton" name="bulletRadio_">
      <property name="text">
       <string>use Bullet</string>
      </property>
@@ -247,11 +247,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>SMRadioButton</class>
-   <extends>QRadioButton</extends>
-   <header location="global">ui/smradiobutton.h</header>
-  </customwidget>
   <customwidget>
    <class>ScrSpinBox</class>
    <extends>QDoubleSpinBox</extends>
