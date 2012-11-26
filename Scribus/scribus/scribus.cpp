@@ -620,7 +620,6 @@ void ScribusMainWindow::initPalettes()
 	connect(inlinePalette, SIGNAL(objectDropped(QString)), this, SLOT(PutToInline(QString)));
 	inlinePalette->installEventFilter(this);
 	inlinePalette->hide();
-	
 
 	undoPalette = new UndoPalette(this, "undoPalette");
 	undoPalette->installEventFilter(this);
@@ -826,6 +825,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuSeparator("Item");
 	scrMenuMgr->addMenuItem(scrActions["itemGroup"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemUngroup"], "Item", false);
+	scrMenuMgr->addMenuItem(scrActions["itemGroupAdjust"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemLock"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemLockSize"], "Item", false);
 	scrMenuMgr->addMenuSeparator("Item");
@@ -2398,11 +2398,15 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	}
 }
 
-void ScribusMainWindow::windowsMenuActivated( int id )
+void ScribusMainWindow::windowsMenuActivated(int id)
 {
 	QMdiSubWindow* windowWidget = mdiArea->subWindowList().at( id );
-	if ( windowWidget )
-		windowWidget->showNormal();
+	if (windowWidget)
+	{
+		if (windowWidget->isShaded() || windowWidget->isMinimized())
+			windowWidget->showNormal();
+		windowWidget->raise();
+	}
 	newActWin(windowWidget);
 }
 
@@ -2512,6 +2516,7 @@ void ScribusMainWindow::SwitchWin()
 		scrActions["toolsPDFAnnot3D"]->setEnabled(true);
 #endif
 		pagePalette->enablePalette(true);
+		setPreviewToolbar();
 	}
 	scrMenuMgr->setMenuEnabled("ItemLayer", doc->layerCount() > 1);
 }
@@ -3291,10 +3296,12 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		if (currItem->isGroup())
 		{
 			scrActions["itemUngroup"]->setEnabled(doc->appMode != modeEdit);
+			scrActions["itemGroupAdjust"]->setEnabled(doc->appMode != modeEdit);
 		}
 		else
 		{
 			scrActions["itemUngroup"]->setEnabled(false);
+			scrActions["itemGroupAdjust"]->setEnabled(false);
 			scrActions["itemSplitPolygons"]->setEnabled( (currItem->asPolygon()) && (currItem->Segments.count() != 0) );
 		}
 		if (currItem->locked())
@@ -7837,6 +7844,7 @@ void ScribusMainWindow::editItemsFromOutlines(PageItem *ite)
 		{
 			view->requestMode(modeEditClip);
 			scrActions["itemUngroup"]->setEnabled(false);
+			scrActions["itemGroupAdjust"]->setEnabled(false);
 		}
 	}
 	else if (ite->itemType() == PageItem::TextFrame)
@@ -8996,6 +9004,8 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 #ifdef HAVE_OSG
 	scrActions["toolsPDFAnnot3D"]->setEnabled(false);
 #endif
+	scrActions["viewPreviewMode"]->setEnabled(false);
+	view->previewToolbarButton->setEnabled(false);
 }
 
 void ScribusMainWindow::manageMasterPagesEnd()
@@ -9033,6 +9043,8 @@ void ScribusMainWindow::manageMasterPagesEnd()
 #ifdef HAVE_OSG
 	scrActions["toolsPDFAnnot3D"]->setEnabled(true);
 #endif
+	scrActions["viewPreviewMode"]->setEnabled(true);
+	view->previewToolbarButton->setEnabled(true);
 	uint pageCount=doc->DocPages.count();
 	for (uint c=0; c<pageCount; ++c)
 		Apply_MasterPage(doc->DocPages.at(c)->MPageNam, c, false);
@@ -9153,6 +9165,12 @@ void ScribusMainWindow::UnGroupObj()
 {
 	if (HaveDoc)
 		doc->itemSelection_UnGroupObjects();
+}
+
+void ScribusMainWindow::AdjustGroupObj()
+{
+	if (HaveDoc)
+		doc->itemSelection_resizeGroupToContents();
 }
 
 void ScribusMainWindow::restore(UndoState* state, bool isUndo)
@@ -11240,4 +11258,14 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 	}
 	delete editMDialog;
 	return docWasChanged;
+}
+
+void ScribusMainWindow::setPreviewToolbar()
+{
+	modeToolBar->setEnabled(!doc->drawAsPreview);
+	editToolBar->setEnabled(!doc->drawAsPreview);
+	pdfToolBar->setEnabled(!doc->drawAsPreview);
+	symbolPalette->setEnabled(!doc->drawAsPreview);
+	inlinePalette->setEnabled(!doc->drawAsPreview);
+	undoPalette->setEnabled(!doc->drawAsPreview);
 }

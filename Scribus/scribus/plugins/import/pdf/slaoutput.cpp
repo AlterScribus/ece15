@@ -339,6 +339,7 @@ bool SlaOutputDev::handleTextAnnot(Annot* annota, double xCoor, double yCoor, do
 	ite->AutoName = false;
 	ite->annotation().setType(10);
 	ite->annotation().setActionType(0);
+	ite->setItemName( CommonStrings::itemName_TextAnnotation + QString("%1").arg(m_doc->TotalItems));
 	ite->itemText.insertChars(UnicodeParsedString(annota->getContents()));
 	return true;
 }
@@ -475,6 +476,7 @@ bool SlaOutputDev::handleLinkAnnot(Annot* annota, double xCoor, double yCoor, do
 			ite->annotation().setActionType(8);
 		}
 		ite->annotation().setType(11);
+		ite->setItemName( CommonStrings::itemName_LinkAnnotation + QString("%1").arg(m_doc->TotalItems));
 	}
 	return validLink;
 }
@@ -2002,7 +2004,7 @@ GBool SlaOutputDev::patchMeshShadedFill(GfxState *state, GfxPatchMeshShading *sh
 	return gTrue;
 }
 
-GBool SlaOutputDev::tilingPatternFill(GfxState *state, Catalog *cat, Object *str, double *pmat, int paintType, Dict *resDict, double *mat, double *bbox, int x0, int y0, int x1, int y1, double xStep, double yStep)
+GBool SlaOutputDev::tilingPatternFill(GfxState *state, Gfx * /*gfx*/, Catalog *cat, Object *str, double *pmat, int paintType, int tilingType, Dict *resDict, double *mat, double *bbox, int x0, int y0, int x1, int y1, double xStep, double yStep)
 {
 	PDFRectangle box;
 	Gfx *gfx;
@@ -2029,11 +2031,13 @@ GBool SlaOutputDev::tilingPatternFill(GfxState *state, Catalog *cat, Object *str
 	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 	QTransform mm = QTransform(mat[0], mat[1], mat[2], mat[3], mat[4], mat[5]);
 	QTransform mmx = mm * m_ctm;
+
 #ifdef POPPLER_VERSION
 	gfx = new Gfx(pdfDoc, this, resDict, &box, NULL);
 #else
 	gfx = new Gfx(xref, this, resDict, catalog, &box, NULL);
 #endif
+
 	gfx->display(str);
 	gElements = m_groupStack.pop();
 	tmpSel->clear();

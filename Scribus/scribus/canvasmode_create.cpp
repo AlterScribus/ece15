@@ -738,27 +738,34 @@ PageItem* CreateMode::doCreateNewObject(void)
 		case modeInsertPDFButton:
 			currItem->annotation().setType(2);
 			currItem->annotation().setFlag(65536);
+			currItem->setItemName( CommonStrings::itemName_PushButton + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFTextfield:
 			currItem->annotation().setType(3);
+			currItem->setItemName( CommonStrings::itemName_TextField + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFCheckbox:
 			currItem->annotation().setType(4);
+			currItem->setItemName( CommonStrings::itemName_CheckBox + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFCombobox:
 			currItem->annotation().setType(5);
 			currItem->annotation().setFlag(131072);
+			currItem->setItemName( CommonStrings::itemName_ComboBox + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFListbox:
 			currItem->annotation().setType(6);
+			currItem->setItemName( CommonStrings::itemName_ListBox + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFTextAnnotation:
 			currItem->annotation().setType(10);
+			currItem->setItemName( CommonStrings::itemName_TextAnnotation + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFLinkAnnotation:
 			currItem->annotation().setType(11);
 			currItem->annotation().setZiel(m_doc->currentPage()->pageNr());
 			currItem->annotation().setAction("0 0");
+			currItem->setItemName( CommonStrings::itemName_LinkAnnotation + QString("%1").arg(m_doc->TotalItems));
 			currItem->setTextFlowMode(PageItem::TextFlowDisabled);
 			break;
 		}
@@ -824,6 +831,7 @@ PageItem* CreateMode::doCreateNewObject(void)
 		currItem->setIsAnnotation(true);
 		currItem->AutoName = false;
 		currItem->annotation().setType(12);
+		currItem->setItemName( tr("3DAnnot") + QString("%1").arg(m_doc->TotalItems));
 		break;
 	}
 	if (z >= 0)

@@ -183,6 +183,7 @@ public:
 	void restoreUngrouping(SimpleState *state, bool isUndo);
 	void restoreAddPage(SimpleState *state, bool isUndo);
 	void restoreDeletePage(SimpleState *state, bool isUndo);
+	void setPreviewToolbar();
 	struct CopyContentsBuffer contentsBuffer;
 	bool internalCopy;
 	QString internalCopyBuffer;
@@ -478,6 +479,7 @@ public slots:
 	void Apply_MasterPage(QString pageName, int pageNumber, bool reb = true);
 	void GroupObj(bool showLockDia = true);
 	void UnGroupObj();
+	void AdjustGroupObj();
 	void StatusPic();
 	void ModifyAnnot();
 	void ToggleGuides();
