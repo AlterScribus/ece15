@@ -2609,7 +2609,7 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 		newStyle.setNumFormat(attrs.valueAsInt(NUMFORMAT));
 
 	static const QString NUMLEVEL("NUMLEVEL");
-	if (attrs.hasAttribute(NUMFORMAT))
+	if (attrs.hasAttribute(NUMLEVEL))
 		newStyle.setNumLevel(attrs.valueAsInt(NUMLEVEL));
 
 	static const QString NUMSTART("NUMSTART");
@@ -2629,7 +2629,7 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 		newStyle.setNumRestart(attrs.valueAsInt(NUMRESTART));
 
 	static const QString NUMOTHER("NUMOTHER");
-	if (attrs.hasAttribute(NUMERATION))
+	if (attrs.hasAttribute(NUMOTHER))
 		newStyle.setNumOther(static_cast<bool>(attrs.valueAsInt(NUMOTHER)));
 
 	static const QString NUMHIGHER("NUMHIGHER");

@@ -1773,7 +1773,7 @@ public slots:
 public:
 	QMap<QString, NumStruct*> numerations, orgNumerations; //orgNumerations keeps original settings read from paragraph styles for reset settings overrided localy
 	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
-	QString getNumberStr(QString numName, int level, bool increment, bool resetlower, ParagraphStyle &style);
+	QString getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style);
 	void setNumerationCounter(QString numName, int level, int number);
 	bool flag_Renumber;
 	// for local numeration of paragraphs

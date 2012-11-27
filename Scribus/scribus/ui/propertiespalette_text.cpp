@@ -643,6 +643,7 @@ void PropertiesPalette_Text::doClearPStyle()
 		{
 			Selection tempSelection(this, false);
 			tempSelection.addItem(i2, true);
+			m_doc->itemSelection_ClearBulNumStrings(&tempSelection);
 			m_doc->itemSelection_EraseParagraphStyle(&tempSelection);
 			CharStyle emptyCStyle;
 			m_doc->itemSelection_SetCharStyle(emptyCStyle, &tempSelection);

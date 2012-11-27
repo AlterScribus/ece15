@@ -1058,19 +1058,7 @@ void SMParagraphStyle::slotNumName(const QString &str)
 void SMParagraphStyle::slotNumNew()
 {
 	QString newName = pwidget_->numNewLineEdit->text();
-	if (newName.isEmpty())
-	{
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->resetNumName();
-		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
-		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel()+1);
-		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
-		if (numS)
-			pwidget_->numLevelSpin->setMaximum(numS->m_counters.count()+1);
-		else
-			pwidget_->numLevelSpin->setMaximum(1);
-	}
-	else
+	if (!newName.isEmpty())
 	{
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setNumName(newName);

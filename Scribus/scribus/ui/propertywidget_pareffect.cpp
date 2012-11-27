@@ -484,12 +484,12 @@ void PropertyWidget_ParEffect::handleNumLevel(int level)
 		Q_ASSERT(numS);
 		while (level > numS->m_counters.count())
 		{
-			numS->m_counters.append(0);
+			numS->m_counters.append(1);
 			Numeration num;
 			num.numFormat = (NumFormat) numFormatCombo->currentIndex();
 			num.prefix = numPrefix->text();
 			num.suffix = numSuffix->text();
-			num.start = numStart->value() -1;
+			num.start = numStart->value();
 			numS->m_nums.append(num);
 		}
 	}

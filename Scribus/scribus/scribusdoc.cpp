@@ -9116,6 +9116,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 			}
 		}
 	}
+	flag_Renumber = true;
 }
 
 void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection, bool rmDirectFormatting)
@@ -9125,8 +9126,7 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 	uint selectedItemCount=itemSelection->count();
 	if (selectedItemCount == 0)
 		return;
-	if (flag_Renumber)
-		itemSelection_ClearBulNumStrings(itemSelection);
+	itemSelection_ClearBulNumStrings(itemSelection);
 	UndoTransaction* activeTransaction = NULL;
 	if (UndoManager::undoEnabled() && selectedItemCount > 1)
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
@@ -16729,8 +16729,9 @@ void ScribusDoc::setupNumerations()
 		//create default numeration
 		numS = new NumStruct;
 		numS->m_name = "default";
-		numS->m_nums.insert(0,num);
-		numS->m_counters.insert(0, 0);
+		numS->m_nums.insert(0, num);
+		numS->m_counters.insert(0, 1);
+		numS->m_lastlevel = 0;
 		numerations.insert(numS->m_name, numS);
 	}
 	
@@ -16738,7 +16739,8 @@ void ScribusDoc::setupNumerations()
 	{
 		if (docParagraphStyles[i].hasNum())
 		{
-			QString name = docParagraphStyles[i].numName();
+			ParagraphStyle &style = docParagraphStyles[i];
+			QString name = style.numName();
 			if (numerations.contains(name))
 				numS = numerations.value(name);
 			else
@@ -16746,17 +16748,17 @@ void ScribusDoc::setupNumerations()
 				numS = new NumStruct;
 				numS->m_name = name;
 			}
-			num.numFormat = (NumFormat) docParagraphStyles[i].numFormat();
-			num.prefix = docParagraphStyles[i].numPrefix();
-			num.suffix = docParagraphStyles[i].numSuffix();
-			num.start = docParagraphStyles[i].numStart() -1;
-			int level = docParagraphStyles[i].numLevel();
+			num.numFormat = (NumFormat) style.numFormat();
+			num.prefix = style.numPrefix();
+			num.suffix = style.numSuffix();
+			num.start = style.numStart();
+			int level = style.numLevel();
 			if (level >= numS->m_counters.count())
 			{
 				for (int i=numS->m_counters.count(); i <= level; ++i)
 				{
 					numS->m_nums.insert(i,num);
-					numS->m_counters.insert(i, 0);
+					numS->m_counters.insert(i, 1);
 				}
 			}
 			numS->m_nums.replace(level, num);
@@ -16768,40 +16770,33 @@ void ScribusDoc::setupNumerations()
 	orgNumerations = numerations;
 }
 
-QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, bool resetlower, ParagraphStyle &style)
+QString ScribusDoc::getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style)
 {
 	Q_ASSERT(numerations.contains(numName));
 	NumStruct * numS = numerations.value(numName);
 	numS->m_lastlevel = level;
-	if (resetlower)
-	{
-		for (int l = 0; l < numS->m_counters.count(); ++l)
-		{
-			if (l >= level)
-			{
-				setNumerationCounter(numName, l, numS->m_nums[l].start);
-				numS->m_nums[l] = orgNumerations.value(numName)->m_nums[l];
-			}
-		}
-	}
+
 	Numeration num = numS->m_nums[level];
 	num.numFormat = (NumFormat) style.numFormat();
 	num.start = style.numStart();
 	num.prefix = style.numPrefix();
 	num.suffix = style.numSuffix();
 	numS->m_nums.replace(level, num);
-	if (increment)
-	{
-		int currNum = numS->m_counters.at(level);
+
+	int currNum = numS->m_counters.at(level);
+	if (reset)
+		currNum = numS->m_nums[level].start;
+	else
 		++currNum;
-		setNumerationCounter(numName, level, currNum);
-	}
+	setNumerationCounter(numName, level, currNum);
+
 	QString result = QString();
 	for (int i=0; i <= level; ++i)
 	{
-		result.append(numS->m_nums[i].prefix);
-		result.append(numS->m_nums[i].numString(numS->m_counters.at(i)));
-		result.append(numS->m_nums[i].suffix);
+		Numeration num = numS->m_nums[i];
+		result.append(num.prefix);
+		result.append(num.numString(numS->m_counters.at(i)));
+		result.append(num.suffix);
 	}
 	return result;
 }
@@ -16865,8 +16860,9 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 					m_nums.append(num);
 				}
 				if (reset)
-					count = style.numStart()-1;
-				count++;
+					count = style.numStart();
+				else
+					count++;
 				m_counters.replace(level, count);
 				//m_nums.insert(level, num);
 				QString result = QString();
@@ -16955,11 +16951,11 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 					if (style.hasNum() && style.numName()!="<local block>")
 					{
 						ScText * hl = item->itemText.item(pos);
-						bool resetlowerlevel = false;
+						bool resetNums = false;
 						if (style.numOther())
 						{
 							if (pos == 0)
-								resetlowerlevel = true;
+								resetNums = true;
 							else
 							{
 								int currPara = item->itemText.nrOfParagraph(pos);
@@ -16967,20 +16963,15 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 								ParagraphStyle preStyle = item->itemText.paragraphStyle(currStart-1);
 								//reset counter if prev style hasnt numeration or has other numeration
 								if (!preStyle.hasNum() || (preStyle.numName() != style.numName()))
-									resetlowerlevel = true;
-							}
-							if (resetlowerlevel && (style.numLevel() > 0))
-							{
-								for (int l = 0; l < style.numLevel(); ++l)
-									setNumerationCounter(style.numName(), l, numerations.value(style.numName())->m_counters[l] +1);
+									resetNums = true;
 							}
 						}
 						if (style.numHigher() && (style.numLevel() > 0))
 						{
 							if (numerations.value(style.numName())->m_lastlevel < style.numLevel())
-								resetlowerlevel = true;
+								resetNums = true;
 						}
-						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel, style);
+						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), resetNums, style);
 						if (hl->mark == NULL)
 						{
 							BulNumMark* bnMark = new BulNumMark;
