@@ -1074,6 +1074,8 @@ void SMPStyleWidget::slotBullets(bool isOn)
 
 void SMPStyleWidget::insertSpecialChars(const QString &chars)
 {
+	if (bulletStrEdit_->lineEdit()->hasSelectedText())
+		bulletStrEdit_->lineEdit()->del();
 	bulletStrEdit_->lineEdit()->insert(chars);
 }
 
