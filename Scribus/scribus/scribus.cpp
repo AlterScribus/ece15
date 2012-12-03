@@ -2461,7 +2461,7 @@ void ScribusMainWindow::SwitchWin()
 			scrActions["fileSave"]->setEnabled(false);
 		}
 		else
-			scrActions["fileSave"]->setEnabled(true);
+			scrActions["fileSave"]->setEnabled(!doc->isConverted);
 		scrActions["fileOpen"]->setEnabled(false);
 		scrActions["fileRevert"]->setEnabled(false);
 		scrMenuMgr->setMenuEnabled("FileOpenRecent", false);
@@ -2483,7 +2483,7 @@ void ScribusMainWindow::SwitchWin()
 		scrActions["fileNewFromTemplate"]->setEnabled(true);
 		scrActions["fileOpen"]->setEnabled(true);
 		scrActions["fileClose"]->setEnabled(true);
-		scrActions["fileSave"]->setEnabled(true);
+		scrActions["fileSave"]->setEnabled(!doc->isConverted);
 		scrActions["fileRevert"]->setEnabled(false);
 		scrMenuMgr->setMenuEnabled("FileOpenRecent", true);
 
@@ -2524,7 +2524,7 @@ void ScribusMainWindow::SwitchWin()
 void ScribusMainWindow::HaveNewDoc()
 {
 	scrActions["filePrint"]->setEnabled(true);
- 	scrActions["fileSave"]->setEnabled(true);
+	scrActions["fileSave"]->setEnabled(!doc->isConverted);
 	scrActions["fileClose"]->setEnabled(true);
 //	scrActions["fileDocSetup"]->setEnabled(true);
 	scrActions["fileDocSetup150"]->setEnabled(true);
@@ -4240,6 +4240,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			doc->setName(FName+ tr("(converted)"));
 			QFileInfo fi(doc->DocName);
 			doc->setName(fi.fileName());
+			doc->isConverted = true;
 		}
 		else
 			doc->setName(FName);
@@ -4309,11 +4310,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		}
 		view->reformPages(false);
 		doc->setLoading(false);
-/*		if (fileLoader->FileType > FORMATID_NATIVEIMPORTEND)
-		{
-			doc->hasName = false;
-			slotFileSaveAs();
-		} */
+//		if (fileLoader->fileType() > FORMATID_NATIVEIMPORTEND)
+//			scrActions["fileSave"]->setEnabled(false);
 		delete fileLoader;
 		doc->updateNumbers(true);
 		view->updatesOn(true);
@@ -4344,7 +4342,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			doc->autoSaveTimer->start(doc->autoSaveTime());
 		connect(doc, SIGNAL(updateAutoSaveClock()), view->clockLabel, SLOT(resetTime()));
 		view->clockLabel->resetTime();
-// 		scrActions["fileSave"]->setEnabled(false);
 		doc->NrItems = bookmarkPalette->BView->NrItems;
 		doc->First = bookmarkPalette->BView->First;
 		doc->Last = bookmarkPalette->BView->Last;
@@ -4593,7 +4590,7 @@ void ScribusMainWindow::slotFileAppend()
 
 void ScribusMainWindow::slotFileRevert()
 {
-	if ((doc->hasName) && (doc->isModified()) && (!doc->masterPageMode()))
+	if ((doc->hasName) && (doc->isModified()) && (!doc->masterPageMode()) && (!doc->isConverted))
 	{
 		ScribusWin* tw = ActWin;
 		int t = QMessageBox::warning(this, CommonStrings::trWarning, "<qt>" +
@@ -4624,7 +4621,7 @@ void ScribusMainWindow::slotAutoSaved()
 bool ScribusMainWindow::slotFileSave()
 {
 	bool ret = false;
-	if (doc->hasName)
+	if ((doc->hasName) && (!doc->isConverted))
 	{
 		//Scribus 1.3.x warning, remove at a later stage
 		if (doc->is12doc && !warningVersion(this))
@@ -4743,6 +4740,11 @@ bool ScribusMainWindow::slotFileClose()
 	else if (doc->inlineEditMode())
 	{
 		editInlineEnd();
+		return true;
+	}
+	else if (doc->masterPageMode())
+	{
+		manageMasterPagesEnd();
 		return true;
 	}
 	ScribusWin* tw = ActWin;
@@ -8753,6 +8755,7 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 		scrActions["fileOpen"]->setEnabled(false);
 		scrActions["fileSave"]->setEnabled(false);
 		scrActions["fileClose"]->setToolTip( tr("Click here to leave symbol edit mode."));
+		scrActions["fileClose"]->setIcon(loadIcon("22/exit.png"));
 		scrMenuMgr->setMenuEnabled("FileOpenRecent", false);
 		scrActions["fileRevert"]->setEnabled(false);
 		scrActions["fileDocSetup150"]->setEnabled(false);
@@ -8806,7 +8809,8 @@ void ScribusMainWindow::editSymbolEnd()
 	scrActions["fileOpen"]->setEnabled(true);
 	scrActions["fileClose"]->setEnabled(true);
 	scrActions["fileClose"]->setToolTip( tr("Close"));
-	scrActions["fileSave"]->setEnabled(true);
+	scrActions["fileClose"]->setIcon(loadIcon("22/close.png"));
+	scrActions["fileSave"]->setEnabled(!doc->isConverted);
 	scrMenuMgr->setMenuEnabled("FileOpenRecent", true);
 	scrActions["fileRevert"]->setEnabled(true);
 	scrActions["fileDocSetup150"]->setEnabled(true);
@@ -8873,6 +8877,7 @@ void ScribusMainWindow::editInlineStart(int id)
 		scrActions["fileOpen"]->setEnabled(false);
 		scrActions["fileSave"]->setEnabled(false);
 		scrActions["fileClose"]->setToolTip( tr("Click here to leave inline frame edit mode."));
+		scrActions["fileClose"]->setIcon(loadIcon("22/exit.png"));
 		scrMenuMgr->setMenuEnabled("FileOpenRecent", false);
 		scrActions["fileRevert"]->setEnabled(false);
 		scrActions["fileDocSetup150"]->setEnabled(false);
@@ -8911,7 +8916,8 @@ void ScribusMainWindow::editInlineEnd()
 	scrActions["fileOpen"]->setEnabled(true);
 	scrActions["fileClose"]->setEnabled(true);
 	scrActions["fileClose"]->setToolTip( tr("Close"));
-	scrActions["fileSave"]->setEnabled(true);
+	scrActions["fileClose"]->setIcon(loadIcon("22/close.png"));
+	scrActions["fileSave"]->setEnabled(!doc->isConverted);
 	scrMenuMgr->setMenuEnabled("FileOpenRecent", true);
 	scrActions["fileRevert"]->setEnabled(true);
 	scrActions["fileDocSetup150"]->setEnabled(true);
@@ -8975,8 +8981,10 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 
 	pagePalette->startMasterPageMode(temp);
 	if (!pagePalette->isVisible())
+	{
 		pagePalette->show();
-
+		scrActions["toolsPages"]->setChecked(true);
+	}
 	scrActions["pageInsert"]->setEnabled(false);
 	scrActions["pageImport"]->setEnabled(false);
 	scrActions["pageDelete"]->setEnabled(false);
@@ -8988,7 +8996,9 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 	scrActions["fileNew"]->setEnabled(false);
 	scrActions["fileNewFromTemplate"]->setEnabled(false);
 	scrActions["fileOpen"]->setEnabled(false);
-	scrActions["fileClose"]->setEnabled(false);
+	scrActions["fileClose"]->setEnabled(true);
+	scrActions["fileClose"]->setToolTip( tr("Click here to leave master page edit mode."));
+	scrActions["fileClose"]->setIcon(loadIcon("22/exit.png"));
 	scrMenuMgr->setMenuEnabled("FileOpenRecent", false);
 	scrActions["fileRevert"]->setEnabled(false);
 	scrActions["fileDocSetup150"]->setEnabled(false);
@@ -9017,7 +9027,9 @@ void ScribusMainWindow::manageMasterPagesEnd()
 	scrActions["fileNewFromTemplate"]->setEnabled(true);
 	scrActions["fileOpen"]->setEnabled(true);
 	scrActions["fileClose"]->setEnabled(true);
-	scrActions["fileSave"]->setEnabled(true);
+	scrActions["fileClose"]->setToolTip( tr("Close"));
+	scrActions["fileClose"]->setIcon(loadIcon("22/close.png"));
+	scrActions["fileSave"]->setEnabled(!doc->isConverted);
 	scrMenuMgr->setMenuEnabled("FileOpenRecent", true);
 	scrActions["fileRevert"]->setEnabled(true);
 //	scrActions["fileDocSetup"]->setEnabled(true);
@@ -11267,4 +11279,11 @@ void ScribusMainWindow::setPreviewToolbar()
 	symbolPalette->setEnabled(!doc->drawAsPreview);
 	inlinePalette->setEnabled(!doc->drawAsPreview);
 	undoPalette->setEnabled(!doc->drawAsPreview);
+	propertiesPalette->setEnabled(!(doc->drawAsPreview && !doc->editOnPreview));
+	scrMenuMgr->setMenuEnabled("Edit", !doc->drawAsPreview);
+	scrMenuMgr->setMenuEnabled("Item", !doc->drawAsPreview);
+	scrMenuMgr->setMenuEnabled("Insert", !doc->drawAsPreview);
+	scrMenuMgr->setMenuEnabled("Page", !doc->drawAsPreview);
+	scrMenuMgr->setMenuEnabled("Extras", !doc->drawAsPreview);
+	HaveNewSel(-1);
 }

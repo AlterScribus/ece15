@@ -256,6 +256,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	BookMarks(),
 	OldBM(false),
 	hasName(false),
+	isConverted(false),
 	autoSaveTimer(new QTimer(this)),
 	MLineStyles(),
 	WinHan(0),
@@ -290,6 +291,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	Print_Options.firstUse = true;
 	drawAsPreview = false;
 	viewAsPreview = false;
+	editOnPreview = false;
 	previewVisual = -1;
 	dontResize = false;
 }
@@ -358,6 +360,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	BookMarks(),
 	OldBM(false),
 	hasName(false),
+	isConverted(false),
 	autoSaveTimer(new QTimer(this)),
 	MLineStyles(),
 	WinHan(0),
@@ -396,6 +399,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	Print_Options.firstUse = true;
 	drawAsPreview = false;
 	viewAsPreview = false;
+	editOnPreview = false;
 	previewVisual = -1;
 	dontResize = false;
 }
@@ -4861,6 +4865,7 @@ bool ScribusDoc::save(const QString& fileName, QString* savedFile)
 		setName(fileName);
 		setModified(false);
 		hasName = true;
+		isConverted = false;
 	}
 	return ret;
 }
@@ -14989,7 +14994,7 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 		itemSelection->delaySignalsOn();
 		for (int b = 0; b < toDelete.count(); b++)
 		{
-			currItem = toDelete.at(b);
+		/*	currItem = toDelete.at(b);
 			QList<PageItem*> *list = Items;
 			list = parentGroup(currItem, Items);
 			int d = list->indexOf(currItem);
@@ -15014,6 +15019,11 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 			for (int a = 0; a < tempSelection.count(); ++a)
 			{
 				PageItem* rItem = tempSelection.itemAt(a);
+				if (rItem->isGroup())
+				{
+					rItem->groupWidth = rItem->width() / (currItem->width() / currItem->groupWidth);
+					rItem->groupHeight = rItem->height() / (currItem->height() / currItem->groupHeight);
+				}
 				n = FPoint(rItem->xPos() - currItem->xPos(), rItem->yPos() - currItem->yPos());
 				rItem->setXYPos(ma.m11() * n.x() + ma.m21() * n.y() + ma.dx(), ma.m22() * n.y() + ma.m12() * n.x() + ma.dy());
 				rItem->rotateBy(currItem->rotation());
@@ -15058,8 +15068,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 			}
 
 			tempSelection.clear();
-			tempSelection.delaySignalsOff();
-		/*	currItem = toDelete.at(b);
+			tempSelection.delaySignalsOff();*/
+			currItem = toDelete.at(b);
 			QList<PageItem*> *list = Items;
 			list = parentGroup(currItem, Items);
 			int d = list->indexOf(currItem);
@@ -15071,14 +15081,26 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 				PageItem* gItem = currItem->groupItemList.last();
 				removeFromGroup(gItem);
 				if (currItem->Parent == NULL)
+				{
 					Items->insert(d, gItem);
+					gItem->OwnPage = OnPage(gItem);
+				}
 				else
 				{
 					addToGroup(currItem->Parent, gItem);
 					list->insert(d, gItem);
 				}
 				itemSelection->addItem(gItem);
-			} */
+			}
+			if(UndoManager::undoEnabled())
+			{
+				ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(UndoManager::Ungroup);
+				is->set("UNGROUP", "ungroup");
+				Selection tempSelection(this, false);
+				tempSelection.addItem(currItem,true);
+				is->setItem(tempSelection.selectionList());
+				undoManager->action(this, is);
+			}
 		}
 		setLoading(wasLoad);
 		itemSelection->delaySignalsOff();

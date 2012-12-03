@@ -366,14 +366,14 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 					QString toolT = "";
 					if (!hoveredItem->annotation().ToolTip().isEmpty())
 						toolT = hoveredItem->annotation().ToolTip();
-					if (hoveredItem->annotation().Type() == 2)
+					if (hoveredItem->annotation().Type() == Annotation::Button)
 					{
 						if (!hoveredItem->annotation().RollOver().isEmpty())
 							toolT = hoveredItem->annotation().RollOver();
 						else if (!hoveredItem->annotation().Down().isEmpty())
 							toolT = hoveredItem->annotation().Down();
 					}
-					else if (hoveredItem->annotation().Type() == 11)
+					else if (hoveredItem->annotation().Type() == Annotation::Link)
 					{
 						if (hoveredItem->annotation().ActionType() == 2)
 							toolT = QString( tr("Go to Page %1").arg(hoveredItem->annotation().Ziel() + 1));
@@ -962,7 +962,7 @@ void CanvasMode_Normal::mouseReleaseEvent(QMouseEvent *m)
 		createContextMenu(NULL, mousePointDoc.x(), mousePointDoc.y());
 		return;
 	}
-	if ((GetItem(&currItem)) && (m->button() == Qt::RightButton) && (!m_doc->DragP) && (!m_doc->drawAsPreview))
+	if ((GetItem(&currItem)) && (m->button() == Qt::RightButton) && (!m_doc->DragP) && (!(m_doc->drawAsPreview && !m_doc->editOnPreview)))
 	{
 		createContextMenu(currItem, mousePointDoc.x(), mousePointDoc.y());
 		return;
@@ -1228,14 +1228,14 @@ void CanvasMode_Normal::mouseReleaseEvent(QMouseEvent *m)
 			m_doc->nodeEdit.finishTransaction(currItem);
 		}
 	}
-	if (m_doc->drawAsPreview)
+	if (m_doc->drawAsPreview && !m_doc->editOnPreview)
 	{
 		if (m_doc->m_Selection->count() == 1)
 		{
 			currItem = m_doc->m_Selection->itemAt(0);
 			if (currItem->isAnnotation())
 			{
-				if (currItem->annotation().Type() == 11)
+				if (currItem->annotation().Type() == Annotation::Link)
 				{
 					if (currItem->annotation().ActionType() == 2)
 					{
@@ -1415,7 +1415,7 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 			if ((m->modifiers() == SELECT_BENEATH) && m_canvas->frameHitTest(QPointF(mousePointDoc.x(),mousePointDoc.y()), currItem) >= 0)
 				m_doc->m_Selection->clear();
 			//CB: #7186: This was prependItem, does not seem to need to be anymore with current select code
-			if (m_doc->drawAsPreview)
+			if (m_doc->drawAsPreview && !m_doc->editOnPreview)
 				m_doc->m_Selection->clear();
 			m_doc->m_Selection->addItem(currItem);
 			if ( (m->modifiers() & SELECT_IN_GROUP) && (!currItem->isGroup()))

@@ -3034,6 +3034,8 @@ bool Scribus150Format::readPDFOptions(ScribusDoc* doc, ScXmlStreamReader& reader
 	doc->pdfOptions().MirrorH    = attrs.valueAsBool("MirrorH", false);
 	doc->pdfOptions().MirrorV    = attrs.valueAsBool("MirrorV", false);
 	doc->pdfOptions().RotateDeg  = attrs.valueAsInt("RotateDeg", 0);
+	doc->pdfOptions().pageRangeSelection = attrs.valueAsInt("rangeSel", 0);
+	doc->pdfOptions().pageRangeString = attrs.valueAsString("rangeTxt", "");
 	doc->pdfOptions().doClip     = attrs.valueAsBool("Clip", false);
 	doc->pdfOptions().PresentMode = attrs.valueAsBool("PresentMode");
 	doc->pdfOptions().PicRes     = attrs.valueAsInt("PicRes");
@@ -3562,6 +3564,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 	{
 		newItem->LayerID = LayerToPaste;
 		newItem->OwnPage = doc->OnPage(newItem);
+		newItem->OnMasterPage = doc->currentPage()->pageName();
 	}
 	QString tmpf = attrs.valueAsString("IFONT", doc->itemToolPrefs().textFont);
 	m_AvailableFonts->findFont(tmpf, doc);

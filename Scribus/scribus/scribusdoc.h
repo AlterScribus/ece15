@@ -1327,6 +1327,7 @@ public:
 	QList<BookMa> BookMarks;
 	bool OldBM;
 	bool hasName;
+	bool isConverted;
 	QTimer * const autoSaveTimer;
 	QHash<QString,multiLine> MLineStyles;
 	QHash<QString, ScPattern> docPatterns;
@@ -1335,6 +1336,7 @@ public:
 	bool DoDrawing;
 	bool drawAsPreview;
 	bool viewAsPreview;
+	bool editOnPreview;
 	int previewVisual;
 	struct OpenNodesList
 	{

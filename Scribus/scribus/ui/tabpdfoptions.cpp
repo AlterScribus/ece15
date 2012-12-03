@@ -957,6 +957,7 @@ TabPDFOptions::TabPDFOptions(   QWidget* parent, PDFOptions & Optionen,
 	connect(Encry, SIGNAL(clicked()), this, SLOT(ToggleEncr()));
 	connect(UseLPI, SIGNAL(clicked()), this, SLOT(EnableLPI2()));
 	connect(LPIcolor, SIGNAL(activated(int)), this, SLOT(SelLPIcol(int)));
+	connect(CMethod, SIGNAL(activated(int)), this, SLOT(handleCompressionMethod(int)));
 	//tooltips
 	RotateDeg->setToolTip( "<qt>" + tr( "Automatically rotate the exported pages" ) + "</qt>" );
 	AllPages->setToolTip( "<qt>" + tr( "Export all pages to PDF" ) + "</qt>" );
@@ -1026,6 +1027,17 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 	AllPages->setChecked( true );
 	PageNr->setEnabled(false);
 	pageNrButton->setEnabled(false);
+	if (mdoc != 0 && exporting)
+	{
+		AllPages->setChecked(Opts.pageRangeSelection == 0);
+		OnlySome->setChecked(Opts.pageRangeSelection != 0);
+		if (OnlySome->isChecked())
+		{
+			PageNr->setEnabled(true);
+			PageNr->setText(Opts.pageRangeString);
+			pageNrButton->setEnabled(true);
+		}
+	}
 	RotateDeg->setCurrentIndex(Opts.RotateDeg / 90);
 	MirrorH->setChecked(Opts.MirrorH);
 	MirrorV->setChecked(Opts.MirrorV);
@@ -1062,6 +1074,8 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 	Compression->setChecked( Opts.Compress );
 	CMethod->setCurrentIndex(Opts.CompressMethod);
 	CQuality->setCurrentIndex(Opts.Quality);
+	if (Opts.CompressMethod == 3)
+		CQuality->setEnabled(false);
 	DSColor->setChecked(Opts.RecalcPic);
 	ValC->setValue(Opts.PicRes);
 	ValC->setEnabled(DSColor->isChecked() ? true : false);
@@ -1083,7 +1097,7 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 				if (((pgit->itemType() == PageItem::TextFrame) || (pgit->itemType() == PageItem::PathText)) && (pgit->isAnnotation()))
 				{
 					int annotType  = pgit->annotation().Type();
-					bool mustEmbed = ((annotType >= 2) && (annotType <= 6) && (annotType != 4));
+					bool mustEmbed = ((annotType >= Annotation::Button) && (annotType <= Annotation::Listbox) && (annotType != Annotation::Checkbox));
 					if (pgit->itemText.length() > 0 || mustEmbed)
 						AnnotationFonts.insert(pgit->itemText.defaultStyle().charStyle().font().replacementName(), "");
 				}
@@ -1103,7 +1117,7 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 				if (((pgit->itemType() == PageItem::TextFrame) || (pgit->itemType() == PageItem::PathText)) && (pgit->isAnnotation()))
 				{
 					int annotType  = pgit->annotation().Type();
-					bool mustEmbed = ((annotType >= 2) && (annotType <= 6) && (annotType != 4));
+					bool mustEmbed = ((annotType >= Annotation::Button) && (annotType <= Annotation::Listbox) && (annotType != Annotation::Checkbox));
 					if (pgit->itemText.length() > 0 || mustEmbed)
 						AnnotationFonts.insert(pgit->itemText.defaultStyle().charStyle().font().replacementName(), "");
 				}
@@ -1123,7 +1137,7 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 				if (((pgit->itemType() == PageItem::TextFrame) || (pgit->itemType() == PageItem::PathText)) && (pgit->isAnnotation()))
 				{
 					int annotType  = pgit->annotation().Type();
-					bool mustEmbed = ((annotType >= 2) && (annotType <= 6) && (annotType != 4));
+					bool mustEmbed = ((annotType >= Annotation::Button) && (annotType <= Annotation::Listbox) && (annotType != Annotation::Checkbox));
 					if (pgit->itemText.length() > 0 || mustEmbed)
 						AnnotationFonts.insert(pgit->itemText.defaultStyle().charStyle().font().replacementName(), "");
 				}
@@ -1449,6 +1463,11 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 	}
 }
 
+void TabPDFOptions::handleCompressionMethod(int ind)
+{
+	CQuality->setDisabled(ind == 3);
+}
+
 void TabPDFOptions::storeValues(PDFOptions& pdfOptions)
 {
 	pdfOptions.Thumbnails = CheckBox1->isChecked();
@@ -1463,6 +1482,8 @@ void TabPDFOptions::storeValues(PDFOptions& pdfOptions)
 	pdfOptions.MirrorH = MirrorH->isChecked();
 	pdfOptions.MirrorV = MirrorV->isChecked();
 	pdfOptions.RotateDeg = RotateDeg->currentIndex() * 90;
+	pdfOptions.pageRangeSelection = AllPages->isChecked() ? 0 : 1;
+	pdfOptions.pageRangeString = PageNr->text();
 	pdfOptions.Articles = Article->isChecked();
 	pdfOptions.Encrypt = Encry->isChecked();
 	pdfOptions.UseLPI = UseLPI->isChecked();
