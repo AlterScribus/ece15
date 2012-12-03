@@ -1930,6 +1930,7 @@ void PageItem_TextFrame::layout()
 				if (SpecialChars::isExpandingSpace(hl->ch))
 				{
 					double wordtracking = charStyle.wordTracking();
+					hl->glyph.xadvance *= wordtracking;
 					wide *= wordtracking;
 				}
 				// find ascent / descent

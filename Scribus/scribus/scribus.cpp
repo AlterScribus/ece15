@@ -4432,6 +4432,8 @@ void ScribusMainWindow::slotGetContent()
 				if (doc->Items->at(a)->isBookmark)
 					bookmarkPalette->BView->ChangeText(doc->Items->at(a));
 			}
+			if (!impsetup.textOnly)
+				doc->setupNumerations();
 			view->DrawNew();
 			slotDocCh();
 			styleManager->setDoc(doc);

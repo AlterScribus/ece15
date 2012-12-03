@@ -45,6 +45,12 @@ gtParagraphStyle::gtParagraphStyle(const gtParagraphStyle& p) : gtStyle(p)
 	bullet          = p.bullet;
 	bulletStr       = p.bulletStr;
 	dropCapHeight   = p.dropCapHeight;
+	numeration      = p.numeration;
+	numformat       = p.numformat;
+	numlevel        = p.numlevel;
+	numstart        = p.numstart;
+	numprefix       = p.numprefix;
+	numsuffix       = p.numsuffix;
 	adjToBaseline   = p.adjToBaseline;
 	autoLineSpacing = p.autoLineSpacing;
 	isVisible       = p.isVisible;
@@ -67,6 +73,14 @@ void gtParagraphStyle::init()
 	spaceBelow      = 0;
 	dropCap         = false;
 	dropCapHeight   = 2;
+	bullet          = false;
+	bulletStr       = QString(QChar(0x2022));
+	numeration      = false;
+	numformat       = 0;
+	numlevel        = 0;
+	numstart        = 1;
+	numprefix       = QString();
+	numsuffix       = QString();
 	adjToBaseline   = false;
 	autoLineSpacing = false;
 	isVisible       = true;
@@ -238,6 +252,50 @@ void gtParagraphStyle::setBullet(bool newBullet, QString str)
 	bullet = newBullet;
 	bulletStr = str;
 	flags |= bulletWasSet;
+}
+
+bool gtParagraphStyle::hasNum()
+{
+	return numeration;
+}
+
+void gtParagraphStyle::setNum(bool newNum, int format, int level, int start, QString prefix, QString suffix)
+{
+	numeration = newNum;
+	if (newNum)
+	{
+		numformat = format;
+		numlevel = level;
+		numstart = start;
+		numprefix = prefix;
+		numsuffix = suffix;
+	}
+	flags |= numWasSet;
+}
+
+int gtParagraphStyle::getNumLevel()
+{
+	return numlevel;
+}
+
+int gtParagraphStyle::getNumFormat()
+{
+	return numformat;
+}
+
+int gtParagraphStyle::getNumStart()
+{
+	return numstart;
+}
+
+QString gtParagraphStyle::getNumPrefix()
+{
+	return numprefix;
+}
+
+QString gtParagraphStyle::getNumSuffix()
+{
+	return numsuffix;
 }
 
 bool gtParagraphStyle::isAdjToBaseline()

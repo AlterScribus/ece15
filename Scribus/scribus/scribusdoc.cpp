@@ -16789,7 +16789,11 @@ void ScribusDoc::setupNumerations()
 			numerations.insert(numS->m_name, numS);
 		}
 	}
-	orgNumerations = numerations;
+	if (orgNumerations != numerations)
+	{
+		orgNumerations = numerations;
+		flag_Renumber = true;
+	}
 }
 
 QString ScribusDoc::getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style)
