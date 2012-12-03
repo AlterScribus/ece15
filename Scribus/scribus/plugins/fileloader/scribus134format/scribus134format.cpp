@@ -728,7 +728,7 @@ bool Scribus134Format::loadFile(const QString & fileName, const FileFormat & /* 
 	// start auto save timer if needed
 	if (m_Doc->autoSave()  && ScCore->usingGUI())
 		m_Doc->restartAutoSaveTimer();
-//	m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
+//		m_Doc->autoSaveTimer->start(m_Doc->autoSaveTime());
 	
 	if (m_mwProgressBar!=0)
 		m_mwProgressBar->setValue(reader.characterOffset());
@@ -3543,6 +3543,7 @@ bool Scribus134Format::readCharStyles(const QString& fileName, ScribusDoc* doc, 
 		if (tagName == "CHARSTYLE")
 		{
 			cstyle.erase();
+			attrs = reader.scAttributes();
 			readNamedCharacterStyleAttrs(doc, attrs, cstyle);
 			docCharStyles.create(cstyle);
 		}

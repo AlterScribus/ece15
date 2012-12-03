@@ -1248,9 +1248,6 @@ void ScImgDataLoader_PICT::handlePixmap(QDataStream &ts, quint16 opCode)
 			}
 		}
 	}
-// reading scrRect
-	QRect scrRect = readRect(ts);
-//	qDebug() << "Src Rect" << scrRect;
 // reading dstRect
 	QRect dstRect = readRect(ts);
 //	qDebug() << "Dst Rect" << dstRect;

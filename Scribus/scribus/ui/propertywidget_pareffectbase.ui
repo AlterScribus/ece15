@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PropertyWidget_DropCapBase</class>
- <widget class="QFrame" name="PropertyWidget_DropCapBase">
+ <class>PropertyWidget_ParEffectBase</class>
+ <widget class="QFrame" name="PropertyWidget_ParEffectBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,8 +14,15 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
+   <item row="24" column="0">
+    <widget class="QCheckBox" name="peIndent_">
+     <property name="text">
+      <string>AutoIndent</string>
+     </property>
+    </widget>
+   </item>
    <item row="10" column="1">
-    <widget class="SMScComboBox" name="bulletStrEdit_">
+    <widget class="QComboBox" name="bulletStrEdit_">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -57,7 +64,7 @@
     <widget class="QLineEdit" name="numSuffix"/>
    </item>
    <item row="13" column="1">
-    <widget class="SMScComboBox" name="numComboBox"/>
+    <widget class="QComboBox" name="numComboBox"/>
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="dropCapLinesLabel">
@@ -70,7 +77,7 @@
     </widget>
    </item>
    <item row="18" column="0">
-    <widget class="SMSpinBox" name="numLevelSpin"/>
+    <widget class="QSpinBox" name="numLevelSpin"/>
    </item>
    <item row="20" column="0">
     <widget class="QLineEdit" name="numPrefix"/>
@@ -119,14 +126,14 @@
     </widget>
    </item>
    <item row="25" column="1">
-    <widget class="SMScrSpinBox" name="peOffset_">
+    <widget class="ScrSpinBox" name="peOffset_">
      <property name="minimum">
-      <number>-100</number>
+      <double>-99.989999999999995</double>
      </property>
     </widget>
    </item>
    <item row="18" column="1">
-    <widget class="SMSpinBox" name="numStart"/>
+    <widget class="QSpinBox" name="numStart"/>
    </item>
    <item row="23" column="0" colspan="2">
     <widget class="Line" name="line_3">
@@ -136,14 +143,14 @@
     </widget>
    </item>
    <item row="12" column="0">
-    <widget class="SMRadioButton" name="numRadio_">
+    <widget class="QRadioButton" name="numRadio_">
      <property name="text">
       <string>use Numbering</string>
      </property>
     </widget>
    </item>
    <item row="9" column="0">
-    <widget class="SMRadioButton" name="bulletRadio_">
+    <widget class="QRadioButton" name="bulletRadio_">
      <property name="text">
       <string>use Bullet</string>
      </property>
@@ -157,7 +164,7 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="SMRadioButton" name="dropCapRadio_">
+    <widget class="QRadioButton" name="dropCapRadio_">
      <property name="text">
       <string>use Drop Caps</string>
      </property>
@@ -205,7 +212,7 @@
     </widget>
    </item>
    <item row="14" column="1">
-    <widget class="SMScComboBox" name="numFormatCombo">
+    <widget class="QComboBox" name="numFormatCombo">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -235,47 +242,20 @@
     </widget>
    </item>
    <item row="5" column="1">
-    <widget class="SMSpinBox" name="dropCapLines"/>
-   </item>
-   <item row="24" column="0">
-    <widget class="SMCheckBox" name="peIndent_">
-     <property name="text">
-      <string>CheckBox</string>
-     </property>
-    </widget>
+    <widget class="QSpinBox" name="dropCapLines"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SMScComboBox</class>
-   <extends>QComboBox</extends>
-   <header location="global">ui/smsccombobox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SMRadioButton</class>
-   <extends>QRadioButton</extends>
-   <header location="global">ui/smradiobutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SMScrSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">ui/smscrspinbox.h</header>
+   <class>ScrSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header location="global">ui/scrspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>CharStyleComboBox</class>
    <extends>QComboBox</extends>
    <header location="global">ui/spalette.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SMCheckBox</class>
-   <extends>QCheckBox</extends>
-   <header location="global">ui/smcheckbox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>SMSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">ui/smspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

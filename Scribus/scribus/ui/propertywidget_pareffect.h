@@ -1,8 +1,8 @@
-#ifndef PROPERTYWIDGET_DropCap_H
-#define PROPERTYWIDGET_DropCap_H
+#ifndef PROPERTYWIDGET_PAREFFECT_H
+#define PROPERTYWIDGET_PAREFFECT_H
 
-#include "ui_propertywidget_dropcapbase.h"
-
+#include "ui_propertywidget_pareffectbase.h"
+#include "numeration.h"
 #include "propertywidgetbase.h"
 #include "ui/charselectenhanced.h"
 
@@ -10,13 +10,13 @@ class PageItem;
 class ParagraphStyle;
 class ScribusMainWindow;
 
-class PropertyWidget_DropCap : public QFrame, private Ui::PropertyWidget_DropCapBase, public PropertyWidgetBase
+class PropertyWidget_ParEffect : public QFrame, private Ui::PropertyWidget_ParEffectBase, public PropertyWidgetBase
 {
     Q_OBJECT
 
 public:
-	PropertyWidget_DropCap(QWidget *parent = 0);
-	~PropertyWidget_DropCap() {}
+	PropertyWidget_ParEffect(QWidget *parent = 0);
+	~PropertyWidget_ParEffect() {}
 
 	void updateStyle(const ParagraphStyle& newPStyle);
 	void updateCharStyles();
@@ -79,7 +79,7 @@ private:
 		bulletStrEdit_->clear();
 		bulletStrEdit_->addItem(QChar(0x2022));
 		bulletStrEdit_->addItem("*");
-		bulletStrEdit_->addItem("-");
+		bulletStrEdit_->addItem(QChar(0x2013));
 		bulletStrEdit_->setMinimumWidth(50);
 		if (bulletStrEdit_->currentText().isEmpty())
 			bulletStrEdit_->setEditText(QChar(0x2022));
@@ -88,12 +88,7 @@ private:
 	void fillNumFormatCombo()
 	{
 		numFormatCombo->clear();
-		numFormatCombo->addItem("1_2_3");
-		numFormatCombo->addItem("i_ii_iii");
-		numFormatCombo->addItem("I_II_III");
-		numFormatCombo->addItem("a_b_c");
-		numFormatCombo->addItem("A_B_C");
-		numFormatCombo->addItem("*");
+		numFormatCombo->addItems(getFormatList());
 	}
 //	void SMPStyleWidget::fillNumRestartCombo()
 //	{
@@ -106,4 +101,4 @@ private:
 //	}
 };
 
-#endif // PROPERTYWIDGET_DropCap_H
+#endif // PROPERTYWIDGET_PAREFFECT_H

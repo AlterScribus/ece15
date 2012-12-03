@@ -20,8 +20,8 @@ for which a new license (GPL+exception) is in place.
 #include "propertiespalette_utils.h"
 #include "propertywidget_advanced.h"
 #include "propertywidget_distance.h"
-#include "propertywidget_dropcap.h"
 #include "propertywidget_textmargins.h"
+#include "propertywidget_pareffect.h"
 #include "propertywidget_flop.h"
 #include "propertywidget_optmargins.h"
 #include "propertywidget_orphans.h"
@@ -79,11 +79,11 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	orphanBox = new PropertyWidget_Orphans(textTree);
 	orphanItem = textTree->addWidget( tr("Orphans and Widows"), orphanBox);
 
-	parEffectsBox = new PropertyWidget_DropCap(textTree);
-	parEffectsItem = textTree->addWidget( tr("Paragraph Effects"), parEffectsBox);
+	marginsWidgets = new PropertyWidget_TextMargins(textTree);
+	marginsItem = textTree->addWidget( tr("Text Margins"), marginsWidgets);
 
-	marginsBox = new PropertyWidget_TextMargins(textTree);
-	marginsItem = textTree->addWidget( tr("Text Margins"), marginsBox);
+	parEffectWidgets = new PropertyWidget_ParEffect(textTree);
+	parEffectItem = textTree->addWidget( tr("Paragraph Effects"), parEffectWidgets);
 
 	distanceWidgets = new PropertyWidget_Distance(textTree);
 	distanceItem = textTree->addWidget( tr("Columns && Frame Distances"), distanceWidgets);
@@ -123,8 +123,8 @@ void PropertiesPalette_Text::connectSignals(bool widgetsToo)
 	{
 		colorWidgets->connectSignals();
 		orphanBox->connectSignals();
-		parEffectsBox->connectSignals();
-		marginsBox->connectSignals();
+		parEffectWidgets->connectSignals();
+		marginsWidgets->connectSignals();
 		distanceWidgets->connectSignals();
 		optMargins->connectSignals();
 		advancedWidgets->connectSignals();
@@ -146,8 +146,8 @@ void PropertiesPalette_Text::disconnectSignals(bool widgetsToo)
 	{
 		colorWidgets->disconnectSignals();
 		orphanBox->disconnectSignals();
-		parEffectsBox->disconnectSignals();
-		marginsBox->disconnectSignals();
+		parEffectWidgets->disconnectSignals();
+		marginsWidgets->disconnectSignals();
 		distanceWidgets->disconnectSignals();
 		optMargins->disconnectSignals();
 		advancedWidgets->disconnectSignals();
@@ -162,8 +162,8 @@ void PropertiesPalette_Text::setMainWindow(ScribusMainWindow* mw)
 	advancedWidgets->setMainWindow(mw);
 	colorWidgets->setMainWindow(mw);
 	distanceWidgets->setMainWindow(mw);
-	parEffectsBox->setMainWindow(mw);
-	marginsBox->setMainWindow(mw);
+	marginsWidgets->setMainWindow(mw);
+	parEffectWidgets->setMainWindow(mw);
 	optMargins->setMainWindow(mw);
 	pathTextWidgets->setMainWindow(mw);
 
@@ -200,10 +200,10 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 	advancedWidgets->setDoc(m_doc);
 	colorWidgets->setDoc(m_doc);
 	distanceWidgets->setDoc(m_doc);
-	parEffectsBox->setDoc(m_doc);
+	parEffectWidgets->setDoc(m_doc);
 	flopBox->setDoc(m_doc);
 	optMargins->setDoc(m_doc);
-	marginsBox->setDoc(m_doc);
+	marginsWidgets->setDoc(m_doc);
 	orphanBox->setDoc(m_doc);
 	pathTextWidgets->setDoc(m_doc);
 
@@ -238,9 +238,9 @@ void PropertiesPalette_Text::unsetDoc()
 	distanceWidgets->setDoc(0);
 	flopBox->setDoc(0);
 	optMargins->setDoc(0);
-	marginsBox->setDoc(0);
+	marginsWidgets->setDoc(0);
 	orphanBox->setDoc(0);
-	parEffectsBox->setDoc(0);
+	parEffectWidgets->setDoc(0);
 	pathTextWidgets->setDoc(0);
 
 	m_haveItem = false;
@@ -328,7 +328,7 @@ void PropertiesPalette_Text::handleUpdateRequest(int updateFlags)
 	if (updateFlags & reqCharStylesUpdate)
 	{
 		charStyleCombo->updateFormatList();
-		parEffectsBox->updateCharStyles();
+		parEffectWidgets->updateCharStyles();
 	}
 	if (updateFlags & reqParaStylesUpdate)
 		paraStyleCombo->updateFormatList();
@@ -340,7 +340,7 @@ void PropertiesPalette_Text::handleUpdateRequest(int updateFlags)
 	{
 		paraStyleCombo->setDoc(m_haveDoc ? m_doc : 0);
 		charStyleCombo->setDoc(m_haveDoc ? m_doc : 0);
-		parEffectsBox->setDoc(m_haveDoc ? m_doc : 0);
+		parEffectWidgets->setDoc(m_haveDoc ? m_doc : 0);
 	}
 	connectSignals(true);
 }
@@ -374,7 +374,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 		flopItem->setHidden(true);
 		distanceItem->setHidden(true);
 		orphanItem->setHidden(true);
-		parEffectsItem->setHidden(true);
+		parEffectItem->setHidden(true);
 		pathTextItem->setHidden(false);
 	}
 	else if (m_item->asTextFrame() || m_item->asTable())
@@ -382,7 +382,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 		flopItem->setHidden(false);
 		distanceItem->setHidden(false);
 		orphanItem->setHidden(false);
-		parEffectsItem->setHidden(false);
+		parEffectItem->setHidden(false);
 		pathTextItem->setHidden(true);
 	}
 	else
@@ -390,7 +390,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 		flopItem->setHidden(false);
 		distanceItem->setHidden(false);
 		orphanItem->setHidden(false);
-		parEffectsItem->setHidden(false);
+		parEffectItem->setHidden(false);
 		pathTextItem->setHidden(true);
 	}
 
@@ -429,9 +429,9 @@ void PropertiesPalette_Text::unitChange()
 	distanceWidgets->unitChange();
 	flopBox->unitChange();
 	optMargins->unitChange();
-	marginsBox->unitChange();
+	marginsWidgets->unitChange();
 	pathTextWidgets->unitChange();
-	parEffectsBox->unitChange();
+	parEffectWidgets->unitChange();
 	connectSignals(true);
 
 	m_haveItem = tmp;
@@ -572,9 +572,9 @@ void PropertiesPalette_Text::updateStyle(const ParagraphStyle& newCurrent)
 	advancedWidgets->updateStyle(newCurrent);
 	colorWidgets->updateStyle(newCurrent);
 	optMargins->updateStyle(newCurrent);
-	marginsBox->updateStyle(newCurrent);
+	marginsWidgets->updateStyle(newCurrent);
 	orphanBox->updateStyle (newCurrent);
-	parEffectsBox->updateStyle(newCurrent);
+	parEffectWidgets->updateStyle(newCurrent);
 
 	displayFontFace(charStyle.font().scName());
 	displayFontSize(charStyle.fontSize());
@@ -594,8 +594,7 @@ void PropertiesPalette_Text::updateCharStyles()
 {
 	disconnectSignals();
 	charStyleCombo->updateFormatList();
-	parEffectsBox->updateCharStyles();
-	connectSignals();
+	parEffectWidgets->updateCharStyles();
 }
 
 void PropertiesPalette_Text::updateParagraphStyles()
@@ -603,7 +602,7 @@ void PropertiesPalette_Text::updateParagraphStyles()
 	disconnectSignals();
 	paraStyleCombo->updateFormatList();
 	charStyleCombo->updateFormatList();
-	parEffectsBox->updateCharStyles();
+	parEffectWidgets->updateCharStyles();
 	connectSignals();
 }
 
@@ -734,7 +733,10 @@ void PropertiesPalette_Text::doClearPStyle()
 		{
 			Selection tempSelection(this, false);
 			tempSelection.addItem(i2, true);
-			m_doc->itemSelection_ClearPStyle(&tempSelection);
+			m_doc->itemSelection_ClearBulNumStrings(&tempSelection);
+			m_doc->itemSelection_EraseParagraphStyle(&tempSelection);
+			CharStyle emptyCStyle;
+			m_doc->itemSelection_SetCharStyle(emptyCStyle, &tempSelection);
 		}
 	}
 }
@@ -788,7 +790,7 @@ void PropertiesPalette_Text::languageChange()
 	distanceWidgets->languageChange();
 	flopBox->languageChange();
 	optMargins->languageChange();
-	marginsBox->languageChange();
+	marginsWidgets->languageChange();
 	orphanBox->languageChange();
 	pathTextWidgets->languageChange();
 

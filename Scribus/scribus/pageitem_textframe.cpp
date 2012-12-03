@@ -1535,11 +1535,13 @@ void PageItem_TextFrame::layout()
 		itemText.blockSignals(true);
 		setMaxY(-1);
 		int maxYAsc = 0, maxYDesc = 0;
+		//double maxYAsc = 0.0, maxYDesc = 0.0;
 		double offset = 0.0;
 		double breakPos = 0.0;
 		double overflowWidth = 0.0;
 		double hyphWidth = 0.0;
 		bool inOverflow = false;
+		double autoLeftIndent = 0.0;
 
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
@@ -1610,6 +1612,7 @@ void PageItem_TextFrame::layout()
 			BulNumMode = false;
 			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
+				autoLeftIndent = 0.0;
 				style = itemText.paragraphStyle(a);
 				if (style.hasBullet() || style.hasNum())
 				{
@@ -1978,6 +1981,7 @@ void PageItem_TextFrame::layout()
 				if (SpecialChars::isExpandingSpace(hl->ch))
 				{
 					double wordtracking = charStyle.wordTracking();
+					hl->glyph.xadvance *= wordtracking;
 					wide *= wordtracking;
 				}
 				// find ascent / descent
@@ -2075,16 +2079,21 @@ void PageItem_TextFrame::layout()
 				current.leftIndent = 0.0;
 				if (current.addLeftIndent && (maxDX == 0 || DropCmode || BulNumMode))
 				{
-					current.leftIndent = style.leftMargin();
-//					if (current.hasDropCap)
-//						current.leftIndent = 0;
+					current.leftIndent = style.leftMargin() + autoLeftIndent;
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
 						if (BulNumMode || DropCmode)
 						{
 							if(style.parEffectIndent())
+							{
 								current.leftIndent -= style.parEffectOffset() + wide;
+								if (current.leftIndent < 0.0)
+								{
+									autoLeftIndent = abs(current.leftIndent);
+									current.leftIndent = 0.0;
+								}
+							}
 						}
 					}
 					current.addLeftIndent = false;
@@ -3237,7 +3246,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	QColor cachedFillQ;
 	QColor cachedStrokeQ;
 	//	QValueList<ParagraphStyle::TabRecord> tTabValues;
-	double desc, asce, wide;
+	double desc, asce;
 	//	tTabValues.clear();
 	p->save(); //SA1
 	//	QRect e2;
@@ -3305,7 +3314,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				p->drawRect(0, 0, Width, Height);
 			}
 		}
-		if (annotation().Type() == 2)
+		if (annotation().Type() == Annotation::Button)
 		{
 			int wdt = annotation().Bwid();
 			QPainterPath clp;
@@ -3336,7 +3345,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->restore();
 			return;
 		}
-		else if (annotation().Type() == 3)
+		else if (annotation().Type() == Annotation::Textfield)
 		{
 			int wdt = annotation().Bwid();
 			TExtra = wdt;
@@ -3346,7 +3355,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			invalid = true;
 			layout();
 		}
-		else if (annotation().Type() == 4)
+		else if (annotation().Type() == Annotation::Checkbox)
 		{
 			if (annotation().IsChk())
 			{
@@ -3464,7 +3473,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				return;
 			}
 		}
-		else if (annotation().Type() == 5)
+		else if (annotation().Type() == Annotation::Combobox)
 		{
 			int wdt = annotation().Bwid();
 			if (Width > 2 * wdt + 15)
@@ -3508,7 +3517,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				return;
 			}
 		}
-		else if (annotation().Type() == 6)
+		else if (annotation().Type() == Annotation::Listbox)
 		{
 			int wdt = annotation().Bwid();
 			if (Width > 2 * wdt + 15)
@@ -3644,7 +3653,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							double fontSize = charStyleS.fontSize() / 10.0;
 							desc = - font.descent(fontSize);
 							asce = font.ascent(fontSize);
-							wide = hls->glyph.wide();
 							QRectF scr;
 							if (HasObject)
 							{
@@ -5277,7 +5285,7 @@ void PageItem_TextFrame::applicableActions(QStringList & actionList)
 		actionList << "itemPDFIsBookmark";
 	if (isAnnotation())
 	{
-		if ((annotation().Type() == 0) || (annotation().Type() == 1) || (annotation().Type() > 9))
+		if ((annotation().Type() == 0) || (annotation().Type() == 1) || ((annotation().Type() > Annotation::Listbox) && (annotation().Type() < Annotation::Annot3D)))
 			actionList << "itemPDFAnnotationProps";
 		else
 			actionList << "itemPDFFieldProps";

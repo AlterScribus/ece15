@@ -313,7 +313,7 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 			if ((currItem->asTextFrame()) || (currItem->asPathText()))
 			{
 	#ifndef NLS_PROTO
-				if ( currItem->frameOverflows() && (checkerSettings.checkOverflow) && (!((currItem->isAnnotation()) && ((currItem->annotation().Type() == 5) || (currItem->annotation().Type() == 6)))))
+				if ( currItem->frameOverflows() && (checkerSettings.checkOverflow) && (!((currItem->isAnnotation()) && ((currItem->annotation().Type() == Annotation::Combobox) || (currItem->annotation().Type() == Annotation::Listbox)))))
 					itemError.insert(TextOverflow, 0);
 				if (currItem->isAnnotation())
 				{
@@ -613,7 +613,7 @@ bool DocumentChecker::checkDocument(ScribusDoc *currDoc)
 			if ((currItem->asTextFrame()) || (currItem->asPathText()))
 			{
 	#ifndef NLS_PROTO
-				if ( currItem->frameOverflows() && (checkerSettings.checkOverflow) && (!((currItem->isAnnotation()) && ((currItem->annotation().Type() == 5) || (currItem->annotation().Type() == 6)))))
+				if ( currItem->frameOverflows() && (checkerSettings.checkOverflow) && (!((currItem->isAnnotation()) && ((currItem->annotation().Type() == Annotation::Combobox) || (currItem->annotation().Type() == Annotation::Listbox)))))
 					itemError.insert(TextOverflow, 0);
 				if (currItem->isAnnotation())
 				{

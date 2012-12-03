@@ -45,6 +45,7 @@ private:
 	void fillNumFormatCombo();
 	void fillNumerationsCombo(QList<ParagraphStyle> &pstyles);
 	void fillNumRestartCombo();
+	void checkParEffectState();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
 	void showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex);

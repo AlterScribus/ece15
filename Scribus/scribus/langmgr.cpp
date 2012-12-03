@@ -106,7 +106,7 @@ void LanguageManager::generateLangList()
 	langTable.append(LangDef("es",     "es_ES", "Spanish",                QObject::tr( "Spanish" )) );
 	langTable.append(LangDef("es_AR",  "",      "Spanish (Argentina)",    QObject::tr( "Spanish (Argentina)" )) );
 	langTable.append(LangDef("es_LA",  "",      "Spanish (Latin)",        QObject::tr( "Spanish (Latin)" )) );
-	langTable.append(LangDef("et",     "",      "Estonian",               QObject::tr( "Estonian" )) );
+	langTable.append(LangDef("et",     "et_EE", "Estonian",               QObject::tr( "Estonian" )) );
 	langTable.append(LangDef("eu",     "",      "Basque",                 QObject::tr( "Basque" )) );
 	langTable.append(LangDef("fi",     "",      "Finnish",                QObject::tr( "Finnish" )) );
 	langTable.append(LangDef("fr",     "fr_FR", "French",                 QObject::tr( "French" )) );
@@ -115,7 +115,7 @@ void LanguageManager::generateLangList()
 	langTable.append(LangDef("gu",     "gu_IN", "Gujarati",               QObject::tr( "Gujarati" )) );
 	langTable.append(LangDef("he",     "",      "Hebrew",                 QObject::tr( "Hebrew" )) );
 	langTable.append(LangDef("hr",     "",      "Croatian",               QObject::tr( "Croatian" )) );
-	langTable.append(LangDef("hu",     "",      "Hungarian",              QObject::tr( "Hungarian" )) );
+	langTable.append(LangDef("hu",     "hu_HU", "Hungarian",              QObject::tr( "Hungarian" )) );
 	langTable.append(LangDef("ia",     "",      "Latin",                  QObject::tr( "Latin" )) );
 	langTable.append(LangDef("id",     "",      "Indonesian",             QObject::tr( "Indonesian" )) );
 	langTable.append(LangDef("is",     "",      "Icelandic",              QObject::tr( "Icelandic" )) );
@@ -128,18 +128,19 @@ void LanguageManager::generateLangList()
 	langTable.append(LangDef("lb",     "",      "Luxembourgish",          QObject::tr( "Luxembourgish" )) );
 	langTable.append(LangDef("lo",     "",      "Lao",                    QObject::tr( "Lao" )) );
 	langTable.append(LangDef("lt",     "lt_LT", "Lithuanian",             QObject::tr( "Lithuanian" )) );
+	langTable.append(LangDef("ne_NP",  "",      "Nepali",                  QObject::tr( "Nepali" )) );
 	langTable.append(LangDef("nb",     "nb_NO", "Norwegian (Bokmål)",     QObject::trUtf8( "Norwegian (Bokm\303\245l)" )) );
-	langTable.append(LangDef("nl",     "",      "Dutch",                  QObject::tr( "Dutch" )) );
+	langTable.append(LangDef("nl",     "nl_NL", "Dutch",                  QObject::tr( "Dutch" )) );
 	langTable.append(LangDef("nn",     "nn_NO", "Norwegian (Nnyorsk)",    QObject::tr( "Norwegian (Nnyorsk)" )) );
 	langTable.append(LangDef("no",     "no_NO", "Norwegian",              QObject::tr( "Norwegian" )) );
 	langTable.append(LangDef("pl",     "pl_PL", "Polish",                 QObject::tr( "Polish" )) );
-	langTable.append(LangDef("pt",     "",      "Portuguese",             QObject::tr( "Portuguese" )) );
+	langTable.append(LangDef("pt",     "pt_PT", "Portuguese",             QObject::tr( "Portuguese" )) );
 	langTable.append(LangDef("pt_BR",  "",      "Portuguese (BR)",        QObject::tr( "Portuguese (BR)" )) );
 	langTable.append(LangDef("ro",     "",      "Romanian",               QObject::tr( "Romanian" )) );
-	langTable.append(LangDef("ru",     "",      "Russian",                QObject::tr( "Russian" )) );
+	langTable.append(LangDef("ru",     "ru_RU", "Russian",                QObject::tr( "Russian" )) );
 	langTable.append(LangDef("sa",     "",      "Sanskrit",               QObject::tr( "Sanskrit" )) );
 	langTable.append(LangDef("sk",     "sk_SK", "Slovak",                 QObject::tr( "Slovak" )) );
-	langTable.append(LangDef("sl",     "",      "Slovenian",              QObject::tr( "Slovenian" )) );
+	langTable.append(LangDef("sl",     "sl_SL", "Slovenian",              QObject::tr( "Slovenian" )) );
 	langTable.append(LangDef("sq",     "",      "Albanian",               QObject::tr( "Albanian" )) );
 	langTable.append(LangDef("sr",     "",      "Serbian",                QObject::tr( "Serbian" )) );
 	langTable.append(LangDef("sv",     "",      "Swedish",                QObject::tr( "Swedish" )) );
@@ -322,20 +323,20 @@ const QString LanguageManager::getTransLangFromLang(QString lang)
 const QString LanguageManager::getShortAbbrevFromAbbrev(QString langAbbrev)
 {
 	//	qDebug()<<"Trying to find:"<<langAbbrev;
-		int i=langTableIndex(langAbbrev);
+	int i = langTableIndex(langAbbrev);
 	//	qDebug()<<"Index of"<<langAbbrev<<":"<<i;
-		if (i==-1)
+	if (i == -1)
+	{
+		if (langAbbrev.length()>5)
 		{
-			if (langAbbrev.length()>5)
-			{
-				langAbbrev.truncate(5);
-				i=langTableIndex(langAbbrev);
-			}
+			langAbbrev.truncate(5);
+			i=langTableIndex(langAbbrev);
 		}
-		if (i!=-1)
-			return langTable[i].m_priAbbrev;
-		//qDebug()<<langAbbrev<<"not found";
-		return "";
+	}
+	if (i != -1)
+		return langTable[i].m_priAbbrev;
+	//qDebug()<<langAbbrev<<"not found";
+	return "";
 }
 
 const QString LanguageManager::getAlternativeAbbrevfromAbbrev(QString langAbbrev)

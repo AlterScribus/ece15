@@ -54,6 +54,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/inserttablecolumnsdialog.h"
 #include "ui/inserttablerowsdialog.h"
 #include "notesstyles.h"
+#include "numeration.h"
 #include "ui/notesstyleseditor.h"
 #include "pageitem.h"
 #include "pageitem_imageframe.h"
@@ -256,6 +257,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	BookMarks(),
 	OldBM(false),
 	hasName(false),
+	isConverted(false),
 	autoSaveTimer(new QTimer(this)),
 	MLineStyles(),
 	WinHan(0),
@@ -290,6 +292,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	Print_Options.firstUse = true;
 	drawAsPreview = false;
 	viewAsPreview = false;
+	editOnPreview = false;
 	previewVisual = -1;
 	dontResize = false;
 }
@@ -358,6 +361,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	BookMarks(),
 	OldBM(false),
 	hasName(false),
+	isConverted(false),
 	autoSaveTimer(new QTimer(this)),
 	MLineStyles(),
 	WinHan(0),
@@ -396,6 +400,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	Print_Options.firstUse = true;
 	drawAsPreview = false;
 	viewAsPreview = false;
+	editOnPreview = false;
 	previewVisual = -1;
 	dontResize = false;
 }
@@ -4875,6 +4880,7 @@ bool ScribusDoc::save(const QString& fileName, QString* savedFile)
 		setName(fileName);
 		setModified(false);
 		hasName = true;
+		isConverted = false;
 	}
 	return ret;
 }
@@ -9177,6 +9183,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 			}
 		}
 	}
+	flag_Renumber = true;
 }
 
 void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection, bool rmDirectFormatting)
@@ -15162,7 +15169,7 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 		itemSelection->delaySignalsOn();
 		for (int b = 0; b < toDelete.count(); b++)
 		{
-			currItem = toDelete.at(b);
+		/*	currItem = toDelete.at(b);
 			QList<PageItem*> *list = Items;
 			list = parentGroup(currItem, Items);
 			int d = list->indexOf(currItem);
@@ -15187,6 +15194,11 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 			for (int a = 0; a < tempSelection.count(); ++a)
 			{
 				PageItem* rItem = tempSelection.itemAt(a);
+				if (rItem->isGroup())
+				{
+					rItem->groupWidth = rItem->width() / (currItem->width() / currItem->groupWidth);
+					rItem->groupHeight = rItem->height() / (currItem->height() / currItem->groupHeight);
+				}
 				n = FPoint(rItem->xPos() - currItem->xPos(), rItem->yPos() - currItem->yPos());
 				rItem->setXYPos(ma.m11() * n.x() + ma.m21() * n.y() + ma.dx(), ma.m22() * n.y() + ma.m12() * n.x() + ma.dy());
 				rItem->rotateBy(currItem->rotation());
@@ -15231,8 +15243,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 			}
 			
 			tempSelection.clear();
-			tempSelection.delaySignalsOff();
-		/*	currItem = toDelete.at(b);
+			tempSelection.delaySignalsOff();*/
+			currItem = toDelete.at(b);
 			QList<PageItem*> *list = Items;
 			list = parentGroup(currItem, Items);
 			int d = list->indexOf(currItem);
@@ -15244,14 +15256,26 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 				PageItem* gItem = currItem->groupItemList.last();
 				removeFromGroup(gItem);
 				if (currItem->Parent == NULL)
+				{
 					Items->insert(d, gItem);
+					gItem->OwnPage = OnPage(gItem);
+				}
 				else
 				{
 					addToGroup(currItem->Parent, gItem);
 					list->insert(d, gItem);
 				}
 				itemSelection->addItem(gItem);
-			} */
+			}
+			if(UndoManager::undoEnabled())
+			{
+				ScItemState<QList<QPointer<PageItem> > > *is = new ScItemState<QList<QPointer<PageItem> > >(UndoManager::Ungroup);
+				is->set("UNGROUP", "ungroup");
+				Selection tempSelection(this, false);
+				tempSelection.addItem(currItem,true);
+				is->setItem(tempSelection.selectionList());
+				undoManager->action(this, is);
+			}
 		}
 		setLoading(wasLoad);
 		itemSelection->delaySignalsOff();
@@ -15399,6 +15423,77 @@ void ScribusDoc::removeFromGroup(PageItem* item)
 	else
 		item->Clip = FlattenPath(item->PoLine, item->Segments);
 	setRedrawBounding(item);
+}
+
+void ScribusDoc::resizeGroupToContents(PageItem* group)
+{
+	PageItem_Group* currItem = group->asGroupFrame();
+	QPainterPath input1 = currItem->PoLine.toQPainterPath(true);
+	input1.translate(currItem->xPos(), currItem->yPos());
+	if (currItem->fillEvenOdd())
+		input1.setFillRule(Qt::OddEvenFill);
+	else
+		input1.setFillRule(Qt::WindingFill);
+	double minx =  std::numeric_limits<double>::max();
+	double miny =  std::numeric_limits<double>::max();
+	double maxx = -std::numeric_limits<double>::max();
+	double maxy = -std::numeric_limits<double>::max();
+	int gcount = currItem->groupItemList.count();
+	for (int c = 0; c < gcount; c++)
+	{
+		PageItem* gItem = currItem->groupItemList.at(c);
+		gItem->setXYPos(currItem->xPos() + gItem->gXpos, currItem->yPos() + gItem->gYpos, true);
+		double x1, x2, y1, y2;
+		gItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+		minx = qMin(minx, x1);
+		miny = qMin(miny, y1);
+		maxx = qMax(maxx, x2);
+		maxy = qMax(maxy, y2);
+	}
+	double oldW = currItem->width();
+	double oldH = currItem->height();
+	currItem->setXYPos(minx, miny, true);
+	currItem->setWidthHeight(maxx - minx, maxy - miny, true);
+	currItem->groupWidth = maxx - minx;
+	currItem->groupHeight = maxy - miny;
+	for (int c = 0; c < gcount; c++)
+	{
+		PageItem* gItem = currItem->groupItemList.at(c);
+		gItem->gXpos = gItem->xPos() - minx;
+		gItem->gYpos = gItem->yPos() - miny;
+		gItem->gWidth = maxx - minx;
+		gItem->gHeight = maxy - miny;
+	}
+	currItem->SetRectFrame();
+	if ((currItem->width() < oldW) || (currItem->height() < oldH))
+	{
+		QPainterPath input2 = currItem->PoLine.toQPainterPath(true);
+		input2.translate(currItem->xPos(), currItem->yPos());
+		if (currItem->fillEvenOdd())
+			input2.setFillRule(Qt::OddEvenFill);
+		else
+			input2.setFillRule(Qt::WindingFill);
+		QPainterPath result = input1.intersected(input2);
+		result.translate(-currItem->xPos(), -currItem->yPos());
+		currItem->PoLine.fromQPainterPath(result, true);
+	}
+	currItem->adjustXYPosition();
+}
+
+void ScribusDoc::itemSelection_resizeGroupToContents(Selection* customSelection)
+{
+	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
+	if (itemSelection->count() != 0)
+	{
+		int docSelectionCount = itemSelection->count();
+		for (int a = 0; a < docSelectionCount; ++a)
+		{
+			PageItem *group = itemSelection->itemAt(a);
+			if (group->isGroup())
+				resizeGroupToContents(group);
+		}
+		regionsChanged()->update(QRectF());
+	}
 }
 
 void ScribusDoc::itemSelection_UniteItems(Selection* /*customSelection*/)
@@ -16830,8 +16925,9 @@ void ScribusDoc::setupNumerations()
 		//create default numeration
 		numS = new NumStruct;
 		numS->m_name = "default";
-		numS->m_nums.insert(0,num);
-		numS->m_counters.insert(0, 0);
+		numS->m_nums.insert(0, num);
+		numS->m_counters.insert(0, 1);
+		numS->m_lastlevel = 0;
 		numerations.insert(numS->m_name, numS);
 	}
 	
@@ -16839,7 +16935,8 @@ void ScribusDoc::setupNumerations()
 	{
 		if (docParagraphStyles[i].hasNum())
 		{
-			QString name = docParagraphStyles[i].numName();
+			ParagraphStyle &style = docParagraphStyles[i];
+			QString name = style.numName();
 			if (numerations.contains(name))
 				numS = numerations.value(name);
 			else
@@ -16847,17 +16944,17 @@ void ScribusDoc::setupNumerations()
 				numS = new NumStruct;
 				numS->m_name = name;
 			}
-			num.numFormat = (NumFormat) docParagraphStyles[i].numFormat();
-			num.prefix = docParagraphStyles[i].numPrefix();
-			num.suffix = docParagraphStyles[i].numSuffix();
-			num.start = docParagraphStyles[i].numStart() -1;
-			int level = docParagraphStyles[i].numLevel();
+			num.numFormat = (NumFormat) style.numFormat();
+			num.prefix = style.numPrefix();
+			num.suffix = style.numSuffix();
+			num.start = style.numStart();
+			int level = style.numLevel();
 			if (level >= numS->m_counters.count())
 			{
 				for (int i=numS->m_counters.count(); i <= level; ++i)
 				{
 					numS->m_nums.insert(i,num);
-					numS->m_counters.insert(i, 0);
+					numS->m_counters.insert(i, 1);
 				}
 			}
 			numS->m_nums.replace(level, num);
@@ -16866,31 +16963,40 @@ void ScribusDoc::setupNumerations()
 			numerations.insert(numS->m_name, numS);
 		}
 	}
+	if (orgNumerations != numerations)
+	{
+		orgNumerations = numerations;
+		flag_Renumber = true;
+	}
 }
 
-QString ScribusDoc::getNumberStr(QString numName, int level, bool increment, bool resetlower)
+QString ScribusDoc::getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style)
 {
 	Q_ASSERT(numerations.contains(numName));
 	NumStruct * numS = numerations.value(numName);
 	numS->m_lastlevel = level;
-	if (resetlower)
-	{
-		for (int l = 0; l < numS->m_counters.count(); ++l)
-			if (l >= level)
-				setNumerationCounter(numName, l, numS->m_nums[l].start);
-	}
-	if (increment)
-	{
-		int currNum = numS->m_counters.at(level);
+
+	Numeration num = numS->m_nums[level];
+	num.numFormat = (NumFormat) style.numFormat();
+	num.start = style.numStart();
+	num.prefix = style.numPrefix();
+	num.suffix = style.numSuffix();
+	numS->m_nums.replace(level, num);
+
+	int currNum = numS->m_counters.at(level);
+	if (reset)
+		currNum = numS->m_nums[level].start;
+	else
 		++currNum;
-		setNumerationCounter(numName, level, currNum);
-	}
+	setNumerationCounter(numName, level, currNum);
+
 	QString result = QString();
 	for (int i=0; i <= level; ++i)
 	{
-		result.append(numS->m_nums[i].prefix);
-		result.append(numS->m_nums[i].numString(numS->m_counters.at(i)));
-		result.append(numS->m_nums[i].suffix);
+		Numeration num = numS->m_nums[i];
+		result.append(num.prefix);
+		result.append(num.numString(numS->m_counters.at(i)));
+		result.append(num.suffix);
 	}
 	return result;
 }
@@ -16954,8 +17060,9 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 					m_nums.append(num);
 				}
 				if (reset)
-					count = style.numStart()-1;
-				count++;
+					count = style.numStart();
+				else
+					count++;
 				m_counters.replace(level, count);
 				//m_nums.insert(level, num);
 				QString result = QString();
@@ -16979,7 +17086,7 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 void ScribusDoc::updateNumbers(bool updateNumerations)
 {
 	if (updateNumerations)
-		//after stles change reset all numerations settings
+		//after styles change reset all numerations settings
 		setupNumerations();
 	//reset ALL counters
 	foreach (NumStruct * numS, numerations.values())
@@ -17044,11 +17151,11 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 					if (style.hasNum() && style.numName()!="<local block>")
 					{
 						ScText * hl = item->itemText.item(pos);
-						bool resetlowerlevel = false;
+						bool resetNums = false;
 						if (style.numOther())
 						{
 							if (pos == 0)
-								resetlowerlevel = true;
+								resetNums = true;
 							else
 							{
 								int currPara = item->itemText.nrOfParagraph(pos);
@@ -17056,20 +17163,15 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 								ParagraphStyle preStyle = item->itemText.paragraphStyle(currStart-1);
 								//reset counter if prev style hasnt numeration or has other numeration
 								if (!preStyle.hasNum() || (preStyle.numName() != style.numName()))
-									resetlowerlevel = true;
-							}
-							if (resetlowerlevel && (style.numLevel() > 0))
-							{
-								for (int l = 0; l < style.numLevel(); ++l)
-									setNumerationCounter(style.numName(), l, numerations.value(style.numName())->m_counters[l] +1);
+									resetNums = true;
 							}
 						}
 						if (style.numHigher() && (style.numLevel() > 0))
 						{
 							if (numerations.value(style.numName())->m_lastlevel < style.numLevel())
-								resetlowerlevel = true;
+								resetNums = true;
 						}
-						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), true, resetlowerlevel);
+						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), resetNums, style);
 						if (hl->mark == NULL)
 						{
 							BulNumMark* bnMark = new BulNumMark;

@@ -533,9 +533,10 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->numRestartCombo, SIGNAL(activated(int)), this, SLOT(slotNumRestart(int)));
 	connect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
 	connect(pwidget_->numRestartHigherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumHigher(bool)));
-	connect(pwidget_->numPrefix, SIGNAL(textEdited(QString)), this, SLOT(slotNumPrefix(QString)));
-	connect(pwidget_->numSuffix, SIGNAL(textEdited(QString)), this, SLOT(slotNumSuffix(QString)));
+	connect(pwidget_->numPrefix, SIGNAL(textChanged(QString)), this, SLOT(slotNumPrefix(QString)));
+	connect(pwidget_->numSuffix, SIGNAL(textChanged(QString)), this, SLOT(slotNumSuffix(QString)));
 	connect(pwidget_->numNewLineEdit, SIGNAL(editingFinished()), this, SLOT(slotNumNew()));
+	connect(pwidget_->numNewLineEdit, SIGNAL(textChanged(QString)), this, SLOT(slotSelectionDirty()));
 
 	connect(pwidget_->keepLinesStart, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesStart()));
 	connect(pwidget_->keepLinesEnd, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesEnd()));
@@ -548,27 +549,19 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->tabList_->left_, SIGNAL(valueChanged(double)), this, SLOT(slotLeftIndent()));
 	connect(pwidget_->tabList_->right_, SIGNAL(valueChanged(double)), this, SLOT(slotRightIndent()));
 	connect(pwidget_->tabList_->first_, SIGNAL(valueChanged(double)), this, SLOT(slotFirstLine()));
-	
-	connect(pwidget_->parentCombo, SIGNAL(activated(const QString&)),
-			this, SLOT(slotParentChanged(const QString&)));
-	
+
+	connect(pwidget_->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParentChanged(const QString&)));
+
 	// character attributes
 	connect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
 	connect(pwidget_->cpage->effects_, SIGNAL(State(int)), this, SLOT(slotEffects(int)));
-	connect(pwidget_->cpage->effects_->ShadowVal->Xoffset, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
-	connect(pwidget_->cpage->effects_->ShadowVal->Yoffset, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
-	connect(pwidget_->cpage->effects_->OutlineVal->LWidth, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
-	connect(pwidget_->cpage->effects_->UnderlineVal->LPos, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
-	connect(pwidget_->cpage->effects_->UnderlineVal->LWidth, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
-	connect(pwidget_->cpage->effects_->StrikeVal->LPos, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
-	connect(pwidget_->cpage->effects_->StrikeVal->LWidth, SIGNAL(valueChanged(double)),
-			this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->ShadowVal->Xoffset, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->ShadowVal->Yoffset, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->OutlineVal->LWidth, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->UnderlineVal->LPos, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->UnderlineVal->LWidth, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->StrikeVal->LPos, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	connect(pwidget_->cpage->effects_->StrikeVal->LWidth, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
 	connect(pwidget_->cpage->fillColor_, SIGNAL(activated(const QString&)), this, SLOT(slotFillColor()));
 	connect(pwidget_->cpage->fillShade_, SIGNAL(clicked()), this, SLOT(slotFillShade()));
 	connect(pwidget_->cpage->strokeColor_, SIGNAL(activated(const QString&)), this, SLOT(slotStrokeColor()));
@@ -622,14 +615,18 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->bulletBox, SIGNAL(toggled(bool)), this, SLOT(slotBullet(bool)));
 	disconnect(pwidget_->bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(slotBulletStr(QString)));
 	disconnect(pwidget_->numBox, SIGNAL(toggled(bool)), this, SLOT(slotNumeration(bool)));
+	disconnect(pwidget_->numComboBox, SIGNAL(activated(QString)), this, SLOT(slotNumName(QString)));
 	disconnect(pwidget_->numFormatCombo, SIGNAL(activated(int)), this, SLOT(slotNumFormat(int)));
 	disconnect(pwidget_->numLevelSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumLevel(int)));
 	disconnect(pwidget_->numStartSpin, SIGNAL(valueChanged(int)), this, SLOT(slotNumStart(int)));
+	disconnect(pwidget_->numRestartCombo, SIGNAL(activated(int)), this, SLOT(slotNumRestart(int)));
 	disconnect(pwidget_->numRestartOtherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumOther(bool)));
 	disconnect(pwidget_->numRestartHigherBox, SIGNAL(toggled(bool)), this, SLOT(slotNumHigher(bool)));
-	disconnect(pwidget_->numPrefix, SIGNAL(textEdited(QString)), this, SLOT(slotNumPrefix(QString)));
-	disconnect(pwidget_->numSuffix, SIGNAL(textEdited(QString)), this, SLOT(slotNumSuffix(QString)));
-
+	disconnect(pwidget_->numPrefix, SIGNAL(textChanged(QString)), this, SLOT(slotNumPrefix(QString)));
+	disconnect(pwidget_->numSuffix, SIGNAL(textChanged(QString)), this, SLOT(slotNumSuffix(QString)));
+	disconnect(pwidget_->numNewLineEdit, SIGNAL(editingFinished()), this, SLOT(slotNumNew()));
+	disconnect(pwidget_->numNewLineEdit, SIGNAL(textChanged(QString)), this, SLOT(slotSelectionDirty()));
+	
 	disconnect(pwidget_->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParentChanged(const QString&)));
 
 	disconnect(pwidget_->keepLinesStart, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesStart()));
@@ -645,20 +642,13 @@ void SMParagraphStyle::removeConnections()
 	
 	disconnect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
 	disconnect(pwidget_->cpage->effects_, SIGNAL(State(int)), this, SLOT(slotEffects(int)));
-	disconnect(pwidget_->cpage->effects_->ShadowVal->Xoffset, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
-	disconnect(pwidget_->cpage->effects_->ShadowVal->Yoffset, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
-	disconnect(pwidget_->cpage->effects_->OutlineVal->LWidth, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
-	disconnect(pwidget_->cpage->effects_->UnderlineVal->LPos, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
-	disconnect(pwidget_->cpage->effects_->UnderlineVal->LWidth, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
-	disconnect(pwidget_->cpage->effects_->StrikeVal->LPos, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
-	disconnect(pwidget_->cpage->effects_->StrikeVal->LWidth, SIGNAL(valueChanged(double)),
-			   this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->ShadowVal->Xoffset, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->ShadowVal->Yoffset, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->OutlineVal->LWidth, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->UnderlineVal->LPos, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->UnderlineVal->LWidth, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->StrikeVal->LPos, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
+	disconnect(pwidget_->cpage->effects_->StrikeVal->LWidth, SIGNAL(valueChanged(double)), this, SLOT(slotEffectProperties()));
 	disconnect(pwidget_->cpage->fillColor_, SIGNAL(activated(const QString&)), this, SLOT(slotFillColor()));
 	disconnect(pwidget_->cpage->fillShade_, SIGNAL(clicked()), this, SLOT(slotFillShade()));
 	disconnect(pwidget_->cpage->strokeColor_, SIGNAL(activated(const QString&)), this, SLOT(slotStrokeColor()));
@@ -1053,18 +1043,17 @@ void SMParagraphStyle::slotNumeration(bool isOn)
 void SMParagraphStyle::slotNumName(const QString &str)
 {
 	QString bstr(str);
-	if (str.isEmpty())
-		pwidget_->numNewLineEdit->setEnabled(true);
-	else
+	if (!str.isEmpty())
 	{
-		pwidget_->numNewLineEdit->setEnabled(false);
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setNumName(bstr);
 		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
-		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel());
+		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel()+1);
 		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
 		if (numS)
-			pwidget_->numLevelSpin->setMaximum(numS->m_counters.count());
+			pwidget_->numLevelSpin->setMaximum(numS->m_counters.count()+1);
+		else
+			pwidget_->numLevelSpin->setMaximum(1);
 	}
 
 	if (!selectionIsDirty_)
@@ -1077,22 +1066,22 @@ void SMParagraphStyle::slotNumName(const QString &str)
 void SMParagraphStyle::slotNumNew()
 {
 	QString newName = pwidget_->numNewLineEdit->text();
-	if (newName.isEmpty())
-	{
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->resetNumName();
-		pwidget_->numComboBox->setCurrentItem(pwidget_->numComboBox->findText(selection_[0]->numName()));
-		pwidget_->numLevelSpin->setValue(selection_[0]->numLevel());
-		NumStruct * numS = doc_->numerations.value(selection_[0]->numName());
-		pwidget_->numLevelSpin->setMaximum(numS->m_counters.count());
-	}
-	else
+	if (!newName.isEmpty())
 	{
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setNumName(newName);
 		doc_->setupNumerations();
 	}
 
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
+void SMParagraphStyle::slotSelectionDirty()
+{
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1124,7 +1113,7 @@ void SMParagraphStyle::slotNumLevel(int level)
 	else
 		for (int i = 0; i < selection_.count(); ++i)
 		{
-			selection_[i]->setNumLevel(level);
+			selection_[i]->setNumLevel(level-1);
 		}
 	
 	if (level == 0)

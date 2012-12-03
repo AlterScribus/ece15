@@ -235,6 +235,13 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	ic.addPixmap(loadIcon("previewOff.png"), QIcon::Normal, QIcon::Off);
 	ic.addPixmap(loadIcon("previewOn.png"), QIcon::Normal, QIcon::On);
 	previewToolbarButton->setIcon(ic);
+	editOnPreviewToolbarButton = new QToolButton(this);
+	editOnPreviewToolbarButton->setAutoRaise(OPTION_FLAT_BUTTON);
+	editOnPreviewToolbarButton->setCheckable(true);
+	QIcon ic3;
+	ic3.addPixmap(loadIcon("16/editdoc.png"), QIcon::Normal, QIcon::Off);
+	ic3.addPixmap(loadIcon("16/editdoc.png"), QIcon::Normal, QIcon::On);
+	editOnPreviewToolbarButton->setIcon(ic3);
 #else
 	zoomDefaultToolbarButton = new QPushButton(this);
 	zoomDefaultToolbarButton->setFocusPolicy(Qt::NoFocus);
@@ -265,6 +272,12 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	previewToolbarButton->setAutoDefault( false );
 	previewToolbarButton->setFlat(OPTION_FLAT_BUTTON);
 	previewToolbarButton->setIcon(loadIcon("previewOn.png"));
+	editOnPreviewToolbarButton = new QPushButton(this);
+	editOnPreviewToolbarButton->setFocusPolicy(Qt::NoFocus);
+	editOnPreviewToolbarButton->setDefault( false );
+	editOnPreviewToolbarButton->setAutoDefault( false );
+	editOnPreviewToolbarButton->setFlat(OPTION_FLAT_BUTTON);
+	editOnPreviewToolbarButton->setIcon(loadIcon("16/editdoc.png"));
 #endif
 	cmsAdjustMenu = new QMenu();
 	idCmsAdjustMenu = cmsAdjustMenu->addAction( "Configure CMS...", this, SLOT(adjustCMS()));
@@ -332,6 +345,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	connect(unitSwitcher, SIGNAL(activated(int)), this, SLOT(ChgUnit(int)));
 	connect(previewQualitySwitcher, SIGNAL(activated(int)), this, SLOT(changePreviewQuality(int)));
 	connect(previewToolbarButton, SIGNAL(clicked()), this, SLOT(togglePreview()));
+	connect(editOnPreviewToolbarButton, SIGNAL(clicked()), this, SLOT(togglePreviewEdit()));
 	connect(cmsToolbarButton, SIGNAL(clicked()), this, SLOT(toggleCMS()));
 	connect(visualMenu, SIGNAL(activated(int)), this, SLOT(switchPreviewVisual(int)));
 	connect(this, SIGNAL(HaveSel(int)), Doc, SLOT(selectionChanged()));
@@ -344,6 +358,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	clockLabel = new ClockWidget(this, Doc);
 	clockLabel->setGeometry(m_vhRulerHW + 1, height() - m_vhRulerHW - 61, 60, 60);
 	clockLabel->setVisible(false);
+	editOnPreviewToolbarButton->hide();
 }
 
 ScribusView::~ScribusView()
@@ -380,6 +395,7 @@ void ScribusView::languageChange()
 	cmsToolbarButton->setToolTip( tr("Enable/disable Color Management"));
 	idCmsAdjustMenu->setText( tr("Configure CMS..."));
 	previewToolbarButton->setToolTip( tr("Enable/disable the Preview Mode"));
+	editOnPreviewToolbarButton->setToolTip( tr("Enable/disable editing the Preview Mode"));
 	visualMenu->setToolTip( tr("Select the visual appearance of the display. You can choose between normal and several color blindness forms"));
 	disconnect(visualMenu, SIGNAL(activated(int)), this, SLOT(switchPreviewVisual(int)));
 	visualMenu->clear();
@@ -426,19 +442,33 @@ void ScribusView::switchPreviewVisual(int vis)
 	DrawNew();
 }
 
+void ScribusView::togglePreviewEdit()
+{
+	Doc->editOnPreview = !Doc->editOnPreview;
+	m_ScMW->setPreviewToolbar();
+}
+
 void ScribusView::togglePreview()
 {
+	this->requestMode(modeNormal);
+	Deselect(true);
 	undoManager->setUndoEnabled(false);
 	m_canvas->m_viewMode.viewAsPreview = !m_canvas->m_viewMode.viewAsPreview;
 	Doc->drawAsPreview = m_canvas->m_viewMode.viewAsPreview;
+	bool recalc = false;
+	Doc->editOnPreview = false;
+	editOnPreviewToolbarButton->setChecked(false);
 	if (m_canvas->m_viewMode.viewAsPreview)
 	{
+		editOnPreviewToolbarButton->show();
 		storedFramesShown = Doc->guidesPrefs().framesShown;
 		Doc->guidesPrefs().framesShown = false;
 		storedShowControls = Doc->guidesPrefs().showControls;
 		Doc->guidesPrefs().showControls = false;
 		storedShowPreflight = Doc->guidesPrefs().showPreflight;
 		Doc->guidesPrefs().showPreflight = false;
+		m_canvas->m_viewMode.previewVisual = 0;
+		Doc->previewVisual = 0;
 		// warning popping up in case colour management and out-of-gamut-display are active
 		// as from #4346: Add a preview for daltonian - PV
 		if (Doc->HasCMS && Doc->Gamut)
@@ -448,10 +478,13 @@ void ScribusView::togglePreview()
 	}
 	else
 	{
+		editOnPreviewToolbarButton->hide();
 		Doc->guidesPrefs().framesShown = storedFramesShown;
 		Doc->guidesPrefs().showControls = storedShowControls;
 		Doc->guidesPrefs().showPreflight = storedShowPreflight;
 		disconnect(visualMenu, SIGNAL(activated(int)), this, SLOT(switchPreviewVisual(int)));
+		if (visualMenu->currentIndex() != Doc->previewVisual)
+			recalc = true;
 		m_canvas->m_viewMode.previewVisual = 0;
 		Doc->previewVisual = 0;
 		visualMenu->setCurrentIndex(0);
@@ -468,13 +501,17 @@ void ScribusView::togglePreview()
 	m_ScMW->scrActions["viewShowTextChain"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowTextControls"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
 	m_ScMW->scrActions["viewShowTextPreflight"]->setEnabled(!m_canvas->m_viewMode.viewAsPreview);
+	m_ScMW->setPreviewToolbar();
 #if OPTION_USE_QTOOLBUTTON
 	previewToolbarButton->setChecked(m_canvas->m_viewMode.viewAsPreview);
 #endif
 	visualMenu->setEnabled(m_canvas->m_viewMode.viewAsPreview);
 	ScGuardedPtr<ScribusDoc> docPtr = Doc->guardedPtr();
-	Doc->recalculateColors();
-	Doc->recalcPicturesRes();
+	if (recalc)
+	{
+		Doc->recalculateColors();
+		Doc->recalcPicturesRes();
+	}
 //	repaintContents(QRect());
 	if (docPtr) // document may have been destroyed in-between
 	{
@@ -1941,7 +1978,7 @@ void ScribusView::ToggleAnnotation()
 					currItem->AutoName = false;
 					if (Doc->masterPageMode())
 					{
-						currItem->annotation().setType(11);
+						currItem->annotation().setType(Annotation::Link);
 						currItem->annotation().setZiel(0);
 						currItem->annotation().setAction("0 0");
 					}

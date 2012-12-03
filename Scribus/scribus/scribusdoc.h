@@ -1031,6 +1031,8 @@ public:
 	void itemSelection_UnGroupObjects(Selection* customSelection=0);
 	void addToGroup(PageItem* group, PageItem* item);
 	void removeFromGroup(PageItem* item);
+	void resizeGroupToContents(PageItem* group);
+	void itemSelection_resizeGroupToContents(Selection *customSelection=0);
 	void itemSelection_convertItemsTo(const PageItem::ItemType newType, Selection* restoredSelection=0, Selection* customSelection=0);
 
 	void itemSelection_ApplyParagraphStyle(const ParagraphStyle & newstyle, Selection* customSelection=0, bool rmDirectFormatting = false);
@@ -1328,6 +1330,7 @@ public:
 	QList<BookMa> BookMarks;
 	bool OldBM;
 	bool hasName;
+	bool isConverted;
 	QTimer * const autoSaveTimer;
 	QHash<QString,multiLine> MLineStyles;
 	QHash<QString, ScPattern> docPatterns;
@@ -1336,6 +1339,7 @@ public:
 	bool DoDrawing;
 	bool drawAsPreview;
 	bool viewAsPreview;
+	bool editOnPreview;
 	int previewVisual;
 	struct OpenNodesList
 	{
@@ -1773,9 +1777,9 @@ public slots:
 
 //auto-numerations
 public:
-	QMap<QString, NumStruct*> numerations;
+	QMap<QString, NumStruct*> numerations, orgNumerations; //orgNumerations keeps original settings read from paragraph styles for reset settings overrided localy
 	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
-	QString getNumberStr(QString numName, int level, bool increment=true, bool resetlower=true);
+	QString getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style);
 	void setNumerationCounter(QString numName, int level, int number);
 	bool flag_Renumber;
 	// for local numeration of paragraphs

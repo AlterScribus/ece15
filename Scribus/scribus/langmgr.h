@@ -37,7 +37,7 @@ typedef std::pair<QString, QString> langPair;
 class SCRIBUS_API LanguageManager
 {
 	static LanguageManager* m_instance;
-	LanguageManager() {}
+	LanguageManager() {};
 	~LanguageManager();
 	void init(bool generateInstalledList = true);
 	
