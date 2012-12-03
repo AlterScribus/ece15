@@ -134,6 +134,8 @@ StyleReader::StyleReader(QString documentName, gtWriter *w,
 				prefix = attrs.value(i);
 			else if (attrs.localName(i) == "style:num-suffix")
 				suffix = attrs.value(i);
+			/*else if (attrs.localName(i) == "text:bullet-char")
+				bullet = attrs.value(i);*/
 			else if (attrs.localName(i) == "style:num-format") {
 				QString tmp = attrs.value(i);
 				if (tmp == "i")
