@@ -17330,7 +17330,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 			{
 				PageItem* mItem = findFirstMarkItem(mrk);
 				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
-				mrk->setItemName((mItem != NULL) ? mItem->itemName() : QString());
+				mrk->setItemName((mItem != NULL) ? mItem->itemName() : QString(""));
 			}
 		}
 	}
