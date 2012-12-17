@@ -10035,13 +10035,17 @@ void ScribusMainWindow::clearDocument()
 		if (item->getObjectAttribute("NODEL").name == "NODEL")
 		{
 			if (item->getObjectAttribute("CLEAR").name == "CLEAR")
+			{
 				item->clearContents();
+				item->invalid = true;
+			}
 			continue;
 		}
 		tmpSelection.addItem(item);
 	}
 	if (!tmpSelection.isEmpty())
 		doc->itemSelection_DeleteItem(&tmpSelection);
+	slotDocCh();
 }
 
 void ScribusMainWindow::setClearAttributes()
