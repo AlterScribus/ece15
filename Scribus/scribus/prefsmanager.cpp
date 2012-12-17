@@ -24,11 +24,12 @@ for which a new license (GPL+exception) is in place.
 #include <QDir>
 #include <QDomDocument>
 #include <QFile>
-#include <QTransform>
 #include <QList>
+#include <QMessageBox>
 #include <QString>
 #include <QStringList>
 #include <QStyleFactory>
+#include <QTransform>
 
 #include "prefsmanager.h"
 
@@ -56,7 +57,6 @@ for which a new license (GPL+exception) is in place.
 #include "ui/missing.h"
 #include "ui/modetoolbar.h"
 #include "ui/prefs_keyboardshortcuts.h"
-#include "ui/scmessagebox.h"
 
 extern bool emergencyActivated;
 
@@ -827,7 +827,7 @@ bool PrefsManager::copyOldPreferences()
 			bool splashShown=ScCore->splashShowing();
 			if (splashShown)
 				ScCore->showSplash(false);
-			if ( (ScMessageBox::question( ScCore->primaryMainWindow(), tr("Migrate Old Scribus Settings?"),
+			if ( (QMessageBox::question( ScCore->primaryMainWindow(), tr("Migrate Old Scribus Settings?"),
 				tr("Scribus has detected existing Scribus 1.3.5 preferences files.\n"
 						"Do you want to migrate them to the new Scribus version?"),
 				QMessageBox::Yes | QMessageBox::Default, QMessageBox::No, QMessageBox::NoButton))==QMessageBox::Yes )

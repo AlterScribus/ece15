@@ -43,6 +43,7 @@ for which a new license (GPL+exception) is in place.
 #include <QLabel>
 #include <QList>
 #include <QMenu>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -118,7 +119,6 @@ for which a new license (GPL+exception) is in place.
 #include "ui/propertiespalette_line.h"
 #include "ui/propertiespalette_text.h"
 #include "ui/rulermover.h"
-#include "ui/scmessagebox.h"
 #include "ui/scrapbookpalette.h"
 #include "ui/storyeditor.h"
 #include "ui/symbolpalette.h"
@@ -296,10 +296,12 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	layerMenu->setEditable(false);
 	layerMenu->setFont(fo);
 	layerMenu->setFocusPolicy(Qt::NoFocus);
+	layerMenu->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 	visualMenu = new QComboBox( this );
 	visualMenu->setFocusPolicy(Qt::NoFocus);
 	visualMenu->setFont(fo);
 	visualMenu->setEnabled(false);
+	visualMenu->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 	horizRuler = new Hruler(this, Doc);
 	vertRuler = new Vruler(this, Doc);
 	horizRuler->installEventFilter(this);
@@ -868,12 +870,14 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 //	int ex = qRound(e->pos().x()/m_canvas->scale());// + Doc->minCanvasCoordinate.x());
 //		int ey = qRound(e->pos().y()/m_canvas->scale());// + Doc->minCanvasCoordinate.y());
 
-	if (ScMimeData::clipboardHasScribusElem() && (Doc->DraggedElem == 0))
+//  Commented out to fix Bug #11254 (fs)
+/*	if (ScMimeData::clipboardHasScribusElem() && (Doc->DraggedElem == 0))
 	{
 		text = ScMimeData::clipboardScribusElem();
 		url  = QUrl(text);
 	}
-	else if (e->mimeData()->hasText())
+	else*/
+	if (e->mimeData()->hasText())
 	{
 		text = e->mimeData()->text();
 		url = QUrl(text);

@@ -450,6 +450,8 @@ public slots:
 	void getImageInfo();
 	void generateTableOfContents();
 	void updateDocument();
+	void clearDocument();
+	void setClearAttributes();
 
 //	void saveStyles(StilFormate *dia); //still required for style save from SE
 	void setNewAlignment(int a);

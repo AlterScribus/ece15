@@ -41,6 +41,8 @@ class CharStyle;
 class ParagraphStyle;
 class ScribusDoc;
 class ScribusMainWindow;
+class StoryText;
+class TextNote;
 class UndoManager;
 
 class gtStyle;
@@ -82,6 +84,8 @@ private:
 	QColor  parseColorN(const QString &rgbColor);
 	void finalize();
 	PrefsManager *prefsManager;
+	StoryText* noteStory;
+	TextNote* note;
 public:
 //	gtAction(bool append);
 	gtAction(bool append, PageItem *pageitem);
@@ -94,8 +98,8 @@ public:
 	void clearFrame();
 	void getFrameFont(gtFont *font);
 	void getFrameStyle(gtFrameStyle *fstyle);
-	void write(const QString& text, gtStyle *style, bool keepPStyles = true);
-	void writeUnstyled(const QString& text);
+	void write(const QString& text, gtStyle *style, bool isNote);
+	void writeUnstyled(const QString& text, bool isNote);
 	void applyFrameStyle(gtFrameStyle* fstyle);
 	void createParagraphStyle(gtParagraphStyle* pstyle);
 	void setCharStyleAttributes(gtFont *font, CharStyle& style);

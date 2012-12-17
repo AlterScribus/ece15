@@ -60,8 +60,6 @@ for which a new license (GPL+exception) is in place.
 
 #include "ui/checkDocument.h"
 #include "ui/guidemanager.h"
-//don`t worry - message boxes are called only if GUI is enabled
-#include "ui/scmessagebox.h"
 
 #include <cairo.h>
 
@@ -3274,7 +3272,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	double S_Extra = Extra;
 	double S_RExtra = RExtra;
 	double S_BExtra = BExtra;
-	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && ((annotation().Type() > 1) && (annotation().Type() < 7)))
+	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && (((annotation().Type() > 1) && (annotation().Type() < 7)) || (annotation().Type() > 12)))
 	{
 		QColor fontColor;
 		SetQColor(&fontColor, itemText.defaultStyle().charStyle().fillColor(), itemText.defaultStyle().charStyle().fillShade());
@@ -3298,20 +3296,42 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			}
 		}
 		p->save();
-		if ((annotation().Bwid() > 0) && (annotation().borderColor() != CommonStrings::None))
+		if (((annotation().Bwid() > 0) && (annotation().borderColor() != CommonStrings::None)))
 		{
 			QColor tmp;
 			SetQColor(&tmp, annotation().borderColor(), 100);
-			QPalette pal = QPalette(tmp);
-			if (annotation().Bsty() == 3)
-				p->drawShadePanel(QRect(0, 0, Width, Height), pal, false, annotation().Bwid());
-			else if (annotation().Bsty() == 4)
-				p->drawShadePanel(QRect(0, 0, Width, Height), pal, true, annotation().Bwid());
+			if (annotation().Type() == Annotation::RadioButton)
+			{
+				double bwh = annotation().Bwid() / 2.0;
+				if ((annotation().Bsty() == 0) || (annotation().Bsty() == 1))
+				{
+					QPainterPath clp;
+					clp.addEllipse(QRectF(bwh, bwh, Width - annotation().Bwid(), Height - annotation().Bwid()));
+					FPointArray clpArr;
+					clpArr.fromQPainterPath(clp);
+					p->setupPolygon(&clpArr);
+					p->setPen(tmp, annotation().Bwid(), annotation().Bsty() == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
+					p->setFillMode(ScPainter::None);
+					p->setStrokeMode(ScPainter::Solid);
+					p->strokePath();
+				}
+				else if (annotation().Bsty() == 3)
+					p->drawShadeCircle(QRectF(0, 0, Width, Height), tmp, false, annotation().Bwid());
+				else if (annotation().Bsty() == 4)
+					p->drawShadeCircle(QRectF(0, 0, Width, Height), tmp, true, annotation().Bwid());
+			}
 			else
 			{
-				p->setPen(tmp, annotation().Bwid(), annotation().Bsty() == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
-				p->setStrokeMode(ScPainter::Solid);
-				p->drawRect(0, 0, Width, Height);
+				if (annotation().Bsty() == 3)
+					p->drawShadePanel(QRectF(0, 0, Width, Height), tmp, false, annotation().Bwid());
+				else if (annotation().Bsty() == 4)
+					p->drawShadePanel(QRectF(0, 0, Width, Height), tmp, true, annotation().Bwid());
+				else
+				{
+					p->setPen(tmp, annotation().Bwid(), annotation().Bsty() == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
+					p->setStrokeMode(ScPainter::Solid);
+					p->drawRect(0, 0, Width, Height);
+				}
 			}
 		}
 		if (annotation().Type() == Annotation::Button)
@@ -3354,6 +3374,26 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			BExtra = wdt;
 			invalid = true;
 			layout();
+		}
+		else if (annotation().Type() == Annotation::RadioButton)
+		{
+			if (annotation().IsChk())
+			{
+				QPainterPath clp2;
+				double siz = qMin(width(), height()) * 0.4;
+				QRectF sizR(0, 0, siz, siz);
+				sizR.moveCenter(QPointF(width() / 2.0, height() / 2.0));
+				clp2.addEllipse(sizR);
+				FPointArray clpArr2;
+				clpArr2.fromQPainterPath(clp2);
+				p->setBrush(fontColor);
+				p->setFillMode(ScPainter::Solid);
+				p->setupPolygon(&clpArr2);
+				p->fillPath();
+			}
+			p->restore();
+			p->restore();
+			return;
 		}
 		else if (annotation().Type() == Annotation::Checkbox)
 		{
@@ -4063,6 +4103,9 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 
 void PageItem_TextFrame::clearContents()
 {
+	if (itemText.length() <= 0)
+		return;
+
 	PageItem *nextItem = this;
 	while (nextItem->prevInChain() != 0)
 		nextItem = nextItem->prevInChain();
@@ -4072,9 +4115,9 @@ void PageItem_TextFrame::clearContents()
 	nextItem->asTextFrame()->deleteSelectedTextFromFrame();
 	if (!isNoteFrame())
 	{
-	if(UndoManager::undoEnabled())
-		undoManager->getLastUndo()->setName(Um::ClearText);
-	nextItem->itemText.setDefaultStyle(defaultStyle);
+		if(UndoManager::undoEnabled())
+			undoManager->getLastUndo()->setName(Um::ClearText);
+		nextItem->itemText.setDefaultStyle(defaultStyle);
 	}
 
 	while (nextItem != 0)
@@ -4793,7 +4836,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		return;
 	if (itemText.lengthOfSelection() == 0)
 	{
-		itemText.select(itemText.cursorPosition(),1);
+		itemText.select(itemText.cursorPosition(), 1);
 		HasSel = true;
 	}
 	int start = itemText.startOfSelection();
@@ -4837,7 +4880,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			stop -= marksNum;
 		}
 		//delete text
-		for (int i=start; i < stop; ++i)
+		for (int i=start; i <= stop; ++i)
 		{
 			ScText* hl = NULL;
 			if (i < itemText.length())
@@ -5285,7 +5328,7 @@ void PageItem_TextFrame::applicableActions(QStringList & actionList)
 		actionList << "itemPDFIsBookmark";
 	if (isAnnotation())
 	{
-		if ((annotation().Type() == 0) || (annotation().Type() == 1) || ((annotation().Type() > Annotation::Listbox) && (annotation().Type() < Annotation::Annot3D)))
+		if ((annotation().Type() == 0) || (annotation().Type() == 1) || ((annotation().Type() > Annotation::Listbox) && (annotation().Type() < Annotation::RadioButton)))
 			actionList << "itemPDFAnnotationProps";
 		else
 			actionList << "itemPDFFieldProps";

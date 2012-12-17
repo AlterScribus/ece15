@@ -310,6 +310,9 @@ bool OutlineWidget::viewportEvent(QEvent *event)
  									break;
 								case Annotation::Link:
 									tipText += CommonStrings::itemSubType_PDF_LinkAnnotation;
+									break;
+								case Annotation::RadioButton:
+									tipText += CommonStrings::itemSubType_PDF_RadioButton;
  									break;
  								default:
 									tipText += CommonStrings::itemType_TextFrame;
@@ -414,6 +417,7 @@ OutlinePalette::OutlinePalette( QWidget* parent) : ScDockPalette( parent, "Tree"
 	tableIcon = loadIcon("22/insert-table.png");
 	groupIcon = loadIcon("u_group.png");
 	buttonIcon = loadIcon("22/insert-button.png");
+	radiobuttonIcon = loadIcon("22/radiobutton.png");
 	textFieldIcon = loadIcon("22/text-field.png");
 	checkBoxIcon = loadIcon("22/checkbox.png");
 	comboBoxIcon = loadIcon("22/combobox.png");
@@ -753,6 +757,9 @@ void OutlinePalette::setItemIcon(QTreeWidgetItem *item, PageItem *pgItem)
 		{
 			case Annotation::Button:
 				item->setIcon( 0, buttonIcon );
+				break;
+			case Annotation::RadioButton:
+				item->setIcon( 0, radiobuttonIcon );
 				break;
 			case Annotation::Textfield:
 				item->setIcon( 0, textFieldIcon );

@@ -31,6 +31,7 @@ for which a new license (GPL+exception) is in place.
 #include "gtwriter.h"
 #include "gtstyle.h"
 #include "gtparagraphstyle.h"
+#include "notesstyles.h"
 #include "stylereader.h"
 
 ContentReader* ContentReader::creader = NULL;
@@ -137,9 +138,9 @@ bool ContentReader::startElement(const QString&, const QString&, const QString &
 	else if (name == "office:annotation")
 		inAnnotation = true;
 	else if (name == "text:note")
-		inNote = true;
+		writer->inNote = inNote = true;
 	else if (name == "text:note-body")
-		inNoteBody = true;
+		writer->inNoteBody = inNoteBody = true;
 	else if (name == "style:style")
 	{
 		QString sname = "";
@@ -207,7 +208,7 @@ bool ContentReader::endElement(const QString&, const QString&, const QString &na
 // 		qDebug("TPTH");
 		write("\n");
 		--append;
-		if (inList || inAnnotation || inNote || inNoteBody)
+		if (inList || inAnnotation)
 		{
 			if(static_cast<int>(styleNames.size()) > 0)
 				styleNames.pop_back();
@@ -231,12 +232,13 @@ bool ContentReader::endElement(const QString&, const QString&, const QString &na
 	else if (name == "text:note")
 	{
 // 		qDebug("TN");
-		inNote = false;
+		writer->inNote = inNote = false;
 	}
 	else if (name == "text:note-body")
 	{
 // 		qDebug("TNB");
-		inNoteBody = false;
+		write(SpecialChars::OBJECT);
+		writer->inNoteBody = inNoteBody = false;
 	}
 	else if (name == "text:line-break")
 	{
@@ -281,7 +283,7 @@ bool ContentReader::endElement(const QString&, const QString&, const QString &na
 
 void ContentReader::write(const QString& text)
 {
-	if (!inNote && !inNoteBody && !inAnnotation) // Disable notes import for now
+	if (!inAnnotation)
 	{
 		if (importTextOnly)
 			writer->appendUnstyled(text);

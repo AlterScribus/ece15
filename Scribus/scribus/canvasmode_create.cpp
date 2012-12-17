@@ -557,6 +557,7 @@ void CreateMode::getFrameItemTypes(int& itemType, int& frameType)
 		frameType = (int) PageItem::Unspecified;
 		break;
 	case modeInsertPDFButton:
+	case modeInsertPDFRadioButton:
 	case modeInsertPDFTextfield:
 	case modeInsertPDFCheckbox:
 	case modeInsertPDFCombobox:
@@ -592,7 +593,7 @@ PageItem* CreateMode::doCreateNewObject(void)
 		(createObjectMode == modeInsertPDFTextfield) || (createObjectMode == modeInsertPDFCheckbox) ||
 		(createObjectMode == modeInsertPDFCombobox) || (createObjectMode == modeInsertPDFListbox) ||
 		(createObjectMode == modeInsertPDFTextAnnotation) || (createObjectMode == modeInsertPDFLinkAnnotation) ||
-		(createObjectMode == modeInsertPDF3DAnnotation))
+		(createObjectMode == modeInsertPDF3DAnnotation) || (createObjectMode == modeInsertPDFRadioButton))
 	{
 		skipOneClick = false;
 	}
@@ -727,6 +728,7 @@ PageItem* CreateMode::doCreateNewObject(void)
 		m_doc->setRedrawBounding(currItem);
 		break;
 	case modeInsertPDFButton:
+	case modeInsertPDFRadioButton:
 	case modeInsertPDFTextfield:
 	case modeInsertPDFCheckbox:
 	case modeInsertPDFCombobox:
@@ -741,8 +743,13 @@ PageItem* CreateMode::doCreateNewObject(void)
 		{
 		case modeInsertPDFButton:
 			currItem->annotation().setType(Annotation::Button);
-			currItem->annotation().setFlag(65536);
+			currItem->annotation().setFlag(Annotation::Flag_PushButton);
 			currItem->setItemName( CommonStrings::itemName_PushButton + QString("%1").arg(m_doc->TotalItems));
+			break;
+		case modeInsertPDFRadioButton:
+			currItem->annotation().setType(Annotation::RadioButton);
+			currItem->annotation().setFlag(Annotation::Flag_Radio | Annotation::Flag_NoToggleToOff);
+			currItem->setItemName( CommonStrings::itemName_RadioButton + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFTextfield:
 			currItem->annotation().setType(Annotation::Textfield);
@@ -754,7 +761,7 @@ PageItem* CreateMode::doCreateNewObject(void)
 			break;
 		case modeInsertPDFCombobox:
 			currItem->annotation().setType(Annotation::Combobox);
-			currItem->annotation().setFlag(131072);
+			currItem->annotation().setFlag(Annotation::Flag_Combo);
 			currItem->setItemName( CommonStrings::itemName_ComboBox + QString("%1").arg(m_doc->TotalItems));
 			break;
 		case modeInsertPDFListbox:

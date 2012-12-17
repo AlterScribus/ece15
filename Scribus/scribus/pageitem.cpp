@@ -5122,7 +5122,8 @@ void PageItem::restoreMarkString(SimpleState *state, bool isUndo)
 {
 	ScItemState< QPair<int,QString> > *is = dynamic_cast<ScItemState< QPair<int,QString> >*>(state);
 	ScText * hl = itemText.item(is->getItem().first);
-	Q_ASSERT(hl->hasMark());
+	if (!hl->hasMark())
+		return;
 	if (isUndo)
 		hl->mark->setString(is->getItem().second);
 	else

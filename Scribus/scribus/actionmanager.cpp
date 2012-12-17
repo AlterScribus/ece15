@@ -836,6 +836,8 @@ void ActionManager::initToolsMenuActions()
 	//PDF toolbar
 	name="toolsPDFPushButton";
 	scrActions->insert(name, new ScrAction(ScrAction::DataInt, loadIcon("16/insert-button.png"), loadIcon("22/insert-button.png"), "", defaultKey(name), mainWindow, modeInsertPDFButton));
+	name="toolsPDFRadioButton";
+	scrActions->insert(name, new ScrAction(ScrAction::DataInt, loadIcon("16/radiobutton.png"), loadIcon("22/radiobutton.png"), "", defaultKey(name), mainWindow, modeInsertPDFRadioButton));
 	name="toolsPDFTextField";
 	scrActions->insert(name, new ScrAction(ScrAction::DataInt, loadIcon("16/text-field.png"), loadIcon("22/text-field.png"), "", defaultKey(name), mainWindow, modeInsertPDFTextfield));
 	name="toolsPDFCheckBox";
@@ -885,7 +887,7 @@ void ActionManager::initToolsMenuActions()
 	*modeActionNames << "toolsInsertFreehandLine" << "toolsInsertCalligraphicLine" << "toolsInsertRenderFrame" << "toolsRotate" << "toolsZoom" << "toolsEditContents";
 	*modeActionNames << "toolsEditWithStoryEditor" << "toolsLinkTextFrame" << "toolsUnlinkTextFrame"; //<< "toolsUnlinkTextFrameWithTextCopy" << "toolsUnlinkTextFrameWithTextCut";
 	*modeActionNames << "toolsEyeDropper" << "toolsCopyProperties";
-	*modeActionNames << "toolsPDFPushButton" << "toolsPDFTextField" << "toolsPDFCheckBox" << "toolsPDFComboBox" << "toolsPDFListBox" << "toolsPDFAnnotText" << "toolsPDFAnnotLink";
+	*modeActionNames << "toolsPDFPushButton" << "toolsPDFRadioButton" << "toolsPDFTextField" << "toolsPDFCheckBox" << "toolsPDFComboBox" << "toolsPDFListBox" << "toolsPDFAnnotText" << "toolsPDFAnnotLink";
 #ifdef HAVE_OSG
 	*modeActionNames << "toolsPDFAnnot3D";
 #endif
@@ -916,10 +918,15 @@ void ActionManager::initExtrasMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasUpdateDocument";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-
+	name="extrasClearDocument";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="extrasSetClearAttributes";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	connect( (*scrActions)["extrasManageImages"], SIGNAL(triggered()), mainWindow, SLOT(StatusPic()) );
 	connect( (*scrActions)["extrasGenerateTableOfContents"], SIGNAL(triggered()), mainWindow, SLOT(generateTableOfContents()) );
 	connect( (*scrActions)["extrasUpdateDocument"], SIGNAL(triggered()), mainWindow, SLOT(updateDocument()) );
+	connect( (*scrActions)["extrasClearDocument"], SIGNAL(triggered()), mainWindow, SLOT(clearDocument()) );
+	connect( (*scrActions)["extrasSetClearAttributes"], SIGNAL(triggered()), mainWindow, SLOT(setClearAttributes()) );
 }
 
 
@@ -1661,6 +1668,7 @@ void ActionManager::languageChange()
 	(*scrActions)["toolsInsertFreehandLine"]->setText( tr("Insert &Freehand Line"));
 
 	(*scrActions)["toolsPDFPushButton"]->setTexts( tr("Insert PDF Push Button"));
+	(*scrActions)["toolsPDFRadioButton"]->setTexts( tr("Insert PDF Radio Button"));
 	(*scrActions)["toolsPDFTextField"]->setTexts( tr("Insert PDF Text Field"));
 	(*scrActions)["toolsPDFCheckBox"]->setTexts( tr("Insert PDF Check Box"));
 	(*scrActions)["toolsPDFComboBox"]->setTexts( tr("Insert PDF Combo Box"));
@@ -1678,6 +1686,8 @@ void ActionManager::languageChange()
 	(*scrActions)["extrasDeHyphenateText"]->setTexts( tr("Dehyphenate Text"));
 	(*scrActions)["extrasGenerateTableOfContents"]->setTexts( tr("&Generate Table Of Contents"));
 	(*scrActions)["extrasUpdateDocument"]->setTexts( tr("&Update Document"));
+	(*scrActions)["extrasClearDocument"]->setTexts( tr("&Clear Document"));
+	(*scrActions)["extrasSetClearAttributes"]->setTexts( tr("Set Clear Attributes"));
 
 	//Windows Menu
 	(*scrActions)["windowsCascade"]->setText( tr("&Cascade"));
@@ -2208,7 +2218,9 @@ void ActionManager::createDefaultMenus()
 		<< "extrasHyphenateText"
 		<< "extrasDeHyphenateText"
 		<< "extrasGenerateTableOfContents"
-		<< "extrasUpdateDocument";
+		<< "extrasUpdateDocument"
+		<< "extrasClearDocument"
+		<< "extrasSetClearAttributes";
 	//Windows
 	++itmenu;
 	itmenu->second
@@ -2302,6 +2314,7 @@ void ActionManager::createDefaultNonMenuActions()
 	itnmenua->second << "toolsEyeDropper";
 	itnmenua->second << "toolsCopyProperties";
 	itnmenua->second << "toolsPDFPushButton";
+	itnmenua->second << "toolsPDFRadioButton";
 	itnmenua->second << "toolsPDFTextField";
 	itnmenua->second << "toolsPDFCheckBox";
 	itnmenua->second << "toolsPDFListBox";
