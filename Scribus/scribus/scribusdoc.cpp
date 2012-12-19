@@ -1283,10 +1283,10 @@ void ScribusDoc::replaceNamedResources(ResourceCollection& newNames)
 {
 	// replace names in items
 
-#ifndef QT_NO_CONCURRENT
-	QtConcurrent::blockingMap(DocItems, ResMapped(newNames));
-	QtConcurrent::blockingMap(MasterItems, ResMapped(newNames));
-#else
+//#ifndef QT_NO_CONCURRENT
+//	QtConcurrent::blockingMap(DocItems, ResMapped(newNames));
+//	QtConcurrent::blockingMap(MasterItems, ResMapped(newNames));
+//#else
 
 	QList<PageItem*> * itemlist = & MasterItems;
 	while (itemlist != NULL)
@@ -1302,7 +1302,7 @@ void ScribusDoc::replaceNamedResources(ResourceCollection& newNames)
 		else
 			itemlist = NULL;
 	}
-#endif
+//#endif
 	foreach (NotesStyle* nStyle, m_docNotesStylesList)
 	{ //update styles names in notes styles
 		if (nStyle == NULL)
@@ -5067,14 +5067,14 @@ void ScribusDoc::recalculateColors()
 		}
 	}
 
-#ifndef QT_NO_CONCURRENT
-	QtConcurrent::blockingMap(DocItems, &ScribusDoc::recalculateColorItem);
-	QtConcurrent::blockingMap(MasterItems, &ScribusDoc::recalculateColorItem);
-#else
+//#ifndef QT_NO_CONCURRENT
+//	QtConcurrent::blockingMap(DocItems, &ScribusDoc::recalculateColorItem);
+//	QtConcurrent::blockingMap(MasterItems, &ScribusDoc::recalculateColorItem);
+//#else
 
 	recalculateColorsList(&DocItems);
 	recalculateColorsList(&MasterItems);
-#endif
+//#endif
 	QList<PageItem*> itemList = FrameItems.values();
 	recalculateColorsList(&itemList);
 	QList<PageItem*> allItems;
@@ -10245,13 +10245,13 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 	QList<PageItem*> allItems;
 	QStringList patterns = docPatterns.keys();
 
-#ifndef QT_NO_CONCURRENT
-	int lowRes = 0;
-	if (applyNewRes)
-		lowRes = docPrefsData.itemToolPrefs.imageLowResType;
-	QtConcurrent::blockingMap(DocItems, PicResMapped(applyNewRes, lowRes));
-	QtConcurrent::blockingMap(MasterItems, PicResMapped(applyNewRes, lowRes));
-#else
+//#ifndef QT_NO_CONCURRENT
+//	int lowRes = 0;
+//	if (applyNewRes)
+//		lowRes = docPrefsData.itemToolPrefs.imageLowResType;
+//	QtConcurrent::blockingMap(DocItems, PicResMapped(applyNewRes, lowRes));
+//	QtConcurrent::blockingMap(MasterItems, PicResMapped(applyNewRes, lowRes));
+//#else
 	int cc = 0;
 	for (int a = 0; a < DocItems.count(); ++a)
 	{
@@ -10380,7 +10380,7 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 		}
 		allItems.clear();
 	}
-#endif
+//#endif
 	for (QHash<int, PageItem*>::iterator it = FrameItems.begin(); it != FrameItems.end(); ++it)
 	{
 		PageItem *currItem = it.value();
@@ -16941,8 +16941,8 @@ void ScribusDoc::setupNumerations()
 		numS = new NumStruct;
 		numS->m_name = "default";
 		numS->m_nums.insert(0, num);
-		numS->m_counters.insert(0, 1);
-		numS->m_lastlevel = 0;
+		numS->m_counters.insert(0, 0);
+		numS->m_lastlevel = -1;
 		numerations.insert(numS->m_name, numS);
 	}
 	
@@ -16969,12 +16969,12 @@ void ScribusDoc::setupNumerations()
 				for (int i=numS->m_counters.count(); i <= level; ++i)
 				{
 					numS->m_nums.insert(i,num);
-					numS->m_counters.insert(i, 1);
+					numS->m_counters.insert(i, 0);
 				}
 			}
 			numS->m_nums.replace(level, num);
-			numS->m_counters.replace(level, num.start);
-			numS->m_lastlevel = 0;
+			numS->m_counters.replace(level, num.start -1);
+			numS->m_lastlevel = -1;
 			numerations.insert(numS->m_name, numS);
 		}
 	}
@@ -17000,9 +17000,8 @@ QString ScribusDoc::getNumberStr(QString numName, int level, bool reset, Paragra
 
 	int currNum = numS->m_counters.at(level);
 	if (reset)
-		currNum = numS->m_nums[level].start;
-	else
-		++currNum;
+		currNum = numS->m_nums[level].start -1;
+	++currNum;
 	setNumerationCounter(numName, level, currNum);
 
 	QString result = QString();
@@ -17106,7 +17105,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 	//reset ALL counters
 	foreach (NumStruct * numS, numerations.values())
 		for (int l = 0; l < numS->m_nums.count(); ++l)
-			numS->m_counters[l] = numS->m_nums[l].start;
+			numS->m_counters[l] = numS->m_nums[l].start -1;
 	foreach (PageItem* item, DocItems)
 	{
 		if (item->itemText.length() > 0)
@@ -17130,7 +17129,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 		foreach (NumStruct * numS, numerations.values())
 			for (int l = 0; l < numS->m_nums.count(); ++l)
 				if (numS->m_nums[l].range == NSRsection)
-					numS->m_counters[l] = numS->m_nums[l].start;
+					numS->m_counters[l] = numS->m_nums[l].start -1;
 
 		int start = sections().value(sec).fromindex;
 		int stop = sections().value(sec).toindex;
@@ -17140,7 +17139,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 			foreach (NumStruct * numS, numerations.values())
 				for (int l = 0; l < numS->m_nums.count(); ++l)
 					if (numS->m_nums[l].range == NSRpage)
-						numS->m_counters[l] = numS->m_nums[l].start;
+						numS->m_counters[l] = numS->m_nums[l].start -1;
 			for (int i=0; i < DocItems.count(); ++i)
 			{
 				PageItem* item = DocItems.at(i);
@@ -17153,7 +17152,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 				foreach (NumStruct * numS, numerations.values())
 					for (int l = 0; l < numS->m_nums.count(); ++l)
 						if ((numS->m_nums[l].range == NSRframe) || ((numS->m_nums[l].range == NSRstory) && (item->prevInChain() == NULL)))
-							numS->m_counters[l] = numS->m_nums[l].start;
+							numS->m_counters[l] = numS->m_nums[l].start -1;
 
 				int pos = item->firstInFrame();
 				if ((pos != 0) && (item->itemText.text(pos-1) != SpecialChars::PARSEP))
@@ -17162,57 +17161,54 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 				int len = item->itemText.length();
 				while (pos <= last)
 				{
-					ParagraphStyle style = item->itemText.paragraphStyle(pos);
-					if (style.hasNum() && style.numName()!="<local block>")
+					if ((pos == 0) || (item->itemText.text(pos - 1) == SpecialChars::PARSEP))
 					{
-						ScText * hl = item->itemText.item(pos);
-						bool resetNums = false;
-						if (style.numOther())
+						ParagraphStyle style = item->itemText.paragraphStyle(pos);
+						if (style.hasNum() && style.numName() != "<local block>")
 						{
-							if (pos == 0)
+							ScText * hl = item->itemText.item(pos);
+							bool resetNums = false;
+							if (numerations.value(style.numName())->m_lastlevel == -1)
 								resetNums = true;
-							else
+							else if (style.numOther())
 							{
-								int currPara = item->itemText.nrOfParagraph(pos);
-								int currStart = item->itemText.startOfParagraph(currPara);
-								ParagraphStyle preStyle = item->itemText.paragraphStyle(currStart-1);
+								ParagraphStyle preStyle = item->itemText.paragraphStyle(pos -1);
 								//reset counter if prev style hasnt numeration or has other numeration
 								if (!preStyle.hasNum() || (preStyle.numName() != style.numName()))
 									resetNums = true;
 							}
-						}
-						if (style.numHigher() && (style.numLevel() > 0))
-						{
-							if (numerations.value(style.numName())->m_lastlevel < style.numLevel())
+							else if (style.numHigher() && (style.numLevel() > numerations.value(style.numName())->m_lastlevel))
 								resetNums = true;
+							
+							QString prefixStr = getNumberStr(style.numName(), style.numLevel(), resetNums, style);
+							numerations.value(style.numName())->m_lastlevel = style.numLevel();
+							if (hl->mark == NULL)
+							{
+								BulNumMark* bnMark = new BulNumMark;
+								item->itemText.insertMark(bnMark,pos);
+								hl = item->itemText.item(pos);
+								hl->applyCharStyle(item->itemText.paragraphStyle(pos).charStyle());
+								hl->setEffects(ScStyle_Default);
+								const StyleContext* cStyleContext = item->itemText.paragraphStyle(pos).charStyleContext();
+								hl->setContext(cStyleContext);
+							}
+							if (hl->mark->getString() != prefixStr)
+							{
+								hl->mark->setString(prefixStr);
+								item->invalid = true;
+								flag_Renumber = true;
+							}
 						}
-						QString prefixStr = getNumberStr(style.numName(), style.numLevel(), resetNums, style);
-						if (hl->mark == NULL)
-						{
-							BulNumMark* bnMark = new BulNumMark;
-							item->itemText.insertMark(bnMark,pos);
-							hl = item->itemText.item(pos);
-							hl->applyCharStyle(item->itemText.paragraphStyle(pos).charStyle());
-							hl->setEffects(ScStyle_Default);
-							const StyleContext* cStyleContext = item->itemText.paragraphStyle(pos).charStyleContext();
-							hl->setContext(cStyleContext);
-						}
-						if (hl->mark->getString() != prefixStr)
-						{
-							hl->mark->setString(prefixStr);
-							item->invalid = true;
-							flag_Renumber = true;
-						}
-					}
-					if (pos == last)
-						break;
-					if (item->itemText.text(pos) == SpecialChars::PARSEP)
-						++pos;
-					else
-					{
-						pos = item->itemText.nextParagraph(pos)+1;
-						if (pos == len)
+						if (pos == last)
 							break;
+						if (item->itemText.text(pos) == SpecialChars::PARSEP)
+							++pos;
+						else
+						{
+							pos = item->itemText.nextParagraph(pos)+1;
+							if (pos == len)
+								break;
+						}
 					}
 				}
 			}
