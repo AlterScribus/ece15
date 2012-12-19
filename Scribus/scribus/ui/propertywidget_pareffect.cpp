@@ -440,7 +440,7 @@ void PropertyWidget_ParEffect::handleNumLevel(int level)
 		Q_ASSERT(numS);
 		while (level > numS->m_counters.count())
 		{
-			numS->m_counters.append(1);
+			numS->m_counters.append(0);
 			Numeration num;
 			num.numFormat = (NumFormat) numFormatCombo->currentIndex();
 			num.prefix = numPrefix->text();
