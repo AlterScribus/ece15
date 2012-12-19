@@ -38,6 +38,7 @@ protected:
 	void setCurrentItem(PageItem *item);
 
 	virtual void changeEvent(QEvent *e);
+	void handleChanges(PageItem* item, ParagraphStyle& newStyle);
 
 public slots:
 	void setMainWindow(ScribusMainWindow *mw);

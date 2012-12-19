@@ -74,6 +74,7 @@ void PropertyWidget_ParEffect::setDoc(ScribusDoc *doc)
 
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+	connectSignals();
 }
 
 void PropertyWidget_ParEffect::setCurrentItem(PageItem *item)
@@ -364,16 +365,7 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	}
 	newStyle.setParEffectOffset(peOffset_->value());
 	newStyle.setParEffectIndent(peIndent_->isChecked());
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleBulletStr(QString bulStr)
@@ -384,16 +376,7 @@ void PropertyWidget_ParEffect::handleBulletStr(QString bulStr)
 	if (bulStr.isEmpty())
 		bulStr = QChar(0x2022);
 	newStyle.setBulletStr(bulStr);
-	PageItem *item = m_doc->m_Selection->itemAt(0);
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleDropCapLines(int dcLines)
@@ -402,16 +385,7 @@ void PropertyWidget_ParEffect::handleDropCapLines(int dcLines)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setDropCapLines(dcLines);
-	PageItem *item = m_doc->m_Selection->itemAt(0);
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleNumName(QString numName)
@@ -443,16 +417,7 @@ void PropertyWidget_ParEffect::handleNumName(QString numName)
 	newStyle.setNumSuffix(numSuffix->text());
 	newStyle.setNumName(numName);
 	newStyle.setNumFormat((NumFormat) numFormatCombo->currentIndex());
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 	connectSignals();
 }
 
@@ -462,16 +427,7 @@ void PropertyWidget_ParEffect::handleNumFormat(int style)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setNumFormat(style);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleNumLevel(int level)
@@ -495,16 +451,7 @@ void PropertyWidget_ParEffect::handleNumLevel(int level)
 	}
 	ParagraphStyle newStyle;
 	newStyle.setNumLevel(level -1);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleNumPrefix(QString prefix)
@@ -513,16 +460,7 @@ void PropertyWidget_ParEffect::handleNumPrefix(QString prefix)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setNumPrefix(prefix);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleNumSuffix(QString suffix)
@@ -531,16 +469,7 @@ void PropertyWidget_ParEffect::handleNumSuffix(QString suffix)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setNumSuffix(suffix);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handleNumStart(int start)
@@ -549,16 +478,7 @@ void PropertyWidget_ParEffect::handleNumStart(int start)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setNumStart(start);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handlePEOffset(double offset)
@@ -567,15 +487,7 @@ void PropertyWidget_ParEffect::handlePEOffset(double offset)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setParEffectOffset(offset);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handlePEIndent(bool indent)
@@ -584,15 +496,7 @@ void PropertyWidget_ParEffect::handlePEIndent(bool indent)
 		return;
 	ParagraphStyle newStyle;
 	newStyle.setParEffectIndent(indent);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::handlePECharStyle(QString name)
@@ -602,15 +506,7 @@ void PropertyWidget_ParEffect::handlePECharStyle(QString name)
 	ParagraphStyle newStyle;
 	if (!name.isEmpty())
 		newStyle.setPeCharStyleName(name);
-	PageItem *item = m_item;
-	if (m_doc->appMode == modeEditTable)
-		item = item->asTable()->activeCell().textFrame();
-	if (item != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-	}
+	handleChanges(m_item, newStyle);
 }
 
 void PropertyWidget_ParEffect::changeEvent(QEvent *e)
@@ -621,6 +517,25 @@ void PropertyWidget_ParEffect::changeEvent(QEvent *e)
 		return;
 	}
 	QWidget::changeEvent(e);
+}
+
+void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &newStyle)
+{
+	if (m_doc->appMode == modeEditTable)
+		item = item->asTable()->activeCell().textFrame();
+	if (item != NULL)
+	{
+		Selection tempSelection(this, false);
+		tempSelection.addItem(item, true);
+		m_doc->flag_Renumber = true;
+		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+
+		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+
+		connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+		connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+	}
 }
 
 void PropertyWidget_ParEffect::languageChange()
