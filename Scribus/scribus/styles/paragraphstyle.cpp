@@ -248,6 +248,8 @@ void ParagraphStyle::replaceNamedResources(ResourceCollection& newNames)
 		setParent(it.value());
 		repairImplicitCharStyleInheritance();
 	}
+	if ((it = (newNames.charStyles().find(peCharStyleName()))) != newNames.charStyles().end())
+		setPeCharStyleName(it.value());
 	cstyle.replaceNamedResources(newNames);
 }
 
