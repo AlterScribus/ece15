@@ -8746,6 +8746,12 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 {
 	if (HaveDoc)
 	{
+		m_WasAutoSave = doc->autoSave();
+		if (m_WasAutoSave)
+		{
+			doc->autoSaveTimer->stop();
+			doc->setAutoSave(false);
+		}
 		view->Deselect(true);
 		storedPageNum = doc->currentPageNumber();
 		storedViewXCoor = view->contentsX();
@@ -8813,6 +8819,11 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 void ScribusMainWindow::editSymbolEnd()
 {
 	view->hideSymbolPage();
+	if (m_WasAutoSave)
+	{
+		doc->setAutoSave(true);
+		doc->restartAutoSaveTimer();
+	}
 	slotSelect();
 	scrActions["editMasterPages"]->setEnabled(true);
 	scrActions["fileNew"]->setEnabled(true);
@@ -8870,6 +8881,12 @@ void ScribusMainWindow::editInlineStart(int id)
 {
 	if (HaveDoc)
 	{
+		m_WasAutoSave = doc->autoSave();
+		if (m_WasAutoSave)
+		{
+			doc->autoSaveTimer->stop();
+			doc->setAutoSave(false);
+		}
 		view->Deselect(true);
 		storedPageNum = doc->currentPageNumber();
 		storedViewXCoor = view->contentsX();
@@ -8922,6 +8939,11 @@ void ScribusMainWindow::editInlineStart(int id)
 void ScribusMainWindow::editInlineEnd()
 {
 	view->hideInlinePage();
+	if (m_WasAutoSave)
+	{
+		doc->setAutoSave(true);
+		doc->restartAutoSaveTimer();
+	}
 	slotSelect();
 	scrActions["editMasterPages"]->setEnabled(true);
 	scrActions["fileNew"]->setEnabled(true);
@@ -8981,6 +9003,12 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 		return;
 
 	view->Deselect(true);
+	m_WasAutoSave = doc->autoSave();
+	if (m_WasAutoSave)
+	{
+		doc->autoSaveTimer->stop();
+		doc->setAutoSave(false);
+	}
 
 	if (doc->masterPageMode())
 	{
@@ -9036,6 +9064,11 @@ void ScribusMainWindow::manageMasterPagesEnd()
 {
 	view->setScale(storedViewScale);
 	view->hideMasterPage();
+	if (m_WasAutoSave)
+	{
+		doc->setAutoSave(true);
+		doc->restartAutoSaveTimer();
+	}
 	slotSelect();
 	scrActions["editMasterPages"]->setEnabled(true);
 	scrActions["fileNew"]->setEnabled(true);
@@ -11307,6 +11340,7 @@ void ScribusMainWindow::setPreviewToolbar()
 	symbolPalette->setEnabled(!doc->drawAsPreview);
 	inlinePalette->setEnabled(!doc->drawAsPreview);
 	undoPalette->setEnabled(!doc->drawAsPreview);
+	outlinePalette->setEnabled(!(doc->drawAsPreview && !doc->editOnPreview));
 	propertiesPalette->setEnabled(!(doc->drawAsPreview && !doc->editOnPreview));
 	scrMenuMgr->setMenuEnabled("Edit", !doc->drawAsPreview);
 	scrMenuMgr->setMenuEnabled("Item", !doc->drawAsPreview);

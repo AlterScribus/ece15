@@ -85,6 +85,7 @@ CanvasMode_Normal::CanvasMode_Normal(ScribusView* view) : CanvasMode(view), m_Sc
 	m_objectDeltaPos.setXY(0,0 );
 	ySnap = 0;
 	xSnap = 0;
+	m_hoveredItem = NULL;
 }
 
 inline bool CanvasMode_Normal::GetItem(PageItem** pi)
@@ -135,6 +136,7 @@ void CanvasMode_Normal::activate(bool fromGesture)
 	m_objectDeltaPos.setXY(0,0 );
 	frameResizeHandle = -1;
 	shiftSelItems = false;
+	m_hoveredItem = NULL;
 	setModeCursor();
 	if (fromGesture)
 	{
@@ -355,7 +357,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 	//<<#10116 Show overflow counter HUD
 	if (!movingOrResizing && mouseIsOnPage)
 	{
-		PageItem* hoveredItem=NULL;
+		PageItem* hoveredItem = NULL;
 		hoveredItem = m_canvas->itemUnderCursor(m->globalPos(), hoveredItem, m->modifiers());
 		if (hoveredItem)
 		{
@@ -375,11 +377,11 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 					}
 					else if (hoveredItem->annotation().Type() == Annotation::Link)
 					{
-						if (hoveredItem->annotation().ActionType() == 2)
+						if (hoveredItem->annotation().ActionType() == Annotation::Action_GoTo)
 							toolT = QString( tr("Go to Page %1").arg(hoveredItem->annotation().Ziel() + 1));
-						else if (hoveredItem->annotation().ActionType() == 8)
+						else if (hoveredItem->annotation().ActionType() == Annotation::Action_URI)
 							toolT = QString( tr("Go to URL %1").arg(hoveredItem->annotation().Extern()));
-						else if (hoveredItem->annotation().ActionType() == 9)
+						else if ((hoveredItem->annotation().ActionType() == Annotation::Action_GoToR_FileAbs) || (hoveredItem->annotation().ActionType() == Annotation::Action_GoToR_FileRel))
 							toolT = QString( tr("Go to Page %1 in File %2").arg(hoveredItem->annotation().Ziel() + 1).arg(hoveredItem->annotation().Extern()));
 						qApp->changeOverrideCursor(QCursor(Qt::PointingHandCursor));
 					}
@@ -387,10 +389,20 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 						toolT = hoveredItem->itemText.plainText();
 					if (!toolT.isEmpty())
 						QToolTip::showText(m->globalPos() + QPoint(5, 5), toolT, m_canvas);
+					if (hoveredItem != m_hoveredItem)
+					{
+						if (m_hoveredItem)
+							handleMouseLeave(m_hoveredItem);
+						handleMouseEnter(hoveredItem);
+					}
+					m_hoveredItem = hoveredItem;
 				}
 				else
+				{
 					if (QToolTip::isVisible())
 						QToolTip::hideText();
+					m_hoveredItem = NULL;
+				}
 			}
 			else
 			{
@@ -410,6 +422,12 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 		{
 			if (QToolTip::isVisible())
 				QToolTip::hideText();
+			if (m_doc->drawAsPreview)
+			{
+				if (m_hoveredItem)
+					handleMouseLeave(m_hoveredItem);
+				m_hoveredItem = NULL;
+			}
 		}
 	}
 	//>>#10116
@@ -476,7 +494,10 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 				newX = mousePointDoc.x(); //static_cast<int>(m->x()/sc);
 				newY = mousePointDoc.y(); //static_cast<int>(m->y()/sc);
 				m_canvas->m_viewMode.operItemMoving = true;
-				qApp->changeOverrideCursor(Qt::ClosedHandCursor);
+				if (!(m_doc->drawAsPreview && !m_doc->editOnPreview))
+					qApp->changeOverrideCursor(Qt::ClosedHandCursor);
+				else
+					qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 				erf = false;
 				int dX = qRound(newX - m_mousePressPoint.x()), dY = qRound(newY - m_mousePressPoint.y());
 				if (!m_doc->m_Selection->isMultipleSelection())
@@ -750,7 +771,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 //					setModeCursor();
 				}
 			}
-			if (GetItem(&currItem) && m_doc->appMode == modeNormal)
+			if (GetItem(&currItem) && (m_doc->appMode == modeNormal))
 			{
 				int how = m_canvas->frameHitTest(QPointF(mousePointDoc.x(),mousePointDoc.y()), currItem);
 				if (how > 0)
@@ -762,10 +783,15 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 						if ((!currItem->sizeHLocked() && !currItem->sizeVLocked()) || (currItem->sizeHLocked() && (how == 5 || how == 8))
 							|| (currItem->sizeVLocked() && (how == 6 || how == 7)))
 						setResizeCursor(how, currItem->rotation());
-				}
+					}
 				}
 				else if (how == 0)
-					qApp->changeOverrideCursor(QCursor(Qt::OpenHandCursor));
+				{
+					if (!(m_doc->drawAsPreview && !m_doc->editOnPreview))
+						qApp->changeOverrideCursor(QCursor(Qt::OpenHandCursor));
+					else
+						qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
+				}
 				else
 				{
 					qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
@@ -848,8 +874,10 @@ void CanvasMode_Normal::mousePressEvent(QMouseEvent *m)
 //#7928			else
 //#7928				return;
 		}
-		
-		qApp->changeOverrideCursor(Qt::ClosedHandCursor);
+		if (!(m_doc->drawAsPreview && !m_doc->editOnPreview))
+			qApp->changeOverrideCursor(Qt::ClosedHandCursor);
+		else
+			qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 #if 1				
 		if (m_doc->m_Selection->isMultipleSelection() && (!m_doc->drawAsPreview))
 		{
@@ -918,7 +946,8 @@ void CanvasMode_Normal::mousePressEvent(QMouseEvent *m)
 		}
 		else
 		{
-			m_canvas->setRenderModeFillBuffer();
+			if (!(m_doc->drawAsPreview && !m_doc->editOnPreview))
+				m_canvas->setRenderModeFillBuffer();
 		}
 	}
 /*	if (m->button() == MidButton)
@@ -932,6 +961,23 @@ void CanvasMode_Normal::mousePressEvent(QMouseEvent *m)
 	{
 		m_canvas->m_viewMode.m_MouseButtonPressed = true;
 		m_mousePressPoint = m_mouseCurrentPoint;
+	}
+	if (m_doc->drawAsPreview && !m_doc->editOnPreview)
+	{
+		m_canvas->setRenderModeUseBuffer(false);
+		if (m_doc->m_Selection->count() == 1)
+		{
+			currItem = m_doc->m_Selection->itemAt(0);
+			if (currItem->isAnnotation())
+			{
+				if (currItem->annotation().Type() == Annotation::Checkbox)
+					handleCheckBoxPress(currItem);
+				else if (currItem->annotation().Type() == Annotation::RadioButton)
+					handleRadioButtonPress(currItem);
+				else if (currItem->annotation().Type() == Annotation::Button)
+					handlePushButtonPress(currItem);
+			}
+		}
 	}
 // Commented out to fix bug #7865
 //	if ((m_doc->m_Selection->count() != 0) && (m->button() == Qt::LeftButton) && (frameResizeHandle == 0))
@@ -1236,32 +1282,246 @@ void CanvasMode_Normal::mouseReleaseEvent(QMouseEvent *m)
 			if (currItem->isAnnotation())
 			{
 				if (currItem->annotation().Type() == Annotation::Link)
-				{
-					if (currItem->annotation().ActionType() == 2)
-					{
-						m_view->Deselect(true);
-						if (currItem->annotation().Ziel() < m_doc->Pages->count())
-							m_view->GotoPage(currItem->annotation().Ziel());
-						else
-						{
-							QString message = tr("Page %1 does not exist!").arg(currItem->annotation().Ziel() + 1);
-							QMessageBox::warning(m_view, CommonStrings::trWarning, message, CommonStrings::tr_OK);
-						}
-					}
-					else if (currItem->annotation().ActionType() == 8)
-					{
-						QString message = tr("Link Target is Web URL.\nURL: %1").arg(currItem->annotation().Extern());
-						QMessageBox::information(m_view, tr("Information"), message, CommonStrings::tr_OK);
-					}
-					else if (currItem->annotation().ActionType() == 9)
-					{
-						QString message = tr("Link Target is external File.\nFile: %1\nPage: %2").arg(currItem->annotation().Extern()).arg(currItem->annotation().Ziel() + 1);
-						QMessageBox::information(m_view, tr("Information"), message, CommonStrings::tr_OK);
-					}
-				}
+					handleLinkAnnotation(currItem);
+				else if (currItem->annotation().Type() == Annotation::Checkbox)
+					handleCheckBoxRelease(currItem);
+				else if (currItem->annotation().Type() == Annotation::RadioButton)
+					handleRadioButtonRelease(currItem);
+				else if (currItem->annotation().Type() == Annotation::Button)
+					handlePushButtonRelease(currItem);
 			}
 		}
 	}
+}
+
+void CanvasMode_Normal::handleCheckBoxPress(PageItem* currItem)
+{
+	currItem->annotation().setOnState(true);
+	currItem->update();
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_PressButton);
+	m_doc->regionsChanged()->update(currItem->getVisualBoundingRect());
+}
+
+void CanvasMode_Normal::handlePushButtonPress(PageItem* currItem)
+{
+	currItem->annotation().setOnState(true);
+	currItem->update();
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_PressButton);
+	m_doc->regionsChanged()->update(currItem->getVisualBoundingRect());
+}
+
+void CanvasMode_Normal::handleRadioButtonPress(PageItem* currItem)
+{
+	if (currItem->Parent != NULL)
+	{
+		PageItem *group = currItem->Parent->asGroupFrame();
+		for (int a = 0; a < group->groupItemList.count(); a++)
+		{
+			PageItem *gItem = group->groupItemList[a];
+			if ((gItem->isAnnotation()) && (gItem->annotation().Type() == Annotation::RadioButton))
+			{
+				gItem->update();
+			}
+		}
+	}
+	else
+	{
+		int op = currItem->OwnPage;
+		uint docItemCount = m_doc->Items->count();
+		for (uint i = 0; i < docItemCount; ++i)
+		{
+			PageItem *gItem = m_doc->Items->at(i);
+			if ((gItem->isAnnotation()) && (gItem->annotation().Type() == Annotation::RadioButton) && (gItem->OwnPage == op))
+			{
+				gItem->update();
+			}
+		}
+	}
+	currItem->annotation().setOnState(true);
+	currItem->update();
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_PressButton);
+	m_view->updateContents();
+}
+
+void CanvasMode_Normal::handleCheckBoxRelease(PageItem* currItem)
+{
+	currItem->annotation().setOnState(false);
+	currItem->annotation().setCheckState(!currItem->annotation().IsChecked());
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_ReleaseButton);
+	currItem->update();
+	m_doc->regionsChanged()->update(currItem->getVisualBoundingRect());
+}
+
+void CanvasMode_Normal::handlePushButtonRelease(PageItem* currItem)
+{
+	currItem->annotation().setOnState(false);
+	currItem->update();
+	switch (currItem->annotation().ActionType())
+	{
+		case Annotation::Action_JavaScript:
+			handleJavaAction(currItem, Annotation::Java_ReleaseButton);
+			break;
+		case Annotation::Action_GoTo:
+		case Annotation::Action_URI:
+		case Annotation::Action_GoToR_FileAbs:
+		case Annotation::Action_GoToR_FileRel:
+			handleLinkAnnotation(currItem);
+			break;
+		case Annotation::Action_ResetForm:
+			m_doc->ResetFormFields();
+			break;
+		case Annotation::Action_ImportData:
+			m_doc->ImportData();
+			break;
+		case Annotation::Action_SubmitForm:
+			m_doc->SubmitForm();
+			break;
+		case Annotation::Action_Named:
+			handleNamedAction(currItem);
+		default:
+			break;
+	}
+	m_doc->regionsChanged()->update(currItem->getVisualBoundingRect());
+}
+
+void CanvasMode_Normal::handleRadioButtonRelease(PageItem* currItem)
+{
+	if (currItem->Parent != NULL)
+	{
+		PageItem *group = currItem->Parent->asGroupFrame();
+		for (int a = 0; a < group->groupItemList.count(); a++)
+		{
+			PageItem *gItem = group->groupItemList[a];
+			if ((gItem->isAnnotation()) && (gItem->annotation().Type() == Annotation::RadioButton))
+			{
+				gItem->annotation().setCheckState(false);
+				gItem->update();
+			}
+		}
+	}
+	else
+	{
+		int op = currItem->OwnPage;
+		uint docItemCount = m_doc->Items->count();
+		for (uint i = 0; i < docItemCount; ++i)
+		{
+			PageItem *gItem = m_doc->Items->at(i);
+			if ((gItem->isAnnotation()) && (gItem->annotation().Type() == Annotation::RadioButton) && (gItem->OwnPage == op))
+			{
+				gItem->annotation().setCheckState(false);
+				gItem->update();
+			}
+		}
+	}
+	currItem->annotation().setCheckState(true);
+	currItem->annotation().setOnState(false);
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_ReleaseButton);
+	currItem->update();
+	m_view->updateContents();
+}
+
+void CanvasMode_Normal::handleJavaAction(PageItem* currItem, int event)
+{
+	QString scriptCode = "";
+	switch (event)
+	{
+		case Annotation::Java_PressButton:
+			scriptCode = currItem->annotation().D_act();
+			break;
+		case Annotation::Java_ReleaseButton:
+			scriptCode = currItem->annotation().Action();
+			break;
+		case Annotation::Java_EnterWidget:
+			scriptCode = currItem->annotation().E_act();
+			break;
+		case Annotation::Java_LeaveWidget:
+			scriptCode = currItem->annotation().X_act();
+			break;
+		case Annotation::Java_FocusIn:
+			scriptCode = currItem->annotation().Fo_act();
+			break;
+		case Annotation::Java_FocusOut:
+			scriptCode = currItem->annotation().Bl_act();
+			break;
+		case Annotation::Java_SelectionChg:
+			scriptCode = currItem->annotation().K_act();
+			break;
+		case Annotation::Java_FieldFormat:
+			scriptCode = currItem->annotation().F_act();
+			break;
+		case Annotation::Java_FieldValidate:
+			scriptCode = currItem->annotation().V_act();
+			break;
+		case Annotation::Java_FieldCalculate:
+			scriptCode = currItem->annotation().C_act();
+			break;
+		default:
+			break;
+	}
+	if (!scriptCode.isEmpty())
+	{
+		// Execute the JavasScript Code
+//		qDebug() << "JavaScript:" << scriptCode;
+	}
+}
+
+void CanvasMode_Normal::handleNamedAction(PageItem* currItem)
+{
+//	qDebug() << "Named Action:" << currItem->annotation().Action();
+}
+
+void CanvasMode_Normal::handleLinkAnnotation(PageItem* currItem)
+{
+	if (currItem->annotation().ActionType() == Annotation::Action_GoTo)
+	{
+		m_view->Deselect(true);
+		if (currItem->annotation().Ziel() < m_doc->Pages->count())
+			m_view->GotoPage(currItem->annotation().Ziel());
+		else
+		{
+			QString message = tr("Page %1 does not exist!").arg(currItem->annotation().Ziel() + 1);
+			QMessageBox::warning(m_view, CommonStrings::trWarning, message, CommonStrings::tr_OK);
+		}
+	}
+	else if (currItem->annotation().ActionType() == Annotation::Action_URI)
+	{
+		QString message = tr("Link Target is Web URL.\nURL: %1").arg(currItem->annotation().Extern());
+		QMessageBox::information(m_view, tr("Information"), message, CommonStrings::tr_OK);
+	}
+	else if ((currItem->annotation().ActionType() == Annotation::Action_GoToR_FileAbs) || (currItem->annotation().ActionType() == Annotation::Action_GoToR_FileRel))
+	{
+		QString message = tr("Link Target is external File.\nFile: %1\nPage: %2").arg(currItem->annotation().Extern()).arg(currItem->annotation().Ziel() + 1);
+		QMessageBox::information(m_view, tr("Information"), message, CommonStrings::tr_OK);
+	}
+}
+
+void CanvasMode_Normal::handleFocusOut(PageItem* currItem)
+{
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_FocusOut);
+}
+
+void CanvasMode_Normal::handleFocusIn(PageItem* currItem)
+{
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_FocusIn);
+}
+
+void CanvasMode_Normal::handleMouseLeave(PageItem* currItem)
+{
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_LeaveWidget);
+}
+
+void CanvasMode_Normal::handleMouseEnter(PageItem* currItem)
+{
+	if (currItem->annotation().ActionType() == Annotation::Action_JavaScript)
+		handleJavaAction(currItem, Annotation::Java_EnterWidget);
 }
 
 void CanvasMode_Normal::keyPressEvent(QKeyEvent *e)
@@ -1277,6 +1537,9 @@ void CanvasMode_Normal::keyReleaseEvent(QKeyEvent *e)
 //CB-->Doc/Fix
 bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 {
+	PageItem *previousSelectedItem = NULL;
+	if (m_doc->m_Selection->count() != 0)
+		previousSelectedItem = m_doc->m_Selection->itemAt(0);
 	m_canvas->m_viewMode.operItemSelecting = true;
 	const unsigned SELECT_IN_GROUP = Qt::AltModifier; // Qt::MetaModifier;
 	const unsigned SELECT_MULTIPLE = Qt::ShiftModifier;
@@ -1400,7 +1663,7 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 	{
 		m_view->Deselect(false);
 	}
-	currItem = m_canvas->itemUnderCursor(m->globalPos(), currItem, (m->modifiers() & SELECT_IN_GROUP));
+	currItem = m_canvas->itemUnderCursor(m->globalPos(), currItem, ((m->modifiers() & SELECT_IN_GROUP) || (m_doc->drawAsPreview && !m_doc->editOnPreview)));
 	if (currItem)
 	{
 		m_doc->m_Selection->delaySignalsOn();
@@ -1418,7 +1681,7 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 			if (m_doc->drawAsPreview && !m_doc->editOnPreview)
 				m_doc->m_Selection->clear();
 			m_doc->m_Selection->addItem(currItem);
-			if ( (m->modifiers() & SELECT_IN_GROUP) && (!currItem->isGroup()))
+			if (((m->modifiers() & SELECT_IN_GROUP) || (m_doc->drawAsPreview && !m_doc->editOnPreview)) && (!currItem->isGroup()))
 			{
 				currItem->isSingleSel = true;
 			}
@@ -1446,6 +1709,16 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 			m_doc->m_Selection->getGroupRect(&x, &y, &w, &h);
 			m_view->getGroupRectScreen(&x, &y, &w, &h);
 		}
+		if (previousSelectedItem != NULL)
+		{
+			if (currItem != previousSelectedItem)
+			{
+				handleFocusOut(previousSelectedItem);
+				handleFocusIn(currItem);
+			}
+		}
+		else
+			handleFocusIn(currItem);
 		return true;
 	}
 	if ((m_doc->guidesPrefs().guidesShown) /*&& (!m_doc->GuideLock)*/ && (m_doc->OnPage(MxpS, MypS) != -1))
@@ -1481,6 +1754,8 @@ bool CanvasMode_Normal::SeleItem(QMouseEvent *m)
 		else
 			m_view->Deselect(true);
 	}
+	if (previousSelectedItem != NULL)
+		handleFocusOut(previousSelectedItem);
 	return false;
 }
 

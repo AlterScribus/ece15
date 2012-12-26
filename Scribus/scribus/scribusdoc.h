@@ -1782,6 +1782,12 @@ public:
 	bool updateLocalNums(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
 	void updateNumbers(bool updateNumerations = false);
 	void itemSelection_ClearBulNumStrings(Selection *customSelection);
+/* Functions for PDF Form Actions */
+
+public:
+	void SubmitForm();
+	void ImportData();
+	void ResetFormFields();
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

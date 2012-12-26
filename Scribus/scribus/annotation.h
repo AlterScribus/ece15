@@ -41,7 +41,7 @@ class SCRIBUS_API Annotation // : public SaxIO
 						AnToolTip(""), AnRollOver(""), AnDown(""), AnBColor(""), An_Extern(""), AnBsty(0),
 						AnBwid(1), AnFeed(1), AnZiel(0), AnFlag(0), AnMaxChar(-1), AnVis(0), AnChkStil(0),
 						AnFont(4), AnIsChk(false), AnAAact(false), AnHTML(0), AnUseIcons(false),
-						AnIPlace(1), AnScaleW(0), AnFormat(0)
+						AnIPlace(1), AnScaleW(0), AnFormat(0), tmp_Chk(false), on_State(false), is_Open(false)
 		{
 		}
 		enum AnnotationType {
@@ -55,6 +55,31 @@ class SCRIBUS_API Annotation // : public SaxIO
 			Annot3D		  	= 12,
 			RadioButton		= 13
 		};
+		enum AnnotationAction {
+			Action_None				= 0,
+			Action_JavaScript		= 1,
+			Action_GoTo				= 2,
+			Action_SubmitForm		= 3,
+			Action_ResetForm		= 4,
+			Action_ImportData		= 5,
+			Action_GoToR_FileRel	= 7,
+			Action_URI				= 8,
+			Action_GoToR_FileAbs	= 9,
+			Action_Named			= 10
+		};
+		enum AnnotationScriptEvents {
+			Java_ReleaseButton	= 0,
+			Java_PressButton	= 1,
+			Java_EnterWidget	= 2,
+			Java_LeaveWidget	= 3,
+			Java_FocusIn		= 4,
+			Java_FocusOut		= 5,
+			Java_SelectionChg	= 6,
+			Java_FieldFormat	= 7,
+			Java_FieldValidate	= 8,
+			Java_FieldCalculate	= 9
+		};
+
 		enum AnnotationFlags {
 			Flag_ReadOnly			=		   1,	// Bit  1
 			Flag_Required			=		   2,	// Bit  2
@@ -106,6 +131,9 @@ class SCRIBUS_API Annotation // : public SaxIO
 	void setChkStil(int newChkStil) { AnChkStil=newChkStil; }
 	void setFormat(int newFormat) { AnFormat=newFormat; }
 	void setIsChk(bool newIsChk) { AnIsChk=newIsChk; }
+	void setCheckState(bool newIsChk) { tmp_Chk=newIsChk; }
+	void setOpen(bool newIsOpen) { is_Open=newIsOpen; }
+	void setOnState(bool newIsChk) { on_State=newIsChk; }
 	void setAAact(bool newAAct) { AnAAact=newAAct; }
 	void setHTML(int newHTML) { AnHTML=newHTML; }
 	void setUseIcons(bool newUseIcons) { AnUseIcons=newUseIcons; }
@@ -140,6 +168,9 @@ class SCRIBUS_API Annotation // : public SaxIO
 	int ChkStil() const { return AnChkStil; }
 	int Format() const { return AnFormat; }
 	bool IsChk() const { return AnIsChk; }
+	bool IsChecked() const { return tmp_Chk; }
+	bool IsOpen() const { return is_Open; }
+	bool IsOn() const { return on_State; }
 	bool AAact() const { return AnAAact; }
 	int HTML() const { return AnHTML; }
 	bool UseIcons() const { return AnUseIcons; }
@@ -180,6 +211,9 @@ class SCRIBUS_API Annotation // : public SaxIO
 		int AnIPlace;
 		int AnScaleW;
 		int AnFormat;
+		bool tmp_Chk;
+		bool on_State;
+		bool is_Open;
 };
 
 #endif
