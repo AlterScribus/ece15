@@ -54,6 +54,7 @@ gtWriter::gtWriter(bool append, PageItem *pageitem)
 	unsetParagraphStyle();
 	inNote = false;
 	inNoteBody = false;
+	showImpSettings = true;
 	
 }
 

@@ -89,6 +89,11 @@ void gtFileDialog::loadSettings(void)
 		bool textOnly = context->getBool("textonly");
 		textOnlyCheckBox->setChecked(textOnly);
 	}
+	if (context->contains("reset"))
+	{
+		bool reset = context->getBool("reset");
+		showImpSettingsCheckBox->setChecked(reset);
+	}
 }
 
 void gtFileDialog::saveSettings(void)
@@ -98,6 +103,7 @@ void gtFileDialog::saveSettings(void)
 	context->set("importer", importerCombo->currentText());
 	context->set("encoding", encodingCombo->currentText());
 	context->set("textonly", textOnlyCheckBox->isChecked());
+	context->set("reset", showImpSettingsCheckBox->isChecked());
 }
 
 gtFileDialog::~gtFileDialog()

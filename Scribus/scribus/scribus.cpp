@@ -4438,7 +4438,7 @@ void ScribusMainWindow::slotGetContent()
 					if (t == QMessageBox::No)
 						return;
 				}
-				gt->launchImporter(impsetup.importer, impsetup.filename, impsetup.textOnly, impsetup.encoding, false);
+				gt->launchImporter(impsetup.importer, impsetup.filename, impsetup.textOnly, impsetup.showImportSettings, impsetup.encoding, false);
 			}
 			delete gt;
 			if (doc->docHyphenator->AutoCheck)
@@ -4595,7 +4595,7 @@ void ScribusMainWindow::slotFileAppend()
 		ImportSetup impsetup=gt->run();
 		if (impsetup.runDialog)
 		{
-			gt->launchImporter(impsetup.importer, impsetup.filename, impsetup.textOnly, impsetup.encoding, true);
+			gt->launchImporter(impsetup.importer, impsetup.filename, impsetup.textOnly, impsetup.showImportSettings, impsetup.encoding, true);
 		}
 		delete gt;
 		//CB Hyphenating now emits doc changed, plus we change lang as appropriate

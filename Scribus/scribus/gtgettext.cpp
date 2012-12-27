@@ -47,7 +47,7 @@ gtGetText::gtGetText(ScribusDoc* doc)
 
 // Look at the results of the file selection dialog and figure out if you need to use an importer.
 // Prompt the user if the importer to use isn't obvious.
-void gtGetText::launchImporter(int importer, const QString& filename, bool textOnly, 
+void gtGetText::launchImporter(int importer, const QString& filename, bool textOnly, bool showImpSettings, 
 								const QString& encoding, bool append, PageItem* target)
 {
 	// Struct for the plugin info, we'll load this up from the array.
@@ -104,7 +104,7 @@ void gtGetText::launchImporter(int importer, const QString& filename, bool textO
 	// If the targetframe is not zero, and we do need to call the importer, 
 	// Run the importer via "CallDLL" and pass it what it needs to know.
 	if (targetFrame!=0 && callImporter)
-		CallDLL(ida, filename, encoding, textOnly, append, targetFrame);
+		CallDLL(ida, filename, encoding, textOnly, showImpSettings, append, targetFrame);
 }  //void gtGetText::launchImporter(int importer, const QString& filename, bool textOnly, 
    //						const QString& encoding, bool append, PageItem* target)
 
@@ -206,6 +206,7 @@ ImportSetup gtGetText::run()
 		impsetup.filename=dias->getFileName();
 		impsetup.importer=dias->getImporter();
 		impsetup.textOnly=dias->importTextOnly();
+		impsetup.showImportSettings=dias->showImportSettings();
 // 		launchImporter(dias->getImporter(), dias->getFileName(),
 // 		               dias->importTextOnly(), dias->getEncoding(), append);
 	}  // if (dias->runFileDialog(filters, ilist))
@@ -217,7 +218,7 @@ ImportSetup gtGetText::run()
 
 // Loads, validates, and executes the Importer code.
 void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
-                        const QString& encoding, bool textOnly, bool append, PageItem* importItem)
+                        const QString& encoding, bool textOnly, bool showImpSettings, bool append, PageItem* importItem)
 {
 	// Pointer for the loaded plugin.
 	void* gtplugin;
@@ -256,6 +257,7 @@ void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
 		{
 			// Create a new writer object in "append"'s mode (true or false ) attached to the importItem
 			gtWriter *w = new gtWriter(append, importItem);
+			w->showImpSettings = showImpSettings;
 			// Execute the importer's "GetText" method.
 			(*fp_GetText)(filePath, encoding, textOnly, w);
 			// Destroy the writer

@@ -63,6 +63,7 @@ public:
 	void setOmitParagraphStyles(bool newOPS);
 	bool inNote;
 	bool inNoteBody;
+	bool showImpSettings;
 private:
 	gtAction *action;
 	gtFrameStyle* defaultStyle;

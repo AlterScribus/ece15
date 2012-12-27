@@ -51,7 +51,7 @@ OdtDialog::OdtDialog(bool update, bool prefix, bool pack, bool omit) : QDialog(0
 	olayout->setSpacing(5);
 	omitCheck = new QCheckBox( tr("Omit Paragraph Styles"), this);
 	omitCheck->setChecked(omit);
-	omitCheck->setToolTip( "<qt>" + tr("Enabling this will omit any paragraph styles from ODT document") + "</qt>");
+	omitCheck->setToolTip( "<qt>" + tr("Enabling this will omit creattion of any paragraph styles from ODT document") + "</qt>");
 	olayout->addWidget(omitCheck);
 	layout->addLayout(olayout);
 
@@ -111,12 +111,9 @@ OdtDialog::OdtDialog(bool update, bool prefix, bool pack, bool omit) : QDialog(0
 
 void OdtDialog::omitPSchanged()
 {
-	if (omitCheck->isChecked())
-	{
-		updateCheck->setDisabled(omitCheck->isChecked());
-		packCheck->setDisabled(omitCheck->isChecked());
-		prefixCheck->setDisabled(omitCheck->isChecked());
-	}
+	updateCheck->setDisabled(omitCheck->isChecked());
+	packCheck->setDisabled(omitCheck->isChecked());
+	prefixCheck->setDisabled(omitCheck->isChecked());
 }
 
 bool OdtDialog::omitPStyles()

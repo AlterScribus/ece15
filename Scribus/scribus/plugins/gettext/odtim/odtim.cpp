@@ -65,7 +65,7 @@ OdtIm::OdtIm(QString fileName, QString enc, gtWriter* w, bool textOnly)
 	PrefsContext* prefs = PrefsManager::instance()->prefsFile->getPluginContext("OdtIm");
 	bool update = prefs->getBool("update", true);
 	bool prefix = prefs->getBool("prefix", true);
-	bool ask = prefs->getBool("askAgain", true);
+	bool ask = prefs->getBool("askAgain", true) || w->showImpSettings;
 	bool pack = prefs->getBool("pack", true);
 	bool omitPS = prefs->getBool("omitPS", false);
 	encoding = enc;
@@ -83,6 +83,7 @@ OdtIm::OdtIm(QString fileName, QString enc, gtWriter* w, bool textOnly)
 				prefs->set("update", update);
 				prefs->set("prefix", sxwdia->usePrefix());
 				prefs->set("askAgain", sxwdia->askAgain());
+				w->showImpSettings = sxwdia->askAgain();
 				prefs->set("pack", sxwdia->packStyles());
 				delete sxwdia;
 			} else {

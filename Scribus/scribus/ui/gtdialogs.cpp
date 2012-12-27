@@ -233,6 +233,14 @@ bool gtDialogs::importTextOnly()
 	return ret;
 }
 
+bool gtDialogs::showImportSettings()
+{
+	bool ret = false;
+	if (fdia)
+		ret = fdia->showImpSettingsCheckBox->isChecked();
+	return ret;
+}
+
 gtDialogs::~gtDialogs()
 {
 	delete fdia;
