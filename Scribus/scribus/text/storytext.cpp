@@ -1981,7 +1981,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			else if (mrk->isType(MARKNoteMasterType))
 			{
 				TextNote * note = mrk->getNotePtr();
-				assert(note != NULL);
+				assert(note != null);
 				mark_attr.insert("nStyle", note->notesStyle()->name());
 				mark_attr.insert("note",note->saxedText());
 				//store noteframe name for inserting into note if it is non-auto-removable

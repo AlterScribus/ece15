@@ -17744,7 +17744,7 @@ void ScribusDoc::deleteNote(TextNote* note)
 			nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
 	}
 	PageItem* master = note->masterMark()->getItemPtr();
-	if (nF != NULL)
+	if (nF)
 	{
 		nF->removeNote(note);
 		nF->invalid = true;
@@ -17755,6 +17755,8 @@ void ScribusDoc::deleteNote(TextNote* note)
 			master->asTextFrame()->removeNoteFrame(nF);
 		}
 	}
+	//	else
+//		master->asTextFrame()->setNoteFrame(nF);
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), true, master);
 	if (note->noteMark() != NULL)
@@ -17772,6 +17774,7 @@ void ScribusDoc::setUndoDelNote(TextNote *note)
 	{
 		ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
 		ims->set("DELETE_NOTE", QString("delete_note"));
+//		ims->set("ETEA", note->masterMark()->label);
 		PageItem* master = note->masterMark()->getItemPtr();
 		int pos = findMarkCPos(note->masterMark(), master);
 		Q_ASSERT(pos > -1);
