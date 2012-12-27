@@ -589,7 +589,5 @@ void PropertyWidget_ParEffect::on_bulletCharTableButton__toggled(bool checked)
 }
 void PropertyWidget_ParEffect::insertSpecialChars(const QString &chars)
 {
-	if (bulletStrEdit_->lineEdit()->hasSelectedText())
-		bulletStrEdit_->lineEdit()->del();
-	bulletStrEdit_->lineEdit()->insert(chars);
+	bulletStrEdit_->lineEdit()->setText(chars);
 }

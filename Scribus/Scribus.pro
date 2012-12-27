@@ -1123,7 +1123,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/ui/MarkInsertDlg.h \
     scribus/ui/markanchor.h \
     scribus/ui/mark2mark.h \
-    scribus/ui/mark2item.h
+    scribus/ui/mark2item.h \
+    scribus/ui/propertywidget_pareffect.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1258,7 +1259,8 @@ FORMS += scribus/ui/aboutplugins.ui \
     scribus/ui/marknote.ui \
     scribus/ui/markanchor.ui \
     scribus/ui/mark2mark.ui \
-    scribus/ui/mark2item.ui
+    scribus/ui/mark2item.ui \
+    scribus/ui/propertywidget_pareffectbase.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2168,7 +2170,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/ui/marknote.cpp \
     scribus/ui/markanchor.cpp \
     scribus/ui/mark2mark.cpp \
-    scribus/canvasmode_imageimport.cpp
+    scribus/canvasmode_imageimport.cpp \
+    scribus/ui/propertywidget_pareffect.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
