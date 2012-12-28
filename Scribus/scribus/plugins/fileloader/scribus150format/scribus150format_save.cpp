@@ -2496,6 +2496,8 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		docu.writeAttribute("ANICON", item->annotation().UseIcons());
 		docu.writeAttribute("ANPLACE", item->annotation().IPlace());
 		docu.writeAttribute("ANSCALE", item->annotation().ScaleW());
+		docu.writeAttribute("ANITYP", item->annotation().Icon());
+		docu.writeAttribute("ANOPEN", item->annotation().IsAnOpen());
 	}
 	if (!item->AutoName)
 		docu.writeAttribute("ANNAME", item->itemName());

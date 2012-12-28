@@ -321,6 +321,7 @@ GBool SlaOutputDev::annotations_callback(Annot *annota, void *user_data)
 
 bool SlaOutputDev::handleTextAnnot(Annot* annota, double xCoor, double yCoor, double width, double height)
 {
+	AnnotText *anl = (AnnotText*)annota;
 	int z = m_doc->itemAdd(PageItem::TextFrame, PageItem::Rectangle, xCoor, yCoor, width, height, 0, CommonStrings::None, CommonStrings::None, true);
 	PageItem *ite = m_doc->Items->at(z);
 	ite->ClipEdited = true;
@@ -338,7 +339,29 @@ bool SlaOutputDev::handleTextAnnot(Annot* annota, double xCoor, double yCoor, do
 	ite->setIsAnnotation(true);
 	ite->AutoName = false;
 	ite->annotation().setType(Annotation::Text);
-	ite->annotation().setActionType(0);
+	ite->annotation().setActionType(Annotation::Action_None);
+	ite->annotation().setAnOpen(anl->getOpen());
+	QString iconName = UnicodeParsedString(anl->getIcon());
+	if (iconName == "Note")
+		ite->annotation().setIcon(Annotation::Icon_Note);
+	else if (iconName == "Comment")
+		ite->annotation().setIcon(Annotation::Icon_Comment);
+	else if (iconName == "Key")
+		ite->annotation().setIcon(Annotation::Icon_Key);
+	else if (iconName == "Help")
+		ite->annotation().setIcon(Annotation::Icon_Help);
+	else if (iconName == "NewParagraph")
+		ite->annotation().setIcon(Annotation::Icon_NewParagraph);
+	else if (iconName == "Paragraph")
+		ite->annotation().setIcon(Annotation::Icon_Paragraph);
+	else if (iconName == "Insert")
+		ite->annotation().setIcon(Annotation::Icon_Insert);
+	else if (iconName == "Cross")
+		ite->annotation().setIcon(Annotation::Icon_Cross);
+	else if (iconName == "Circle")
+		ite->annotation().setIcon(Annotation::Icon_Circle);
+	else
+		ite->annotation().setIcon(Annotation::Icon_Note);
 	ite->setItemName( CommonStrings::itemName_TextAnnotation + QString("%1").arg(m_doc->TotalItems));
 	ite->itemText.insertChars(UnicodeParsedString(annota->getContents()));
 	return true;
@@ -545,16 +568,24 @@ bool SlaOutputDev::handleWidgetAnnot(Annot* annota, double xCoor, double yCoor, 
 					if (retVal)
 					{
 						AnnotAppearanceCharacs *achar = ano->getAppearCharacs();
+						bool fgFound = false;
+						bool bgFound = false;
 						if (achar)
 						{
 							AnnotColor *bgCol = achar->getBackColor();
 							if (bgCol)
+							{
+								bgFound = true;
 								CurrColorFill = getAnnotationColor(bgCol);
+							}
 							else
 								CurrColorFill = CommonStrings::None;
 							AnnotColor *fgCol = achar->getBorderColor();
 							if (fgCol)
+							{
+								fgFound = true;
 								CurrColorStroke = getAnnotationColor(fgCol);
+							}
 							else
 							{
 								fgCol = achar->getBackColor();
@@ -579,8 +610,10 @@ bool SlaOutputDev::handleWidgetAnnot(Annot* annota, double xCoor, double yCoor, 
 							gfx = new Gfx(xref, Adev, pdfDoc->getPage(m_actPage)->getResourceDict(), catalog, annota->getRect(), NULL);
 #endif
 							annota->draw(gfx, false);
-							CurrColorFill = Adev->CurrColorFill;
-							CurrColorStroke = Adev->CurrColorStroke;
+							if (!bgFound)
+								CurrColorFill = Adev->CurrColorFill;
+							if (!fgFound)
+								CurrColorStroke = Adev->CurrColorStroke;
 							CurrColorText = Adev->CurrColorText;
 							fontSize = Adev->m_fontSize;
 							fontName = UnicodeParsedString(Adev->m_fontName);
