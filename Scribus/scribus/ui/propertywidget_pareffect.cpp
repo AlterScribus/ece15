@@ -14,6 +14,7 @@ for which a new license (GPL+exception) is in place.
 #include "units.h"
 #include "util.h"
 #include "util_icon.h"
+#include "ui/sctreewidget.h"
 
 PropertyWidget_ParEffect::PropertyWidget_ParEffect(QWidget *parent) : QFrame(parent), m_enhanced(NULL), m_item(NULL), m_ScMW(NULL)
 {
@@ -143,19 +144,22 @@ void PropertyWidget_ParEffect::displayCharStyle(const QString& name)
 
 void PropertyWidget_ParEffect::enableDropCap(bool enable)
 {
-	dropCapRadio_->setChecked(enable);
+//	dropCapRadio_->setChecked(enable);
 	dropCapLines->setEnabled(enable);
 	if (enable)
 	{
+		dropCapsGroup->show();
 		enableBullet(false);
 		enableNum(false);
 	}
+	else
+		dropCapsGroup->hide();
 }
 void PropertyWidget_ParEffect::enableBullet(bool enable)
 {
-	bulletRadio_->setChecked(enable);
-	bulletStrEdit_->setEnabled(enable);
-	bulletCharTableButton_->setEnabled(enable);
+	bulletStrEdit_->setVisible(enable);
+	bulletCharTableButton_->setVisible(enable);
+	bullGroup->setVisible(enable);
 	if (enable)
 	{
 		enableDropCap(false);
@@ -164,13 +168,13 @@ void PropertyWidget_ParEffect::enableBullet(bool enable)
 }
 void PropertyWidget_ParEffect::enableNum(bool enable)
 {
-	numRadio_->setChecked(enable);
-	numComboBox->setEnabled(enable);
-	numLevelSpin->setEnabled(enable);
-	numStart->setEnabled(enable);
-	numPrefix->setEnabled(enable);
-	numSuffix->setEnabled(enable);
-	numFormatCombo->setEnabled(enable);
+	numComboBox->setVisible(enable);
+	numLevelSpin->setVisible(enable);
+	numStart->setVisible(enable);
+	numPrefix->setVisible(enable);
+	numSuffix->setVisible(enable);
+	numFormatCombo->setVisible(enable);
+	numGroup->setVisible(enable);
 	if (enable)
 	{
 		enableBullet(false);
@@ -179,31 +183,44 @@ void PropertyWidget_ParEffect::enableNum(bool enable)
 }
 void PropertyWidget_ParEffect::enableParEffect(bool enable)
 {
-	peOffRadio->setChecked(!enable);
-	peOffset_->setEnabled(enable);
-	peCharStyleCombo->setEnabled(enable);
-	peIndent_->setEnabled(enable);
+	peOffset_->setVisible(enable);
+	peCharStyleCombo->setVisible(enable);
+	peIndent_->setVisible(enable);
+	peGroup->setVisible(enable);
 	if (!enable)
 	{
 		enableBullet(false);
 		enableDropCap(false);
 		enableNum(false);
+		peCombo->setCurrentIndex(0);
 	}
 }
 
 void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 {
-	if (peOffRadio->isChecked() && !newPStyle.hasBullet() && !newPStyle.hasDropCap() && !newPStyle.hasNum())
+	if (peCombo->currentIndex() && !newPStyle.hasBullet() && !newPStyle.hasDropCap() && !newPStyle.hasNum())
+	{
+		enableParEffect(false);
 		return;
+	}
 	disconnectSignals ();
 
 	bool enablePE = true;
 	if (newPStyle.hasDropCap())
+	{
+		peCombo->setCurrentIndex(1);
 		enableDropCap(true);
+	}
 	else if (newPStyle.hasBullet())
+	{
+		peCombo->setCurrentIndex(2);
 		enableBullet(true);
+	}
 	else if (newPStyle.hasNum())
+	{
+		peCombo->setCurrentIndex(3);
 		enableNum(true);
+	}
 	else
 		enablePE = false;
 
@@ -235,10 +252,7 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 
 void PropertyWidget_ParEffect::connectSignals()
 {
-	connect(peOffRadio, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
-	connect(dropCapRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
-	connect(bulletRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
-	connect(numRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
+	connect(peCombo, SIGNAL(activated(int)), this, SLOT(handleParEffectUse()), Qt::UniqueConnection);
 	connect(dropCapLines, SIGNAL(valueChanged(int)), this, SLOT(handleDropCapLines(int)), Qt::UniqueConnection);
 	connect(bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(handleBulletStr(QString)), Qt::UniqueConnection);
 	connect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)), Qt::UniqueConnection);
@@ -254,10 +268,7 @@ void PropertyWidget_ParEffect::connectSignals()
 
 void PropertyWidget_ParEffect::disconnectSignals()
 {
-	disconnect(peOffRadio, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
-	disconnect(dropCapRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
-	disconnect(bulletRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
-	disconnect(numRadio_, SIGNAL(clicked()), this, SLOT(handleParEffectUse()));
+	disconnect(peCombo, SIGNAL(activated(int)), this, SLOT(handleParEffectUse()));
 	disconnect(dropCapLines, SIGNAL(valueChanged(int)), this, SLOT(handleDropCapLines(int)));
 	disconnect(bulletStrEdit_, SIGNAL(editTextChanged(QString)), this, SLOT(handleBulletStr(QString)));
 	disconnect(numComboBox, SIGNAL(activated(QString)), this, SLOT(handleNumName(QString)));
@@ -319,8 +330,8 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	if (!m_doc || !m_item)
 		return;
 	ParagraphStyle newStyle;
-	enableParEffect(!peOffRadio->isChecked());
-	if (dropCapRadio_->isChecked())
+	enableParEffect(peCombo->currentIndex() != 0);
+	if (peCombo->currentIndex() == 1)
 	{
 		enableDropCap(true);
 		newStyle.setDropCapLines(dropCapLines->value());
@@ -328,7 +339,7 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 		newStyle.setHasBullet(false);
 		newStyle.setHasNum(false);
 	}
-	else if (bulletRadio_->isChecked())
+	else if (peCombo->currentIndex() == 2)
 	{
 		enableBullet(true);
 		newStyle.setHasBullet(true);
@@ -339,7 +350,7 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 		newStyle.setHasNum(false);
 		newStyle.setHasDropCap(false);
 	}
-	else if (numRadio_->isChecked())
+	else if (peCombo->currentIndex() == 3)
 	{
 		enableNum(true);
 		newStyle.setHasDropCap(false);
@@ -540,8 +551,7 @@ void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &new
 
 void PropertyWidget_ParEffect::languageChange()
 {
-	peOffRadio->setText(tr("No Paragraph Effects"));
-	dropCapRadio_->setText(tr("Use Drop Caps"));
+	fillPECombo();
 	dropCapLinesLabel->setText(tr("Drop Caps lines"));
 	peOffsetLabel->setText(tr("Paragraph Effect offset"));
 	peCharStyleLabel->setText(tr("Pargraph Effect style..."));

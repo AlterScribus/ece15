@@ -85,12 +85,22 @@ private:
 		if (bulletStrEdit_->currentText().isEmpty())
 			bulletStrEdit_->setEditText(QChar(0x2022));
 	}
-	
+
 	void fillNumFormatCombo()
 	{
 		numFormatCombo->clear();
 		numFormatCombo->addItems(getFormatList());
 	}
+
+	void fillPECombo()
+	{
+		peCombo->clear();
+		peCombo->addItem(tr("No Paragraph Effects"));
+		peCombo->addItem(tr("Drop Caps"));
+		peCombo->addItem(tr("Bulleted List"));
+		peCombo->addItem(tr("Numerated List"));
+	}
+
 //	void SMPStyleWidget::fillNumRestartCombo()
 //	{
 //		numRestartCombo->clear();
