@@ -525,13 +525,13 @@ void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &new
 		item = item->asTable()->activeCell().textFrame();
 	if (item != NULL)
 	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(item, true);
-		m_doc->flag_Renumber = true;
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 
+		Selection tempSelection(this, false);
+		tempSelection.addItem(item, true);
 		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+		m_doc->updateNumbers();
 
 		connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 		connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
