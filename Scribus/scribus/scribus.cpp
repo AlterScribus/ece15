@@ -3433,6 +3433,11 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
+	if (doc->flag_NumUpdateRequest)
+	{
+		doc->setupNumerations();
+		emit UpdateRequest(reqNumUpdate);
+	}
 	while (doc->flag_Renumber)
 	{
 		doc->updateNumbers();
@@ -4308,7 +4313,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 //		if (fileLoader->fileType() > FORMATID_NATIVEIMPORTEND)
 //			scrActions["fileSave"]->setEnabled(false);
 		delete fileLoader;
-		doc->updateNumbers(true);
 		view->updatesOn(true);
 		w->setUpdatesEnabled(true);
 		disconnect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(newActWin(QMdiSubWindow *)));
@@ -4320,6 +4324,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		// Seems to fix crash on loading
 		ActWin = NULL;
 		newActWin(w->getSubWin());
+		doc->updateNumbers(true);
+		emit UpdateRequest(reqNumUpdate);
 		doc->setCurrentPage(doc->DocPages.at(0));
 		view->cmsToolbarButton->setChecked(doc->HasCMS);
 		view->zoom();
@@ -4428,7 +4434,7 @@ void ScribusMainWindow::slotGetContent()
 					bookmarkPalette->BView->ChangeText(doc->Items->at(a));
 			}
 			if (!impsetup.textOnly)
-				doc->setupNumerations();
+				doc->flag_NumUpdateRequest = true;
 			view->DrawNew();
 			slotDocCh();
 			styleManager->setDoc(doc);
@@ -9998,6 +10004,7 @@ void ScribusMainWindow::updateDocument()
 		doc->updateNumbers(true);
 		doc->updateMarks(true);
 		doc->regionsChanged()->update(QRect());
+		emit UpdateRequest(reqNumUpdate);
 	}
 }
 

@@ -278,7 +278,8 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true),
-	flag_Renumber(false)
+	flag_Renumber(false),
+	flag_NumUpdateRequest(false)
 {
 	docUnitRatio=unitGetRatioFromIndex(docPrefsData.docSetupPrefs.docUnitIndex);
 	docPrefsData.docSetupPrefs.pageHeight=0;
@@ -382,7 +383,8 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true),
-	flag_Renumber(false)
+	flag_Renumber(false),
+	flag_NumUpdateRequest(false)
 {
 	docPrefsData.docSetupPrefs.docUnitIndex=unitindex;
 	docPrefsData.docSetupPrefs.pageHeight=pagesize.height();
@@ -1493,9 +1495,11 @@ void ScribusDoc::redefineStyles(const StyleSet<ParagraphStyle>& newStyles, bool 
 		}
 	}
 	docParagraphStyles.invalidate();
-	setupNumerations();
 	if (!isLoading())
+	{
 		flag_Renumber = true;
+		flag_NumUpdateRequest = true;
+	}
 }
 
 void ScribusDoc::redefineCharStyles(const StyleSet<CharStyle>& newStyles, bool removeUnused)
@@ -16787,19 +16791,13 @@ void ScribusDoc::restartAutoSaveTimer()
 
 void ScribusDoc::setupNumerations()
 {
+	QList<NumStruct*> numList = numerations.values();
+	while (!numList.isEmpty())
+		delete numList.takeFirst();
+	numerations.clear();
+	
 	Numeration num;
 	NumStruct * numS = NULL;
-	if (numerations.isEmpty())
-	{
-		//create default numeration
-		numS = new NumStruct;
-		numS->m_name = "default";
-		numS->m_nums.insert(0, num);
-		numS->m_counters.insert(0, 0);
-		numS->m_lastlevel = -1;
-		numerations.insert(numS->m_name, numS);
-	}
-	
 	for (int i=0; i < docParagraphStyles.count(); ++i)
 	{
 		if (docParagraphStyles[i].hasNum())
@@ -16832,11 +16830,25 @@ void ScribusDoc::setupNumerations()
 			numerations.insert(numS->m_name, numS);
 		}
 	}
-	if (orgNumerations != numerations)
+
+	if (!numerations.contains("default"))
 	{
-		orgNumerations = numerations;
-		flag_Renumber = true;
+		//create default numeration
+		numS = new NumStruct;
+		numS->m_name = "default";
+		numS->m_nums.insert(0, num);
+		numS->m_counters.insert(0, 0);
+		numS->m_lastlevel = -1;
+		numerations.insert("default", numS);
 	}
+
+	flag_NumUpdateRequest = false;
+	if (orgNumNames != numerations.keys())
+	{
+		orgNumNames = numerations.keys();
+		flag_NumUpdateRequest = true;
+	}
+	flag_Renumber = true;
 }
 
 QString ScribusDoc::getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style)

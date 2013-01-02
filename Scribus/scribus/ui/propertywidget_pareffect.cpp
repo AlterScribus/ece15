@@ -115,16 +115,12 @@ void PropertyWidget_ParEffect::unitChange()
 void PropertyWidget_ParEffect::fillNumerationsCombo()
 {
 	QStringList numNames;
-	for (int i = 0; i < m_doc->paragraphStyles().count(); ++i)
+	if (m_doc)
 	{
-		ParagraphStyle pStyle = m_doc->paragraphStyles()[i];
-		if (pStyle.hasNum() && pStyle.numName() != "<local block>" && !numNames.contains(pStyle.numName()))
-			numNames.append(pStyle.numName());
-	}
-	if (numNames.isEmpty())
-		numNames.append("default");
-	else if (numNames.count() > 1)
+		foreach (QString numName, m_doc->numerations.keys())
+			numNames.append(numName);
 		numNames.sort();
+	}
 	numNames.prepend("<local block>");
 	numComboBox->clear();
 	numComboBox->insertItems(0, numNames);

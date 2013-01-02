@@ -1046,6 +1046,7 @@ void SMParagraphStyle::slotNumName(const QString &str)
 			pwidget_->numLevelSpin->setMaximum(numS->m_counters.count()+1);
 		else
 			pwidget_->numLevelSpin->setMaximum(1);
+		doc_->flag_NumUpdateRequest = true;
 	}
 
 	if (!selectionIsDirty_)
@@ -1062,7 +1063,7 @@ void SMParagraphStyle::slotNumNew()
 	{
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setNumName(newName);
-		doc_->setupNumerations();
+		doc_->flag_NumUpdateRequest = true;
 	}
 
 	if (!selectionIsDirty_)
