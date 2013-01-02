@@ -225,7 +225,9 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 	dropCapLines->setValue(newPStyle.dropCapLines());
 	bulletStrEdit_->setEditText(newPStyle.bulletStr());
 	numName = newPStyle.numName();
-	nFormat = newPStyle.numFormat();
+	if (numName == "")
+		numName = "<local block>";
+	numComboBox->setCurrentIndex(numComboBox->findText(numName));
 	NumStruct * numS = m_doc->numerations.value(numName);
 	if (numS)
 		numLevelSpin->setMaximum(numS->m_counters.count()+1);
@@ -236,7 +238,7 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 	numSuffix->setText(newPStyle.numSuffix());
 	numStart->setValue(newPStyle.numStart());
 
-	numComboBox->setCurrentIndex(numComboBox->findText(numName));
+	nFormat = newPStyle.numFormat();
 	numFormatCombo->setCurrentIndex(nFormat);
 	peOffset_->setValue(newPStyle.parEffectOffset() * m_unitRatio);
 	peIndent_->setChecked(newPStyle.parEffectIndent());

@@ -295,6 +295,15 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	editOnPreview = false;
 	previewVisual = -1;
 	dontResize = false;
+	//create default numeration
+	NumStruct * numS = new NumStruct;
+	numS->m_name = "default";
+	Numeration newNum;
+	numS->m_nums.insert(0, newNum);
+	numS->m_counters.insert(0, 0);
+	numS->m_lastlevel = -1;
+	numerations.insert("default", numS);
+	
 }
 
 
@@ -16836,7 +16845,8 @@ void ScribusDoc::setupNumerations()
 		//create default numeration
 		numS = new NumStruct;
 		numS->m_name = "default";
-		numS->m_nums.insert(0, num);
+		Numeration newNum;
+		numS->m_nums.insert(0, newNum);
 		numS->m_counters.insert(0, 0);
 		numS->m_lastlevel = -1;
 		numerations.insert("default", numS);
@@ -16972,20 +16982,6 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 	foreach (NumStruct * numS, numerations.values())
 		for (int l = 0; l < numS->m_nums.count(); ++l)
 			numS->m_counters[l] = numS->m_nums[l].start -1;
-	foreach (PageItem* item, DocItems)
-	{
-		if (item->itemText.length() > 0)
-		{
-			PageItem* itemFirst = item->firstInChain();
-			if (updateLocalNums(itemFirst->itemText))
-			{
-				if (itemFirst->isTextFrame())
-					itemFirst->asTextFrame()->invalidateLayout(true);
-				else
-					itemFirst->invalidateLayout();
-			}
-		}
-	}
 
 	flag_Renumber = false;
 	//renumbering for doc, sections, page and frame range
@@ -17032,6 +17028,15 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 						ParagraphStyle style = item->itemText.paragraphStyle(pos);
 						if (style.hasNum() && style.numName() != "<local block>")
 						{
+							if (!numerations.contains(style.numName()))
+							{
+								ParagraphStyle newStyle;
+								newStyle.setNumName("<local block>");
+								Selection tempSelection(this, false);
+								tempSelection.addItem(item, true);
+								itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+								continue;
+							}
 							ScText * hl = item->itemText.item(pos);
 							bool resetNums = false;
 							if (numerations.value(style.numName())->m_lastlevel == -1)
@@ -17080,6 +17085,23 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 			}
 		}
 	}
+
+	//update local numbering
+	foreach (PageItem* item, DocItems)
+	{
+		if (item->itemText.length() > 0)
+		{
+			PageItem* itemFirst = item->firstInChain();
+			if (updateLocalNums(itemFirst->itemText))
+			{
+				if (itemFirst->isTextFrame())
+					itemFirst->asTextFrame()->invalidateLayout(true);
+				else
+					itemFirst->invalidateLayout();
+			}
+		}
+	}
+
 }
 
 QStringList ScribusDoc::marksLabelsList(MarkType type)

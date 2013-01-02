@@ -68,7 +68,10 @@
         <item>
          <widget class="ScrSpinBox" name="peOffset_">
           <property name="minimum">
-           <double>-99.989999999999995</double>
+           <double>-999.990000000000009</double>
+          </property>
+          <property name="maximum">
+           <double>999.990000000000009</double>
           </property>
          </widget>
         </item>
@@ -94,7 +97,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="dropCapLines"/>
+       <widget class="QSpinBox" name="dropCapLines">
+        <property name="minimum">
+         <number>2</number>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer">
@@ -131,7 +138,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="numLevelSpin"/>
+         <widget class="QSpinBox" name="numLevelSpin">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer_2">
@@ -154,7 +165,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="numStart"/>
+         <widget class="QSpinBox" name="numStart">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>999</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -168,7 +186,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="numComboBox"/>
+         <widget class="QComboBox" name="numComboBox">
+          <property name="currentIndex">
+           <number>-1</number>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer_3">

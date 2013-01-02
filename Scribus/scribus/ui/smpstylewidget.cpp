@@ -216,8 +216,11 @@ void SMPStyleWidget::setDoc(ScribusDoc *doc)
 	if (m_Doc)
 		disconnect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
 	m_Doc = doc;
-	if (doc)
+	if (m_Doc)
+	{
 		connect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+		fillNumerationsCombo();
+	}
 }
 
 void SMPStyleWidget::fillBulletStrEditCombo()
