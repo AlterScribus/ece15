@@ -548,12 +548,23 @@ void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &new
 void PropertyWidget_ParEffect::languageChange()
 {
 	fillPECombo();
-	dropCapLinesLabel->setText(tr("Drop Caps lines"));
-	peOffsetLabel->setText(tr("Paragraph Effect offset"));
-	peCharStyleLabel->setText(tr("Pargraph Effect style..."));
-	peCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
-	bulletCharTableButton_->setToolTip(tr("Enhanced Char Table for inserting customs chars as bullets"));
+	dropCapLinesLabel->setText(tr("Lines"));
+	dropCapsGroup->setTitle(tr("Drop Caps"));
+	bullGroup->setTitle(tr("Bulleted List"));
+	bulletCharLabel->setText(tr("Bullet Char(s)"));
+	bulletCharTableButton_->setToolTip(tr("Enhanced char table to choose bullet chars"));
 	bulletCharTableButton_->setText(tr("Char Table"));
+	numGroup->setTitle(tr("Numbered List"));
+	numLevelLabel->setText(tr("Level"));
+	numComboLabel->setText(tr("Set"));
+	numFormatLabel->setText(tr("Format"));
+	numStartLabel->setText(tr("Start"));
+	numPrefixLabel->setText(tr("Prefix"));
+	numSuffixLabel->setText(tr("Suffix"));
+	peOffsetLabel->setText(tr("Offset"));
+	peIndent_->setText(tr("Auto-Indent"));
+	peCharStyleLabel->setText(tr("Char Style"));
+	peCharStyleCombo->setToolTip(tr("Choose chracter style or leave blank for use default paragraph style"));
 }
 
 void PropertyWidget_ParEffect::openEnhanced()
