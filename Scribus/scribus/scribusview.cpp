@@ -735,8 +735,8 @@ void ScribusView::contentsDragEnterEvent(QDragEnterEvent *e)
 	{
 		e->acceptProposedAction();
 		double gx, gy, gw, gh;
-		ScriXmlDoc *ss = new ScriXmlDoc();
-		if(ss->ReadElemHeader(text, fromFile, &gx, &gy, &gw, &gh))
+		ScriXmlDoc ss;
+		if(ss.ReadElemHeader(text, fromFile, &gx, &gy, &gw, &gh))
 		{
 			FPoint dragPosDoc = m_canvas->globalToCanvas(widget()->mapToGlobal(e->pos()));
 			dragX = dragPosDoc.x(); //e->pos().x() / m_canvas->scale();
@@ -753,8 +753,6 @@ void ScribusView::contentsDragEnterEvent(QDragEnterEvent *e)
 //				redrawMarker->show();
 			emit ItemGeom();
 		}
-		delete ss;
-		ss=NULL;
 	}
 }
 
@@ -1282,7 +1280,7 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 				Doc->m_Selection->connectItemToGUI();
 				currItem = Doc->m_Selection->itemAt(0);
 				currItem->LayerID = Doc->activeLayer();
-				if (Doc->useRaster)
+				if (Doc->SnapGrid)
 				{
 					double nx = currItem->xPos();
 					double ny = currItem->yPos();
@@ -1991,11 +1989,11 @@ void ScribusView::PasteToPage()
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Doc->currentPage()->getUName(), 0, Um::Paste, "", Um::IPaste));
 /*	if (ScMimeData::clipboardHasScribusFragment())
 	{
-		bool savedAlignGrid = Doc->useRaster;
+		bool savedAlignGrid = Doc->SnapGrid;
 		bool savedAlignGuides = Doc->SnapGuides;
 		QByteArray fragment   = ScMimeData::clipboardScribusFragment();
 		Selection pastedObjects = Doc->serializer()->deserializeObjects(fragment);
-		Doc->useRaster = savedAlignGrid;
+		Doc->SnapGrid = savedAlignGrid;
 		Doc->SnapGuides = savedAlignGuides;
 		pastedObjects.setGroupRect();
 		double gx, gy, gh, gw;
@@ -2050,7 +2048,7 @@ void ScribusView::PasteToPage()
 	else if (newObjects.count() == 1)
 	{
 		PageItem *currItem = newObjects.itemAt(0);
-		if (Doc->useRaster)
+		if (Doc->SnapGrid)
 		{
 			double nx = currItem->xPos();
 			double ny = currItem->yPos();
@@ -3782,14 +3780,11 @@ void ScribusView::TextToPath()
 						{
 							if (hl->hasObject(Doc))
 							{
+								ScriXmlDoc ss;
 								Selection tempSelection(this, false);
 								tempSelection.addItem(hl->getItem(Doc), true);
-								ScriXmlDoc *ss = new ScriXmlDoc();
-								QString dataS = ss->WriteElem(Doc, &tempSelection);
-								delete ss;
-								ss = new ScriXmlDoc();
+								QString dataS = ss.WriteElem(Doc, &tempSelection);
 								emit LoadElem(dataS, currItem->xPos(), currItem->yPos(), false, true, Doc, this);
-								delete ss;
 								bb = Doc->Items->last();
 								int z = Doc->Items->indexOf(bb);
 								bb->setTextFlowMode(currItem->textFlowMode());
@@ -4116,7 +4111,6 @@ void ScribusView::TextToPath()
 				{
 					PageItem* newItem = new PageItem_Polygon(*currItem);
 					newItem->convertTo(PageItem::Polygon);
-					newItem->Frame = false;
 					newItem->ClipEdited = true;
 					newItem->FrameType = 3;
 					newItem->OldB2 = newItem->width();

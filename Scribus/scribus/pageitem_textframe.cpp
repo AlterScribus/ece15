@@ -191,8 +191,8 @@ QRegion PageItem_TextFrame::calcAvailableRegion()
 		if (Parent != NULL)
 			canvasToLocalMat.translate(gXpos, gYpos);
 		else
-			canvasToLocalMat.translate(Xpos, Ypos);
-		canvasToLocalMat.rotate(Rot);
+			canvasToLocalMat.translate(m_xPos, m_yPos);
+		canvasToLocalMat.rotate(m_rotation);
 		canvasToLocalMat = canvasToLocalMat.inverted(&invertible);
 
 		if (!invertible) return QRegion();
@@ -1372,14 +1372,10 @@ void PageItem_TextFrame::layout()
 		lineCorr = m_lineWidth / 2.0;
 	
 	// TODO: refactor this into PageItem
-	MarginStruct extra;
-	extra.Top = TExtra;
-	extra.Left = Extra;
-	extra.Right = RExtra;
-	extra.Bottom = BExtra;
+	MarginStruct savedTextDistanceMargins(m_textDistanceMargins);
 
 	LineControl current;
-	current.init(Width, Height, extra, lineCorr);
+	current.init(Width, Height, m_textDistanceMargins, lineCorr);
 	current.initColumns(columnWidth(), ColGap);
 	current.hyphenCount = 0;
 
@@ -1454,7 +1450,7 @@ void PageItem_TextFrame::layout()
 		}
 		
 		current.nextColumn();
-		lastLineY = extra.Top;
+		lastLineY = m_textDistanceMargins.Top;
 
 		//automatic line spacing factor (calculated once)
 		double autoLS = static_cast<double>(m_Doc->typographicPrefs().autoLineSpacing) / 100.0;
@@ -1475,13 +1471,13 @@ void PageItem_TextFrame::layout()
 			else 
 				chs = hl->fontSize();
 			desc = -hl->font().descent(chs / 10.0);
-			current.yPos = extra.Top + lineCorr;
+			current.yPos = m_textDistanceMargins.Top + lineCorr;
 //			qDebug() << QString("first line at y=%1").arg(current.yPos);
 		}
 		else // empty itemText:
 		{
 			desc = -itemText.defaultStyle().charStyle().font().descent(itemText.defaultStyle().charStyle().fontSize() / 10.0);
-			current.yPos = itemText.defaultStyle().lineSpacing() + extra.Top + lineCorr - desc;
+			current.yPos = itemText.defaultStyle().lineSpacing() + m_textDistanceMargins.Top + lineCorr - desc;
 		}
 		current.startLine(firstInFrame());
 
@@ -1720,7 +1716,7 @@ void PageItem_TextFrame::layout()
 				}
 				current.breakIndex = -1;
 				if (current.startOfCol && !current.afterOverflow && current.recalculateY)
-					current.yPos = qMax(current.yPos, extra.Top);
+					current.yPos = qMax(current.yPos, m_textDistanceMargins.Top);
 				// more about par gap and dropcaps
 				if ((a > firstInFrame() && itemText.text(a-1) == SpecialChars::PARSEP) || (a == 0 && BackBox == 0 && current.startOfCol))
 				{
@@ -1976,7 +1972,7 @@ void PageItem_TextFrame::layout()
 					//if top of column Y position depends on first line offset
 					if (current.startOfCol)
 					{
-						lastLineY = qMax(lastLineY, extra.Top + lineCorr);
+						lastLineY = qMax(lastLineY, m_textDistanceMargins.Top + lineCorr);
 						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
@@ -1984,9 +1980,9 @@ void PageItem_TextFrame::layout()
 						{
 							if (current.yPos <= lastLineY)
 								current.yPos = lastLineY +1;
-							double by = Ypos;
+							double by = m_yPos;
 							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+								by = m_yPos - m_Doc->Pages->at(OwnPage)->yOffset();
 							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
 							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
 							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
@@ -2011,9 +2007,9 @@ void PageItem_TextFrame::layout()
 						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
 						{
 							current.yPos += m_Doc->guidesPrefs().valueBaselineGrid;
-							double by = Ypos;
+							double by = m_yPos;
 							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+								by = m_yPos - m_Doc->Pages->at(OwnPage)->yOffset();
 							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
 							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
 							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
@@ -2127,9 +2123,9 @@ void PageItem_TextFrame::layout()
 						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
 						{
 							current.yPos++;
-							double by = Ypos;
+							double by = m_yPos;
 							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+								by = m_yPos - m_Doc->Pages->at(OwnPage)->yOffset();
 							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
 							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
 							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
@@ -2893,7 +2889,7 @@ void PageItem_TextFrame::layout()
 						current.nextColumn();
 						current.mustLineEnd = current.colRight;
 						current.addLeftIndent = true;
-						lastLineY = extra.Top;
+						lastLineY = m_textDistanceMargins.Top;
 						current.rowDesc = 0;
 						current.recalculateY = true;
 					}
@@ -3153,10 +3149,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	{
 	//	e2 = QRect(qRound(cullingArea.x()  / sc + m_Doc->minCanvasCoordinate.x()), qRound(cullingArea.y()  / sc + m_Doc->minCanvasCoordinate.y()),
 	//			   qRound(cullingArea.width() / sc), qRound(cullingArea.height() / sc));
-		pf2.translate(Xpos, Ypos);
+		pf2.translate(m_xPos, m_yPos);
 	}
 	
-	pf2.rotate(Rot);
+	pf2.rotate(m_rotation);
 	if (!m_Doc->layerOutline(LayerID))
 	{
 		if ((fillColor() != CommonStrings::None) || (GrType != 0))
@@ -3170,10 +3166,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->fillPath();
 		}
 	}
-	double S_TExtra = TExtra;
-	double S_Extra = Extra;
-	double S_RExtra = RExtra;
-	double S_BExtra = BExtra;
+	MarginStruct savedTextDistanceMargins(m_textDistanceMargins);
 	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && (((annotation().Type() > 1) && (annotation().Type() < 11)) || (annotation().Type() > 12)))
 	{
 		QColor fontColor;
@@ -3281,9 +3274,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				p->save();//SA2
 				p->setupPolygon(&PoLine);
 				p->setClipPath();
-				p->scale(LocalScX, LocalScY);
-				p->translate(LocalX*LocalScX, LocalY*LocalScY);
-				p->rotate(LocalRot);
+				p->scale(m_imageXScale, m_imageYScale);
+				p->translate(m_imageXOffset*m_imageXScale, m_imageYOffset*m_imageYScale);
+				p->rotate(m_imageRotation);
 				if (pixm.width() > 0 && pixm.height() > 0)
 					p->drawImage(pixm.qImagePtr());
 				p->restore();//RE2
@@ -3295,10 +3288,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		else if (annotation().Type() == Annotation::Textfield)
 		{
 			int wdt = annotation().Bwid();
-			TExtra = wdt;
-			Extra = wdt;
-			RExtra = wdt;
-			BExtra = wdt;
+			m_textDistanceMargins.set(wdt, wdt, wdt, wdt);
 			invalid = true;
 			layout();
 		}
@@ -3645,7 +3635,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 					}
 					if (!m_Doc->RePos)
 					{
-						if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds))
+						if (((selecteds && m_isSelected) || ((NextBox != 0 || BackBox != 0) && selecteds))
 							&& (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 						{
 							double xcoZli = selX + hls->glyph.xoffset;
@@ -3732,7 +3722,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 					double fontSize = charStyle.fontSize() / 10.0;
 					desc = - font.descent(fontSize);
 					asce = font.ascent(fontSize);
-					if (((selected && Select) || ((NextBox != 0 || BackBox != 0) && selected)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
+					if (((selected && m_isSelected) || ((NextBox != 0 || BackBox != 0) && selected)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
 						p->setBrush(qApp->palette().color(QPalette::Active, QPalette::HighlightedText));
@@ -3786,10 +3776,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	//	}
 		//	pf2.end();
 	}
-	TExtra = S_TExtra;
-	Extra = S_Extra;
-	RExtra = S_RExtra;
-	BExtra = S_BExtra;
+	m_textDistanceMargins=savedTextDistanceMargins;
 	p->restore();//RE1
 }
 
@@ -3925,12 +3912,12 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 		return;
 	p->save();
 	if (!isEmbedded)
-		p->translate(Xpos, Ypos);
-	p->rotate(Rot);
+		p->translate(m_xPos, m_yPos);
+	p->rotate(m_rotation);
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
 		double scpInv = 0.0;
-		if ((Frame) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
+		if ((drawFrame()) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
 		{
 			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			if ((isBookmark) || (m_isAnnotation))
@@ -5057,8 +5044,8 @@ double PageItem_TextFrame::columnWidth()
 		lineCorr = m_lineWidth / 2.0;
 	else
 		lineCorr = 0;
-	return (Width - (ColGap * (Cols - 1)) - Extra - RExtra - 2 * lineCorr) / Cols;
-//	return (Width - (ColGap * (Cols - 1)) - Extra - RExtra - lineCorr) / Cols;
+	return (Width - (ColGap * (Cols - 1)) - m_textDistanceMargins.Left - m_textDistanceMargins.Right - 2 * lineCorr) / Cols;
+//	return (Width - (ColGap * (Cols - 1)) - m_textDistanceMargins.Left - m_textDistanceMargins.Right - lineCorr) / Cols;
 }
 
 /*
@@ -5106,13 +5093,13 @@ void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 	double lineCorr=0;
 	if (lineColor() != CommonStrings::None)
 		lineCorr = m_lineWidth / 2.0;
-	if (TExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
-	if (BExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
+	if (m_textDistanceMargins.Top + lineCorr!=0.0)
+		p->drawSharpLine(FPoint(0, m_textDistanceMargins.Top + lineCorr), FPoint(Width, m_textDistanceMargins.Top + lineCorr));
+	if (m_textDistanceMargins.Bottom + lineCorr!=0.0)
+		p->drawSharpLine(FPoint(0, Height - m_textDistanceMargins.Bottom - lineCorr), FPoint(Width, Height - m_textDistanceMargins.Bottom - lineCorr));
 	while(curCol < Cols)
 	{
-		colLeft=(colWidth + ColGap) * curCol + Extra + lineCorr;
+		colLeft=(colWidth + ColGap) * curCol + m_textDistanceMargins.Left + lineCorr;
 		if (colLeft != 0.0)
 			p->drawSharpLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
 		if (colLeft + colWidth != Width)
@@ -6019,7 +6006,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 	//ugly hack increasing min frame`s haeight against strange glyph painting if it is too close of bottom
 	double hackValue = 0.5;
 
-	setHeight(ceil(maxY) + BExtra + hackValue);
+	setHeight(ceil(maxY) + m_textDistanceMargins.Bottom + hackValue);
 	updateClip();
 	invalid = true;
 	m_Doc->changed();

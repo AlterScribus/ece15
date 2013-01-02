@@ -1055,6 +1055,7 @@ public:
 	void itemSelection_SetLineSpacingMode(int w, Selection* customSelection=0);
 	//void ChLocalXY(double x, double y);
 	//void ChLocalSc(double x, double y);
+	void itemSetFont(const QString& newFont);
 	void itemSelection_SetFont(QString fon, Selection* customSelection=0);
 	void itemSelection_SetFillColor(QString farbe, Selection* customSelection=0);
 	void itemSelection_SetFillShade(int sha, Selection* customSelection=0);
@@ -1216,6 +1217,7 @@ public: // Public attributes
 	int Last;
 	int viewCount;
 	int viewID;
+	bool SnapGrid;
 	bool SnapGuides;
 	bool SnapElement;
 	bool GuideLock;
@@ -1223,6 +1225,8 @@ public: // Public attributes
 	/** \brief Minimum and Maximum Points of Document */
 	FPoint minCanvasCoordinate;
 	FPoint maxCanvasCoordinate;
+	FPoint stored_minCanvasCoordinate;
+	FPoint stored_maxCanvasCoordinate;
 	double rulerXoffset;
 	double rulerYoffset;
 	/** \brief List of Pages */
@@ -1250,8 +1254,6 @@ public: // Public attributes
 	//int currentPageLayout;
 	/** \brief Erste Seitennummer im Dokument */
 	int FirstPnum;
-	/** \brief Flag fuer Rasterbenutzung */
-	bool useRaster;
 	/** \brief Im Dokument benutzte Farben */
 	ColorList PageColors;
 	int appMode;

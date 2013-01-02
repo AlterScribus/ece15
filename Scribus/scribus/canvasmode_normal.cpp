@@ -486,11 +486,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 				m_doc->DragElements.clear();
 				for (int dre=0; dre<m_doc->m_Selection->count(); ++dre)
 					m_doc->DragElements.append(m_doc->m_Selection->itemAt(dre));
-				ScriXmlDoc *ss = new ScriXmlDoc();
-				ScElemMimeData* md = new ScElemMimeData();
-				md->setScribusElem(ss->WriteElem(m_doc, m_doc->m_Selection));
-				delete ss;
-				ss = NULL;
+				ScElemMimeData* md = ScriXmlDoc::WriteToMimeData(m_doc, m_doc->m_Selection);
 				QDrag* dr = new QDrag(m_view);
 				dr->setMimeData(md);
 				const QPixmap& pm = loadIcon("DragPix.xpm");
@@ -611,7 +607,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 									xSnap = nx;
 							}
 						}
-						if (m_doc->useRaster)
+						if (m_doc->SnapGrid)
 						{
 							m_doc->m_Selection->setGroupRect();
 							double gx, gy, gh, gw, gxo, gyo;
@@ -697,7 +693,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 								xSnap = nx;
 						}
 					}
-					if (m_doc->useRaster)
+					if (m_doc->SnapGrid)
 					{
 						double gx, gy, gh, gw, gxo, gyo;
 						m_doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
@@ -1124,7 +1120,7 @@ void CanvasMode_Normal::mouseReleaseEvent(QMouseEvent *m)
 			{
 				currItem = m_doc->m_Selection->itemAt(0);
 				m_doc->MoveItem(m_objectDeltaPos.x(), m_objectDeltaPos.y(), currItem);
-				if (m_doc->useRaster)
+				if (m_doc->SnapGrid)
 				{
 					double nx = currItem->xPos();
 					double ny = currItem->yPos();
@@ -1842,11 +1838,11 @@ void CanvasMode_Normal::importToPage()
 		PrefsManager::instance()->prefsFile->getContext("dirs")->set("pastefile", fileName.left(fileName.lastIndexOf("/")));
 		m_doc->setLoading(true);
 		QFileInfo fi(fileName);
-		bool savedAlignGrid = m_doc->useRaster;
+		bool savedAlignGrid = m_doc->SnapGrid;
 		bool savedAlignGuides = m_doc->SnapGuides;
 		bool savedAlignElement = m_doc->SnapElement;
 		m_doc->SnapElement = false;
-		m_doc->useRaster = false;
+		m_doc->SnapGrid = false;
 		m_doc->SnapGuides = false;
 		if (fi.suffix().toLower() == "sce")
 			m_ScMW->slotElemRead(fileName, pastePoint.x(), pastePoint.y(), true, false, m_doc, m_doc->view());
@@ -1878,7 +1874,7 @@ void CanvasMode_Normal::importToPage()
 			PageItem *currItem = m_doc->m_Selection->itemAt(a);
 			currItem->LayerID = m_doc->activeLayer();
 		}
-		m_doc->useRaster = savedAlignGrid;
+		m_doc->SnapGrid = savedAlignGrid;
 		m_doc->SnapGuides = savedAlignGuides;
 		m_doc->SnapElement = savedAlignElement;
 		m_doc->setLoading(false);

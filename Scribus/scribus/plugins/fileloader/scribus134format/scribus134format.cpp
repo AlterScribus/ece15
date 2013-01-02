@@ -857,7 +857,7 @@ void Scribus134Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 	m_Doc->rulerXoffset = attrs.valueAsDouble("rulerXoffset", 0.0);
 	m_Doc->rulerYoffset = attrs.valueAsDouble("rulerYoffset", 0.0);
 	m_Doc->SnapGuides   = attrs.valueAsBool("SnapToGuides", false);
-	m_Doc->useRaster    = attrs.valueAsBool("SnapToGrid", false);
+	m_Doc->SnapGrid     = attrs.valueAsBool("SnapToGrid", false);
 	
 	m_Doc->setAutoSave(attrs.valueAsBool("AutoSave", false));
 	m_Doc->setAutoSaveTime(attrs.valueAsInt("AutoSaveTime", 600000));
@@ -2020,10 +2020,7 @@ bool Scribus134Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 	}
 
 	if (newItem->asPathText())
-	{
 		newItem->updatePolyClip();
-		newItem->Frame = true;
-	}
 	if (newItem->asImageFrame() || newItem->asLatexFrame())
 	{
 		if (!newItem->Pfile.isEmpty())
@@ -2070,9 +2067,9 @@ bool Scribus134Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 	pat.yoffset = attrs.valueAsDouble("yoffset", 0.0);
 	
 	uint itemCount1 = m_Doc->Items->count();
-	bool savedAlignGrid = m_Doc->useRaster;
+	bool savedAlignGrid = m_Doc->SnapGrid;
 	bool savedAlignGuides = m_Doc->SnapGuides;
-	m_Doc->useRaster = false;
+	m_Doc->SnapGrid  = false;
 	m_Doc->SnapGuides = false;
 
 	QStringRef tagName = reader.name();
@@ -2123,7 +2120,7 @@ bool Scribus134Format::readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, c
 		}
 	}
 
-	doc->useRaster  = savedAlignGrid;
+	doc->SnapGrid   = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
 	if (!success)
 	{
@@ -2931,10 +2928,7 @@ PageItem* Scribus134Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 	}
 
 	if (currItem->asPathText())
-	{
 		currItem->updatePolyClip();
-		currItem->Frame = true;
-	}
 	currItem->GrType = attrs.valueAsInt("GRTYP", 0);
 	QString GrColor;
 	QString GrColor2;

@@ -224,6 +224,8 @@ SlaOutputDev::SlaOutputDev(ScribusDoc* doc, QList<PageItem*> *Elements, QStringL
 	m_font = 0;
 	updateGUICounter = 0;
 	layersSetByOCG = false;
+	cropOffsetX = 0;
+	cropOffsetY = 0;
 }
 
 SlaOutputDev::~SlaOutputDev()
@@ -305,10 +307,25 @@ GBool SlaOutputDev::annotations_callback(Annot *annota, void *user_data)
 {
 	SlaOutputDev *dev = (SlaOutputDev*)user_data;
 	PDFRectangle *box = annota->getRect();
-	double xCoor = dev->m_doc->currentPage()->xOffset() + box->x1;
-	double yCoor = dev->m_doc->currentPage()->yOffset() + dev->m_doc->currentPage()->height() - box->y2;
+	double xCoor = dev->m_doc->currentPage()->xOffset() + box->x1 - dev->cropOffsetX;
+	double yCoor = dev->m_doc->currentPage()->yOffset() + dev->m_doc->currentPage()->height() - box->y2 + dev->cropOffsetY;
 	double width = box->x2 - box->x1;
 	double height = box->y2 - box->y1;
+	if (dev->rotate == 90)
+	{
+		xCoor = dev->m_doc->currentPage()->xOffset() - dev->cropOffsetX + box->y2;
+		yCoor = dev->m_doc->currentPage()->yOffset() + dev->cropOffsetY + box->x1;
+	}
+	else if (dev->rotate == 180)
+	{
+		xCoor = dev->m_doc->currentPage()->xOffset() - dev->cropOffsetX + dev->m_doc->currentPage()->width() - box->x1;
+		yCoor = dev->m_doc->currentPage()->yOffset() + dev->cropOffsetY + box->y2;
+	}
+	else if (dev->rotate == 270)
+	{
+		xCoor = dev->m_doc->currentPage()->xOffset() - dev->cropOffsetX + dev->m_doc->currentPage()->width() - box->y2;
+		yCoor = dev->m_doc->currentPage()->yOffset() + dev->cropOffsetY + dev->m_doc->currentPage()->height() - box->x1;
+	}
 	bool retVal = true;
 	if (annota->getType() == Annot::typeText)
 		retVal = !dev->handleTextAnnot(annota, xCoor, yCoor, width, height);
@@ -324,6 +341,7 @@ bool SlaOutputDev::handleTextAnnot(Annot* annota, double xCoor, double yCoor, do
 	AnnotText *anl = (AnnotText*)annota;
 	int z = m_doc->itemAdd(PageItem::TextFrame, PageItem::Rectangle, xCoor, yCoor, width, height, 0, CommonStrings::None, CommonStrings::None, true);
 	PageItem *ite = m_doc->Items->at(z);
+	ite->setRotation(rotate, true);
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
 	ite->setFillEvenOdd(false);
@@ -465,6 +483,7 @@ bool SlaOutputDev::handleLinkAnnot(Annot* annota, double xCoor, double yCoor, do
 	{
 		int z = m_doc->itemAdd(PageItem::TextFrame, PageItem::Rectangle, xCoor, yCoor, width, height, 0, CommonStrings::None, CommonStrings::None, true);
 		PageItem *ite = m_doc->Items->at(z);
+		ite->setRotation(rotate, true);
 		ite->ClipEdited = true;
 		ite->FrameType = 3;
 		ite->setFillEvenOdd(false);
@@ -623,6 +642,7 @@ bool SlaOutputDev::handleWidgetAnnot(Annot* annota, double xCoor, double yCoor, 
 						}
 						int z = m_doc->itemAdd(PageItem::TextFrame, PageItem::Rectangle, xCoor, yCoor, width, height, 0, CurrColorFill, CommonStrings::None, true);
 						PageItem *ite = m_doc->Items->at(z);
+						ite->setRotation(rotate, true);
 						ite->ClipEdited = true;
 						ite->FrameType = 3;
 						ite->setFillEvenOdd(false);
@@ -1263,7 +1283,7 @@ void SlaOutputDev::restoreState(GfxState *state)
 							sing->PoLine.translate(dx, dy);
 							if (sing->isGroup())
 							{
-								QList<PageItem*> allItems = sing->asGroupFrame()->getItemList();
+								QList<PageItem*> allItems = sing->asGroupFrame()->groupItemList;
 								for (int si = 0; si < allItems.count(); si++)
 								{
 									allItems[si]->moveBy(dx, dy, true);
@@ -1429,24 +1449,30 @@ void SlaOutputDev::clip(GfxState *state)
 //	qDebug() << "Clip";
 	double *ctm;
 	ctm = state->getCTM();
+	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 	QString output = convertPath(state->getPath());
 	FPointArray out;
-	out.parseSVG(output);
-	if (!pathIsClosed)
-		out.svgClosePath();
-	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
-	out.map(m_ctm);
+	if (!output.isEmpty())
+	{
+		out.parseSVG(output);
+		if (!pathIsClosed)
+			out.svgClosePath();
+		out.map(m_ctm);
+	}
 	double xmin, ymin, xmax, ymax;
 	state->getClipBBox(&xmin, &ymin, &xmax, &ymax);
 	QRectF crect = QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
 	crect = crect.normalized();
 	int z = m_doc->itemAdd(PageItem::Group, PageItem::Rectangle, crect.x() + m_doc->currentPage()->xOffset(), crect.y() + m_doc->currentPage()->yOffset(), crect.width(), crect.height(), 0, CommonStrings::None, CommonStrings::None, true);
 	PageItem *ite = m_doc->Items->at(z);
-	FPoint wh(getMinClipF(&out));
-	out.translate(-wh.x(), -wh.y());
-	FPoint dim = out.WidthHeight();
-	if (!((dim.x() == 0.0) || (dim.y() == 0.0)))		// avoid degenerate clipping paths
-		ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
+	if (!output.isEmpty())
+	{
+		FPoint wh(getMinClipF(&out));
+		out.translate(-wh.x(), -wh.y());
+		FPoint dim = out.WidthHeight();
+		if (!((dim.x() == 0.0) || (dim.y() == 0.0)))		// avoid degenerate clipping paths
+			ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
+	}
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
 	ite->setFillEvenOdd(false);
@@ -1473,24 +1499,30 @@ void SlaOutputDev::eoClip(GfxState *state)
 //	qDebug() << "EoClip";
 	double *ctm;
 	ctm = state->getCTM();
+	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 	QString output = convertPath(state->getPath());
 	FPointArray out;
-	out.parseSVG(output);
-	if (!pathIsClosed)
-		out.svgClosePath();
-	m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
-	out.map(m_ctm);
+	if (!output.isEmpty())
+	{
+		out.parseSVG(output);
+		if (!pathIsClosed)
+			out.svgClosePath();
+		out.map(m_ctm);
+	}
 	double xmin, ymin, xmax, ymax;
 	state->getClipBBox(&xmin, &ymin, &xmax, &ymax);
 	QRectF crect = QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
 	crect = crect.normalized();
 	int z = m_doc->itemAdd(PageItem::Group, PageItem::Rectangle, crect.x() + m_doc->currentPage()->xOffset(), crect.y() + m_doc->currentPage()->yOffset(), crect.width(), crect.height(), 0, CommonStrings::None, CommonStrings::None, true);
 	PageItem *ite = m_doc->Items->at(z);
-	FPoint wh(getMinClipF(&out));
-	out.translate(-wh.x(), -wh.y());
-	FPoint dim = out.WidthHeight();
-	if (!((dim.x() == 0.0) || (dim.y() == 0.0)))		// avoid degenerate clipping paths
-		ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
+	if (!output.isEmpty())
+	{
+		FPoint wh(getMinClipF(&out));
+		out.translate(-wh.x(), -wh.y());
+		FPoint dim = out.WidthHeight();
+		if (!((dim.x() == 0.0) || (dim.y() == 0.0)))		// avoid degenerate clipping paths
+			ite->PoLine = out.copy();  //FIXME: try to avoid copy if FPointArray when properly shared
+	}
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
 	ite->setFillEvenOdd(true);
@@ -2164,21 +2196,24 @@ GBool SlaOutputDev::tilingPatternFill(GfxState *state, Gfx * /*gfx*/, Catalog *c
 
 	gfx->display(str);
 	gElements = m_groupStack.pop();
-	tmpSel->clear();
+	m_doc->m_Selection->clear();
 	double pwidth = 0;
 	double pheight = 0;
 	if (gElements.Items.count() > 0)
 	{
 		for (int dre = 0; dre < gElements.Items.count(); ++dre)
 		{
-			tmpSel->addItem(gElements.Items.at(dre), true);
+			m_doc->m_Selection->addItem(gElements.Items.at(dre), true);
 			m_Elements->removeAll(gElements.Items.at(dre));
 		}
-		ite = m_doc->groupObjectsSelection(tmpSel);
+		m_doc->itemSelection_FlipV();
+		PageItem *ite;
+		if (m_doc->m_Selection->count() > 1)
+			ite = m_doc->groupObjectsSelection();
+		else
+			ite = m_doc->m_Selection->itemAt(0);
 		ite->setFillTransparency(1.0 - state->getFillOpacity());
 		ite->setFillBlendmode(getBlendMode(state));
-		m_doc->m_Selection->addItem(ite, true);
-		m_doc->itemSelection_FlipV();
 		m_doc->m_Selection->clear();
 		ScPattern pat = ScPattern();
 		pat.setDoc(m_doc);
@@ -2198,7 +2233,6 @@ GBool SlaOutputDev::tilingPatternFill(GfxState *state, Gfx * /*gfx*/, Catalog *c
 		m_doc->Items->removeAll(ite);
 		id = QString("Pattern_from_PDF_%1").arg(m_doc->docPatterns.count() + 1);
 		m_doc->addPattern(id, pat);
-		tmpSel->clear();
 	}
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
@@ -3397,19 +3431,22 @@ void SlaOutputDev::endType3Char(GfxState *state)
 	double *ctm;
 	ctm = state->getCTM();
 	groupEntry gElements = m_groupStack.pop();
-	tmpSel->clear();
+	m_doc->m_Selection->clear();
 	if (gElements.Items.count() > 0)
 	{
 		for (int dre = 0; dre < gElements.Items.count(); ++dre)
 		{
-			tmpSel->addItem(gElements.Items.at(dre), true);
+			m_doc->m_Selection->addItem(gElements.Items.at(dre), true);
 			m_Elements->removeAll(gElements.Items.at(dre));
 		}
-		PageItem *ite = m_doc->groupObjectsSelection(tmpSel);
+		m_doc->itemSelection_FlipV();
+		PageItem *ite;
+		if (m_doc->m_Selection->count() > 1)
+			ite = m_doc->groupObjectsSelection();
+		else
+			ite = m_doc->m_Selection->itemAt(0);
 		ite->setFillTransparency(1.0 - state->getFillOpacity());
 		ite->setFillBlendmode(getBlendMode(state));
-		m_doc->m_Selection->addItem(ite, true);
-		m_doc->itemSelection_FlipV();
 		m_doc->m_Selection->clear();
 		ScPattern pat = ScPattern();
 		pat.setDoc(m_doc);

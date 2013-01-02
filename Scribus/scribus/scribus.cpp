@@ -2575,7 +2575,7 @@ void ScribusMainWindow::HaveNewDoc()
 	scrActions["viewFit200"]->setEnabled(true);
 	scrActions["viewFit400"]->setEnabled(true);
 
-	scrActions["viewSnapToGrid"]->setChecked(doc->useRaster);
+	scrActions["viewSnapToGrid"]->setChecked(doc->SnapGrid);
 	scrActions["viewSnapToGuides"]->setChecked(doc->SnapGuides);
 	scrActions["viewSnapToElements"]->setChecked(doc->SnapElement);
 	scrActions["viewShowRulers"]->setEnabled(true);
@@ -2699,7 +2699,6 @@ void ScribusMainWindow::HaveNewDoc()
 
 void ScribusMainWindow::HaveNewSel(int SelectedType)
 {
-	bool isRaster = false;
 	PageItem *currItem = NULL;
 	const uint docSelectionCount=doc->m_Selection->count();
 	if (SelectedType != -1)
@@ -2806,7 +2805,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 	scrActions["itemPreviewLow"]->setEnabled(SelectedType==PageItem::ImageFrame);
 	scrActions["itemPreviewNormal"]->setEnabled(SelectedType==PageItem::ImageFrame);
 	scrActions["itemPreviewFull"]->setEnabled(SelectedType==PageItem::ImageFrame);
-	scrActions["styleImageEffects"]->setEnabled(SelectedType==PageItem::ImageFrame && isRaster);
+	scrActions["styleImageEffects"]->setEnabled(SelectedType==PageItem::ImageFrame && currItem->isRaster);
 	scrActions["editCopyContents"]->setEnabled(SelectedType==PageItem::ImageFrame && currItem->PictureIsAvailable);
 	scrActions["editPasteContents"]->setEnabled(SelectedType==PageItem::ImageFrame);
 	scrActions["editPasteContentsAbs"]->setEnabled(SelectedType==PageItem::ImageFrame);
@@ -2902,7 +2901,6 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["extrasHyphenateText"]->setEnabled(false);
 		scrActions["extrasDeHyphenateText"]->setEnabled(false);
-//		scrMenuMgr->setMenuEnabled("Item", true);
 		scrActions["itemDuplicate"]->setEnabled(true);
 		scrActions["itemMulDuplicate"]->setEnabled(true);
 		scrActions["itemTransform"]->setEnabled(true);
@@ -2911,20 +2909,17 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemLower"]->setEnabled(true);
 		scrActions["itemRaiseToTop"]->setEnabled(true);
 		scrActions["itemLowerToBottom"]->setEnabled(true);
-//		scrActions["itemSendToScrapbook"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 		scrActions["itemSendToPattern"]->setEnabled(true);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(true);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(true);
-		scrActions["itemExtendedImageProperties"]->setEnabled(true);
+		scrActions["itemExtendedImageProperties"]->setEnabled(currItem->pixm.imgInfo.valid);
 		scrActions["itemUpdateImage"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(true);
 		scrActions["itemPreviewNormal"]->setEnabled(true);
 		scrActions["itemPreviewFull"]->setEnabled(true);
 		scrActions["itemAttributes"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(true);
-		//scrMenuMgr->setMenuEnabled("ItemShapes", !(currItem->isTableItem && currItem->isSingleSel));
-//		scrMenuMgr->setMenuEnabled("ItemConvertTo", true);
 		scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 		scrActions["itemConvertToImageFrame"]->setEnabled(false);
 		scrActions["itemConvertToOutlines"]->setEnabled(false);
@@ -2967,7 +2962,6 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemLower"]->setEnabled(true);
 		scrActions["itemRaiseToTop"]->setEnabled(true);
 		scrActions["itemLowerToBottom"]->setEnabled(true);
-//		scrActions["itemSendToScrapbook"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 		scrActions["itemSendToPattern"]->setEnabled(true);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
@@ -2979,7 +2973,6 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemPreviewFull"]->setEnabled(false);
 		scrActions["itemAttributes"]->setEnabled(true);
 		scrActions["itemPreviewLow"]->setEnabled(false);
-		//scrMenuMgr->setMenuEnabled("ItemShapes", !(currItem->isTableItem && currItem->isSingleSel));
 		scrMenuMgr->setMenuEnabled("ItemConvertTo", !((doc->appMode == modeEdit) || (currItem->isAnnotation())));
 		scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 		scrActions["itemConvertToImageFrame"]->setEnabled(doc->appMode != modeEdit);
@@ -2997,7 +2990,6 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		{
 			scrActions["itemConvertToBezierCurve"]->setEnabled(false);
 			scrActions["itemConvertToImageFrame"]->setEnabled(false);
-//			scrActions["itemConvertToOutlines"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(false);
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
 			scrActions["toolsUnlinkTextFrame"]->setEnabled(true);
@@ -3608,17 +3600,17 @@ void ScribusMainWindow::doPasteRecent(QString data)
 				pasteAction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Create,"",Um::ICreate));
 			view->Deselect(true);
 			uint ac = doc->Items->count();
-			bool savedAlignGrid = doc->useRaster;
+			bool savedAlignGrid = doc->SnapGrid;
 			bool savedAlignGuides = doc->SnapGuides;
 			bool savedAlignElement = doc->SnapElement;
-			doc->useRaster = false;
+			doc->SnapGrid = false;
 			doc->SnapGuides = false;
 			doc->SnapElement = false;
 			if ((view->dragX == 0) && (view->dragY == 0))
 				slotElemRead(data, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), true, false, doc, view);
 			else
 				slotElemRead(data, view->dragX, view->dragY, true, false, doc, view);
-			doc->useRaster = savedAlignGrid;
+			doc->SnapGrid = savedAlignGrid;
 			doc->SnapGuides = savedAlignGuides;
 			doc->SnapElement = savedAlignElement;
 			Selection tmpSelection(this, false);
@@ -4927,6 +4919,7 @@ bool ScribusMainWindow::DoFileClose()
 		scrActions["toolsInsertArc"]->setEnabled(false);
 		scrActions["toolsInsertSpiral"]->setEnabled(false);
 		scrActions["toolsInsertRenderFrame"]->setEnabled(false);
+		scrActions["toolsInsertTable"]->setEnabled(false);
 		scrActions["toolsLinkTextFrame"]->setEnabled(false);
 		scrActions["toolsUnlinkTextFrame"]->setEnabled(false);
 		scrActions["toolsUnlinkTextFrameWithTextCopy"]->setEnabled(false);
@@ -5397,7 +5390,7 @@ void ScribusMainWindow::slotEditPaste()
 			}
 			else if (ScMimeData::clipboardHasScribusElem() || ScMimeData::clipboardHasScribusFragment())
 			{
-				bool savedAlignGrid = doc->useRaster;
+				bool savedAlignGrid = doc->SnapGrid;
 				bool savedAlignGuides = doc->SnapGuides;
 				bool savedAlignElement = doc->SnapElement;
 				int ac = doc->Items->count();
@@ -5405,7 +5398,7 @@ void ScribusMainWindow::slotEditPaste()
 				double gx, gy, gh, gw;
 				FPoint minSize = doc->minCanvasCoordinate;
 				FPoint maxSize = doc->maxCanvasCoordinate;
-				doc->useRaster = false;
+				doc->SnapGrid = false;
 				doc->SnapGuides = false;
 				doc->SnapElement = false;
 				// HACK #6541 : undo does not handle text modification => do not record embedded item creation
@@ -5422,7 +5415,7 @@ void ScribusMainWindow::slotEditPaste()
 				symbolPalette->unsetDoc();
 				symbolPalette->setDoc(doc);
 
-				doc->useRaster = savedAlignGrid;
+				doc->SnapGrid = savedAlignGrid;
 				doc->SnapGuides = savedAlignGuides;
 				doc->SnapElement = savedAlignElement;
 				//int tempList=doc->m_Selection->backupToTempList(0);
@@ -5496,10 +5489,10 @@ void ScribusMainWindow::slotEditPaste()
 			{
 				view->Deselect(true);
 				uint ac = doc->Items->count();
-				bool savedAlignGrid = doc->useRaster;
+				bool savedAlignGrid = doc->SnapGrid;
 				bool savedAlignGuides = doc->SnapGuides;
 				bool savedAlignElement = doc->SnapElement;
-				doc->useRaster = false;
+				doc->SnapGrid = false;
 				doc->SnapGuides = false;
 				doc->SnapElement = false;
 				if (internalCopy)
@@ -5520,7 +5513,7 @@ void ScribusMainWindow::slotEditPaste()
 				inlinePalette->unsetDoc();
 				inlinePalette->setDoc(doc);
 
-				doc->useRaster = savedAlignGrid;
+				doc->SnapGrid = savedAlignGrid;
 				doc->SnapGuides = savedAlignGuides;
 				doc->SnapElement = savedAlignElement;
 				doc->m_Selection->delaySignalsOn();
@@ -6235,7 +6228,7 @@ void ScribusMainWindow::ToggleAllGuides()
 		ToggleMarks();
 		ToggleFrames();
 		ToggleLayerMarkers();
-		ToggleRaster();
+		ToggleGrid();
 		ToggleGuides();
 		ToggleColumnBorders();
 		ToggleBase();
@@ -6329,7 +6322,7 @@ void ScribusMainWindow::ToggleLayerMarkers()
 	}
 }
 
-void ScribusMainWindow::ToggleRaster()
+void ScribusMainWindow::ToggleGrid()
 {
 	if (doc)
 	{
@@ -6426,11 +6419,11 @@ void ScribusMainWindow::ToggleRulerMode()
 	}
 }
 
-void ScribusMainWindow::ToggleURaster()
+void ScribusMainWindow::ToggleUGrid()
 {
 	if (doc)
 	{
-		doc->useRaster = !doc->useRaster;
+		doc->SnapGrid = !doc->SnapGrid;
 		slotDocCh();
 	}
 }
@@ -7298,33 +7291,7 @@ void ScribusMainWindow::changePageMargins()
 void ScribusMainWindow::SetNewFont(const QString& nf)
 {
 	setMainWindowActive();
-	QString nf2(nf);
-	if (!doc->UsedFonts.contains(nf))
-	{
-		if (doc->AddFont(nf)) //, prefsManager->appPrefs.fontPrefs.AvailFonts[nf]->Font))
-		{
-		}
-		else
-		{//CB FIXME: to doc?
-			if (doc->m_Selection->count() != 0)
-			{
-				PageItem *currItem = doc->m_Selection->itemAt(0);
-				nf2 = currItem->currentCharStyle().font().scName();
-			}
-		}
-	}
-	PageItem *i2 = doc->m_Selection->itemAt(0);
-	if (doc->appMode == modeEditTable)
-		i2 = doc->m_Selection->itemAt(0)->asTable()->activeCell().textFrame();
-	if (i2 != NULL)
-	{
-		Selection tempSelection(this, false);
-		tempSelection.addItem(i2, true);
-		doc->itemSelection_SetFont(nf2, &tempSelection);
-	}
-//	doc->currentStyle.charStyle().setFont((*doc->AllFonts)[nf2]);
-	view->DrawNew();
-// 	slotDocCh();
+	doc->itemSetFont(nf);
 }
 
 void ScribusMainWindow::setItemFSize(int id)
@@ -7764,11 +7731,11 @@ void ScribusMainWindow::MakeFrame(int f, int c, double *vals)
 void ScribusMainWindow::duplicateItem()
 {
 	slotSelect();
-	bool savedAlignGrid = doc->useRaster;
+	bool savedAlignGrid = doc->SnapGrid;
 	bool savedAlignGuides = doc->SnapGuides;
 	bool savedAlignElement = doc->SnapElement;
 	internalCopy = true;
-	doc->useRaster = false;
+	doc->SnapGrid  = false;
 	doc->SnapGuides = false;
 	doc->SnapElement = false;
 	slotEditCopy();
@@ -7788,7 +7755,7 @@ void ScribusMainWindow::duplicateItem()
 		delete trans;
 		trans = NULL;
 	}
-	doc->useRaster = savedAlignGrid;
+	doc->SnapGrid  = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
 	doc->SnapElement = savedAlignElement;
 	internalCopy = false;
@@ -8757,6 +8724,8 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 		storedViewXCoor = view->contentsX();
 		storedViewYCoor = view->contentsY();
 		storedViewScale = view->scale();
+		doc->stored_minCanvasCoordinate = doc->minCanvasCoordinate;
+		doc->stored_maxCanvasCoordinate = doc->maxCanvasCoordinate;
 		view->showSymbolPage(temp);
 		scrActions["pageInsert"]->setEnabled(false);
 		scrActions["pageImport"]->setEnabled(false);
@@ -8818,6 +8787,9 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 
 void ScribusMainWindow::editSymbolEnd()
 {
+	doc->minCanvasCoordinate = doc->stored_minCanvasCoordinate;
+	doc->maxCanvasCoordinate = doc->stored_maxCanvasCoordinate;
+	view->setScale(storedViewScale);
 	view->hideSymbolPage();
 	if (m_WasAutoSave)
 	{
@@ -8892,6 +8864,8 @@ void ScribusMainWindow::editInlineStart(int id)
 		storedViewXCoor = view->contentsX();
 		storedViewYCoor = view->contentsY();
 		storedViewScale = view->scale();
+		doc->stored_minCanvasCoordinate = doc->minCanvasCoordinate;
+		doc->stored_maxCanvasCoordinate = doc->maxCanvasCoordinate;
 		view->showInlinePage(id);
 		scrActions["pageInsert"]->setEnabled(false);
 		scrActions["pageImport"]->setEnabled(false);
@@ -8938,6 +8912,9 @@ void ScribusMainWindow::editInlineStart(int id)
 
 void ScribusMainWindow::editInlineEnd()
 {
+	doc->minCanvasCoordinate = doc->stored_minCanvasCoordinate;
+	doc->maxCanvasCoordinate = doc->stored_maxCanvasCoordinate;
+	view->setScale(storedViewScale);
 	view->hideInlinePage();
 	if (m_WasAutoSave)
 	{
@@ -9001,7 +8978,11 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 {
 	if (!HaveDoc)
 		return;
-
+	QString mpName = "";
+	if (temp.isEmpty())
+		mpName = doc->currentPage()->MPageNam;
+	else
+		mpName = temp;
 	view->Deselect(true);
 	m_WasAutoSave = doc->autoSave();
 	if (m_WasAutoSave)
@@ -9012,7 +8993,7 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 
 	if (doc->masterPageMode())
 	{
-		pagePalette->startMasterPageMode(temp);
+		pagePalette->startMasterPageMode(mpName);
 		return;
 	}
 
@@ -9020,8 +9001,10 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 	storedViewXCoor = view->contentsX();
 	storedViewYCoor = view->contentsY();
 	storedViewScale = view->scale();
+	doc->stored_minCanvasCoordinate = doc->minCanvasCoordinate;
+	doc->stored_maxCanvasCoordinate = doc->maxCanvasCoordinate;
 
-	pagePalette->startMasterPageMode(temp);
+	pagePalette->startMasterPageMode(mpName);
 	if (!pagePalette->isVisible())
 	{
 		pagePalette->show();
@@ -9063,6 +9046,8 @@ void ScribusMainWindow::manageMasterPages(QString temp)
 void ScribusMainWindow::manageMasterPagesEnd()
 {
 	view->setScale(storedViewScale);
+	doc->minCanvasCoordinate = doc->stored_minCanvasCoordinate;
+	doc->maxCanvasCoordinate = doc->stored_maxCanvasCoordinate;
 	view->hideMasterPage();
 	if (m_WasAutoSave)
 	{
@@ -9112,8 +9097,12 @@ void ScribusMainWindow::manageMasterPagesEnd()
 	pagePalette->endMasterPageMode();
 
 	doc->setCurrentPage(doc->DocPages.at(storedPageNum));
+	doc->minCanvasCoordinate = doc->stored_minCanvasCoordinate;
+	doc->maxCanvasCoordinate = doc->stored_maxCanvasCoordinate;
+	doc->setLoading(true);
 	view->reformPages(false);
 	view->setContentsPos(static_cast<int>(storedViewXCoor * storedViewScale), static_cast<int>(storedViewYCoor * storedViewScale));
+	doc->setLoading(false);
 	view->DrawNew();
 }
 
@@ -10158,8 +10147,8 @@ void ScribusMainWindow::dropEvent ( QDropEvent * e)
 					loadRawText(url.toLocalFile(), cf);
 					data = QString::fromUtf8(cf.data());
 					double gx, gy, gw, gh;
-					ScriXmlDoc *ss = new ScriXmlDoc();
-					if(ss->ReadElemHeader(data, false, &gx, &gy, &gw, &gh))
+					ScriXmlDoc ss;
+					if(ss.ReadElemHeader(data, false, &gx, &gy, &gw, &gh))
 					{
 						doFileNew(gw, gh, 0, 0, 0, 0, 0, 0, false, false, 0, false, 0, 1, "Custom", true);
 						HaveNewDoc();
@@ -10167,7 +10156,6 @@ void ScribusMainWindow::dropEvent ( QDropEvent * e)
 						slotElemRead(data, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), false, false, doc, view);
 						slotDocCh(false);
 						doc->regionsChanged()->update(QRectF());
-						delete ss;
 					}
 				}
 			}
@@ -10197,8 +10185,8 @@ void ScribusMainWindow::dropEvent ( QDropEvent * e)
 			if ((text.startsWith("<SCRIBUSELEM")) || (text.startsWith("SCRIBUSELEMUTF8")))
 			{
 				double gx, gy, gw, gh;
-				ScriXmlDoc *ss = new ScriXmlDoc();
-				if(ss->ReadElemHeader(text, false, &gx, &gy, &gw, &gh))
+				ScriXmlDoc ss;
+				if(ss.ReadElemHeader(text, false, &gx, &gy, &gw, &gh))
 				{
 					doFileNew(gw, gh, 0, 0, 0, 0, 0, 0, false, false, 0, false, 0, 1, "Custom", true);
 					HaveNewDoc();
@@ -10206,7 +10194,6 @@ void ScribusMainWindow::dropEvent ( QDropEvent * e)
 					slotElemRead(text, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), false, false, doc, view);
 					slotDocCh(false);
 					doc->regionsChanged()->update(QRectF());
-					delete ss;
 				}
 			}
 		}
@@ -10335,7 +10322,7 @@ void ScribusMainWindow::slotItemTransform()
 void ScribusMainWindow::PutToInline(QString buffer)
 {
 	Selection tempSelection(*doc->m_Selection);
-	bool savedAlignGrid = doc->useRaster;
+	bool savedAlignGrid = doc->SnapGrid;
 	bool savedAlignGuides = doc->SnapGuides;
 	bool savedAlignElement = doc->SnapElement;
 	int ac = doc->Items->count();
@@ -10343,12 +10330,12 @@ void ScribusMainWindow::PutToInline(QString buffer)
 	double gx, gy, gh, gw;
 	FPoint minSize = doc->minCanvasCoordinate;
 	FPoint maxSize = doc->maxCanvasCoordinate;
-	doc->useRaster = false;
+	doc->SnapGrid  = false;
 	doc->SnapGuides = false;
 	doc->SnapElement = false;
 	undoManager->setUndoEnabled(false);
 	slotElemRead(buffer, 0, 0, false, true, doc, view);
-	doc->useRaster = savedAlignGrid;
+	doc->SnapGrid  = savedAlignGrid;
 	doc->SnapGuides = savedAlignGuides;
 	doc->SnapElement = savedAlignElement;
 	doc->m_Selection->clear();
