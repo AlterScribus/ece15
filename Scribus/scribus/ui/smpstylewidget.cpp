@@ -1095,6 +1095,8 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 		numFormatCombo->setEnabled(true);
 		numLevelSpin->setEnabled(true);
 		numComboBox->setEnabled(true);
+		if (numComboBox->currentIndex() < 0)
+			numComboBox->setCurrentIndex(0);
 		numRestartCombo->setEnabled(true);
 		numNewLineEdit->setEnabled(true);
 
