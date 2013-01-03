@@ -2556,15 +2556,15 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(NACH))
 		newStyle.setGapAfter(attrs.valueAsDouble(NACH));
 
-	static const QString PECHSTYLE("PECHSTYLE");
+	static const QString PECHSTYLE("ParagraphEffectCharStyle");
 	if (attrs.hasAttribute(PECHSTYLE))
 		newStyle.setPeCharStyleName(attrs.valueAsString(PECHSTYLE));
 
-	static const QString PEDIST("PEDIST");
-	if (attrs.hasAttribute(PEDIST))
-		newStyle.setParEffectOffset(attrs.valueAsDouble(PEDIST));
+	static const QString PEOFFSET("ParagraphEffectOffset");
+	if (attrs.hasAttribute(PEOFFSET))
+		newStyle.setParEffectOffset(attrs.valueAsDouble(PEOFFSET));
 
-	static const QString PEINDENT("PEINDENT");
+	static const QString PEINDENT("ParagraphEffectIndent");
 	if (attrs.hasAttribute(PEINDENT))
 		newStyle.setParEffectIndent(attrs.valueAsDouble(PEINDENT));
 
@@ -2584,51 +2584,51 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(DROPDIST))
 		newStyle.setParEffectOffset(attrs.valueAsDouble(DROPDIST));
 
-	static const QString BULLET("BULLET");
+	static const QString BULLET("Bullet");
 	if (attrs.hasAttribute(BULLET))
 		newStyle.setHasBullet(static_cast<bool>(attrs.valueAsInt(BULLET)));
 
-	static const QString BULLETSTR("BULLETSTR");
+	static const QString BULLETSTR("BulletString");
 	if (attrs.hasAttribute(BULLETSTR))
 		newStyle.setBulletStr(attrs.valueAsString(BULLETSTR));
 
-	static const QString NUMERATION("NUMERATION");
+	static const QString NUMERATION("Numeration");
 	if (attrs.hasAttribute(NUMERATION))
 		newStyle.setHasNum(static_cast<bool>(attrs.valueAsInt(NUMERATION)));
 
-	static const QString NUMNAME("NUMNAME");
+	static const QString NUMNAME("NumerationName");
 	if (attrs.hasAttribute(NUMNAME))
 		newStyle.setNumName(attrs.valueAsString(NUMNAME));
 
-	static const QString NUMFORMAT("NUMFORMAT");
+	static const QString NUMFORMAT("NumerationFormat");
 	if (attrs.hasAttribute(NUMFORMAT))
 		newStyle.setNumFormat(attrs.valueAsInt(NUMFORMAT));
 
-	static const QString NUMLEVEL("NUMLEVEL");
+	static const QString NUMLEVEL("NumerationLevel");
 	if (attrs.hasAttribute(NUMLEVEL))
 		newStyle.setNumLevel(attrs.valueAsInt(NUMLEVEL));
 
-	static const QString NUMSTART("NUMSTART");
+	static const QString NUMSTART("NumerationStart");
 	if (attrs.hasAttribute(NUMSTART))
 		newStyle.setNumStart(attrs.valueAsInt(NUMSTART));
 
-	static const QString NUMPREFIX("NUMPREFIX");
+	static const QString NUMPREFIX("NumerationPrefix");
 	if (attrs.hasAttribute(NUMPREFIX))
 		newStyle.setNumPrefix(attrs.valueAsString(NUMPREFIX));
 
-	static const QString NUMSUFFIX("NUMSUFFIX");
+	static const QString NUMSUFFIX("NumerationSuffix");
 	if (attrs.hasAttribute(NUMSUFFIX))
 		newStyle.setNumSuffix(attrs.valueAsString(NUMSUFFIX));
 
-	static const QString NUMRESTART("NUMRESTART");
+	static const QString NUMRESTART("NumerationRestart");
 	if (attrs.hasAttribute(NUMRESTART))
 		newStyle.setNumRestart(attrs.valueAsInt(NUMRESTART));
 
-	static const QString NUMOTHER("NUMOTHER");
+	static const QString NUMOTHER("NumeartionOther");
 	if (attrs.hasAttribute(NUMOTHER))
 		newStyle.setNumOther(static_cast<bool>(attrs.valueAsInt(NUMOTHER)));
 
-	static const QString NUMHIGHER("NUMHIGHER");
+	static const QString NUMHIGHER("NumerationHigher");
 	if (attrs.hasAttribute(NUMHIGHER))
 		newStyle.setNumHigher(static_cast<bool>(attrs.valueAsInt(NUMHIGHER)));
 
