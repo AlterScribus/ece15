@@ -24,7 +24,7 @@ void SMScComboBox::setCurrentItem(int i)
 	hasParent_ = false;
 	pItem_ = 0;
 	ScComboBox::setCurrentIndex(i);
-	connect(this, SIGNAL(), this, SLOT(currentChanged()));
+	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItem(int i, bool isParentValue)

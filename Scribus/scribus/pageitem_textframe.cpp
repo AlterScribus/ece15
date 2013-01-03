@@ -524,7 +524,7 @@ struct LineControl {
 	
 	bool isEndOfCol(double morespace = 0)
 	{
-		return yPos + morespace + insets.Bottom + lineCorr > frameHeight;
+		return (long) ((yPos + morespace + insets.Bottom + lineCorr)*1000) > (long) (frameHeight*1000);
 	}
 
 	/**
@@ -673,15 +673,15 @@ struct LineControl {
 	}*/
 
 	/// find x position where this line must end
-	double endOfLine(const QRegion& shape, double morespace, int yAsc, int yDesc)
+	double endOfLine(const QRegion& shape, double morespace, long yAsc, long yDesc)
 	{
 		// if we aren't restricted further, we'll end at this maxX:
 		double maxX = colRight - morespace;
 		if (legacy) maxX -= lineCorr;
-		int maxX100 = static_cast<int>(maxX*100);
+		long maxX1000 = static_cast<long>(maxX*1000);
 
-		int StartX = static_cast<int>(floor(qMax(line.x, qMin(maxX,breakXPos-maxShrink-1)) -1));
-		int xPos  = static_cast<int>(ceil(maxX));
+		long StartX = static_cast<long>(floor(qMax(line.x, qMin(maxX,breakXPos-maxShrink-1)) -1));
+		long xPos  = static_cast<long>(ceil(maxX));
 
 		QPoint  pt12 (xPos, yAsc);
 		QPoint  pt22 (xPos, yDesc);
@@ -694,7 +694,7 @@ struct LineControl {
 		// check if something gets in the way
 		QRegion lineI = shape.intersected (p.boundingRect());
 		// if the intersection only has 1 rectangle, then nothing gets in the way
-		StartX = static_cast<int>(ceil(StartX + morespace));
+		StartX = static_cast<long>(ceil(StartX + morespace));
 		if (lineI.numRects() == 1)
 		{
 			QRect cRect (QPoint(StartX, yAsc), QPoint(StartX, yDesc));
@@ -724,7 +724,7 @@ struct LineControl {
 			//EndX2 += Interval;
 			++StartX;
 		//} while ((EndX2 < maxX) && regionContainsRect(shape, pt));
-		} while ((StartX < maxX100) && regionContainsRect(shape, pt));
+		} while ((StartX < maxX1000) && regionContainsRect(shape, pt));
 
 		return qMin((double) StartX, maxX);
 	}
@@ -1530,7 +1530,7 @@ void PageItem_TextFrame::layout()
 		//this speed up layouting in case of using notes marks and drop caps
 		itemText.blockSignals(true);
 		setMaxY(-1);
-		int maxYAsc = 0, maxYDesc = 0;
+		long maxYAsc = 0, maxYDesc = 0;
 		//double maxYAsc = 0.0, maxYDesc = 0.0;
 		double offset = 0.0;
 		double breakPos = 0.0;
@@ -2111,13 +2111,13 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing();
 				}
-				maxYAsc = (int) ((current.yPos - addAsce) * 100);
+				maxYAsc = (long) floor((current.yPos - addAsce) * 1000);
 			}
 			else
-				maxYAsc = (int) ((current.yPos - realAsce) * 100);
+				maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
 			//fix for glyphs with negative realAsce value
-			maxYAsc = qMax(maxYAsc, 0);
-			maxYDesc = (int) ((current.yPos + realDesc) * 100);
+			maxYAsc = qMax(maxYAsc, (long) 0);
+			maxYDesc = (long) ceil((current.yPos + realDesc) * 1000);
 
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2125,8 +2125,8 @@ void PageItem_TextFrame::layout()
 				goNoRoom = false;
 
 				// find line`s start
-				pt1 = QPoint(static_cast<int>(floor(current.xPos)), maxYAsc/100);
-				pt2 = QPoint(static_cast<int>(floor(current.xPos + (style.minGlyphExtension() * wide))), (maxYDesc/100) -1);
+				pt1 = QPoint(static_cast<int>(floor(current.xPos)), ceil(maxYAsc/1000));
+				pt2 = QPoint(static_cast<int>(floor(current.xPos + (style.minGlyphExtension() * wide))), ceil(maxYDesc/1000) -1);
 				pt = QRect(pt1, pt2);
 				realEnd = 0;
 				//check if there is overflow at start of line, if so jump behind it and check again
@@ -2153,7 +2153,7 @@ void PageItem_TextFrame::layout()
 					//check if in indent any overflow occurs
 					while (Xpos <= Xend && Xpos < current.colRight)
 					{
-						pt.moveTopLeft(QPoint(static_cast<int>(floor(Xpos)), maxYAsc/100));
+						pt.moveTopLeft(QPoint(static_cast<int>(floor(Xpos)), maxYAsc/1000));
 						if (!regionContainsRect(m_availableRegion, pt))
 						{
 							Xpos = current.xPos = realEnd = findRealOverflowEnd(m_availableRegion, pt, current.colRight);
@@ -2185,14 +2185,14 @@ void PageItem_TextFrame::layout()
 							current.yPos += (current.startOfCol ? 1 : style.lineSpacing());
 						else
 							current.yPos++;
-						lastLineY = (double) maxYAsc / 100.0;
+						lastLineY = (double) maxYAsc / 1000.0;
 						if (current.startOfCol)
-							maxYAsc = (int) ((current.yPos - addAsce)*100);
+							maxYAsc = (long) floor((current.yPos - addAsce)*1000);
 						else
-							maxYAsc = (int) ((current.yPos - realAsce) * 100);
-						maxYDesc = (int) ((current.yPos + realDesc) * 100);
+							maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
+						maxYDesc = (long) ceil((current.yPos + realDesc) * 1000);
 
-						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc/100));
+						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc/1000));
 						done = false;
 					}
 					if (current.isEndOfCol(realDesc))
@@ -2424,8 +2424,8 @@ void PageItem_TextFrame::layout()
 				hyphWidth = charStyle.font().charWidth('-', hlcsize10) * scaleH;
 			else
 				hyphWidth = 0.0;
-			int maxYAsc100 = maxYAsc/100;
-			int maxYDesc100 = maxYDesc/100;
+			int maxYAsc100 = floor(maxYAsc/1000);
+			int maxYDesc100 = ceil(maxYDesc/1000);
 			inOverflow = false;
 			if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
 				hyphWidth = font.charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
@@ -3000,14 +3000,14 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = (int) ((current.yPos - addAsce)*100);
+				maxYAsc = (long) floor((current.yPos - addAsce)*1000);
 			}
 			else
-				maxYAsc = (int) ((current.yPos - realAsce)*100);
-			maxYAsc = qMax(maxYAsc, 0);
-			maxYDesc = (int) ((current.yPos + realDesc)*100);
+				maxYAsc = (long) floor((current.yPos - realAsce)*1000);
+			maxYAsc = qMax(maxYAsc, (long) 0);
+			maxYDesc = (long) ceil((current.yPos + realDesc)*1000);
 
-			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc/100, maxYDesc/100);
+			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc/1000, maxYDesc/1000);
 			current.finishLine(EndX);
 
 			if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
@@ -6189,251 +6189,7 @@ void PageItem_TextFrame::setNoteFrame(PageItem_NoteFrame *nF)
 	 m_notesFramesMap.insert(nF, nF->notesList());
 }
 
-//TextNote* PageItem_TextFrame::selectedNoteMark(bool onlySelection)
-//{
-//	ScText* hl = NULL;
-//	return selectedNoteMark(hl, onlySelection);
-//}
-
-//NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarksPosMap)
-//{
-//	NotesInFrameMap notesMap; //= m_notesFramesMap;
-//	QMap<int, Mark*>::Iterator it = noteMarksPosMap.begin();
-//	QMap<int, Mark*>::Iterator end = noteMarksPosMap.end();
-//	PageItem* lastItem = this;
-//	while (it != end)
-//	{
-//		if (it.key() <= lastInFrame())
-//		{
-//			Mark* mark = it.value();
-//			mark->setItemPtr(this);
-//			mark->setItemName(itemName());
-
-//			TextNote* note = mark->getNotePtr();
-//			Q_ASSERT(note != NULL);
-//			if (note == NULL)
-//			{
-//				qWarning() << "note mark without valid note pointer";
-//				note = m_Doc->newNote(m_Doc->m_docNotesStylesList.at(0));
-//				note->setMasterMark(mark);
-//				mark->setNotePtr(note);
-//			}
-//			NotesStyle* NS = note->notesStyle();
-//			PageItem_NoteFrame* nF = NULL;
-//			if (NS->isEndNotes())
-//				nF = m_Doc->endNoteFrame(NS, this);
-//			else
-//				nF = itemNoteFrame(NS);
-//			if (nF == NULL)
-//			{
-//				//creating new noteframe
-//				if (NS->isEndNotes())
-//				{
-//					//create new endnotes frame
-//					double x,y,w,h;
-//					const ScPage* scP = m_Doc->page4EndNotes(NS, this);
-//					x = scP->Margins.Left + m_Doc->rulerXoffset + scP->xOffset();
-//					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
-//					w = scP->width() - scP->Margins.Left - scP->Margins.Right;
-//					h = calculateLineSpacing(itemText.defaultStyle(), this);
-//					nF = m_Doc->createNoteFrame(note->notesStyle(), x, y, w, h, m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None, m_Doc->itemToolPrefs().textFont);
-//					switch (NS->range())
-//					{ //insert pointer to endnoteframe into m_Doc->m_endNotesFramesMap
-//						case NSRdocument:
-//							m_Doc->setEndNoteFrame(nF, (void*) NULL);
-//							break;
-//						case NSRsection:
-//							m_Doc->setEndNoteFrame(nF, m_Doc->getSectionKeyForPageIndex(OwnPage));
-//						case NSRstory:
-//							m_Doc->setEndNoteFrame(nF, (void*) firstInChain());
-//							break;
-//						case NSRpage:
-//							m_Doc->setEndNoteFrame(nF, (void*) m_Doc->DocPages.at(OwnPage));
-//							break;
-//						case NSRframe:
-//							qDebug() << "Frame range is prohibited for end-notes";
-//							Q_ASSERT(false);
-//							break;
-//					}
-//				}
-//				else
-//					//create new footnotes frame for that text frame
-//					nF = m_Doc->createNoteFrame(this, note->notesStyle(), m_Doc->DocItems.indexOf(lastItem));
-//				//insert in map noteframe with empty list of notes
-//				m_notesFramesMap.insert(nF, QList<TextNote*>());
-//				m_Doc->setNotesChanged(true);
-//			}
-//			else if (NS->isEndNotes())
-//			{//check endnotes frame proper page
-//				const ScPage* scP = m_Doc->page4EndNotes(NS, this);
-//				if (scP->pageNr() != nF->OwnPage)
-//				{
-//					double x,y;
-//					x = scP->Margins.Left + m_Doc->rulerXoffset + scP->xOffset();
-//					y = scP->Margins.Top + m_Doc->rulerYoffset + scP->yOffset();
-//					if ((scP->pageNr() != nF->OwnPage) || (nF->xPos() > (x + scP->width())) || nF->yPos() > (y + scP->height()))
-//					{
-//						undoManager->setUndoEnabled(false);
-//						nF->setXYPos(x,y);
-//						undoManager->setUndoEnabled(true);
-//					}
-//				}
-//			}
-//			QList<TextNote*> nList;//list of notes in current noteFrame
-//			nList = notesMap.value(nF);
-//			if (!nList.contains(note))
-//			{
-//				nList.append(note);
-//				notesMap.insert(nF, nList);
-//			}
-//			if (!nF->isEndNotesFrame())
-//				lastItem = nF;
-//		}
-//		else
-//			break;
-//		++it;
-//	}
-//	return notesMap;
-//}
-
-//void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
-//{
-//	bool docWasChanged = false;
-
-////	QList<PageItem_NoteFrame*> curr_footNotesList;
-////	QList<PageItem_NoteFrame*> old_footNotesList;
-////	QList<PageItem_NoteFrame*> curr_endNotesList;
-////	QList<PageItem_NoteFrame*> old_endNotesList;
-
-	
-////	foreach(PageItem_NoteFrame* nF, notesMap.keys())
-////	{
-////		if (nF->isEndNotesFrame())
-////			curr_endNotesList.append(nF);
-////		else if (!notesMap.value(nF).isEmpty())
-////			curr_footNotesList.append(nF);
-////	}
-////	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-////	{
-////		if (nF->isEndNotesFrame())
-////			old_endNotesList.append(nF);
-////		else
-////			old_footNotesList.append(nF);
-////	}
-////	//check for endnotes marks change in current frame
-////	foreach (PageItem_NoteFrame* nF, old_endNotesList)
-////	{
-////		if (nF->deleteIt)
-////		{
-////			m_Doc->delNoteFrame(nF,true);
-////			docWasChanged = true;
-////		}
-////		else if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
-////		{
-////			m_Doc->endNoteFrameChanged(nF);
-////			docWasChanged = true;
-////		}
-////	}
-//	//check if some notes frames are not used anymore
-//	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-//	{
-//		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
-//		{
-//			m_Doc->delNoteFrame(nF,true);
-//			docWasChanged = true;
-//		}
-//		else
-//		{
-//			QList<TextNote*> nList = notesMap.value(nF);
-//			if (nList != nF->notesList() || m_Doc->notesChanged())
-//			{
-//				nF->updateNotes(nList, (!nF->isEndNotesFrame() && !nF->notesList().isEmpty()));
-//				docWasChanged = true;
-//			}
-//		}
-//	}
-//	if (m_notesFramesMap != notesMap)
-//	{
-//		docWasChanged = true;
-//		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-//		{
-//			if (notesMap.contains(nF))
-//			{
-//				m_notesFramesMap.insert(nF, notesMap.value(nF));
-//				notesMap.remove(nF);
-//			}
-//			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
-//				m_notesFramesMap.remove(nF);
-//		}
-//		m_notesFramesMap.unite(notesMap);
-//	}
-//	if (docWasChanged)
-//	{
-//		m_Doc->flag_restartMarksRenumbering = true;
-//		m_Doc->setNotesChanged(true);
-//	}
-//}
-
-//void PageItem_TextFrame::notesFramesLayout()
-//{
-//	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-//	{
-//		if (nF == NULL)
-//			continue;
-//		if (nF->deleteIt)
-//			continue;
-//		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
-//			m_Doc->updateEndNotesFrameContent(nF);
-//		nF->invalid = true;
-//		nF->layout();
-//	}
-//}
-
-//int PageItem_TextFrame::removeMarksFromText(bool doUndo)
-//{
-//	int num = 0;
-//	if (!isNoteFrame())
-//	{
-//		TextNote* note = selectedNoteMark(true);
-//		while (note != NULL)
-//		{
-//			if (doUndo && UndoManager::undoEnabled())
-//				m_Doc->setUndoDelNote(note);
-//			if (note->isEndNote())
-//				m_Doc->flag_updateEndNotes = true;
-//			m_Doc->deleteNote(note);
-//			note = selectedNoteMark(true);
-//			++num;
-//		}
-//	}
-	
-//	Mark* mrk = selectedMark(true);
-//	while (mrk != NULL)
-//	{
-//		Q_ASSERT(!mrk->isNoteType());
-//		if (doUndo)
-//			m_Doc->setUndoDelMark(mrk);
-//		m_Doc->eraseMark(mrk, true, this);
-//		mrk = selectedMark(true);
-//		++num;
-//	}
-//	return num;
-//}
-
-//PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(NotesStyle *nStyle)
-//{
-//	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-//		if (nF->notesStyle() == nStyle)
-//			return nF;
-//	return NULL;
-//}
-
-//void PageItem_TextFrame::setNoteFrame(PageItem_NoteFrame *nF)
-//{
-//	 m_notesFramesMap.insert(nF, nF->notesList());
-//}
-
-void PageItem_TextFrame::setMaxY(long long y)
+void PageItem_TextFrame::setMaxY(long y)
 {
 	if (y == -1)
 		maxY = 0;
@@ -6443,10 +6199,10 @@ void PageItem_TextFrame::setMaxY(long long y)
 
 void PageItem_TextFrame::setTextFrameHeight()
 {
-	//ugly hack increasing min frame`s haeight against strange glyph painting if it is too close of bottom
-	int hackValue = 50;
+	//ugly hack increasing min frame`s height against strange glyph painting if it is too close of bottom
+	double hackValue = 0.25;
 
-	setHeight(ceil(maxY) + m_textDistanceMargins.Bottom + hackValue);
+	setHeight(maxY/1000.0 + m_textDistanceMargins.Bottom + hackValue);
 	updateClip();
 	checkChanges(true);
 	invalid = true;

@@ -181,8 +181,8 @@ private:
 	TextNote* selectedNoteMark(bool onlySelection = true);
 protected:
 	// set text frame height to last line of text
-	long long maxY;
-	void setMaxY(long long y);
+	long maxY;
+	void setMaxY(long y);
 
 public:
 	ScText * firstVisibleGlyph; //storing last visible glyph in text frame - if it not change then dont force invalidating next frame
