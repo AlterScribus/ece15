@@ -30,7 +30,7 @@ public:
 	void clearAll();
 	void languageChange();
 	void unitChange(double oldRatio, double newRatio, int unitIndex);
-	void setDoc(ScribusDoc* doc) { m_Doc = doc; }
+	void setDoc(ScribusDoc* doc);
 
 private:
 	bool hasParent_;
@@ -43,7 +43,7 @@ private:
 
 	void fillBulletStrEditCombo();
 	void fillNumFormatCombo();
-	void fillNumerationsCombo(QList<ParagraphStyle> &pstyles);
+	void fillNumerationsCombo();
 	void fillNumRestartCombo();
 	void checkParEffectState();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
@@ -90,6 +90,7 @@ private slots:
 	void slotParentWidowsOrphans();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
 	void on_bulletCharTableButton__toggled(bool checked);
+	void handleUpdateRequest(int);
 
 signals:
 	void useParentParaEffects();

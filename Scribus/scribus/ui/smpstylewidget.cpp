@@ -10,6 +10,7 @@ for which a new license (GPL+exception) is in place.
 #include "numeration.h"
 #include "styles/paragraphstyle.h"
 #include "smpstylewidget.h"
+#include "scribus.h"
 #include "units.h"
 #include "util.h"
 #include "util_icon.h"
@@ -84,6 +85,8 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	connect(owDefaultButton, SIGNAL(clicked()), this, SLOT(slotDefaultWidowsOrphans()));
 	connect(peDefaultButton, SIGNAL(clicked()), this, SLOT(slotDefaultParEffects()));
 	connect(coaDefaultButton, SIGNAL(clicked()), this, SLOT(slotDefaultClearOnApply()));
+	if (m_Doc)
+		connect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
 	m_enhanced = NULL;
 }
 
@@ -242,6 +245,18 @@ void SMPStyleWidget::unitChange(double oldRatio, double newRatio, int unitIndex)
 	tabList_->unitChange(unitIndex);
 }
 
+void SMPStyleWidget::setDoc(ScribusDoc *doc)
+{
+	if (m_Doc)
+		disconnect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+	m_Doc = doc;
+	if (m_Doc)
+	{
+		connect(m_Doc->scMW(), SIGNAL(UpdateRequest(int)), this , SLOT(handleUpdateRequest(int)));
+		fillNumerationsCombo();
+	}
+}
+
 void SMPStyleWidget::fillBulletStrEditCombo()
 {
 	bulletStrEdit_->clear();
@@ -259,20 +274,15 @@ void SMPStyleWidget::fillNumFormatCombo()
 	numFormatCombo->addItems(getFormatList());
 }
 
-void SMPStyleWidget::fillNumerationsCombo(QList<ParagraphStyle> &pstyles)
+void SMPStyleWidget::fillNumerationsCombo()
 {
 	QStringList numNames;
-	foreach (ParagraphStyle pStyle, pstyles)
-	{
-		if (pStyle.hasNum() && !numNames.contains(pStyle.numName()))
-			numNames.append(pStyle.numName());
-	}
-	if (numNames.isEmpty())
-		numNames.append("default");
-	else if (numNames.count() > 1)
-		numNames.sort();
+	foreach (QString numName, m_Doc->numerations.keys())
+		numNames.append(numName);
+	numNames.sort();
 	numComboBox->clear();
 	numComboBox->insertItems(0, numNames);
+	numComboBox->setCurrentItem(0);
 }
 
 void SMPStyleWidget::fillNumRestartCombo()
@@ -329,7 +339,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	
 	//fillBulletStrEditCombo();
 	//fillNumFormatCombo();
-	fillNumerationsCombo(pstyles);
+	//fillNumerationsCombo();
 	//fillNumRestartCombo();
 
 	if (hasParent_)
@@ -1231,9 +1241,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 
 void SMPStyleWidget::insertSpecialChars(const QString &chars)
 {
-	if (bulletStrEdit_->lineEdit()->hasSelectedText())
-		bulletStrEdit_->lineEdit()->del();
-	bulletStrEdit_->lineEdit()->insert(chars);
+	bulletStrEdit_->lineEdit()->setText(chars);
 }
 
 void SMPStyleWidget::slotNumbering(bool isOn)
@@ -1244,6 +1252,8 @@ void SMPStyleWidget::slotNumbering(bool isOn)
 		numFormatCombo->setEnabled(true);
 		numLevelSpin->setEnabled(true);
 		numComboBox->setEnabled(true);
+		if (numComboBox->currentIndex() < 0)
+			numComboBox->setCurrentIndex(0);
 		numRestartCombo->setEnabled(true);
 		numNewLineEdit->setEnabled(true);
 
@@ -1476,4 +1486,10 @@ void SMPStyleWidget::on_bulletCharTableButton__toggled(bool checked)
 		closeEnhanced();
 	else if (!m_enhanced && checked)
 		openEnhanced();
+}
+
+void SMPStyleWidget::handleUpdateRequest(int updateFlags)
+{
+	if (updateFlags & reqNumUpdate)
+		fillNumerationsCombo();
 }

@@ -85,6 +85,7 @@ public:
 	//simplify conditions checking if frame is in chain
 	//FIX: use it in other places
 	bool isInChain() { return ((prevInChain() != NULL) || (nextInChain() != NULL)); }
+	void setTextAnnotationOpen(bool open);
 
 	double columnWidth();
 #ifdef NLS_PROTO
@@ -113,7 +114,8 @@ protected:
 	bool unicodeTextEditMode;
 	int unicodeInputCount;
 	QString unicodeInputString;
-	
+
+	void drawNoteIcon(ScPainter *p);
 	virtual bool createInfoGroup(QFrame *, QGridLayout *);
 	virtual void applicableActions(QStringList& actionList);
 	virtual QString infoDescription();
@@ -144,6 +146,7 @@ private:
 	QMap<int,SEColumn> SEColumnsMap; //contains start/end data for columns in frame
 	bool setColumnSE(int col, int Cstart, int Cend); // sets start/end positions for column col in QMap startendColumn field
 	bool isWarnedText(int pos);
+	QRectF m_origAnnotPos;
 	
 private slots:
 	void slotInvalidateLayout();

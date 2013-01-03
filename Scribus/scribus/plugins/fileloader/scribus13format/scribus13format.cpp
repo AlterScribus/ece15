@@ -366,7 +366,7 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 		m_Doc->rulerXoffset = ScCLocale::toDoubleC(dc.attribute("rulerXoffset"), 0.0);
 		m_Doc->rulerYoffset = ScCLocale::toDoubleC(dc.attribute("rulerYoffset"), 0.0);
 		m_Doc->SnapGuides = static_cast<bool>(dc.attribute("SnapToGuides", "0").toInt());
-		m_Doc->useRaster = static_cast<bool>(dc.attribute("SnapToGrid", "0").toInt());
+		m_Doc->SnapGrid  = static_cast<bool>(dc.attribute("SnapToGrid", "0").toInt());
 		m_Doc->itemToolPrefs().polyCorners = dc.attribute("POLYC", "4").toInt();
 		m_Doc->itemToolPrefs().polyFactor = ScCLocale::toDoubleC(dc.attribute("POLYF"), 0.5);
 		m_Doc->itemToolPrefs().polyRotation = ScCLocale::toDoubleC(dc.attribute("POLYR"), 0.0);
@@ -1784,6 +1784,7 @@ PageItem* Scribus13Format::PasteItem(QDomElement *obj, ScribusDoc *doc, const QS
 	currItem->annotation().setFormat(obj->attribute("ANFORMAT", "0").toInt());
 	currItem->annotation().setVis(obj->attribute("ANVIS", "0").toInt());
 	currItem->annotation().setIsChk(static_cast<bool>(obj->attribute("ANCHK", "0").toInt()));
+	currItem->annotation().setCheckState(currItem->annotation().IsChk());
 	currItem->annotation().setAAact(static_cast<bool>(obj->attribute("ANAA", "0").toInt()));
 	currItem->annotation().setHTML(obj->attribute("ANHTML", "0").toInt());
 	currItem->annotation().setUseIcons(static_cast<bool>(obj->attribute("ANICON", "0").toInt()));
@@ -1923,10 +1924,7 @@ PageItem* Scribus13Format::PasteItem(QDomElement *obj, ScribusDoc *doc, const QS
 	if (currItem->asImageFrame())
 		currItem->AdjustPictScale();
 	if (currItem->asPathText())
-	{
 		currItem->updatePolyClip();
-		currItem->Frame = true;
-	}
 	currItem->GrType = obj->attribute("GRTYP", "0").toInt();
 	QString GrColor;
 	QString GrColor2;

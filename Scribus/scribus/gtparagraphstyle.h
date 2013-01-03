@@ -64,14 +64,14 @@ protected:
 	QList<ParagraphStyle::TabRecord> tabValues;
 	bool dropCap;
 	int  dropCapHeight;
-	bool bullet;
-	QString bulletStr;
-	bool numeration;
-	int numlevel;
-	int numformat;
-	int numstart;
-	QString numprefix;
-	QString numsuffix;
+	bool m_bullet; ///< Is style using bullet?
+	QString m_bulletStr; ///< String used as bullet
+	bool m_numeration; ///< Is style using numeration?
+	int m_numLevel; ///< Level in hierarchical numbering
+	int m_numFormat; ///< 1_2_3, i_ii_ii, a_b_c
+	int m_numStart; ///< Numeration starts at number
+	QString m_numPrefix; ///< Numeration prefix of style
+	QString m_numSuffix; ///< Numeration sufffix of style
 	bool adjToBaseline;
 	bool autoLineSpacing;
 	bool isVisible;

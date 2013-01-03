@@ -250,6 +250,9 @@ public:
 	//----- links
 	virtual void processLink(AnnotLink * /*link*/) { qDebug() << "Draw Link"; }
 	bool layersSetByOCG;
+	double cropOffsetX;
+	double cropOffsetY;
+	int rotate;
 
 private:
 	void getPenState(GfxState *state);

@@ -277,7 +277,7 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	docu.writeAttribute("AUTOCHECK", static_cast<int>(m_Doc->hyphAutoCheck()));
 	docu.writeAttribute("GUIDELOCK", static_cast<int>(m_Doc->GuideLock));
 	docu.writeAttribute("SnapToGuides", static_cast<int>(m_Doc->SnapGuides));
-	docu.writeAttribute("SnapToGrid", static_cast<int>(m_Doc->useRaster));
+	docu.writeAttribute("SnapToGrid", static_cast<int>(m_Doc->SnapGrid));
 	docu.writeAttribute("MINGRID", m_Doc->guidesPrefs().minorGridSpacing);
 	docu.writeAttribute("MAJGRID", m_Doc->guidesPrefs().majorGridSpacing);
 	docu.writeAttribute("SHOWGRID", static_cast<int>(m_Doc->guidesPrefs().gridShown));
@@ -641,39 +641,39 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 	if ( ! style.isInhGapAfter())
 		docu.writeAttribute("NACH", style.gapAfter());
 	if ( ! style.isInhPeCharStyleName())
-		docu.writeAttribute("PECHSTYLE", style.peCharStyleName());
+		docu.writeAttribute("ParagraphEffectCharStyle", style.peCharStyleName());
 	if ( ! style.isInhParEffectOffset())
-		docu.writeAttribute("PEDIST", style.parEffectOffset());
+		docu.writeAttribute("ParagraphEffectOffset", style.parEffectOffset());
 	if ( ! style.isInhParEffectIndent())
-		docu.writeAttribute("PEINDENT", static_cast<int>(style.parEffectIndent()));
+		docu.writeAttribute("ParagraphEffectIndent", static_cast<int>(style.parEffectIndent()));
 	if ( ! style.isInhHasDropCap())
 		docu.writeAttribute("DROP", static_cast<int>(style.hasDropCap()));
 	if ( ! style.isInhDropCapLines())
 		docu.writeAttribute("DROPLIN", style.dropCapLines());
 	if ( ! style.isInhHasBullet())
-		docu.writeAttribute("BULLET", static_cast<int>(style.hasBullet()));
+		docu.writeAttribute("Bullet", static_cast<int>(style.hasBullet()));
 	if ( ! style.isInhBulletStr())
-		docu.writeAttribute("BULLETSTR", style.bulletStr());
+		docu.writeAttribute("BulletStr", style.bulletStr());
 	if ( ! style.isInhHasNum())
-		docu.writeAttribute("NUMERATION", static_cast<int>(style.hasNum()));
+		docu.writeAttribute("Numeration", static_cast<int>(style.hasNum()));
 	if ( ! style.isInhNumFormat())
-		docu.writeAttribute("NUMFORMAT", style.numFormat());
+		docu.writeAttribute("NumerationFormat", style.numFormat());
 	if ( ! style.isInhNumName())
-		docu.writeAttribute("NUMNAME", style.numName());
+		docu.writeAttribute("NumerationName", style.numName());
 	if ( ! style.isInhNumLevel())
-		docu.writeAttribute("NUMLEVEL", style.numLevel());
+		docu.writeAttribute("NumerationLevel", style.numLevel());
 	if ( ! style.isInhNumPrefix())
-		docu.writeAttribute("NUMPREFIX", style.numPrefix());
+		docu.writeAttribute("NumerationPrefix", style.numPrefix());
 	if ( ! style.isInhNumSuffix())
-		docu.writeAttribute("NUMSUFFIX", style.numSuffix());
+		docu.writeAttribute("NumerationSuffix", style.numSuffix());
 	if ( ! style.isInhNumStart())
-		docu.writeAttribute("NUMSTART", style.numStart());
+		docu.writeAttribute("NumerationStart", style.numStart());
 	if ( ! style.isInhNumRestart())
-		docu.writeAttribute("NUMRESTART", style.numRestart());
+		docu.writeAttribute("NumerationRestart", style.numRestart());
 	if ( ! style.isInhNumOther())
-		docu.writeAttribute("NUMOTHER", static_cast<int>(style.numOther()));
+		docu.writeAttribute("NumerationOther", static_cast<int>(style.numOther()));
 	if ( ! style.isInhNumHigher())
-		docu.writeAttribute("NUMHIGHER", static_cast<int>(style.numHigher()));
+		docu.writeAttribute("NumerationHigher", static_cast<int>(style.numHigher()));
 	if ( ! style.isInhOpticalMargins())
 		docu.writeAttribute("OpticalMargins", style.opticalMargins());
 	if ( ! style.isInhHyphenationMode())
@@ -2474,7 +2474,7 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		docu.writeAttribute("ANFACT", item->annotation().F_act());
 		docu.writeAttribute("ANVACT", item->annotation().V_act());
 		docu.writeAttribute("ANCACT", item->annotation().C_act());
-		if (item->annotation().ActionType() == 8)
+		if (item->annotation().ActionType() == Annotation::Action_URI)
 			docu.writeAttribute("ANEXTERN", item->annotation().Extern());
 		else
 			docu.writeAttribute("ANEXTERN", Path2Relative(item->annotation().Extern(), baseDir));
@@ -2499,6 +2499,8 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		docu.writeAttribute("ANICON", item->annotation().UseIcons());
 		docu.writeAttribute("ANPLACE", item->annotation().IPlace());
 		docu.writeAttribute("ANSCALE", item->annotation().ScaleW());
+		docu.writeAttribute("ANITYP", item->annotation().Icon());
+		docu.writeAttribute("ANOPEN", item->annotation().IsAnOpen());
 	}
 	if (!item->AutoName)
 		docu.writeAttribute("ANNAME", item->itemName());

@@ -75,7 +75,8 @@ PageItem_TextFrame::PageItem_TextFrame(ScribusDoc *pa, double x, double y, doubl
 	unicodeInputCount = 0;
 	unicodeInputString = "";
 	warnedList.clear();
-	
+	m_origAnnotPos = QRectF(xPos(), yPos(), width(), height());
+
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
 
@@ -88,7 +89,8 @@ PageItem_TextFrame::PageItem_TextFrame(const PageItem & p) : PageItem(p)
 	unicodeInputString = "";
 	m_notesFramesMap.clear();
 	warnedList.clear();
-	
+	m_origAnnotPos = QRectF(xPos(), yPos(), width(), height());
+
 	connect(&itemText,SIGNAL(changed()), this, SLOT(slotInvalidateLayout()));
 }
 
@@ -193,8 +195,8 @@ QRegion PageItem_TextFrame::calcAvailableRegion()
 		if (Parent != NULL)
 			canvasToLocalMat.translate(gXpos, gYpos);
 		else
-			canvasToLocalMat.translate(Xpos, Ypos);
-		canvasToLocalMat.rotate(Rot);
+			canvasToLocalMat.translate(m_xPos, m_yPos);
+		canvasToLocalMat.rotate(m_rotation);
 		canvasToLocalMat = canvasToLocalMat.inverted(&invertible);
 
 		if (!invertible) return QRegion();
@@ -1391,14 +1393,10 @@ void PageItem_TextFrame::layout()
 		lineCorr = m_lineWidth / 2.0;
 	
 	// TODO: refactor this into PageItem
-	MarginStruct extra;
-	extra.Top = TExtra;
-	extra.Left = Extra;
-	extra.Right = RExtra;
-	extra.Bottom = BExtra;
+	MarginStruct savedTextDistanceMargins(m_textDistanceMargins);
 
 	LineControl current;
-	current.init(Width, Height, extra, lineCorr);
+	current.init(Width, Height, m_textDistanceMargins, lineCorr);
 	current.initColumns(columnWidth(), ColGap);
 	current.hyphenCount = 0;
 
@@ -1477,7 +1475,7 @@ void PageItem_TextFrame::layout()
 		}
 		
 		current.nextColumn();
-		lastLineY = extra.Top;
+		lastLineY = m_textDistanceMargins.Top;
 
 		//automatic line spacing factor (calculated once)
 		double autoLS = static_cast<double>(m_Doc->typographicPrefs().autoLineSpacing) / 100.0;
@@ -1500,13 +1498,13 @@ void PageItem_TextFrame::layout()
 			else 
 				chs = hl->fontSize();
 			desc = -hl->font().descent(chs / 10.0);
-			current.yPos = extra.Top + lineCorr;
+			current.yPos = m_textDistanceMargins.Top + lineCorr;
 //			qDebug() << QString("first line at y=%1").arg(current.yPos);
 		}
 		else // empty itemText:
 		{
 			desc = -itemText.defaultStyle().charStyle().font().descent(itemText.defaultStyle().charStyle().fontSize() / 10.0);
-			current.yPos = itemText.defaultStyle().lineSpacing() + extra.Top + lineCorr - desc;
+			current.yPos = itemText.defaultStyle().lineSpacing() + m_textDistanceMargins.Top + lineCorr - desc;
 		}
 		current.startLine(firstInFrame());
 
@@ -1764,7 +1762,7 @@ void PageItem_TextFrame::layout()
 				}
 				current.breakIndex = -1;
 				if (current.startOfCol && !current.afterOverflow && current.recalculateY)
-					current.yPos = qMax(current.yPos, extra.Top);
+					current.yPos = qMax(current.yPos, m_textDistanceMargins.Top);
 				// more about par gap and dropcaps
 				if ((a > firstInFrame() && itemText.text(a-1) == SpecialChars::PARSEP) || (a == 0 && BackBox == 0 && current.startOfCol))
 				{
@@ -2025,7 +2023,7 @@ void PageItem_TextFrame::layout()
 					//if top of column Y position depends on first line offset
 					if (current.startOfCol)
 					{
-						lastLineY = qMax(lastLineY, extra.Top + lineCorr);
+						lastLineY = qMax(lastLineY, m_textDistanceMargins.Top + lineCorr);
 						//fix for proper rendering first empty line (only with PARSEP)
 						if (chstr[0] == SpecialChars::PARSEP)
 							current.yPos += style.lineSpacing();
@@ -2033,9 +2031,9 @@ void PageItem_TextFrame::layout()
 						{
 							if (current.yPos <= lastLineY)
 								current.yPos = lastLineY +1;
-							double by = Ypos;
+							double by = m_yPos;
 							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+								by = m_yPos - m_Doc->Pages->at(OwnPage)->yOffset();
 							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
 							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
 							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
@@ -2060,9 +2058,9 @@ void PageItem_TextFrame::layout()
 						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing)
 						{
 							current.yPos += m_Doc->guidesPrefs().valueBaselineGrid;
-							double by = Ypos;
+							double by = m_yPos;
 							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+								by = m_yPos - m_Doc->Pages->at(OwnPage)->yOffset();
 							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
 							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
 							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
@@ -2176,9 +2174,9 @@ void PageItem_TextFrame::layout()
 						if (style.lineSpacingMode() == ParagraphStyle::BaselineGridLineSpacing || FlopBaseline)
 						{
 							current.yPos++;
-							double by = Ypos;
+							double by = m_yPos;
 							if (OwnPage != -1)
-								by = Ypos - m_Doc->Pages->at(OwnPage)->yOffset();
+								by = m_yPos - m_Doc->Pages->at(OwnPage)->yOffset();
 							int ol1 = qRound((by + current.yPos - m_Doc->guidesPrefs().offsetBaselineGrid) * 10000.0);
 							int ol2 = static_cast<int>(ol1 / m_Doc->guidesPrefs().valueBaselineGrid);
 							current.yPos = ceil(  ol2 / 10000.0 ) * m_Doc->guidesPrefs().valueBaselineGrid + m_Doc->guidesPrefs().offsetBaselineGrid - by;
@@ -2945,7 +2943,7 @@ void PageItem_TextFrame::layout()
 						current.nextColumn();
 						current.mustLineEnd = current.colRight;
 						current.addLeftIndent = true;
-						lastLineY = extra.Top;
+						lastLineY = m_textDistanceMargins.Top;
 						current.rowDesc = 0;
 						current.recalculateY = true;
 					}
@@ -3256,23 +3254,25 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	{
 	//	e2 = QRect(qRound(cullingArea.x()  / sc + m_Doc->minCanvasCoordinate.x()), qRound(cullingArea.y()  / sc + m_Doc->minCanvasCoordinate.y()),
 	//			   qRound(cullingArea.width() / sc), qRound(cullingArea.height() / sc));
-		pf2.translate(Xpos, Ypos);
+		pf2.translate(m_xPos, m_yPos);
 	}
 	
-	pf2.rotate(Rot);
+	pf2.rotate(m_rotation);
 	if (!m_Doc->layerOutline(LayerID))
 	{
 		if ((fillColor() != CommonStrings::None) || (GrType != 0))
 		{
+			if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && ((annotation().Type() == 2) || (annotation().Type() == 5) || (annotation().Type() == 6)))
+			{
+				if ((annotation().Feed() == 1) && annotation().IsOn())
+					p->setBrush(QColor(255 - fillQColor.red(), 255 - fillQColor.green(), 255 - fillQColor.blue(), fillQColor.alpha()));
+			}
 			p->setupPolygon(&PoLine);
 			p->fillPath();
 		}
 	}
-	double S_TExtra = TExtra;
-	double S_Extra = Extra;
-	double S_RExtra = RExtra;
-	double S_BExtra = BExtra;
-	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && (((annotation().Type() > 1) && (annotation().Type() < 7)) || (annotation().Type() > 12)))
+	MarginStruct savedTextDistanceMargins(m_textDistanceMargins);
+	if (isAnnotation() && !((m_Doc->appMode == modeEdit) && (m_Doc->m_Selection->findItem(this) != -1)) && (((annotation().Type() > 1) && (annotation().Type() < 11)) || (annotation().Type() > 12)))
 	{
 		QColor fontColor;
 		SetQColor(&fontColor, itemText.defaultStyle().charStyle().fillColor(), itemText.defaultStyle().charStyle().fillShade());
@@ -3296,39 +3296,61 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			}
 		}
 		p->save();
-		if (((annotation().Bwid() > 0) && (annotation().borderColor() != CommonStrings::None)))
+		if ((annotation().Bwid() > 0) && (annotation().borderColor() != CommonStrings::None) && (annotation().Type() != Annotation::Text))
 		{
 			QColor tmp;
 			SetQColor(&tmp, annotation().borderColor(), 100);
+			int BStyle = annotation().Bsty();
+			if (annotation().IsOn())
+			{
+				if (annotation().Feed() == 2)
+					tmp = QColor(255 - tmp.red(), 255 - tmp.green(), 255 - tmp.blue(), tmp.alpha());
+				if (annotation().Feed() == 3)
+					BStyle = 4;
+			}
 			if (annotation().Type() == Annotation::RadioButton)
 			{
 				double bwh = annotation().Bwid() / 2.0;
-				if ((annotation().Bsty() == 0) || (annotation().Bsty() == 1))
+				if (annotation().IsOn())
+				{
+					if (BStyle == 4)
+						BStyle = 3;
+					else
+						BStyle = 4;
+				}
+				if ((BStyle == 0) || (BStyle == 1))
 				{
 					QPainterPath clp;
 					clp.addEllipse(QRectF(bwh, bwh, Width - annotation().Bwid(), Height - annotation().Bwid()));
 					FPointArray clpArr;
 					clpArr.fromQPainterPath(clp);
 					p->setupPolygon(&clpArr);
-					p->setPen(tmp, annotation().Bwid(), annotation().Bsty() == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
+					p->setPen(tmp, annotation().Bwid(), BStyle == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
 					p->setFillMode(ScPainter::None);
 					p->setStrokeMode(ScPainter::Solid);
 					p->strokePath();
 				}
-				else if (annotation().Bsty() == 3)
+				else if (BStyle == 3)
 					p->drawShadeCircle(QRectF(0, 0, Width, Height), tmp, false, annotation().Bwid());
-				else if (annotation().Bsty() == 4)
+				else if (BStyle == 4)
 					p->drawShadeCircle(QRectF(0, 0, Width, Height), tmp, true, annotation().Bwid());
 			}
 			else
 			{
-				if (annotation().Bsty() == 3)
+				if ((annotation().Type() == Annotation::Checkbox) && annotation().IsOn())
+				{
+					if (BStyle == 4)
+						BStyle = 3;
+					else
+						BStyle = 4;
+				}
+				if (BStyle == 3)
 					p->drawShadePanel(QRectF(0, 0, Width, Height), tmp, false, annotation().Bwid());
-				else if (annotation().Bsty() == 4)
+				else if (BStyle == 4)
 					p->drawShadePanel(QRectF(0, 0, Width, Height), tmp, true, annotation().Bwid());
 				else
 				{
-					p->setPen(tmp, annotation().Bwid(), annotation().Bsty() == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
+					p->setPen(tmp, annotation().Bwid(), BStyle == 0 ? Qt::SolidLine : Qt::DashLine, Qt::FlatCap, Qt::MiterJoin);
 					p->setStrokeMode(ScPainter::Solid);
 					p->drawRect(0, 0, Width, Height);
 				}
@@ -3345,7 +3367,10 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			p->setClipPath();
 			if (!bmUtf16.isEmpty())
 			{
-				p->setPen(fontColor);
+				if ((annotation().Feed() == 1) && annotation().IsOn())
+					p->setPen(QColor(255 - fontColor.red(), 255 - fontColor.green(), 255 - fontColor.blue(), fontColor.alpha()));
+				else
+					p->setPen(fontColor);
 				p->setFont(QFont(fontName, fontSize));
 				p->drawText(QRectF(wdt, wdt, Width - (2 * wdt), Height - (2 * wdt)), bmUtf16, false);
 			}
@@ -3354,9 +3379,9 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				p->save();//SA2
 				p->setupPolygon(&PoLine);
 				p->setClipPath();
-				p->scale(LocalScX, LocalScY);
-				p->translate(LocalX*LocalScX, LocalY*LocalScY);
-				p->rotate(LocalRot);
+				p->scale(m_imageXScale, m_imageYScale);
+				p->translate(m_imageXOffset*m_imageXScale, m_imageYOffset*m_imageYScale);
+				p->rotate(m_imageRotation);
 				if (pixm.width() > 0 && pixm.height() > 0)
 					p->drawImage(pixm.qImagePtr());
 				p->restore();//RE2
@@ -3368,16 +3393,13 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		else if (annotation().Type() == Annotation::Textfield)
 		{
 			int wdt = annotation().Bwid();
-			TExtra = wdt;
-			Extra = wdt;
-			RExtra = wdt;
-			BExtra = wdt;
+			m_textDistanceMargins.set(wdt, wdt, wdt, wdt);
 			invalid = true;
 			layout();
 		}
 		else if (annotation().Type() == Annotation::RadioButton)
 		{
-			if (annotation().IsChk())
+			if (annotation().IsChecked())
 			{
 				QPainterPath clp2;
 				double siz = qMin(width(), height()) * 0.4;
@@ -3397,7 +3419,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		}
 		else if (annotation().Type() == Annotation::Checkbox)
 		{
-			if (annotation().IsChk())
+			if (annotation().IsChecked())
 			{
 				p->setBrush(fontColor);
 				p->setFillMode(ScPainter::Solid);
@@ -3581,6 +3603,58 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				return;
 			}
 		}
+		else if (annotation().Type() == Annotation::Text)
+		{
+			if (m_Doc->drawAsPreview && !m_Doc->editOnPreview)
+			{
+				if (annotation().IsOpen())
+				{
+					p->save();
+					p->translate(m_origAnnotPos.x() - xPos(), m_origAnnotPos.y() - yPos());
+					drawNoteIcon(p);
+					p->restore();
+					p->save();
+					double basX = 15;
+					double basY = 15;
+					QPainterPath clp;
+					clp.addRoundedRect(basX, basY, 250, 250, 5, 5);
+					p->setBrush(QColor(240, 240, 0));
+					p->setFillMode(ScPainter::Solid);
+					p->setStrokeMode(ScPainter::None);
+					FPointArray clpArr;
+					clpArr.fromQPainterPath(clp);
+					p->setupPolygon(&clpArr);
+					p->fillPath();
+					p->setPen(QColor(0, 0, 0), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+					p->setBrush(QColor(255, 255, 255));
+					p->setStrokeMode(ScPainter::Solid);
+					p->drawRect(basX + 10, basY + 20, 230, 220);
+					p->setFillMode(ScPainter::None);
+					p->drawRect(basX + 230, basY + 5, 11, 11);
+					p->setPen(QColor(0, 0, 0), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+					p->drawLine(QPointF(basX + 232, basY + 13), QPointF(basX + 239, basY + 13));
+					p->save();
+					p->translate(basX + 10, basY + 5);
+					p->scale(0.5, 0.5);
+					drawNoteIcon(p);
+					p->restore();
+					clp = QPainterPath();
+					clp.addRect(basX + 10, basY + 20, 230, 220);
+					clpArr.fromQPainterPath(clp);
+					p->setupPolygon(&clpArr);
+					p->setClipPath();
+					p->setPen(fontColor);
+					p->setFont(QFont(fontName, fontSize));
+					p->drawText(QRectF(basX + 11, basY + 21, 228, 218), bmUtf16, false, 2);
+					p->restore();
+				}
+				else
+					drawNoteIcon(p);
+				p->restore();
+				p->restore();
+				return;
+			}
+		}
 		p->restore();
 	}
 	/* Experimental Addition to display an Image as Background */
@@ -3675,8 +3749,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 					}
 					if (!m_Doc->RePos)
 					{
-						if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds))
-							&& (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
+						if ((selecteds && (m_isSelected || NextBox != 0 || BackBox != 0)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 						{
 							double xcoZli = selX + hls->glyph.xoffset;
 							// ugly hack to make selection correct, as xoffset is used to
@@ -3737,7 +3810,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							}
 						}
 						QRectF scr;
-						if ((hls->ch == SpecialChars::OBJECT)  && (hls->hasObject(m_Doc)))
+						if (HasObject)
 						{
 							double ww = (hls->getItem(m_Doc)->width() + hls->getItem(m_Doc)->lineWidth()) * hls->glyph.scaleH;
 							double hh = (hls->getItem(m_Doc)->height() + hls->getItem(m_Doc)->lineWidth()) * hls->glyph.scaleV;
@@ -3834,7 +3907,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 					double fontSize = charStyle.fontSize() / 10.0;
 					desc = - font.descent(fontSize);
 					asce = font.ascent(fontSize);
-					if (((selecteds && Select) || ((NextBox != 0 || BackBox != 0) && selecteds)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
+					if ((selecteds && (m_isSelected || NextBox != 0 || BackBox != 0)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
 						p->setBrush(qApp->palette().color(QPalette::Active, QPalette::HighlightedText));
@@ -3888,10 +3961,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	//	}
 		//	pf2.end();
 	}
-	TExtra = S_TExtra;
-	Extra = S_Extra;
-	RExtra = S_RExtra;
-	BExtra = S_BExtra;
+	m_textDistanceMargins=savedTextDistanceMargins;
 	p->restore();//RE1
 }
 
@@ -4027,12 +4097,12 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 		return;
 	p->save();
 	if (!isEmbedded)
-		p->translate(Xpos, Ypos);
-	p->rotate(Rot);
+		p->translate(m_xPos, m_yPos);
+	p->rotate(m_rotation);
 	if ((!isEmbedded) && (!m_Doc->RePos))
 	{
 		double scpInv = 0.0;
-		if ((Frame) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
+		if ((drawFrame()) && (m_Doc->guidesPrefs().framesShown) && (no_stroke))
 		{
 			p->setPen(PrefsManager::instance()->appPrefs.displayPrefs.frameNormColor, scpInv, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			if ((isBookmark) || (m_isAnnotation))
@@ -4066,7 +4136,7 @@ void PageItem_TextFrame::DrawObj_Decoration(ScPainter *p)
 		//Draw the overflow icon
 		if (frameOverflows())
 		{
-			if (!m_Doc->drawAsPreview)
+			if ((!m_Doc->drawAsPreview) && (!isAnnotation()))
 				drawOverflowMarker(p);
 		}
 		if ((m_Doc->guidesPrefs().colBordersShown) && (!m_Doc->drawAsPreview))
@@ -5162,8 +5232,8 @@ double PageItem_TextFrame::columnWidth()
 		lineCorr = m_lineWidth / 2.0;
 	else
 		lineCorr = 0;
-	return (Width - (ColGap * (Cols - 1)) - Extra - RExtra - 2 * lineCorr) / Cols;
-//	return (Width - (ColGap * (Cols - 1)) - Extra - RExtra - lineCorr) / Cols;
+	return (Width - (ColGap * (Cols - 1)) - m_textDistanceMargins.Left - m_textDistanceMargins.Right - 2 * lineCorr) / Cols;
+//	return (Width - (ColGap * (Cols - 1)) - m_textDistanceMargins.Left - m_textDistanceMargins.Right - lineCorr) / Cols;
 }
 
 /*
@@ -5211,13 +5281,13 @@ void PageItem_TextFrame::drawColumnBorders(ScPainter *p)
 	double lineCorr=0;
 	if (lineColor() != CommonStrings::None)
 		lineCorr = m_lineWidth / 2.0;
-	if (TExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, TExtra + lineCorr), FPoint(Width, TExtra + lineCorr));
-	if (BExtra + lineCorr!=0.0)
-		p->drawSharpLine(FPoint(0, Height - BExtra - lineCorr), FPoint(Width, Height - BExtra - lineCorr));
+	if (m_textDistanceMargins.Top + lineCorr!=0.0)
+		p->drawSharpLine(FPoint(0, m_textDistanceMargins.Top + lineCorr), FPoint(Width, m_textDistanceMargins.Top + lineCorr));
+	if (m_textDistanceMargins.Bottom + lineCorr!=0.0)
+		p->drawSharpLine(FPoint(0, Height - m_textDistanceMargins.Bottom - lineCorr), FPoint(Width, Height - m_textDistanceMargins.Bottom - lineCorr));
 	while(curCol < Cols)
 	{
-		colLeft=(colWidth + ColGap) * curCol + Extra + lineCorr;
+		colLeft=(colWidth + ColGap) * curCol + m_textDistanceMargins.Left + lineCorr;
 		if (colLeft != 0.0)
 			p->drawSharpLine(FPoint(colLeft, 0), FPoint(colLeft, 0+Height));
 		if (colLeft + colWidth != Width)
@@ -5344,6 +5414,345 @@ void PageItem_TextFrame::applicableActions(QStringList & actionList)
 		actionList << "editClearContents";
 		actionList << "itemAdjustFrameHeightToText";
 		actionList << "itemClearPStyle";
+	}
+}
+
+void PageItem_TextFrame::drawNoteIcon(ScPainter *p)
+{
+	p->save();
+	p->translate(0, 24);
+	p->scale(1, -1);
+	p->setFillMode(ScPainter::None);
+	p->setStrokeMode(ScPainter::Solid);
+	FPointArray chArr;
+	if (annotation().Icon() == Annotation::Icon_Note)
+	{
+		chArr.svgInit();
+		chArr.svgMoveTo(9, 18);
+		chArr.svgLineTo(4, 18);
+		chArr.svgCurveToCubic(4, 7, 4, 4, 6, 3);
+		chArr.svgLineTo(20, 3);
+		chArr.svgCurveToCubic(18, 4, 18, 7, 18, 18);
+		chArr.svgLineTo(17, 18);
+		p->setupPolygon(&chArr, false);
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 1.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(10, 16), QPointF(14, 21));
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 1.85625, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.resize(0);
+		chArr.svgInit();
+		chArr.svgMoveTo(15.07, 20.523);
+		chArr.svgCurveToCubic(15.07, 19.672, 14.379, 18.977, 13.523, 18.977);
+		chArr.svgCurveToCubic(12.672, 18.977, 11.977, 19.672, 11.977, 20.523);
+		chArr.svgCurveToCubic(11.977, 21.379, 12.672, 22.07, 13.523, 22.07);
+		chArr.svgCurveToCubic(14.379, 22.07, 15.07, 21.379, 15.07, 20.523);
+		chArr.svgClosePath();
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->drawLine(QPointF(6.5, 13.5), QPointF(15.5, 13.5));
+		p->drawLine(QPointF(6.5, 10.5), QPointF(13.5, 10.5));
+		p->drawLine(QPointF(6.801, 7.5), QPointF(15.5, 7.5));
+		chArr.resize(0);
+		chArr.svgInit();
+		chArr.svgMoveTo(9, 19);
+		chArr.svgLineTo(4, 19);
+		chArr.svgCurveToCubic(4, 8, 4, 5, 6, 4);
+		chArr.svgLineTo(20, 4);
+		chArr.svgCurveToCubic(18, 5, 18, 8, 18, 19);
+		chArr.svgLineTo(17, 19);
+		p->setupPolygon(&chArr, false);
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 1.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(10, 17), QPointF(14, 22));
+		chArr.resize(0);
+		chArr.svgInit();
+		chArr.svgMoveTo(15.07, 21.523);
+		chArr.svgCurveToCubic(15.07, 20.672, 14.379, 19.977, 13.523, 19.977);
+		chArr.svgCurveToCubic(12.672, 19.977, 11.977, 20.672, 11.977, 21.523);
+		chArr.svgCurveToCubic(11.977, 22.379, 12.672, 23.07, 13.523, 23.07);
+		chArr.svgCurveToCubic(14.379, 23.07, 15.07, 22.379, 15.07, 21.523);
+		chArr.svgClosePath();
+		p->setupPolygon(&chArr);
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 1.85625, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(6.5, 14.5), QPointF(15.5, 14.5));
+		p->drawLine(QPointF(6.5, 11.5), QPointF(13.5, 11.5));
+		p->drawLine(QPointF(6.801, 8.5), QPointF(15.5, 8.5));
+	}
+	else if (annotation().Icon() == Annotation::Icon_Comment)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		chArr.parseSVG("M 8 20 L 16 20 C 18.363 20 20 18.215 20 16 L 20 13 C 20 10.785 18.363 9 16 9 L 13 9 L 8 3 L 8 9 C 5.637 9 4 10.785 4 13 L 4 16 C 4 18.215 5.637 20 8 20 Z");
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.resize(0);
+		chArr.svgInit();
+		chArr.parseSVG("M 8 21 L 16 21 C 18.363 21 20 19.215 20 17 L 20 14 C 20 11.785 18.363 10 16 10 L 13 10 L 8 4 L 8 10 L 8 10 C 5.637 10 4 11.785 4 14 L 4 17 C 4 19.215 5.637 21 8 21 Z");
+		p->setupPolygon(&chArr);
+		p->strokePath();
+	}
+	else if (annotation().Icon() == Annotation::Icon_Key)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		QString svg = "M 11.895 18.754 C 13.926 20.625 17.09 20.496 18.961 18.465 C 20.832 16.434 20.699 13.27 18.668 11.398 C 17.164 10.016 15.043 9.746 13.281 10.516";
+		svg += " L 12.473 9.324 L 11.281 10.078 L 9.547 8.664 L 9.008 6.496 L 7.059 6.059 L 6.34 4.121 L 5.543 3.668 L 3.375 4.207 L 2.938 6.156";
+		svg += " L 10.57 13.457 C 9.949 15.277 10.391 17.367 11.895 18.754 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 1.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 16.059 15.586 C 16.523 15.078 17.316 15.043 17.824 15.512 C 18.332 15.98 18.363 16.77 17.895 17.277 C 17.43 17.785 16.637 17.816 16.129 17.352";
+		svg += " C 15.621 16.883 15.59 16.094 16.059 15.586 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 11.895 19.754 C 13.926 21.625 17.09 21.496 18.961 19.465 C 20.832 17.434 20.699 14.27 18.668 12.398 C 17.164 11.016 15.043 10.746 13.281 11.516";
+		svg += " L 12.473 10.324 L 11.281 11.078 L 9.547 9.664 L 9.008 7.496 L 7.059 7.059 L 6.34 5.121 L 5.543 4.668 L 3.375 5.207 L 2.938 7.156";
+		svg += " L 10.57 14.457 C 9.949 16.277 10.391 18.367 11.895 19.754 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 1.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 16.059 16.586 C 16.523 16.078 17.316 16.043 17.824 16.512 C 18.332 16.98 18.363 17.77 17.895 18.277";
+		svg += " C 17.43 18.785 16.637 18.816 16.129 18.352 C 15.621 17.883 15.59 17.094 16.059 16.586 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+	}
+	else if (annotation().Icon() == Annotation::Icon_Help)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		QString svg = "M 8.289 16.488 C 8.824 17.828 10.043 18.773 11.473 18.965 C 12.902 19.156 14.328 18.559 15.195 17.406 C 16.062 16.254 16.242 14.723 15.664 13.398";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 12 8 C 12 12 16 11 16 15";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 1.539286, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->save();
+		p->translate(0, 24);
+		p->scale(1, -1);
+		svg = "M 12.684 20.891 C 12.473 21.258 12.004 21.395 11.629 21.196 C 11.254 20.992 11.105 20.531 11.297 20.149 C 11.488 19.77 11.945 19.61 12.332 19.789";
+		svg += " C 12.719 19.969 12.891 20.426 12.719 20.817";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		p->restore();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 8.289 17.488 C 9.109 19.539 11.438 20.535 13.488 19.711 C 15.539 18.891 16.535 16.562 15.711 14.512 C 15.699 14.473 15.684 14.438 15.664 14.398";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 12 9 C 12 13 16 12 16 16";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 1.539286, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->save();
+		p->translate(0, 24);
+		p->scale(1, -1);
+		svg = "M 12.684 19.891 C 12.473 20.258 12.004 20.395 11.629 20.195 C 11.254 19.992 11.105 19.531 11.297 19.149 C 11.488 18.77 11.945 18.61 12.332 18.789";
+		svg += " C 12.719 18.969 12.891 19.426 12.719 19.817";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		p->restore();
+	}
+	else if (annotation().Icon() == Annotation::Icon_NewParagraph)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		p->save();
+		p->translate(0, 24);
+		p->scale(1, -1);
+		QString svg = "M 9.211 11.988 C 8.449 12.07 7.711 11.707 7.305 11.059 C 6.898 10.41 6.898 9.59 7.305 8.941 C 7.711 8.293 8.449 7.93 9.211 8.012";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 1.004413, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		svg = "M 18.07 11.511 L 15.113 10.014 L 12.199 11.602 L 12.711 8.323 L 10.301 6.045 L 13.574 5.517 L 14.996 2.522 L 16.512 5.474 L 19.801 5.899 L 17.461 8.252 L 18.07 11.511 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->restore();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		svg = "M 11 17 L 10 17 L 10 3";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 14 3 L 14 13";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->save();
+		p->translate(0, 24);
+		p->scale(1, -1);
+		svg = "M 9.211 10.988 C 8.109 11.105 7.125 10.309 7.012 9.211 C 6.895 8.109 7.691 7.125 8.789 7.012 C 8.93 6.996 9.07 6.996 9.211 7.012";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 1.004413, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		svg = "M 18.07 10.502 L 15.113 9.005 L 12.199 10.593 L 12.711 7.314 L 10.301 5.036 L 13.574 4.508 L 14.996 1.513 L 16.512 4.465 L 19.801 4.891 L 17.461 7.243 L 18.07 10.502 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->restore();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		svg = "M 11 18 L 10 18 L 10 4";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		svg = "M 14 4 L 14 14";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+	}
+	else if (annotation().Icon() == Annotation::Icon_Paragraph)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		QString svg = "M 15 3 L 15 18 L 11 18 L 11 3";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->save();
+		p->translate(0, 24);
+		p->scale(1, -1);
+		svg = "M 9.777 10.988 C 8.746 10.871 7.973 9.988 8 8.949 C 8.027 7.91 8.844 7.066 9.879 7.004";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->restore();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		svg = "M 15 4 L 15 19 L 11 19 L 11 4";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->save();
+		p->translate(0, 24);
+		p->scale(1, -1);
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		svg = "M 9.777 9.988 C 8.746 9.871 7.973 8.988 8 7.949 C 8.027 6.91 8.844 6.066 9.879 6.004";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		p->restore();
+	}
+	else if (annotation().Icon() == Annotation::Icon_Insert)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(9, 10), QPointF(17, 10));
+		p->drawLine(QPointF(12, 14.012), QPointF(20, 14));
+		p->drawLine(QPointF(12, 6.012), QPointF(20, 6.012));
+		chArr.svgInit();
+		QString svg = "M 4 12 L 6 10 L 4 8";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		chArr.resize(0);
+		chArr.svgInit();
+		p->drawLine(QPointF(4, 12), QPointF(4, 8));
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(12, 19.012), QPointF(20, 19));
+		p->drawLine(QPointF(12, 15.012), QPointF(20, 15));
+		p->drawLine(QPointF(12, 7.012), QPointF(20, 7.012));
+		svg = "M 4 13 L 6 11 L 4 9";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr, false);
+		p->strokePath();
+		p->drawLine(QPointF(4, 13), QPointF(4, 9));
+	}
+	else if (annotation().Icon() == Annotation::Icon_Cross)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(18, 5), QPointF(6, 17));
+		p->drawLine(QPointF(6, 5), QPointF(18, 17));
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->drawLine(QPointF(18, 6), QPointF(6, 18));
+		p->drawLine(QPointF(6, 6), QPointF(18, 18));
+	}
+	else if (annotation().Icon() == Annotation::Icon_Circle)
+	{
+		p->setPen(QColor(qRound(255 * 0.533333), qRound(255 * 0.541176), qRound(255 * 0.521569)), 2.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		QString svg = "M 19.5 11.5 C 19.5 7.359 16.141 4 12 4 C 7.859 4 4.5 7.359 4.5 11.5 C 4.5 15.641 7.859 19 12 19 C 16.141 19 19.5 15.641 19.5 11.5 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+		chArr.resize(0);
+		p->setPen(QColor(qRound(255 * 0.729412), qRound(255 * 0.741176), qRound(255 * 0.713725)), 2.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		chArr.svgInit();
+		svg = "M 19.5 12.5 C 19.5 8.359 16.141 5 12 5 C 7.859 5 4.5 8.359 4.5 12.5 C 4.5 16.641 7.859 20 12 20 C 16.141 20 19.5 16.641 19.5 12.5 Z";
+		chArr.parseSVG(svg);
+		p->setupPolygon(&chArr);
+		p->strokePath();
+	}
+	p->restore();
+}
+
+
+void PageItem_TextFrame::setTextAnnotationOpen(bool open)
+{
+	if (annotation().Type() == Annotation::Text)
+	{
+		if (open)
+		{
+			m_origAnnotPos = QRectF(xPos(), yPos(), width(), height());
+			setWidthHeight(265, 265, true);
+		}
+		else
+		{
+			setXYPos(m_origAnnotPos.x(), m_origAnnotPos.y(), true);
+			setWidthHeight(m_origAnnotPos.width(), m_origAnnotPos.height(), true);
+		}
 	}
 }
 
@@ -6031,7 +6440,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 	//ugly hack increasing min frame`s haeight against strange glyph painting if it is too close of bottom
 	int hackValue = 50;
 
-	setHeight(double(maxY + hackValue)/100.0 + BExtra);
+	setHeight(ceil(maxY) + m_textDistanceMargins.Bottom + hackValue);
 	updateClip();
 	checkChanges(true);
 	invalid = true;
