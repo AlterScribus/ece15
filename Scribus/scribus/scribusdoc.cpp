@@ -304,7 +304,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	numS->m_counters.insert(0, 0);
 	numS->m_lastlevel = -1;
 	numerations.insert("default", numS);
-	
+	currentEditedTextframe = NULL;
 }
 
 
@@ -414,6 +414,7 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	editOnPreview = false;
 	previewVisual = -1;
 	dontResize = false;
+	currentEditedTextframe = NULL;
 }
 
 
@@ -6841,6 +6842,8 @@ void ScribusDoc::setInlineEditMode(bool mode, int id)
 		maxy = qMax(maxy, y2);
 		currItem->gXpos = currItem->xPos() - minx;
 		currItem->gYpos = currItem->yPos() - miny;
+		currItem->gWidth = maxx - minx;
+		currItem->gHeight = maxy - miny;
 		currItem->setXYPos(currItem->gXpos, currItem->gYpos, true);
 		currItem->isEmbedded = true;
 		currItem->inlineCharID = currentEditedIFrame;
@@ -17844,8 +17847,8 @@ void ScribusDoc::deleteNote(TextNote* note)
 	{
 		if (note->noteMark()->getItemPtr() != NULL)
 			nF = note->noteMark()->getItemPtr()->asNoteFrame();
-	if (nF == NULL)
-		nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
+		if (nF == NULL)
+			nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
 	}
 	PageItem* master = note->masterMark()->getItemPtr();
 	if (nF != NULL)

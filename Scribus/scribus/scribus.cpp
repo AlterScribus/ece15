@@ -2787,7 +2787,8 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		}
 		QString widthTxt = value2String(doc->m_Selection->width(), doc->unitIndex(), true, true);
 		QString heightTxt = value2String(doc->m_Selection->height(), doc->unitIndex(), true, true);
-		setStatusBarInfoText( tr("%1 selected, Size = %2 x %3").arg(whatSel).arg(widthTxt).arg(heightTxt));
+		QString txtBody = tr("selected, Size");
+		setStatusBarInfoText( QString("%1 %2 = %3 x %4").arg(whatSel).arg(txtBody).arg(widthTxt).arg(heightTxt));
 	}
 	else
 	{
@@ -6578,6 +6579,7 @@ void ScribusMainWindow::ToggleFrameEdit()
 			nodePalette->ResetCont->setEnabled(false);
 			nodePalette->ResetContClip->setEnabled(false);
 			nodePalette->PolyStatus(currItem->itemType(), currItem->PoLine.size());
+			nodePalette->setDefaults(currItem);
 			if ((currItem->asImageFrame()) && (currItem->imageClip.size() != 0))
 			{
 				nodePalette->ResetContClip->setSizePolicy(QSizePolicy(static_cast<QSizePolicy::Policy>(3), static_cast<QSizePolicy::Policy>(3)));
@@ -8895,6 +8897,10 @@ void ScribusMainWindow::editInlineStart(int id)
 			doc->autoSaveTimer->stop();
 			doc->setAutoSave(false);
 		}
+		if (doc->m_Selection->count() == 1)
+			doc->currentEditedTextframe = doc->m_Selection->itemAt(0);
+		else
+			doc->currentEditedTextframe = NULL;
 		view->Deselect(true);
 		storedPageNum = doc->currentPageNumber();
 		storedViewXCoor = view->contentsX();
@@ -9000,6 +9006,9 @@ void ScribusMainWindow::editInlineEnd()
 	view->setScale(storedViewScale);
 	doc->setCurrentPage(doc->DocPages.at(storedPageNum));
 	view->setContentsPos(static_cast<int>(storedViewXCoor * storedViewScale), static_cast<int>(storedViewYCoor * storedViewScale));
+	if (doc->currentEditedTextframe != NULL)
+		doc->currentEditedTextframe->invalidateLayout();
+	doc->currentEditedTextframe = NULL;
 	view->DrawNew();
 	pagePalette->Rebuild();
 	propertiesPalette->updateColorList();

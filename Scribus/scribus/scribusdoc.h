@@ -1248,6 +1248,7 @@ public: // Public attributes
 	QList<PageItem*> DocItems;
 	QHash<int, PageItem*> FrameItems;
 	QList<PageItem*> EditFrameItems;
+	PageItem *currentEditedTextframe;
 	Selection* const m_Selection;
 	/** \brief Number of Columns */
 	double PageSp;
