@@ -2740,10 +2740,16 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 	else if (docSelectionCount == 1)
 	{
 		QString whatSel = tr("Unknown");
+		QString imageFile = "";
 		switch (currItem->itemType())
 		{
 			case 2:
 				whatSel = tr("Image Frame");
+				if (currItem->PictureIsAvailable && !currItem->Pfile.isEmpty())
+				{
+					QFileInfo fi(doc->DocName);
+					imageFile = Path2Relative(currItem->Pfile, fi.absolutePath());
+				}
 				break;
 			case 4:
 				whatSel = tr("Text Frame");
@@ -2788,6 +2794,8 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		QString widthTxt = value2String(doc->m_Selection->width(), doc->unitIndex(), true, true);
 		QString heightTxt = value2String(doc->m_Selection->height(), doc->unitIndex(), true, true);
 		QString txtBody = tr("selected, Size");
+		if (!imageFile.isEmpty())
+			txtBody.prepend("[" + imageFile +"] ");
 		setStatusBarInfoText( QString("%1 %2 = %3 x %4").arg(whatSel).arg(txtBody).arg(widthTxt).arg(heightTxt));
 	}
 	else

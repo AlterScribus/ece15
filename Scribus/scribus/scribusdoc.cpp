@@ -17186,6 +17186,8 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 					continue;
 				if (!item->isTextFrame())
 					continue;
+				if (item->invalid)
+					continue;
 
 				//reset items and stories range counters
 				foreach (NumStruct * numS, numerations.values())
