@@ -3000,12 +3000,12 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = (long) floor((current.yPos - addAsce)*1000);
+				maxYAsc = (long) floor((current.yPos - addAsce)*1000.0);
 			}
 			else
-				maxYAsc = (long) floor((current.yPos - realAsce)*1000);
+				maxYAsc = (long) floor((current.yPos - realAsce)*1000.0);
 			maxYAsc = qMax(maxYAsc, (long) 0);
-			maxYDesc = (long) ceil((current.yPos + realDesc)*1000);
+			maxYDesc = (long) ceil((current.yPos + realDesc)*1000.0);
 
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc/1000, maxYDesc/1000);
 			current.finishLine(EndX);
