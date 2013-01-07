@@ -305,7 +305,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 	
 	m_lastPosWasOverGuide = false;
 	double newX, newY;
-	PageItem *currItem;
+	PageItem *currItem=NULL;
 	bool erf = false;
 	m->accept();
 //	qDebug() << "legacy mode move:" << m->x() << m->y() << m_canvas->globalToCanvas(m->globalPos()).x() << m_canvas->globalToCanvas(m->globalPos()).y();
@@ -413,7 +413,7 @@ void CanvasMode_Normal::mouseMoveEvent(QMouseEvent *m)
 					m_hoveredItem = hoveredItem;
 					if ((hoveredItem->annotation().Type() == Annotation::Text) && (hoveredItem->annotation().IsOpen()))
 					{
-						if (m_view->moveTimerElapsed() && m_canvas->m_viewMode.m_MouseButtonPressed && (m->buttons() & Qt::LeftButton) && (!currItem->locked()))
+						if (m_view->moveTimerElapsed() && m_canvas->m_viewMode.m_MouseButtonPressed && (m->buttons() & Qt::LeftButton) && (!hoveredItem->locked()))
 						{
 							double dx = mousePointDoc.x() - m_mouseCurrentPoint.x();
 							double dy = mousePointDoc.y() - m_mouseCurrentPoint.y();
@@ -1423,7 +1423,6 @@ void CanvasMode_Normal::handlePushButtonRelease(PageItem* currItem)
 		default:
 			break;
 	}
-	m_doc->regionsChanged()->update(currItem->getVisualBoundingRect());
 }
 
 void CanvasMode_Normal::handleRadioButtonRelease(PageItem* currItem)
@@ -1510,7 +1509,26 @@ void CanvasMode_Normal::handleJavaAction(PageItem* currItem, int event)
 
 void CanvasMode_Normal::handleNamedAction(PageItem* currItem)
 {
-//	qDebug() << "Named Action:" << currItem->annotation().Action();
+	m_view->Deselect(true);
+	QString name = currItem->annotation().Action();
+	if (name == "FirstPage")
+		m_view->GotoPage(0);
+	else if (name == "PrevPage")
+		m_view->GotoPage(qMax(0, m_doc->currentPageNumber()-1));
+	else if (name == "NextPage")
+		m_view->GotoPage(qMin(m_doc->currentPageNumber()+1, m_doc->Pages->count()-1));
+	else if (name == "LastPage")
+		m_view->GotoPage(m_doc->Pages->count()-1);
+	else if (name == "Print")
+		m_ScMW->slotFilePrint();
+	else if (name == "Close")
+		m_ScMW->slotFileClose();
+	else if (name == "Quit")
+		m_ScMW->slotFileQuit();
+	else if (name == "FitHeight")
+		m_ScMW->slotZoom(-100);
+	else if (name == "FitWidth")
+		m_ScMW->slotZoom(-200);
 }
 
 void CanvasMode_Normal::handleLinkAnnotation(PageItem* currItem)

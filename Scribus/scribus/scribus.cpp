@@ -1172,6 +1172,8 @@ void ScribusMainWindow::initStatusBar()
 
 void ScribusMainWindow::setStatusBarMousePosition(double xp, double yp)
 {
+	if (doc->Pages->count() == 0)
+		return;
 	double xn = xp;
 	double yn = yp;
 	if (doc->guidesPrefs().rulerMode)
@@ -1187,6 +1189,8 @@ void ScribusMainWindow::setStatusBarMousePosition(double xp, double yp)
 
 void ScribusMainWindow::setStatusBarTextPosition(double base, double xp)
 {
+	if (doc->Pages->count() == 0)
+		return;
 	mainWindowXPosDataLabel->setText(base + xp >= 0? value2String(xp, doc->unitIndex(), true, true): QString("-"));
 	mainWindowYPosDataLabel->setText("-");
 }
@@ -2782,7 +2786,8 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		}
 		QString widthTxt = value2String(doc->m_Selection->width(), doc->unitIndex(), true, true);
 		QString heightTxt = value2String(doc->m_Selection->height(), doc->unitIndex(), true, true);
-		setStatusBarInfoText( tr("%1 selected, Size = %2 x %3").arg(whatSel).arg(widthTxt).arg(heightTxt));
+		QString txtBody = tr("selected, Size");
+		setStatusBarInfoText( QString("%1 %2 = %3 x %4").arg(whatSel).arg(txtBody).arg(widthTxt).arg(heightTxt));
 	}
 	else
 	{
@@ -6553,6 +6558,7 @@ void ScribusMainWindow::ToggleFrameEdit()
 			nodePalette->ResetCont->setEnabled(false);
 			nodePalette->ResetContClip->setEnabled(false);
 			nodePalette->PolyStatus(currItem->itemType(), currItem->PoLine.size());
+			nodePalette->setDefaults(currItem);
 			if ((currItem->asImageFrame()) && (currItem->imageClip.size() != 0))
 			{
 				nodePalette->ResetContClip->setSizePolicy(QSizePolicy(static_cast<QSizePolicy::Policy>(3), static_cast<QSizePolicy::Policy>(3)));
@@ -7168,6 +7174,8 @@ void ScribusMainWindow::deletePage(int from, int to)
 	}
 	if (tmpSelection.count() != 0)
 		doc->itemSelection_DeleteItem(&tmpSelection);
+	disconnect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
+	view->updatesOn(false);
 	for (int a = to - 1; a >= from - 1; a--)
 	{
 		if (UndoManager::undoEnabled())
@@ -7190,16 +7198,15 @@ void ScribusMainWindow::deletePage(int from, int to)
 			doc->deleteMasterPage(a);
 		else
 			doc->deletePage(a);
-		disconnect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
-		view->pageSelector->setMaximum(doc->Pages->count());
-		view->pageSelector->GotoPg(0);
-		connect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
 		if (!isMasterPage) // Master pages are not added to sections when created
 			doc->removePageFromSection(a);
 	}
+	view->pageSelector->setMaximum(doc->Pages->count());
+	connect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
 	undoManager->setUndoEnabled(false); // ugly hack to disable object moving when undoing page deletion
 	view->reformPagesView();
 	undoManager->setUndoEnabled(true); // ugly hack continues
+	view->updatesOn(true);
 	view->GotoPage(qMin(doc->Pages->count()-1, oldPg));
 	doc->updateEndnotesFrames();
 	updateGUIAfterPagesChanged();
@@ -8719,6 +8726,8 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 {
 	if (HaveDoc)
 	{
+		if (!doc->docPatterns.contains(temp))
+			return;
 		m_WasAutoSave = doc->autoSave();
 		if (m_WasAutoSave)
 		{
@@ -8865,6 +8874,10 @@ void ScribusMainWindow::editInlineStart(int id)
 			doc->autoSaveTimer->stop();
 			doc->setAutoSave(false);
 		}
+		if (doc->m_Selection->count() == 1)
+			doc->currentEditedTextframe = doc->m_Selection->itemAt(0);
+		else
+			doc->currentEditedTextframe = NULL;
 		view->Deselect(true);
 		storedPageNum = doc->currentPageNumber();
 		storedViewXCoor = view->contentsX();
@@ -8970,6 +8983,9 @@ void ScribusMainWindow::editInlineEnd()
 	view->setScale(storedViewScale);
 	doc->setCurrentPage(doc->DocPages.at(storedPageNum));
 	view->setContentsPos(static_cast<int>(storedViewXCoor * storedViewScale), static_cast<int>(storedViewYCoor * storedViewScale));
+	if (doc->currentEditedTextframe != NULL)
+		doc->currentEditedTextframe->invalidateLayout();
+	doc->currentEditedTextframe = NULL;
 	view->DrawNew();
 	pagePalette->Rebuild();
 	propertiesPalette->updateColorList();

@@ -159,8 +159,15 @@ bool Scribus150Format::savePalette(const QString & fileName)
 bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* fmt */)
 {
 	QString text, tf, tf2, tc, tc2;
-	QString fileDir = QFileInfo(fileName).absolutePath();
 	m_lastSavedFile = "";
+
+	// #11279: Image links get corrupted when symlinks involved
+	// We have to proceed in tow steps here as QFileInfo::canonicalPath()
+	// may no return correct result if fileName does not exists
+	QString fileDir = QFileInfo(fileName).absolutePath();
+	QString canonicalPath = QFileInfo(fileDir).canonicalFilePath();
+	if (!canonicalPath.isEmpty())
+		fileDir = canonicalPath;
 
 	// Create a random temporary file name
 	srand(time(NULL)); // initialize random sequence each time
@@ -174,13 +181,6 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	}
 	if (QFile::exists(tmpFileName))
 		return false;
-
-	/*QDomDocument docu("scribus");
-	QString st="<SCRIBUSUTF8NEW></SCRIBUSUTF8NEW>";
-	docu.setContent(st);
-	QDomElement elem=docu.documentElement();
-	elem.setAttribute("Version", QString(VERSION));
-	QDomElement dc=docu.createElement("DOCUMENT");*/
 
 	std::auto_ptr<QIODevice> outputFile;
 	if (fileName.toLower().right(2) == "gz")
@@ -2586,6 +2586,40 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 			docu.writeAttribute("ISIZE", dStyle.charStyle().fontSize() / 10.0 );
 		if ( ! dStyle.charStyle().isInhLanguage())
 			docu.writeAttribute("LANGUAGE", dStyle.charStyle().language());
+		if ( ! dStyle.isInhPeCharStyleName())
+			docu.writeAttribute("ParagraphEffectCharStyle", dStyle.peCharStyleName());
+		if ( ! dStyle.isInhParEffectOffset())
+			docu.writeAttribute("ParagraphEffectOffset", dStyle.parEffectOffset());
+		if ( ! dStyle.isInhParEffectIndent())
+			docu.writeAttribute("ParagraphEffectIndent", static_cast<int>(dStyle.parEffectIndent()));
+		if ( ! dStyle.isInhHasDropCap())
+			docu.writeAttribute("DROP", static_cast<int>(dStyle.hasDropCap()));
+		if ( ! dStyle.isInhDropCapLines())
+			docu.writeAttribute("DROPLIN", dStyle.dropCapLines());
+		if ( ! dStyle.isInhHasBullet())
+			docu.writeAttribute("Bullet", static_cast<int>(dStyle.hasBullet()));
+		if ( ! dStyle.isInhBulletStr())
+			docu.writeAttribute("BulletStr", dStyle.bulletStr());
+		if ( ! dStyle.isInhHasNum())
+			docu.writeAttribute("Numeration", static_cast<int>(dStyle.hasNum()));
+		if ( ! dStyle.isInhNumFormat())
+			docu.writeAttribute("NumerationFormat", dStyle.numFormat());
+		if ( ! dStyle.isInhNumName())
+			docu.writeAttribute("NumerationName", dStyle.numName());
+		if ( ! dStyle.isInhNumLevel())
+			docu.writeAttribute("NumerationLevel", dStyle.numLevel());
+		if ( ! dStyle.isInhNumPrefix())
+			docu.writeAttribute("NumerationPrefix", dStyle.numPrefix());
+		if ( ! dStyle.isInhNumSuffix())
+			docu.writeAttribute("NumerationSuffix", dStyle.numSuffix());
+		if ( ! dStyle.isInhNumStart())
+			docu.writeAttribute("NumerationStart", dStyle.numStart());
+		if ( ! dStyle.isInhNumRestart())
+			docu.writeAttribute("NumerationRestart", dStyle.numRestart());
+		if ( ! dStyle.isInhNumOther())
+			docu.writeAttribute("NumerationOther", static_cast<int>(dStyle.numOther()));
+		if ( ! dStyle.isInhNumHigher())
+			docu.writeAttribute("NumerationHigher", static_cast<int>(dStyle.numHigher()));
 	}
 	if (item->asTextFrame() || item->asPathText())
 	{
