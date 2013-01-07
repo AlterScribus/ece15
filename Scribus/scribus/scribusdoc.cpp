@@ -303,6 +303,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	numS->m_counters.insert(0, 0);
 	numS->m_lastlevel = -1;
 	numerations.insert("default", numS);
+
 	currentEditedTextframe = NULL;
 }
 
