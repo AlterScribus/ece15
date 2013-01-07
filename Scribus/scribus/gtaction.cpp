@@ -222,7 +222,7 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 	}
 }
 
-void gtAction::write(const QString& text, gtStyle *style, bool  isNote)
+void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 {
 	if (isFirstWrite)
 	{
