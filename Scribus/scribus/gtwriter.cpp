@@ -55,7 +55,6 @@ gtWriter::gtWriter(bool append, PageItem *pageitem)
 	inNote = false;
 	inNoteBody = false;
 	showImpSettings = true;
-	
 }
 
 gtFrameStyle* gtWriter::getDefaultStyle()
@@ -111,20 +110,19 @@ void gtWriter::append(const QString& text)
 		return;
 	if (text.length() == 0)
 		return;
-	if (!inNote || (inNote && inNoteBody))
+	if (inNote && !inNoteBody)
+		return;
+	if (characterStyle != NULL)
 	{
-		if (characterStyle != NULL)
-		{
-			action->write(text, characterStyle, inNote);
-		}
-		else if (paragraphStyle != NULL)
-		{
-			action->write(text, paragraphStyle, inNote);
-		}
-		else
-		{
-			action->write(text, frameStyle, inNote);
-		}
+		action->write(text, characterStyle, inNote);
+	}
+	else if (paragraphStyle != NULL)
+	{
+		action->write(text, paragraphStyle, inNote);
+	}
+	else
+	{
+		action->write(text, frameStyle, inNote);
 	}
 }
 
@@ -134,8 +132,9 @@ void gtWriter::appendUnstyled(const QString& text)
 		return;
 	if (text.length() == 0)
 		return;
-	if (!inNote || (inNote && inNoteBody))
-		action->writeUnstyled(text, inNote);
+	if (inNote && !inNoteBody)
+		return;
+	action->writeUnstyled(text, inNote);
 }
 
 double gtWriter::getFrameWidth()

@@ -49,9 +49,7 @@ ContentReader::ContentReader(QString documentName, StyleReader *s, gtWriter *w, 
 	defaultStyle = NULL;
 	currentStyle = NULL;
 	inList = false;
-	inNote = false;
 	inAnnotation = false;
-	inNoteBody = false;
 	inSpan = false;
 	append = 0;
 	listIndex = 0;
@@ -118,7 +116,9 @@ bool ContentReader::startElement(const QString&, const QString&, const QString &
 		for (int i = 0; i < attrs.count(); ++i)
 		{
 			if (attrs.localName(i) == "text:style-name")
+			{
 				currentList = attrs.value(i);
+			}
 		}
 		currentStyle = sreader->getStyle(QString(currentList + "_%1").arg(listLevel));
 		currentListStyle = sreader->getList(currentList);
@@ -138,9 +138,9 @@ bool ContentReader::startElement(const QString&, const QString&, const QString &
 	else if (name == "office:annotation")
 		inAnnotation = true;
 	else if (name == "text:note")
-		writer->inNote = inNote = true;
+		writer->inNote = true;
 	else if (name == "text:note-body")
-		writer->inNoteBody = inNoteBody = true;
+		writer->inNoteBody = true;
 	else if (name == "style:style")
 	{
 		QString sname = "";
@@ -232,13 +232,13 @@ bool ContentReader::endElement(const QString&, const QString&, const QString &na
 	else if (name == "text:note")
 	{
 // 		qDebug("TN");
-		writer->inNote = inNote = false;
+		writer->inNote = false;
 	}
 	else if (name == "text:note-body")
 	{
 // 		qDebug("TNB");
 		write(SpecialChars::OBJECT);
-		writer->inNoteBody = inNoteBody = false;
+		writer->inNoteBody = false;
 	}
 	else if (name == "text:line-break")
 	{

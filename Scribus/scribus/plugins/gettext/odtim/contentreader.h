@@ -64,8 +64,6 @@ private:
 	bool omitPStyles;
 	bool inList;
 	bool inAnnotation;
-	bool inNote;
-	bool inNoteBody;
 	bool inSpan;
 	int  append;
 	int  listLevel;

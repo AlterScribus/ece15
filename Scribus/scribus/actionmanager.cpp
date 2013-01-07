@@ -230,10 +230,6 @@ void ActionManager::initEditMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="editReplaceColors";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-//	name="editPatterns";
-//	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-//	name="editGradients";
-//	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="editStyles";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="editMasterPages";
@@ -267,8 +263,6 @@ void ActionManager::initEditMenuActions()
 	connect( (*scrActions)["editEditRenderSource"], SIGNAL(triggered()), mainWindow, SLOT(callImageEditor()) );
 	connect( (*scrActions)["editColors"], SIGNAL(triggered()), mainWindow, SLOT(managePaints()) );
 	connect( (*scrActions)["editReplaceColors"], SIGNAL(triggered()), mainWindow, SLOT(slotReplaceColors()) );
-//	connect( (*scrActions)["editPatterns"], SIGNAL(triggered()), mainWindow, SLOT(managePatterns()) );
-//	connect( (*scrActions)["editGradients"], SIGNAL(triggered()), mainWindow, SLOT(manageGradients()) );
 	connect( (*scrActions)["editMasterPages"], SIGNAL(triggered()), mainWindow, SLOT(manageMasterPages()) );
 	connect( (*scrActions)["editJavascripts"], SIGNAL(triggered()), mainWindow, SLOT(ManageJava()) );
 }
@@ -427,6 +421,8 @@ void ActionManager::initItemMenuActions()
 	scrActions->insert(name, new ScrAction(loadIcon("16/go-up.png"), loadIcon("22/go-up.png"), "", defaultKey(name), mainWindow));
 	name="itemSendToPattern";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="itemSendToInline";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="itemImageInfo";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="itemAttributes";
@@ -513,6 +509,8 @@ void ActionManager::initItemMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="itemConvertToTextFrame";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="itemConvertToSymbolFrame";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 
 	name="itemsUnWeld";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
@@ -532,6 +530,8 @@ void ActionManager::initItemMenuActions()
 	connect( (*scrActions)["itemPDFAnnotationProps"], SIGNAL(triggered()), mainWindow, SLOT(ModifyAnnot()) );
 	connect( (*scrActions)["itemPDFFieldProps"], SIGNAL(triggered()), mainWindow, SLOT(ModifyAnnot()) );
 	connect( (*scrActions)["itemSendToPattern"], SIGNAL(triggered()), mainWindow, SLOT(PutToPatterns()) );
+	connect( (*scrActions)["itemSendToInline"], SIGNAL(triggered()), mainWindow, SLOT(PutToInline()) );
+	connect( (*scrActions)["itemConvertToSymbolFrame"], SIGNAL(triggered()), mainWindow, SLOT(ConvertToSymbol()) );
 	connect( (*scrActions)["itemAttributes"], SIGNAL(triggered()), mainWindow, SLOT(objectAttributes()) );
 	connect( (*scrActions)["itemShapeEdit"], SIGNAL(triggered()), mainWindow, SLOT(toggleNodeEdit()) );
 	connect( (*scrActions)["itemImageInfo"], SIGNAL(triggered()), mainWindow, SLOT(getImageInfo()) );
@@ -1470,10 +1470,8 @@ void ActionManager::languageChange()
 	(*scrActions)["editSearchReplace"]->setTexts( tr("&Search/Replace..."));
 	(*scrActions)["editEditWithImageEditor"]->setTexts( tr("Edit Image..."));
 	(*scrActions)["editEditRenderSource"]->setTexts( tr("Edit Source..."));
-	(*scrActions)["editColors"]->setTexts( tr("C&olors..."));
+	(*scrActions)["editColors"]->setTexts( tr("Fills..."));
 	(*scrActions)["editReplaceColors"]->setTexts( tr("Replace Colors..."));
-//	(*scrActions)["editPatterns"]->setTexts( tr("Patterns..."));
-//	(*scrActions)["editGradients"]->setTexts( tr("Gradients..."));
 	(*scrActions)["editStyles"]->setTexts( tr("S&tyles..."));
 	(*scrActions)["editMarks"]->setTexts( tr("Marks..."));
 	(*scrActions)["editNotesStyles"]->setTexts( tr("Notes Styles..."));
@@ -1526,6 +1524,7 @@ void ActionManager::languageChange()
 	(*scrActions)["itemLower"]->setTexts( tr("&Lower"));
 	(*scrActions)["itemRaise"]->setTexts( tr("&Raise"));
 	(*scrActions)["itemSendToPattern"]->setTexts( tr("Send to Patterns"));
+	(*scrActions)["itemSendToInline"]->setTexts( tr("Send to Inline Items"));
 	(*scrActions)["itemAttributes"]->setTexts( tr("&Attributes..."));
 	(*scrActions)["itemImageInfo"]->setTexts( tr("More Info..."));
 	(*scrActions)["itemImageIsVisible"]->setTexts( tr("I&mage Visible"));
@@ -1564,6 +1563,7 @@ void ActionManager::languageChange()
 	(*scrActions)["itemConvertToOutlines"]->setTexts( tr("&Outlines", "Convert to oulines"));
 	(*scrActions)["itemConvertToPolygon"]->setTexts( tr("&Polygon"));
 	(*scrActions)["itemConvertToTextFrame"]->setTexts( tr("&Text Frame"));
+	(*scrActions)["itemConvertToSymbolFrame"]->setTexts( tr("&Symbol"));
 	(*scrActions)["itemsUnWeld"]->setTexts( tr("Unweld items"));
 	(*scrActions)["itemWeld"]->setTexts( tr("Weld items"));
 	(*scrActions)["itemEditWeld"]->setTexts( tr("Edit weld item"));
@@ -1977,7 +1977,6 @@ void ActionManager::createDefaultMenus()
 		<< "editEditRenderSource"
 		<< "editColors"
 		<< "editReplaceColors"
-//		<< "editPatterns"
 		<< "editStyles"
 		<< "editMarks"
 		<< "editNotesStyles"
@@ -2051,6 +2050,7 @@ void ActionManager::createDefaultMenus()
 		<< "itemRaiseToTop" 
 		<< "itemLowerToBottom" 
 		<< "itemSendToPattern" 
+		<< "itemSendToInline"
 		<< "itemAttributes" 
 		<< "itemPDFIsAnnotation" 
 		<< "itemPDFIsBookmark" 
@@ -2062,6 +2062,7 @@ void ActionManager::createDefaultMenus()
 		<< "itemConvertToOutlines" 
 		<< "itemConvertToPolygon" 
 		<< "itemConvertToTextFrame" 
+		<< "itemConvertToSymbolFrame"
 		<< "itemAttachTextToPath" 
 		<< "itemDetachTextFromPath" 
 		<< "itemCombinePolygons" 

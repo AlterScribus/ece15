@@ -278,7 +278,7 @@ ScribusMainWindow::ScribusMainWindow()
 	formatsManager=0;
 	UrlLauncher::instance();
 	mainWindowStatusLabel=0;
-	ExternalImageEditor=0;
+	ExternalApp=0;
 #ifdef Q_WS_MAC
 	noIcon = loadIcon("noicon.xpm");
 #endif
@@ -392,7 +392,8 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 	DocDir = prefsManager->documentDir();
 
 	if (primaryMainWindow)
-		ScCore->setSplashStatus( tr("Initializing Hyphenator") );
+		ScCore->setSplashStatus( tr("Initializing Languages") );
+	LanguageManager::instance();
 
 	QString preLang(prefsManager->appPrefs.hyphPrefs.Language);
 	initHyphenator();
@@ -616,6 +617,7 @@ void ScribusMainWindow::initPalettes()
 	connect(inlinePalette, SIGNAL(paletteShown(bool)), scrActions["toolsInline"], SLOT(setChecked(bool)));
 	connect(inlinePalette, SIGNAL(startEdit(int)), this, SLOT(editInlineStart(int)));
 	connect(inlinePalette, SIGNAL(endEdit()), this, SLOT(editInlineEnd()));
+	connect(inlinePalette, SIGNAL(objectDropped(QString)), this, SLOT(PutToInline(QString)));
 	inlinePalette->installEventFilter(this);
 	inlinePalette->hide();
 
@@ -782,8 +784,6 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuSeparator("Edit");
 	scrMenuMgr->addMenuItem(scrActions["editColors"], "Edit", true);
 	scrMenuMgr->addMenuItem(scrActions["editReplaceColors"], "Edit", false);
-//	scrMenuMgr->addMenuItem(scrActions["editGradients"], "Edit", false);
-//	scrMenuMgr->addMenuItem(scrActions["editPatterns"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editStyles"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editMarks"], "Edit", false);
 	scrMenuMgr->addMenuItem(scrActions["editNotesStyles"], "Edit", false);
@@ -839,6 +839,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuToMenu("itemSendToScrapbook", "Item");
 //	scrMenuMgr->addMenuItem(scrActions["itemSendToScrapbook"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["itemSendToPattern"], "Item", false);
+	scrMenuMgr->addMenuItem(scrActions["itemSendToInline"], "Item", false);
 	// Table submenu.
 	scrMenuMgr->addMenuSeparator("Item");
 	scrMenuMgr->createMenu("ItemTable", tr("Table"));
@@ -889,6 +890,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["itemConvertToOutlines"], "ItemConvertTo", false);
 	scrMenuMgr->addMenuItem(scrActions["itemConvertToPolygon"], "ItemConvertTo", false);
 	scrMenuMgr->addMenuItem(scrActions["itemConvertToTextFrame"], "ItemConvertTo", false);
+	scrMenuMgr->addMenuItem(scrActions["itemConvertToSymbolFrame"], "ItemConvertTo", false);
 	scrMenuMgr->addMenuSeparator("Item");
 	scrMenuMgr->addMenuItem(scrActions["toolsLinkTextFrame"], "Item", false);
 	scrMenuMgr->addMenuItem(scrActions["toolsUnlinkTextFrame"], "Item", false);
@@ -1174,6 +1176,8 @@ void ScribusMainWindow::initStatusBar()
 
 void ScribusMainWindow::setStatusBarMousePosition(double xp, double yp)
 {
+	if (doc->Pages->count() == 0)
+		return;
 	double xn = xp;
 	double yn = yp;
 	if (doc->guidesPrefs().rulerMode)
@@ -1189,6 +1193,8 @@ void ScribusMainWindow::setStatusBarMousePosition(double xp, double yp)
 
 void ScribusMainWindow::setStatusBarTextPosition(double base, double xp)
 {
+	if (doc->Pages->count() == 0)
+		return;
 	mainWindowXPosDataLabel->setText(base + xp >= 0? value2String(xp, doc->unitIndex(), true, true): QString("-"));
 	mainWindowYPosDataLabel->setText("-");
 }
@@ -2863,6 +2869,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 //		scrActions["itemSendToScrapbook"]->setEnabled(false);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", false);
 		scrActions["itemSendToPattern"]->setEnabled(false);
+		scrActions["itemSendToInline"]->setEnabled(false);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(false);
 		scrActions["itemExtendedImageProperties"]->setEnabled(false);
@@ -2881,6 +2888,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemConvertToOutlines"]->setEnabled(false);
 		scrActions["itemConvertToPolygon"]->setEnabled(false);
 		scrActions["itemConvertToTextFrame"]->setEnabled(false);
+		scrActions["itemConvertToSymbolFrame"]->setEnabled(false);
 		scrActions["itemLock"]->setEnabled(false);
 		scrActions["itemLockSize"]->setEnabled(false);
 		scrActions["itemPrintingEnabled"]->setEnabled(false);
@@ -2926,6 +2934,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemLowerToBottom"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 		scrActions["itemSendToPattern"]->setEnabled(true);
+		scrActions["itemSendToInline"]->setEnabled(true);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(true);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(true);
 		scrActions["itemExtendedImageProperties"]->setEnabled(currItem->pixm.imgInfo.valid);
@@ -2940,6 +2949,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemConvertToOutlines"]->setEnabled(false);
 		scrActions["itemConvertToPolygon"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToTextFrame"]->setEnabled(doc->appMode != modeEdit);
+		scrActions["itemConvertToSymbolFrame"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["toolsUnlinkTextFrame"]->setEnabled(false);
 		scrActions["toolsUnlinkTextFrameWithTextCopy"]->setEnabled(false);
 		scrActions["toolsUnlinkTextFrameWithTextCut"]->setEnabled(false);
@@ -2980,6 +2990,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemLowerToBottom"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 		scrActions["itemSendToPattern"]->setEnabled(true);
+		scrActions["itemSendToInline"]->setEnabled(true);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(false);
 		scrActions["itemExtendedImageProperties"]->setEnabled(false);
@@ -2995,6 +3006,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemConvertToOutlines"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToPolygon"]->setEnabled(doc->appMode != modeEdit);
 		scrActions["itemConvertToTextFrame"]->setEnabled(false);
+		scrActions["itemConvertToSymbolFrame"]->setEnabled(doc->appMode != modeEdit);
 
 		scrActions["toolsRotate"]->setEnabled(true);
 		scrActions["toolsCopyProperties"]->setEnabled(true);
@@ -3008,6 +3020,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			scrActions["itemConvertToImageFrame"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(false);
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(false);
 			scrActions["toolsUnlinkTextFrame"]->setEnabled(true);
 			scrActions["toolsUnlinkTextFrameWithTextCopy"]->setEnabled(true);
 			scrActions["toolsUnlinkTextFrameWithTextCut"]->setEnabled(true);
@@ -3096,6 +3109,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 //		scrActions["itemSendToScrapbook"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 		scrActions["itemSendToPattern"]->setEnabled(true);
+		scrActions["itemSendToInline"]->setEnabled(true);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(false);
 		scrActions["itemExtendedImageProperties"]->setEnabled(false);
@@ -3113,6 +3127,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["itemConvertToOutlines"]->setEnabled(true);
 		scrActions["itemConvertToPolygon"]->setEnabled(false);
 		scrActions["itemConvertToTextFrame"]->setEnabled(false);
+		scrActions["itemConvertToSymbolFrame"]->setEnabled(true);
 
 		scrActions["toolsRotate"]->setEnabled(true);
 		scrActions["toolsCopyProperties"]->setEnabled(true);
@@ -3162,6 +3177,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 //		scrActions["itemSendToScrapbook"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 		scrActions["itemSendToPattern"]->setEnabled(true);
+		scrActions["itemSendToInline"]->setEnabled(true);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(false);
 		scrActions["itemExtendedImageProperties"]->setEnabled(false);
@@ -3179,6 +3195,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			scrActions["itemConvertToOutlines"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(false);
 			scrActions["itemConvertToTextFrame"]->setEnabled(doc->appMode != modeEdit);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(doc->appMode != modeEdit);
 		}
 		else if ((SelectedType == PageItem::RegularPolygon) || (SelectedType == PageItem::Arc)) // Regular Polygon + Arc
 		{
@@ -3188,6 +3205,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			scrActions["itemConvertToOutlines"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(doc->appMode != modeEdit);
 			scrActions["itemConvertToTextFrame"]->setEnabled(doc->appMode != modeEdit);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(doc->appMode != modeEdit);
 		}
 		else if (SelectedType == PageItem::PolyLine) //Polyline
 		{
@@ -3197,6 +3215,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			scrActions["itemConvertToOutlines"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(doc->appMode != modeEdit);
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(doc->appMode != modeEdit);
 		}
 		else if ((SelectedType == PageItem::Line) || (SelectedType == PageItem::Spiral)) // Line
 		{
@@ -3209,6 +3228,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			else
 				scrActions["itemConvertToPolygon"]->setEnabled(false);
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(doc->appMode != modeEdit);
 		}
 		else if (SelectedType == PageItem::Symbol)
 			scrMenuMgr->setMenuEnabled("ItemConvertTo", false);
@@ -3242,6 +3262,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			//scrActions["itemConvertToOutlines"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(false);
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(false);
 		}
 		scrActions["editSearchReplace"]->setEnabled(false);
 
@@ -3325,6 +3346,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			scrActions["itemConvertToOutlines"]->setEnabled(false);
 			scrActions["itemConvertToPolygon"]->setEnabled(false);
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
+			scrActions["itemConvertToSymbolFrame"]->setEnabled(false);
 			scrActions["itemSplitPolygons"]->setEnabled(false);
 			scrActions["itemAttachTextToPath"]->setEnabled(false);
 			scrActions["itemDetachTextFromPath"]->setEnabled(false);
@@ -3338,6 +3360,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 //			scrActions["itemSendToScrapbook"]->setEnabled(!(currItem->isTableItem && currItem->isSingleSel));
 			scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 			scrActions["itemSendToPattern"]->setEnabled(true);
+			scrActions["itemSendToInline"]->setEnabled(true);
 			scrActions["editCut"]->setEnabled(false);
 			scrActions["editClearContents"]->setEnabled(false);
 			scrActions["toolsRotate"]->setEnabled(false);
@@ -3353,6 +3376,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 //			scrActions["itemSendToScrapbook"]->setEnabled(setter);
 			scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 			scrActions["itemSendToPattern"]->setEnabled(true);
+			scrActions["itemSendToInline"]->setEnabled(true);
 			if (docSelectionCount > 1)
 			{
 				bool haveSameParent = true;
@@ -3634,7 +3658,7 @@ void ScribusMainWindow::doPasteRecent(QString data)
 				slotElemRead(data, view->dragX, view->dragY, true, false, doc, view);
 			doc->SnapGrid = savedAlignGrid;
 			doc->SnapGuides = savedAlignGuides;
-			doc->SnapElement = savedAlignElement;    
+			doc->SnapElement = savedAlignElement;
 			Selection tmpSelection(this, false);
 			tmpSelection.copy(*doc->m_Selection, true);
 			for (int as = ac; as < doc->Items->count(); ++as)
@@ -4264,7 +4288,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		else
 			doc->setName(FName);
 		doc->setMasterPageMode(false);
-		doc->setHyphLanguage(GetLang(doc->hyphLanguage()));
+		//IL doc->setHyphLanguage(GetLang(doc->hyphLanguage()));
 		HaveNewDoc();
 //		propertiesPalette->Cpal->displayGradient(0);
 //		propertiesPalette->updateCList();
@@ -4617,12 +4641,15 @@ void ScribusMainWindow::slotFileRevert()
 {
 	if ((doc->hasName) && (doc->isModified()) && (!doc->masterPageMode()) && (!doc->isConverted))
 	{
+		ScribusWin* tw = ActWin;
 		int t = QMessageBox::warning(this, CommonStrings::trWarning, "<qt>" +
 								 QObject::tr("The changes to your document have not been saved and you have requested to revert them. Do you wish to continue?") + "</qt>",
 								 QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 		if (t == QMessageBox::No)
 			return;
 
+		mdiArea->setActiveSubWindow(tw->getSubWin());
+		ActWin = tw;
 		QString fn(doc->DocName);
 		doc->setModified(false);
 		if (doc==storyEditor->currentDocument())
@@ -4919,6 +4946,7 @@ bool ScribusMainWindow::DoFileClose()
 //		scrActions["itemSendToScrapbook"]->setEnabled(false);
 		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", false);
 		scrActions["itemSendToPattern"]->setEnabled(false);
+		scrActions["itemSendToInline"]->setEnabled(false);
 		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
 		scrActions["itemAdjustImageToFrame"]->setEnabled(false);
 		scrActions["itemExtendedImageProperties"]->setEnabled(false);
@@ -6837,6 +6865,7 @@ void ScribusMainWindow::setAppMode(int mode)
 //				scrActions["itemSendToScrapbook"]->setEnabled(true);
 				scrMenuMgr->setMenuEnabled("itemSendToScrapbook", true);
 				scrActions["itemSendToPattern"]->setEnabled(true);
+				scrActions["itemSendToInline"]->setEnabled(true);
 				scrActions["itemAdjustFrameToImage"]->setEnabled(true);
 				scrActions["itemAdjustImageToFrame"]->setEnabled(true);
 				scrActions["itemExtendedImageProperties"]->setEnabled(true);
@@ -6890,6 +6919,7 @@ void ScribusMainWindow::setAppMode(int mode)
 //			scrActions["itemSendToScrapbook"]->setEnabled(false);
 			scrMenuMgr->setMenuEnabled("itemSendToScrapbook", false);
 			scrActions["itemSendToPattern"]->setEnabled(false);
+			scrActions["itemSendToInline"]->setEnabled(false);
 			scrActions["itemAdjustFrameToImage"]->setEnabled(false);
 			scrActions["itemAdjustImageToFrame"]->setEnabled(false);
 			scrActions["itemExtendedImageProperties"]->setEnabled(false);
@@ -7203,6 +7233,8 @@ void ScribusMainWindow::deletePage(int from, int to)
 	}
 	if (tmpSelection.count() != 0)
 		doc->itemSelection_DeleteItem(&tmpSelection);
+	disconnect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
+	view->updatesOn(false);
 	for (int a = to - 1; a >= from - 1; a--)
 	{
 		if (UndoManager::undoEnabled())
@@ -7225,16 +7257,15 @@ void ScribusMainWindow::deletePage(int from, int to)
 			doc->deleteMasterPage(a);
 		else
 			doc->deletePage(a);
-		disconnect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
-		view->pageSelector->setMaximum(doc->Pages->count());
-		view->pageSelector->GotoPg(0);
-		connect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
 		if (!isMasterPage) // Master pages are not added to sections when created
 			doc->removePageFromSection(a);
 	}
+	view->pageSelector->setMaximum(doc->Pages->count());
+	connect(view->pageSelector, SIGNAL(GotoPage(int)), view, SLOT(GotoPa(int)));
 	undoManager->setUndoEnabled(false); // ugly hack to disable object moving when undoing page deletion
 	view->reformPagesView();
 	undoManager->setUndoEnabled(true); // ugly hack continues
+	view->updatesOn(true);
 	view->GotoPage(qMin(doc->Pages->count()-1, oldPg));
 	doc->updateEndnotesFrames();
 	updateGUIAfterPagesChanged();
@@ -8759,6 +8790,8 @@ void ScribusMainWindow::editSymbolStart(QString temp)
 {
 	if (HaveDoc)
 	{
+		if (!doc->docPatterns.contains(temp))
+			return;
 		m_WasAutoSave = doc->autoSave();
 		if (m_WasAutoSave)
 		{
@@ -9741,17 +9774,6 @@ void ScribusMainWindow::initHyphenator()
 	*/
 }
 
-QString ScribusMainWindow::GetLang(QString inLang)
-{
-	QMap<QString, QStringList>::Iterator itlend=InstLang.end();
- 	for (QMap<QString, QStringList>::Iterator itl = InstLang.begin(); itl != itlend; ++itl)
-	{
-		if (itl.value().contains(inLang))
-			return LanguageManager::instance()->getLangFromAbbrev(itl.key(), false);
-	}
-	return inLang;
-}
-
 void ScribusMainWindow::ImageEffects()
 {
 	if (HaveDoc)
@@ -9905,10 +9927,10 @@ void ScribusMainWindow::SearchText()
 
 void ScribusMainWindow::imageEditorExited(int /*exitCode*/, QProcess::ExitStatus /*exitStatus*/)
 {
-	if ( ExternalImageEditor != 0 )
+	if ( ExternalApp != 0 )
 	{
-		delete ExternalImageEditor;
-		ExternalImageEditor = 0;
+		delete ExternalApp;
+		ExternalApp = 0;
 	}
 }
 
@@ -9951,8 +9973,8 @@ void ScribusMainWindow::callImageEditor()
 //					ExternalImageEditor = NULL;
 //				}
 //			}
-			if (ExternalImageEditor == NULL)
-				ExternalImageEditor = new QProcess(NULL);
+			if (ExternalApp == NULL)
+				ExternalApp = new QProcess(NULL);
 			QStringList cmd;
 		#if defined(_WIN32)
 			index = imageEditorExecutable.indexOf( ".exe" );
@@ -9976,10 +9998,10 @@ void ScribusMainWindow::callImageEditor()
 			if (index > -1 )
 			{
 				QString imEditorDir = imEditor.left( index + 1 );
-				ExternalImageEditor->setWorkingDirectory( imEditorDir );
+				ExternalApp->setWorkingDirectory( imEditorDir );
 			}
 			cmd.append(QDir::toNativeSeparators(currItem->Pfile));
-			ExternalImageEditor->startDetached(imEditor, cmd);
+			ExternalApp->startDetached(imEditor, cmd);
 //			if (!ExternalImageEditor->waitForStarted())
 //			{
 //				delete ExternalImageEditor;
@@ -9987,7 +10009,7 @@ void ScribusMainWindow::callImageEditor()
 //				QMessageBox::critical(this, CommonStrings::trWarning, "<qt>" + tr("The program %1 is missing!").arg(imageEditorExecutable) + "</qt>", 1, 0, 0);
 //				return;
 //			}
-			connect(ExternalImageEditor, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(imageEditorExited(int, QProcess::ExitStatus)));
+			connect(ExternalApp, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(imageEditorExited(int, QProcess::ExitStatus)));
 		}
 	}
 }
@@ -10144,6 +10166,7 @@ void ScribusMainWindow::languageChange()
 		//before changing the tr_NoneColor to the new value. See #9267, #5529
 		prefsManager->languageChange();
 		CommonStrings::languageChange();
+		LanguageManager::instance()->languageChange();
 		//Update actions
 		if (actionManager!=NULL)
 		{
@@ -10440,12 +10463,270 @@ void ScribusMainWindow::slotItemTransform()
 	}
 }
 
+void ScribusMainWindow::PutToInline(QString buffer)
+{
+	Selection tempSelection(*doc->m_Selection);
+	bool savedAlignGrid = doc->SnapGrid;
+	bool savedAlignGuides = doc->SnapGuides;
+	bool savedAlignElement = doc->SnapElement;
+	int ac = doc->Items->count();
+	bool isGroup = false;
+	double gx, gy, gh, gw;
+	FPoint minSize = doc->minCanvasCoordinate;
+	FPoint maxSize = doc->maxCanvasCoordinate;
+	doc->SnapGrid  = false;
+	doc->SnapGuides = false;
+	doc->SnapElement = false;
+	bool wasUndo = undoManager->undoEnabled();
+	undoManager->setUndoEnabled(false);
+	slotElemRead(buffer, 0, 0, false, true, doc, view);
+	doc->SnapGrid  = savedAlignGrid;
+	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
+	doc->m_Selection->clear();
+	if (doc->Items->count() - ac > 1)
+		isGroup = true;
+	doc->m_Selection->delaySignalsOn();
+	for (int as = ac; as < doc->Items->count(); ++as)
+	{
+		doc->m_Selection->addItem(doc->Items->at(as));
+	}
+	if (isGroup)
+		doc->GroupCounter++;
+	doc->m_Selection->setGroupRect();
+	doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
+	PageItem* currItem3 = doc->Items->at(ac);
+	currItem3->isEmbedded = true;
+	currItem3->setIsAnnotation(false);
+	currItem3->isBookmark = false;
+	currItem3->gXpos = currItem3->xPos() - gx;
+	currItem3->gYpos = currItem3->yPos() - gy;
+	currItem3->gWidth = gw;
+	currItem3->gHeight = gh;
+	doc->addToInlineFrames(currItem3);
+	int acc = doc->Items->count();
+	for (int as = ac; as < acc; ++as)
+	{
+		doc->Items->takeAt(ac);
+	}
+	doc->m_Selection->clear();
+	doc->m_Selection->delaySignalsOff();
+	*doc->m_Selection=tempSelection;
+	doc->minCanvasCoordinate = minSize;
+	doc->maxCanvasCoordinate = maxSize;
+	undoManager->setUndoEnabled(wasUndo);
+	inlinePalette->unsetDoc();
+	inlinePalette->setDoc(doc);
+	view->Deselect(false);
+}
+
+void ScribusMainWindow::PutToInline()
+{
+	Selection tempSelection(*doc->m_Selection);
+	bool savedAlignGrid = doc->SnapGrid;
+	bool savedAlignGuides = doc->SnapGuides;
+	bool savedAlignElement = doc->SnapElement;
+	int ac = doc->Items->count();
+	bool isGroup = false;
+	double gx, gy, gh, gw;
+	FPoint minSize = doc->minCanvasCoordinate;
+	FPoint maxSize = doc->maxCanvasCoordinate;
+	doc->SnapGrid  = false;
+	doc->SnapGuides = false;
+	doc->SnapElement = false;
+	bool wasUndo = undoManager->undoEnabled();
+	undoManager->setUndoEnabled(false);
+	internalCopy = true;
+	slotEditCopy();
+	slotElemRead(internalCopyBuffer, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), false, true, doc, view);
+	internalCopy = false;
+	doc->SnapGrid  = savedAlignGrid;
+	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
+	doc->m_Selection->clear();
+	if (doc->Items->count() - ac > 1)
+		isGroup = true;
+	doc->m_Selection->delaySignalsOn();
+	for (int as = ac; as < doc->Items->count(); ++as)
+	{
+		doc->m_Selection->addItem(doc->Items->at(as));
+	}
+	if (isGroup)
+		doc->GroupCounter++;
+	doc->m_Selection->setGroupRect();
+	doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
+	PageItem* currItem3 = doc->Items->at(ac);
+	currItem3->isEmbedded = true;
+	currItem3->setIsAnnotation(false);
+	currItem3->isBookmark = false;
+	currItem3->gXpos = currItem3->xPos() - gx;
+	currItem3->gYpos = currItem3->yPos() - gy;
+	currItem3->gWidth = gw;
+	currItem3->gHeight = gh;
+	doc->addToInlineFrames(currItem3);
+	int acc = doc->Items->count();
+	for (int as = ac; as < acc; ++as)
+	{
+		doc->Items->takeAt(ac);
+	}
+	doc->m_Selection->clear();
+	doc->m_Selection->delaySignalsOff();
+	*doc->m_Selection=tempSelection;
+	doc->minCanvasCoordinate = minSize;
+	doc->maxCanvasCoordinate = maxSize;
+	undoManager->setUndoEnabled(wasUndo);
+	inlinePalette->unsetDoc();
+	inlinePalette->setDoc(doc);
+	view->Deselect(false);
+}
+
 void ScribusMainWindow::PutToPatterns()
+{
+	QString patternName = "Pattern_"+doc->m_Selection->itemAt(0)->itemName();
+	patternName = patternName.trimmed().simplified().replace(" ", "_");
+	bool savedAlignGrid = doc->SnapGrid;
+	bool savedAlignGuides = doc->SnapGuides;
+	bool savedAlignElement = doc->SnapElement;
+	int ac = doc->Items->count();
+	FPoint minSize = doc->minCanvasCoordinate;
+	FPoint maxSize = doc->maxCanvasCoordinate;
+	doc->SnapGrid  = false;
+	doc->SnapGuides = false;
+	doc->SnapElement = false;
+	bool wasUndo = undoManager->undoEnabled();
+	undoManager->setUndoEnabled(false);
+	internalCopy = true;
+	slotEditCopy();
+	slotElemRead(internalCopyBuffer, doc->currentPage()->xOffset(), doc->currentPage()->yOffset(), false, true, doc, view);
+	internalCopy = false;
+	doc->SnapGrid  = savedAlignGrid;
+	doc->SnapGuides = savedAlignGuides;
+	doc->SnapElement = savedAlignElement;
+	doc->m_Selection->clear();
+	view->Deselect(true);
+	PageItem* currItem;
+	doc->m_Selection->delaySignalsOn();
+	for (int as = ac; as < doc->Items->count(); ++as)
+	{
+		doc->m_Selection->addItem(doc->Items->at(as));
+	}
+	if (doc->Items->count() - ac > 1)
+		currItem = doc->groupObjectsSelection(doc->m_Selection);
+	else
+		currItem = doc->m_Selection->itemAt(0);
+	QList<PageItem*> allItems;
+	if (currItem->isGroup())
+		allItems = currItem->asGroupFrame()->getItemList();
+	else
+		allItems.append(currItem);
+	QStringList results;
+	for (int ii = 0; ii < allItems.count(); ii++)
+	{
+		PageItem *item = allItems.at(ii);
+		if ((!results.contains(item->pattern())) && ((item->GrType == 8) || (item->itemType() == PageItem::Symbol)))
+			results.append(item->pattern());
+		if (!item->strokePattern().isEmpty())
+		{
+			if (!results.contains(item->strokePattern()))
+				results.append(item->strokePattern());
+		}
+		if (!item->patternMask().isEmpty())
+		{
+			if (!results.contains(item->patternMask()))
+				results.append(item->patternMask());
+		}
+	}
+	patternsDependingOnThis.clear();
+	QStringList mainPatterns = doc->docPatterns.keys();
+	for (int b = 0; b < results.count(); b++)
+	{
+		QString temp = results[b];
+		for (int a = 0; a < mainPatterns.count(); a++)
+		{
+			if (mainPatterns[a] != temp)
+			{
+				QStringList subPatterns;
+				subPatterns = doc->getUsedPatternsHelper(mainPatterns[a], subPatterns);
+				if (subPatterns.contains(temp))
+					patternsDependingOnThis.prepend(mainPatterns[a]);
+			}
+		}
+		patternsDependingOnThis.prepend(temp);
+	}
+	allItems.clear();
+	Query dia(this, "tt", 1, 0, tr("&Name:"), tr("New Entry"));
+	dia.setEditText(patternName, true);
+	dia.setForbiddenList(patternsDependingOnThis);
+	dia.setTestList(doc->docPatterns.keys());
+	dia.setCheckMode(true);
+	if (dia.exec())
+		patternName = dia.getEditText();
+	else
+	{
+		doc->m_Selection->clear();
+		doc->m_Selection->delaySignalsOff();
+		doc->Items->removeAll(currItem);
+		delete currItem;
+		doc->minCanvasCoordinate = minSize;
+		doc->maxCanvasCoordinate = maxSize;
+		if (outlinePalette->isVisible())
+			outlinePalette->BuildTree();
+		undoManager->setUndoEnabled(wasUndo);
+		return;
+	}
+	ScPattern pat = ScPattern();
+	pat.setDoc(doc);
+	double minx =  std::numeric_limits<double>::max();
+	double miny =  std::numeric_limits<double>::max();
+	double maxx = -std::numeric_limits<double>::max();
+	double maxy = -std::numeric_limits<double>::max();
+	double x1, x2, y1, y2;
+	currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+	minx = qMin(minx, x1);
+	miny = qMin(miny, y1);
+	maxx = qMax(maxx, x2);
+	maxy = qMax(maxy, y2);
+	pat.pattern = currItem->DrawObj_toImage(qMax(maxx - minx, maxy - miny));
+	pat.width = maxx - minx;
+	pat.height = maxy - miny;
+	pat.items.append(currItem);
+	// #11274 : OwnPage is not meaningful for pattern items
+	// We set consequently pattern item's OwnPage to -1
+	QList<PageItem*> patternItems = pat.items;
+	while (patternItems.count() > 0)
+	{
+		PageItem* patItem = patternItems.takeAt(0);
+		if (patItem->isGroup())
+			patternItems += patItem->groupItemList;
+		patItem->OwnPage = -1;
+	}
+	if (doc->docPatterns.contains(patternName))
+		doc->docPatterns.remove(patternName);
+	currItem->gXpos = currItem->xPos() - minx;
+	currItem->gYpos = currItem->yPos() - miny;
+	currItem->setXYPos(currItem->gXpos, currItem->gYpos, true);
+	doc->addPattern(patternName, pat);
+	doc->Items->removeAll(currItem);
+	doc->m_Selection->clear();
+	doc->m_Selection->delaySignalsOff();
+	propertiesPalette->updateColorList();
+	symbolPalette->updateSymbolList();
+	emit UpdateRequest(reqColorsUpdate);
+	if (outlinePalette->isVisible())
+		outlinePalette->BuildTree();
+	doc->minCanvasCoordinate = minSize;
+	doc->maxCanvasCoordinate = maxSize;
+	view->DrawNew();
+	undoManager->setUndoEnabled(wasUndo);
+}
+
+void ScribusMainWindow::ConvertToSymbol()
 {
 	int z;
 	uint docSelectionCount = doc->m_Selection->count();
 	QString patternName = "Pattern_"+doc->m_Selection->itemAt(0)->itemName();
 	patternName = patternName.trimmed().simplified().replace(" ", "_");
+	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	PageItem* currItem;
 	Selection itemSelection(this, false);
@@ -10562,7 +10843,7 @@ void ScribusMainWindow::PutToPatterns()
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
 	view->DrawNew();
-	undoManager->setUndoEnabled(true);
+	undoManager->setUndoEnabled(wasUndo);
 }
 
 void ScribusMainWindow::managePaints()

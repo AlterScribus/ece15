@@ -2643,11 +2643,14 @@ ScPage* ScribusDoc::addMasterPage(const int pageNumber, const QString& pageName)
 	addedPage->setOrientation(docPrefsData.docSetupPrefs.pageOrientation);
 	addedPage->marginPreset = docPrefsData.docSetupPrefs.marginPreset;
 	addedPage->MPageNam = "";
+	int pgN = pageNumber;
+	if (pageNumber > MasterPages.count())
+		pgN = MasterPages.count();
 	addedPage->setPageName(pageName);
-	addedPage->setPageNr(pageNumber);
-	MasterNames.insert(pageName, pageNumber);
-	MasterPages.insert(pageNumber, addedPage);
-	assert(MasterPages.at(pageNumber)!=NULL);
+	addedPage->setPageNr(pgN);
+	MasterNames.insert(pageName, pgN);
+	MasterPages.insert(pgN, addedPage);
+	assert(MasterPages.at(pgN)!=NULL);
 	if  (!isLoading())
 		changed();
 	if(UndoManager::undoEnabled())
@@ -2655,7 +2658,7 @@ ScPage* ScribusDoc::addMasterPage(const int pageNumber, const QString& pageName)
 		SimpleState *ss = new SimpleState(Um::NewMasterPage, "", Um::IDocument);
 		ss->set("MASTERPAGE_ADD", "masterpage_add");
 		ss->set("MASTERPAGE_NAME", pageName);
-		ss->set("MASTERPAGE_NBR", pageNumber);
+		ss->set("MASTERPAGE_NBR", pgN);
 		undoManager->action(this, ss);
 	}
 	return addedPage;
@@ -6626,87 +6629,91 @@ void ScribusDoc::setSymbolEditMode(bool mode, QString symbolName)
 	}
 	else
 	{
-		PageItem* currItem = Items->at(0);
 		ScPage* addedPage = TempPages.at(0);
-		if (Items->count() > 1)
+		if (Items->count() == 0)
 		{
-			if ((!currItem->isGroup()) && (Items->count() > 1))
-			{
-				itemAdd(PageItem::Group, PageItem::Rectangle, addedPage->xOffset(), addedPage->yOffset(), 10, 10, 0, CommonStrings::None, CommonStrings::None, true);
-				PageItem *groupItem = Items->takeLast();
-				groupItem->setLayer(0);
-				Items->insert(0, groupItem);
-				double minx =  std::numeric_limits<double>::max();
-				double miny =  std::numeric_limits<double>::max();
-				double maxx = -std::numeric_limits<double>::max();
-				double maxy = -std::numeric_limits<double>::max();
-				for (int as = 1; as < Items->count(); ++as)
-				{
-					PageItem* currItem = Items->at(as);
-					groupItem->groupItemList.append(currItem);
-					double x1, x2, y1, y2;
-					currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
-					minx = qMin(minx, x1);
-					miny = qMin(miny, y1);
-					maxx = qMax(maxx, x2);
-					maxy = qMax(maxy, y2);
-				}
-				Items->clear();
-				Items->append(groupItem);
-				for (int em = 0; em < groupItem->groupItemList.count(); ++em)
-				{
-					PageItem* currItem = groupItem->groupItemList.at(em);
-					currItem->gXpos = currItem->xPos() - minx;
-					currItem->gYpos = currItem->yPos() - miny;
-					currItem->gWidth = maxx - minx;
-					currItem->gHeight = maxy - miny;
-				}
-				groupItem->setXYPos(minx, miny, true);
-				groupItem->setWidthHeight(maxx - minx, maxy - miny, true);
-				groupItem->groupWidth = maxx - minx;
-				groupItem->groupHeight = maxy - miny;
-				groupItem->gWidth = maxx - minx;
-				groupItem->gHeight = maxy - miny;
-				groupItem->SetRectFrame();
-				groupItem->ClipEdited = true;
-				groupItem->FrameType = 3;
-				groupItem->setTextFlowMode(PageItem::TextFlowDisabled);
-				groupItem->AutoName = false;
-				groupItem->setFillTransparency(0);
-				groupItem->setLineTransparency(0);
-				groupItem->asGroupFrame()->adjustXYPosition();
-				GroupCounter++;
-			}
+			docPatterns.remove(currentEditedSymbol);
 		}
-		currItem = Items->at(0);
-		double minx =  std::numeric_limits<double>::max();
-		double miny =  std::numeric_limits<double>::max();
-		double maxx = -std::numeric_limits<double>::max();
-		double maxy = -std::numeric_limits<double>::max();
-		double x1, x2, y1, y2;
-		currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
-		minx = qMin(minx, x1);
-		miny = qMin(miny, y1);
-		maxx = qMax(maxx, x2);
-		maxy = qMax(maxy, y2);
-		currItem->gXpos = currItem->xPos() - minx;
-		currItem->gYpos = currItem->yPos() - miny;
-		currItem->setXYPos(currItem->gXpos, currItem->gYpos, true);
-		docPatterns[currentEditedSymbol].pattern = currItem->DrawObj_toImage(qMax(maxx - minx, maxy - miny));
-		docPatterns[currentEditedSymbol].width = maxx - minx;
-		docPatterns[currentEditedSymbol].height = maxy - miny;
+		else
+		{
+			PageItem* currItem = Items->at(0);
+			if (Items->count() > 1)
+			{
+				if ((!currItem->isGroup()) && (Items->count() > 1))
+				{
+					itemAdd(PageItem::Group, PageItem::Rectangle, addedPage->xOffset(), addedPage->yOffset(), 10, 10, 0, CommonStrings::None, CommonStrings::None, true);
+					PageItem *groupItem = Items->takeLast();
+					groupItem->setLayer(0);
+					Items->insert(0, groupItem);
+					double minx =  std::numeric_limits<double>::max();
+					double miny =  std::numeric_limits<double>::max();
+					double maxx = -std::numeric_limits<double>::max();
+					double maxy = -std::numeric_limits<double>::max();
+					for (int as = 1; as < Items->count(); ++as)
+					{
+						PageItem* currItem = Items->at(as);
+						groupItem->groupItemList.append(currItem);
+						double x1, x2, y1, y2;
+						currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+						minx = qMin(minx, x1);
+						miny = qMin(miny, y1);
+						maxx = qMax(maxx, x2);
+						maxy = qMax(maxy, y2);
+					}
+					Items->clear();
+					Items->append(groupItem);
+					for (int em = 0; em < groupItem->groupItemList.count(); ++em)
+					{
+						PageItem* currItem = groupItem->groupItemList.at(em);
+						currItem->gXpos = currItem->xPos() - minx;
+						currItem->gYpos = currItem->yPos() - miny;
+						currItem->gWidth = maxx - minx;
+						currItem->gHeight = maxy - miny;
+					}
+					groupItem->setXYPos(minx, miny, true);
+					groupItem->setWidthHeight(maxx - minx, maxy - miny, true);
+					groupItem->groupWidth = maxx - minx;
+					groupItem->groupHeight = maxy - miny;
+					groupItem->gWidth = maxx - minx;
+					groupItem->gHeight = maxy - miny;
+					groupItem->SetRectFrame();
+					groupItem->ClipEdited = true;
+					groupItem->FrameType = 3;
+					groupItem->setTextFlowMode(PageItem::TextFlowDisabled);
+					groupItem->AutoName = false;
+					groupItem->setFillTransparency(0);
+					groupItem->setLineTransparency(0);
+					groupItem->asGroupFrame()->adjustXYPosition();
+					GroupCounter++;
+				}
+			}
+			currItem = Items->at(0);
+			double minx =  std::numeric_limits<double>::max();
+			double miny =  std::numeric_limits<double>::max();
+			double maxx = -std::numeric_limits<double>::max();
+			double maxy = -std::numeric_limits<double>::max();
+			double x1, x2, y1, y2;
+			currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+			minx = qMin(minx, x1);
+			miny = qMin(miny, y1);
+			maxx = qMax(maxx, x2);
+			maxy = qMax(maxy, y2);
+			currItem->gXpos = currItem->xPos() - minx;
+			currItem->gYpos = currItem->yPos() - miny;
+			currItem->setXYPos(currItem->gXpos, currItem->gYpos, true);
+			docPatterns[currentEditedSymbol].pattern = currItem->DrawObj_toImage(qMax(maxx - minx, maxy - miny));
+			docPatterns[currentEditedSymbol].width = maxx - minx;
+			docPatterns[currentEditedSymbol].height = maxy - miny;
+		}
 		if (m_ScMW->patternsDependingOnThis.count() > 1)
 		{
 			for (int a = 1; a < m_ScMW->patternsDependingOnThis.count(); a++)
 			{
 				Items = &docPatterns[m_ScMW->patternsDependingOnThis[a]].items;
-				currItem = Items->at(0);
+				PageItem *currItem = Items->at(0);
+				double x1, x2, y1, y2;
 				currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
-				minx = qMin(minx, x1);
-				miny = qMin(miny, y1);
-				maxx = qMax(maxx, x2);
-				maxy = qMax(maxy, y2);
-				docPatterns[m_ScMW->patternsDependingOnThis[a]].pattern = currItem->DrawObj_toImage(qMax(maxx - minx, maxy - miny));
+				docPatterns[m_ScMW->patternsDependingOnThis[a]].pattern = currItem->DrawObj_toImage(qMax(x2 - x1, y2 - y1));
 			}
 		}
 		if (masterPageMode())
@@ -6777,77 +6784,84 @@ void ScribusDoc::setInlineEditMode(bool mode, int id)
 	}
 	else
 	{
-		PageItem* currItem = Items->at(0);
 		ScPage* addedPage = TempPages.at(0);
-		if (Items->count() > 1)
+		if (Items->count() == 0)
 		{
-			if ((!currItem->isGroup()) && (Items->count() > 1))
-			{
-				itemAdd(PageItem::Group, PageItem::Rectangle, addedPage->xOffset(), addedPage->yOffset(), 10, 10, 0, CommonStrings::None, CommonStrings::None, true);
-				PageItem *groupItem = Items->takeLast();
-				groupItem->setLayer(0);
-				Items->insert(0, groupItem);
-				double minx =  std::numeric_limits<double>::max();
-				double miny =  std::numeric_limits<double>::max();
-				double maxx = -std::numeric_limits<double>::max();
-				double maxy = -std::numeric_limits<double>::max();
-				for (int as = 1; as < Items->count(); ++as)
-				{
-					PageItem* currItem = Items->at(as);
-					groupItem->groupItemList.append(currItem);
-					double x1, x2, y1, y2;
-					currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
-					minx = qMin(minx, x1);
-					miny = qMin(miny, y1);
-					maxx = qMax(maxx, x2);
-					maxy = qMax(maxy, y2);
-				}
-				Items->clear();
-				Items->append(groupItem);
-				for (int em = 0; em < groupItem->groupItemList.count(); ++em)
-				{
-					PageItem* currItem = groupItem->groupItemList.at(em);
-					currItem->gXpos = currItem->xPos() - minx;
-					currItem->gYpos = currItem->yPos() - miny;
-					currItem->gWidth = maxx - minx;
-					currItem->gHeight = maxy - miny;
-				}
-				groupItem->setXYPos(minx, miny, true);
-				groupItem->setWidthHeight(maxx - minx, maxy - miny, true);
-				groupItem->groupWidth = maxx - minx;
-				groupItem->groupHeight = maxy - miny;
-				groupItem->gWidth = maxx - minx;
-				groupItem->gHeight = maxy - miny;
-				groupItem->SetRectFrame();
-				groupItem->ClipEdited = true;
-				groupItem->FrameType = 3;
-				groupItem->setTextFlowMode(PageItem::TextFlowDisabled);
-				groupItem->AutoName = false;
-				groupItem->setFillTransparency(0);
-				groupItem->setLineTransparency(0);
-				groupItem->asGroupFrame()->adjustXYPosition();
-				GroupCounter++;
-			}
+			removeInlineFrame(currentEditedIFrame);
 		}
-		currItem = Items->at(0);
-		double minx =  std::numeric_limits<double>::max();
-		double miny =  std::numeric_limits<double>::max();
-		double maxx = -std::numeric_limits<double>::max();
-		double maxy = -std::numeric_limits<double>::max();
-		double x1, x2, y1, y2;
-		currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
-		minx = qMin(minx, x1);
-		miny = qMin(miny, y1);
-		maxx = qMax(maxx, x2);
-		maxy = qMax(maxy, y2);
-		currItem->gXpos = currItem->xPos() - minx;
-		currItem->gYpos = currItem->yPos() - miny;
-		currItem->gWidth = maxx - minx;
-		currItem->gHeight = maxy - miny;
-		currItem->setXYPos(currItem->gXpos, currItem->gYpos, true);
-		currItem->isEmbedded = true;
-		currItem->inlineCharID = currentEditedIFrame;
-		FrameItems[currentEditedIFrame] = currItem;
+		else
+		{
+			PageItem* currItem = Items->at(0);
+			if (Items->count() > 1)
+			{
+				if ((!currItem->isGroup()) && (Items->count() > 1))
+				{
+					itemAdd(PageItem::Group, PageItem::Rectangle, addedPage->xOffset(), addedPage->yOffset(), 10, 10, 0, CommonStrings::None, CommonStrings::None, true);
+					PageItem *groupItem = Items->takeLast();
+					groupItem->setLayer(0);
+					Items->insert(0, groupItem);
+					double minx =  std::numeric_limits<double>::max();
+					double miny =  std::numeric_limits<double>::max();
+					double maxx = -std::numeric_limits<double>::max();
+					double maxy = -std::numeric_limits<double>::max();
+					for (int as = 1; as < Items->count(); ++as)
+					{
+						PageItem* currItem = Items->at(as);
+						groupItem->groupItemList.append(currItem);
+						double x1, x2, y1, y2;
+						currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+						minx = qMin(minx, x1);
+						miny = qMin(miny, y1);
+						maxx = qMax(maxx, x2);
+						maxy = qMax(maxy, y2);
+					}
+					Items->clear();
+					Items->append(groupItem);
+					for (int em = 0; em < groupItem->groupItemList.count(); ++em)
+					{
+						PageItem* currItem = groupItem->groupItemList.at(em);
+						currItem->gXpos = currItem->xPos() - minx;
+						currItem->gYpos = currItem->yPos() - miny;
+						currItem->gWidth = maxx - minx;
+						currItem->gHeight = maxy - miny;
+					}
+					groupItem->setXYPos(minx, miny, true);
+					groupItem->setWidthHeight(maxx - minx, maxy - miny, true);
+					groupItem->groupWidth = maxx - minx;
+					groupItem->groupHeight = maxy - miny;
+					groupItem->gWidth = maxx - minx;
+					groupItem->gHeight = maxy - miny;
+					groupItem->SetRectFrame();
+					groupItem->ClipEdited = true;
+					groupItem->FrameType = 3;
+					groupItem->setTextFlowMode(PageItem::TextFlowDisabled);
+					groupItem->AutoName = false;
+					groupItem->setFillTransparency(0);
+					groupItem->setLineTransparency(0);
+					groupItem->asGroupFrame()->adjustXYPosition();
+					GroupCounter++;
+				}
+			}
+			currItem = Items->at(0);
+			double minx =  std::numeric_limits<double>::max();
+			double miny =  std::numeric_limits<double>::max();
+			double maxx = -std::numeric_limits<double>::max();
+			double maxy = -std::numeric_limits<double>::max();
+			double x1, x2, y1, y2;
+			currItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
+			minx = qMin(minx, x1);
+			miny = qMin(miny, y1);
+			maxx = qMax(maxx, x2);
+			maxy = qMax(maxy, y2);
+			currItem->gXpos = currItem->xPos() - minx;
+			currItem->gYpos = currItem->yPos() - miny;
+			currItem->gWidth = maxx - minx;
+			currItem->gHeight = maxy - miny;
+			currItem->setXYPos(currItem->gXpos, currItem->gYpos, true);
+			currItem->isEmbedded = true;
+			currItem->inlineCharID = currentEditedIFrame;
+			FrameItems[currentEditedIFrame] = currItem;
+		}
 		if (masterPageMode())
 		{
 			Pages = &MasterPages;

@@ -43,6 +43,7 @@ class ScribusDoc;
 class ScribusMainWindow;
 class StoryText;
 class TextNote;
+
 class UndoManager;
 
 class gtStyle;
