@@ -647,6 +647,7 @@ public:
 	void checkExternals();
 
 	bool m_WasAutoSave;
+	bool m_pagePalVisible;
 };
 
 #endif
