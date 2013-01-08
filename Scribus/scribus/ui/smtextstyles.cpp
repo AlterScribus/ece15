@@ -954,10 +954,7 @@ void SMParagraphStyle::slotDropCapLines(int lines)
 	else		
 		for (int i = 0; i < selection_.count(); ++i)
 			selection_[i]->setDropCapLines(lines);
-	QList<CharStyle> cstyles;
-	for (int i = 0; i < cstyles_->count(); ++i)
-		cstyles << (*cstyles_)[i];
-	//pwidget_->showDropCap(selection_, cstyles, doc_->unitIndex());
+
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1184,25 +1181,17 @@ void SMParagraphStyle::slotNumRestart(int restart)
 
 void SMParagraphStyle::slotBullet(bool isOn)
 {
-	QString bstr(pwidget_->bulletStrEdit_->currentText());
-	if (bstr.isEmpty())
-	{
-		bstr = QChar(0x2022);
-		pwidget_->bulletStrEdit_->setEditText(bstr);
-	}
 	for (int i = 0; i < selection_.count(); ++i)
 	{
 		selection_[i]->setHasBullet(isOn);
 		if (isOn)
 		{
-			selection_[i]->setBulletStr(bstr);
+			selection_[i]->setBulletStr(pwidget_->bulletStrEdit_->currentText());
 			selection_[i]->setHasDropCap(false);
 			selection_[i]->setHasNum(false);
 		}
 	}
-	QList<CharStyle> cstyles;
-	for (int i = 0; i < cstyles_->count(); ++i)
-		cstyles << (*cstyles_)[i];
+
 	if (!selectionIsDirty_)
 	{
 		selectionIsDirty_ = true;
@@ -1231,22 +1220,19 @@ void SMParagraphStyle::slotNumOther(bool isOn)
 void SMParagraphStyle::slotBulletStr(const QString &str)
 {
 	QString bstr(str);
-	if (pwidget_->bulletStrEdit_->useParentValue())
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->parentBulletStr();
-	else
+	if (bstr.isEmpty())
 	{
-		if (bstr.isEmpty())
-		{
-			bstr = pwidget_->bulletStrEdit_->itemText(0);
-			pwidget_->bulletStrEdit_->setEditText(bstr);
-		}
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setBulletStr(bstr);
+		bstr = pwidget_->bulletStrEdit_->itemText(0);
+		pwidget_->bulletStrEdit_->setEditText(bstr);
 	}
-	QList<CharStyle> cstyles;
-	for (int i = 0; i < cstyles_->count(); ++i)
-		cstyles << (*cstyles_)[i];
+	for (int i = 0; i < selection_.count(); ++i)
+		selection_[i]->setBulletStr(bstr);
+
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
 }
 
 void SMParagraphStyle::slotNumHigher(bool isOn)

@@ -14443,7 +14443,7 @@ bool ScribusDoc::SizeItem(double newX, double newY, PageItem *pi, bool fromMP, b
 	{
 		currItem->FrameOnly = true;
 
-		if (currItem->FrameType != 0 && currItem->asLine())
+		if (currItem->FrameType != 0 && !currItem->asLine())
 		{
 			currItem->updateClip();
 			//		currItem->updateGradientVectors();

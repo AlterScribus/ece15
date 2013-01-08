@@ -1743,7 +1743,6 @@ private:	// Start private functions
 private:	// Start private variables
 			// End private variables
 
-
 signals:
 	//Frame signals
 	void myself(PageItem *);

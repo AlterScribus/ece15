@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>798</width>
-    <height>755</height>
+    <width>801</width>
+    <height>761</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -249,7 +249,7 @@
                 <item>
                  <widget class="QLabel" name="parEffectCharStyleComboLabel">
                   <property name="text">
-                   <string>Use Char Style:</string>
+                   <string>Char Style:</string>
                   </property>
                   <property name="buddy">
                    <cstring>parEffectCharStyleCombo</cstring>
@@ -308,7 +308,7 @@
                 <item>
                  <widget class="SMCheckBox" name="parEffectIndentBox">
                   <property name="text">
-                   <string>CheckBox</string>
+                   <string>AutoIndent</string>
                   </property>
                  </widget>
                 </item>
@@ -368,7 +368,7 @@
                    <item>
                     <widget class="QLabel" name="bulletCharLabel">
                      <property name="text">
-                      <string>Bullet Char/String</string>
+                      <string>Bullet Char(s)</string>
                      </property>
                     </widget>
                    </item>
@@ -515,7 +515,7 @@
                    <item>
                     <widget class="QLabel" name="numFormatLabel">
                      <property name="text">
-                      <string>Nums Format</string>
+                      <string>Format</string>
                      </property>
                      <property name="buddy">
                       <cstring>numFormatCombo</cstring>
@@ -533,9 +533,22 @@
                     </widget>
                    </item>
                    <item>
+                    <spacer name="horizontalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
                     <widget class="QLabel" name="numStartLabel">
                      <property name="text">
-                      <string>Start with</string>
+                      <string>Start</string>
                      </property>
                     </widget>
                    </item>
@@ -598,14 +611,14 @@
                    <item>
                     <widget class="SMCheckBox" name="numRestartHigherBox">
                      <property name="text">
-                      <string>CheckBox</string>
+                      <string>After higher level</string>
                      </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="SMCheckBox" name="numRestartOtherBox">
                      <property name="text">
-                      <string>CheckBox</string>
+                      <string>After other style</string>
                      </property>
                     </widget>
                    </item>
@@ -707,7 +720,7 @@
              <item>
               <widget class="SMCheckBox" name="ClearOnApplyBox">
                <property name="text">
-                <string>CheckBox</string>
+                <string>Clear on apply</string>
                </property>
               </widget>
              </item>
@@ -1032,14 +1045,14 @@
               <item row="2" column="0">
                <widget class="SMCheckBox" name="keepTogether">
                 <property name="text">
-                 <string>CheckBox</string>
+                 <string>Keep together</string>
                 </property>
                </widget>
               </item>
               <item row="3" column="0">
                <widget class="SMCheckBox" name="keepWithNext">
                 <property name="text">
-                 <string>CheckBox</string>
+                 <string>Keep with next para</string>
                 </property>
                </widget>
               </item>
