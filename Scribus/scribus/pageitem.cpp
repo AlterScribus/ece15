@@ -1974,6 +1974,7 @@ void PageItem::DrawObj_Post(ScPainter *p)
 void PageItem::DrawObj_Decoration(ScPainter *p)
 {
 	p->save();
+	p->setAntialiasing(false);
 	if (!isEmbedded)
 		p->translate(m_xPos, m_yPos);
 	p->rotate(m_rotation);
@@ -2079,6 +2080,7 @@ void PageItem::DrawObj_Decoration(ScPainter *p)
 		//	drawLockedMarker(p);
 	}
 	FrameOnly = false;
+	p->setAntialiasing(true);
 	p->restore();
 }
 
