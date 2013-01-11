@@ -89,7 +89,7 @@ private slots:
 	void slotDefaultWidowsOrphans();
 	void slotParentWidowsOrphans();
 //	void slotUpdateOpticalMarginsFromCheckBoxes(int);
-	void on_bulletCharTableButton__toggled(bool checked);
+	void on_bulletCharTableButton_toggled(bool checked);
 	void handleUpdateRequest(int);
 
 signals:
