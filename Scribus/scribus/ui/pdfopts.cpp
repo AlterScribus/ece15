@@ -154,6 +154,33 @@ void PDFExportDialog::disableSave()
 void PDFExportDialog::DoExport()
 {
 	bool createPath = false;
+    /* Temporary code to disable imposition AND marks/bleeding */
+    if (Options->impStyle->currentIndex()!=0) {
+        if (Options->colorMarks->isChecked() ||
+            Options->bleedMarks->isChecked() ||
+            Options->cropMarks-> isChecked() ||
+            Options->registrationMarks->isChecked() ||
+            Options->docInfoMarks->isChecked()) {
+                QMessageBox::critical(this,tr("Imposition is not compatible with marks."),
+                                      tr("Please disable imposition or all marks."),QMessageBox::Ok);
+                return;
+        }
+        if (Options->BleedTop->value()   !=0.0 ||
+            Options->BleedLeft->value()  !=0.0 ||
+            Options->BleedRight->value() !=0.0 ||
+            Options->BleedBottom->value()!=0.0)
+        {
+                if (QMessageBox::question(this, tr( "Imposition is not compatible with bleeds." ),
+                                        tr("The current imposition code is not compatible with bleeding. They are now both enabled, which might cause artifacts. Continue anyway ?"),
+                                        QMessageBox::Ok | QMessageBox::Cancel)
+                      == QMessageBox::Cancel)
+                {
+                    return;
+                }
+
+        }
+    }
+
 	QString fn = QDir::fromNativeSeparators(fileNameLineEdit->text());
 	// Checking if the path exists
 	QFileInfo fi(fn);

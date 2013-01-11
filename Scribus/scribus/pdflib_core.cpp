@@ -22,7 +22,6 @@ for which a new license (GPL+exception) is in place.
  ***************************************************************************/
 
 #include "pdflib_core.h"
-
 #include "scconfig.h"
 
 #if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
@@ -58,6 +57,8 @@ for which a new license (GPL+exception) is in place.
 
 #include "cmsettings.h"
 #include "commonstrings.h"
+#include "imposition/imposition.h"
+#include "imposition/impositionoptions.h"
 #include "pageitem.h"
 #include "pageitem_textframe.h"
 #include "pageitem_group.h"
@@ -180,6 +181,24 @@ bool PDFLibCore::doExport(const QString& fn, const QString& nam, int Components,
 	bool ret = false, error = false;
 	int  pc_exportpages=0;
 	int  pc_exportmasterpages=0;
+
+	QString fileName;
+	QTemporaryFile *tempPdfFile = NULL;
+
+	if   (doc.pdfOptions().imposerOptions.style != ImposerOptions::None) {
+		/* If imposing is enabled, the pdf will be exported to a temporary file before
+		 * the imposer creates the final file.
+		 */
+		tempPdfFile = new QTemporaryFile(QDir::tempPath() + "/scribus_temp_XXXXXX.pdf");
+		tempPdfFile->open();
+		fileName = getLongPathName(tempPdfFile->fileName());
+		tempPdfFile->close();
+	} else {
+		/* Otherwise the final file is written directly.
+		 */
+		fileName = fn;
+	}
+
 	if (usingGUI)
 		progressDialog->show();
 	QMap<QString, QMap<uint, FPointArray> > usedFonts;
@@ -193,7 +212,7 @@ bool PDFLibCore::doExport(const QString& fn, const QString& nam, int Components,
 		PDF_Error( tr("Qt build miss both \"UTF-16\" and \"ISO-10646-UCS-2\" text codecs, pdf export is not possible") );
 		return false;
 	}
-	if (PDF_Begin_Doc(fn, PrefsManager::instance()->appPrefs.fontPrefs.AvailFonts, usedFonts, doc.scMW()->bookmarkPalette->BView))
+	if (PDF_Begin_Doc(fileName, PrefsManager::instance()->appPrefs.fontPrefs.AvailFonts, usedFonts, doc.scMW()->bookmarkPalette->BView))
 	{
 		QMap<int, int> pageNsMpa;
 		for (uint a = 0; a < pageNs.size(); ++a)
@@ -258,6 +277,13 @@ bool PDFLibCore::doExport(const QString& fn, const QString& nam, int Components,
 				ret = PDF_End_Doc(ScCore->PrinterProfiles[doc.pdfOptions().PrintProf], nam, Components);
 			else
 				ret = PDF_End_Doc();
+
+			if   (doc.pdfOptions().imposerOptions.style != ImposerOptions::None) {
+				Imposition::imposer * imposer = new Imposition::imposer();
+				imposer->impose(fileName, fn, &doc.pdfOptions().imposerOptions);
+				delete (imposer);
+				delete (tempPdfFile);
+			}
 		}
 		else
 			closeAndCleanup();

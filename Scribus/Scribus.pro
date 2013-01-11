@@ -1122,7 +1122,11 @@ HEADERS += scribus/actionmanager.h \
            scribus/styles/cellstyle.attrdefs.cxx \
            scribus/main_nix.cpp \
            scribus/main_win32.cpp \
-           scribus/styles/linestyle.attrdefs.cxx
+           scribus/styles/linestyle.attrdefs.cxx \
+    scribus/imposition/impositionoutputfile.h \
+    scribus/imposition/impositionoptions.h \
+    scribus/imposition/impositioninputfile.h \
+    scribus/imposition/imposition.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -2167,7 +2171,11 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortion.cpp \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.cpp \
-           scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp
+           scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp \
+    scribus/imposition/impositionoutputfile.cpp \
+    scribus/imposition/impositionoptions.cpp \
+    scribus/imposition/impositioninputfile.cpp \
+    scribus/imposition/imposition.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
@@ -2213,3 +2221,6 @@ TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.uk.ts \
                 resources/translations/po/scribus.zh_CN.ts \
                 resources/translations/po/scribus.zh_TW.ts
+
+OTHER_FILES += \
+    scribus/imposition/CMakeLists.txt

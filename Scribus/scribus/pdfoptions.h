@@ -19,6 +19,7 @@ for which a new license (GPL+exception) is in place.
 #include "QList"
 #include "scribusapi.h"
 #include "scribusstructs.h"
+#include "imposition/imposition.h"
 
 struct PDFPresentationData;
 struct LPIData;
@@ -159,6 +160,7 @@ public:
 	QString openAction;
 	int pageRangeSelection;
 	QString pageRangeString;
+	ImposerOptions imposerOptions;
 };
 
 #endif

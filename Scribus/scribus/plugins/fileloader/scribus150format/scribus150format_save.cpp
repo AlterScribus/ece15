@@ -390,6 +390,7 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	writeLayers(docu);
 	writePrintOptions(docu);
 	writePdfOptions(docu);
+	writeImpositionOptions(docu);
 	writeDocItemAttributes(docu);
 	writeTOC(docu);
 	writeMarks(docu);
@@ -1152,6 +1153,21 @@ void Scribus150Format::writePdfOptions(ScXmlStreamWriter & docu)
 		docu.writeAttribute("Angle", itlp.value().Angle);
 		docu.writeAttribute("SpotFunction", itlp.value().SpotFunc);
 	}
+	docu.writeEndElement();
+}
+
+void Scribus150Format::writeImpositionOptions(ScXmlStreamWriter & docu)
+{
+	docu.writeStartElement("Imposition");
+	docu.writeAttribute("Style", static_cast<int>(m_Doc->pdfOptions().imposerOptions.style));
+	docu.writeAttribute("SheetRotation", m_Doc->pdfOptions().imposerOptions.sheetRotation);
+	docu.writeAttribute("SheetAutoSize", static_cast<int>(m_Doc->pdfOptions().imposerOptions.sheetAutoSize));
+	docu.writeAttribute("SheetWidth", m_Doc->pdfOptions().imposerOptions.sheetWidth);
+	docu.writeAttribute("SheetHeight", m_Doc->pdfOptions().imposerOptions.sheetHeight);
+	docu.writeAttribute("ScalingFactor", m_Doc->pdfOptions().imposerOptions.scalingFactor);
+	docu.writeAttribute("NX", m_Doc->pdfOptions().imposerOptions.nX);
+	docu.writeAttribute("NY", m_Doc->pdfOptions().imposerOptions.nY);
+	docu.writeAttribute("DoubleSided", static_cast<int>(m_Doc->pdfOptions().imposerOptions.doubleSided));
 	docu.writeEndElement();
 }
 

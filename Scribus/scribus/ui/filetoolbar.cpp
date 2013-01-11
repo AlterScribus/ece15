@@ -36,7 +36,6 @@ FileToolBar::FileToolBar(ScribusMainWindow* parent) : ScToolBar( tr("File"), "Fi
 	tb->setMenu(parent->scrMenuMgr->getLocalPopupMenu("FileOpenRecent"));
 	tb->setPopupMode(QToolButton::DelayedPopup);
 	addAction(parent->scrActions["fileSave"]);
-	addAction(parent->scrActions["fileClose"]);
 	addAction(parent->scrActions["filePrint"]);
 	addAction(parent->scrActions["toolsPreflightVerifier"]);
 	addAction(parent->scrActions["fileExportAsPDF"]);

@@ -125,6 +125,7 @@ class PLUGIN_API Scribus150Format : public LoadSavePlugin
 		void readCellStyle(ScribusDoc *doc, ScXmlStreamReader& reader, CellStyle& newStyle);
 		bool readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, const QString& baseDir);
 		bool readPDFOptions(ScribusDoc* doc, ScXmlStreamReader& reader);
+		bool readImpositionOptions(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readPrinterOptions(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readSections(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& reader);
@@ -173,6 +174,7 @@ class PLUGIN_API Scribus150Format : public LoadSavePlugin
 		void writeLayers(ScXmlStreamWriter& docu);
 		void writePrintOptions(ScXmlStreamWriter& docu);
 		void writePdfOptions(ScXmlStreamWriter& docu);
+		void writeImpositionOptions(ScXmlStreamWriter& docu);
 		void writeDocItemAttributes(ScXmlStreamWriter& docu);
 		void writeTOC(ScXmlStreamWriter& docu);
 		void writeMarks(ScXmlStreamWriter & docu);

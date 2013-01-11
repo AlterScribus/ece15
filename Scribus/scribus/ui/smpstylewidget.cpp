@@ -56,7 +56,7 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 //	optMarginCombo->addItem(tr("Default"), ParagraphStyle::OM_Default);
 
 	parEffectOffset->setSuffix(unitGetSuffixFromIndex(0));
-	cpage_->layout()->setMargin(0);
+	cpage->layout()->setMargin(0);
 
 	parEffectOffset->setSuffix(unitGetSuffixFromIndex(0));
 

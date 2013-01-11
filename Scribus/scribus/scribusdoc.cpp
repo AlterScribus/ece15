@@ -116,6 +116,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/markvariabletext.h"
 #include "ui/marksmanager.h"
 #include "ui/storyeditor.h"
+#include "imposition/impositionoptions.h"
 
 // static const bool FRAMESELECTION_EDITS_DEFAULTSTYLE = false;
 
@@ -822,7 +823,27 @@ void ScribusDoc::setup(const int unitIndex, const int fp, const int firstLeft, c
 	docPrefsData.pdfPrefs.PrintProf = docPrefsData.colorPrefs.DCMSset.DefaultPrinterProfile;
 	docPrefsData.pdfPrefs.Intent = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
 	docPrefsData.pdfPrefs.Intent2 = docPrefsData.colorPrefs.DCMSset.DefaultIntentImages;
-	BlackPoint   = docPrefsData.colorPrefs.DCMSset.BlackPoint;
+
+  /* Imposition defaults */
+  /*
+	docPrefsData.pdfPrefs.imposerOptions.style = ImposerOptions::None;
+	docPrefsData.pdfPrefs.imposerOptions.sheetRotation = 0;
+	docPrefsData.pdfPrefs.imposerOptions.sheetAutoSize = 0;
+	docPrefsData.pdfPrefs.imposerOptions.sheetWidth = docPrefsData.docSetupPrefs.pageWidth;
+	docPrefsData.pdfPrefs.imposerOptions.sheetHeight = docPrefsData.docSetupPrefs.pageHeight;
+	docPrefsData.pdfPrefs.imposerOptions.scalingFactor = 1.0;
+  docPrefsData.pdfPrefs.imposerOptions.nX = 1;
+	docPrefsData.pdfPrefs.imposerOptions.nY = 1;
+	docPrefsData.pdfPrefs.imposerOptions.doubleSided = 0;
+  */
+	/* Imposition settings for multi-fold documents */
+	if ((fp == 1) || (fp == 2) || (fp == 3) ) {
+     docPrefsData.pdfPrefs.imposerOptions.style = ImposerOptions::MultiFold;
+     docPrefsData.pdfPrefs.imposerOptions.nX = fp + 1;
+	   docPrefsData.pdfPrefs.imposerOptions.sheetWidth = docPrefsData.docSetupPrefs.pageWidth * (fp+1);
+  }
+
+  BlackPoint   = docPrefsData.colorPrefs.DCMSset.BlackPoint;
 	SoftProofing = docPrefsData.colorPrefs.DCMSset.SoftProofOn;
 	Gamut        = docPrefsData.colorPrefs.DCMSset.GamutCheck;
 	IntentColors = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;

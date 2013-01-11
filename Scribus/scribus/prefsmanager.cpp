@@ -490,6 +490,15 @@ void PrefsManager::initDefaults()
 	appPrefs.pdfPrefs.openAfterExport = false;
 	appPrefs.pdfPrefs.PageLayout = PDFOptions::SinglePage;
 	appPrefs.pdfPrefs.openAction = "";
+	appPrefs.pdfPrefs.imposerOptions.style = ImposerOptions::None;
+	appPrefs.pdfPrefs.imposerOptions.sheetRotation = 0;
+	appPrefs.pdfPrefs.imposerOptions.sheetAutoSize = true;
+	appPrefs.pdfPrefs.imposerOptions.sheetWidth = 0.0;
+	appPrefs.pdfPrefs.imposerOptions.sheetHeight = 0.0;
+	appPrefs.pdfPrefs.imposerOptions.scalingFactor = 1.0;
+	appPrefs.pdfPrefs.imposerOptions.nX = 1;
+	appPrefs.pdfPrefs.imposerOptions.nY = 1;
+	appPrefs.pdfPrefs.imposerOptions.doubleSided = false;
 	appPrefs.imageCachePrefs.cacheEnabled = false;
 	appPrefs.imageCachePrefs.maxCacheSizeMiB = 1000;
 	appPrefs.imageCachePrefs.maxCacheEntries = 1000;

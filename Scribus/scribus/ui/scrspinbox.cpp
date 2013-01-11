@@ -117,6 +117,10 @@ double ScrSpinBox::getValue(int unitIndex)
 	return val * unitGetRatioFromIndex(unitIndex);
 }
 
+int  ScrSpinBox::getUnit() {
+    return m_unitIndex;
+}
+
 void ScrSpinBox::setConstants(const QMap<QString, double>* constants)
 {
 	m_constants = constants;

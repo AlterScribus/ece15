@@ -40,6 +40,7 @@ class SCRIBUS_API ScrSpinBox : public QDoubleSpinBox
 		void setConstants(const QMap<QString, double>* constants);
 		void setNewUnit(int unitIndex);
 		double getValue(int unitIndex=0);
+        int  getUnit();
 		//implemented for backwards compatibility, perhaps we can remove these?
 // 		void setSingleStepM(int val);
 		void setTabAdvance(bool enable);

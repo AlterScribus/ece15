@@ -55,8 +55,6 @@ public:
 						 int unitIndex, double PageH, double PageB,
 						 ScribusDoc *mdoc, bool exporting);
 
-	void storeValues(PDFOptions& options);
-
 	void unitChange(QString unit, int docUnitIndex, double invUnitConversion);
 
 	// GUI member pointers
@@ -149,10 +147,16 @@ public slots:
 	void SelLPIcol(int);
 	void enableCMS(bool enable);
 	void checkInfo();
+    void ImpositionStyle(int i);
+    void ImpositionSheetSizeI(int i);
+    void ImpositionSheetSizeD(double d);
+	void ImpositionSheetSides(int i);
+	void ImpositionNXNY(int i);
 
 protected slots:
 	void createPageNumberRange();
 	void handleCompressionMethod(int ind);
+	void currentTabChanged(int);
 
 protected:
 	// PDFExportDialog should really privately inherit from us, but it can't
@@ -304,16 +308,37 @@ private:
 	QLabel* textLPI2;
 	QLabel* textLPI3;
 	QLabel* TextSec1;
-	QLabel* TextSec2;
+    QLabel* TextSec2;
 	QPushButton* pageNrButton;
 	QPushButton* ToEmbed;
 	QPushButton* ToOutline;
 	QRadioButton* useViewDefault;
 	QGroupBox* X3Group;
 	QGridLayout* X3GroupLayout;
-	// end protected GUI member pointers
+	/* Imposition tab */
+	QWidget* tabImposition;
+	QVBoxLayout* tabImpositionLayout;
+	QLabel* ImpositionText;
+	QGroupBox* ImpositionGroup;
+	QGridLayout* ImpositionGroupLayout;
+	QLabel* AutoSheetSizeText;
+	QComboBox * AutoSheetSizeCombo;
+	QComboBox * impStyle;
+	QLabel* SheetSizeLabel;
+	QLabel* SheetRotationLabel;
+	QComboBox * SheetSizeComboBox;
+	QComboBox * SheetRotationComboBox;
+	QComboBox * ImpDoubleSidedComboBox;
+    QLabel    * ImpNXLabel;
+    QSpinBox  * ImpNXSpinBox;
+    QLabel    * ImpNYLabel;
+    QSpinBox  * ImpNYSpinBox;
+    ScrSpinBox* ImpSheetWidth;
+    ScrSpinBox* ImpSheetHeight;
+    QLabel    * ImpSheetWidthLabel;
+    QLabel    * ImpSheetHeightLabel;
 
-	// Non-GUI protected members
+    // Non-GUI protected members
 	QString unit;
 	int precision;
 	double unitRatio;
@@ -326,5 +351,6 @@ private:
 	bool cms;
 	QMap<QString, QString> AnnotationFonts;
 
+  void updateImpositionTab();
 };
 #endif
