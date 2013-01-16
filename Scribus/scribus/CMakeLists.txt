@@ -215,13 +215,10 @@ SET(SCRIBUS_MOC_CLASSES
   guidesmodel.h
   guidesview.h
   hyphenator.h
-  langdef.h
-  langmgr.h
   latexhelpers.h
   loadsaveplugin.h
-  menumanager.h
   marks.h
-  numeration.h
+  menumanager.h
   navigator.h
   notesstyles.h
   numeration.h

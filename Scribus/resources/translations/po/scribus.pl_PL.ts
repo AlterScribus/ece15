@@ -5198,7 +5198,7 @@ Brak wsparcia oznaczony jest symbolem *</translation>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1620"/>
         <source>Inline Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>Ramki osadzone</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1712"/>
@@ -5427,22 +5427,22 @@ Brak wsparcia oznaczony jest symbolem *</translation>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1449"/>
         <source>Paste Image from Clipboard</source>
-        <translation type="unfinished">Wstaw obrazek ze schowka</translation>
+        <translation>Wstaw obrazek ze schowka</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1462"/>
         <source>Marks...</source>
-        <translation type="unfinished"></translation>
+        <translation>Znaczniki...</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1463"/>
         <source>Notes Styles...</source>
-        <translation type="unfinished"></translation>
+        <translation>Style Przypisów...</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1498"/>
         <source>&amp;Transform</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Tansformuj</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1502"/>
@@ -5452,12 +5452,12 @@ Brak wsparcia oznaczony jest symbolem *</translation>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1517"/>
         <source>Insert Rows...</source>
-        <translation type="unfinished"></translation>
+        <translation>Wstaw wiersze...</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1518"/>
         <source>Insert Columns...</source>
-        <translation type="unfinished"></translation>
+        <translation>Wstaw kolumny...</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1519"/>
@@ -5522,77 +5522,77 @@ Brak wsparcia oznaczony jest symbolem *</translation>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1551"/>
         <source>Unweld items</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rozłącz spawanie</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1552"/>
         <source>Weld items</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Spawaj</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1553"/>
         <source>Edit weld item</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Edytuj spawanie</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1556"/>
         <source>&amp;Frames...</source>
-        <translation type="unfinished"></translation>
+        <translation>Ramki...</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1560"/>
         <source>Anchor Mark</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kotwica</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1561"/>
         <source>Variable Text</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Definicja tekstu</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1562"/>
         <source>Reference to Item</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Referenacja do obiektu</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1563"/>
         <source>Reference to Mark</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Referencja do znacznika</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1564"/>
         <source>Foot/Endnote</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Przypis</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1566"/>
         <source>Edit Mark</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Edytuj znacznik</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1567"/>
         <source>Update Marks</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Odśwież znaczniki</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1604"/>
         <source>Snap to Items</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Przyciągaj do obiektów</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1619"/>
         <source>Symbols</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Symbole</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1634"/>
         <source>Unlink Text Frame with Text Copy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rozłącz ramki z kopiowaniem</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1635"/>
         <source>Unlink Text Frame with Text Cut</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rozłącz ramki z podziałem</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1645"/>
@@ -5622,7 +5622,7 @@ Brak wsparcia oznaczony jest symbolem *</translation>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1699"/>
         <source>Soft &amp;Hyphen</source>
-        <translation type="unfinished"></translation>
+        <translation>Znak miękkiego dzielenia</translation>
     </message>
     <message>
         <location filename="../../../scribus/actionmanager.cpp" line="1720"/>
@@ -6253,12 +6253,12 @@ UCR zmniejsza możliwość wystąpienia przesycenia z tuszami CMY.</translation>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.ui" line="503"/>
         <source>Reverse Distribution</source>
-        <translation type="unfinished"></translation>
+        <translation>Odwróć rozmieszczenie</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.ui" line="545"/>
         <source>Swap</source>
-        <translation type="unfinished"></translation>
+        <translation>Zamień</translation>
     </message>
 </context>
 <context>
@@ -6485,12 +6485,12 @@ UCR zmniejsza możliwość wystąpienia przesycenia z tuszami CMY.</translation>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.cpp" line="177"/>
         <source>Swap items to the left</source>
-        <translation type="unfinished"></translation>
+        <translation>Zamień obiekty w lewo</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.cpp" line="178"/>
         <source>Swap items to the right</source>
-        <translation type="unfinished"></translation>
+        <translation>Zamień obiekty w prawo</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.cpp" line="478"/>
@@ -6576,12 +6576,12 @@ UCR zmniejsza możliwość wystąpienia przesycenia z tuszami CMY.</translation>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.cpp" line="112"/>
         <source>Move</source>
-        <translation type="unfinished">Przesuń</translation>
+        <translation>Przesuń</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.cpp" line="113"/>
         <source>Resize</source>
-        <translation type="unfinished">Zmień rozmiar</translation>
+        <translation>Zmień rozmiar</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/aligndistribute.cpp" line="114"/>
@@ -8386,13 +8386,13 @@ Proszę wybrać inną.</translation>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="575"/>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1760"/>
         <source>Hide Directories</source>
-        <translation type="unfinished"></translation>
+        <translation>Schowaj Katalogi</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="585"/>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1763"/>
         <source>Open Directories in a new tab</source>
-        <translation type="unfinished"></translation>
+        <translation>Otwórz katalogi na nowej zakładce</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="604"/>
@@ -8414,13 +8414,13 @@ Proszę wybrać inną.</translation>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="578"/>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1761"/>
         <source>Hide Images</source>
-        <translation type="unfinished"></translation>
+        <translation>Schowaj obrazki</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="581"/>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1762"/>
         <source>Hide Vector files</source>
-        <translation type="unfinished"></translation>
+        <translation>Schowaj rysunki</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="989"/>
@@ -8450,17 +8450,17 @@ Proszę wybrać inną.</translation>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1756"/>
         <source>Go up one Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Katlog wyżej</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1757"/>
         <source>Import a scrapbook file from Scribus &lt;=1.3.2</source>
-        <translation type="unfinished"></translation>
+        <translation>Importuj bibliotkę ze Scribusa w wersji &lt;= 1.3.2</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/scrapbookpalette.cpp" line="1759"/>
         <source>Configure the scrapbook</source>
-        <translation type="unfinished"></translation>
+        <translation>Konfiguracja biblioteki</translation>
     </message>
 </context>
 <context>
@@ -10462,7 +10462,7 @@ dołącza glif do listy wybranych znaków znajdujących się poniżej, klawisz D
     <message>
         <location filename="../../../scribus/ui/checkDocument.cpp" line="339"/>
         <source>After Marks update document was changed</source>
-        <translation type="unfinished"></translation>
+        <translation>Dokument zmienił się po odświeżeniu znaczników</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/checkDocument.cpp" line="375"/>
@@ -19543,7 +19543,7 @@ Jeśli zostały wybrane strony widzące się, to margines ten może zostać uży
     <message>
         <location filename="../../../scribus/ui/mark2item.cpp" line="19"/>
         <source>Mark to Item</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Znacznik do obiektu</translation>
     </message>
 </context>
 <context>
@@ -19556,12 +19556,12 @@ Jeśli zostały wybrane strony widzące się, to margines ten może zostać uży
     <message>
         <location filename="../../../scribus/ui/mark2item.ui" line="37"/>
         <source>Label:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Etykieta:</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/mark2item.ui" line="47"/>
         <source>Item:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Obekt:</translation>
     </message>
 </context>
 <context>
@@ -19569,23 +19569,23 @@ Jeśli zostały wybrane strony widzące się, to margines ten może zostać uży
     <message>
         <location filename="../../../scribus/ui/mark2mark.cpp" line="15"/>
         <source>Anchors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kotwice</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/mark2mark.cpp" line="27"/>
         <location filename="../../../scribus/ui/mark2mark.cpp" line="71"/>
         <source>Mark to Mark</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Znacznik do znacznika</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/mark2mark.cpp" line="38"/>
         <source>Mark to Item</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Znacznik do obiektu</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/mark2mark.cpp" line="49"/>
         <source>Note mark</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Znacznik przypisu</translation>
     </message>
 </context>
 <context>
@@ -19598,12 +19598,12 @@ Jeśli zostały wybrane strony widzące się, to margines ten może zostać uży
     <message>
         <location filename="../../../scribus/ui/mark2mark.ui" line="42"/>
         <source>Label:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Etykieta:</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/mark2mark.ui" line="55"/>
         <source>Select marker:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Wybierz znacznik:</translation>
     </message>
 </context>
 <context>
@@ -56554,17 +56554,17 @@ Menu podręczne z opcją usunięcia jest dostępne jedynie, gdy posiadasz prawa 
     <message>
         <location filename="../../../scribus/ui/weldeditbase.ui" line="20"/>
         <source>Move weld Point</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Przesuń spaw</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/weldeditbase.ui" line="30"/>
         <source>Move Object</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Przesuń obiekty</translation>
     </message>
     <message>
         <location filename="../../../scribus/ui/weldeditbase.ui" line="37"/>
         <source>End Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Zakończ</translation>
     </message>
 </context>
 </TS>

@@ -43,6 +43,7 @@ void Prefs_Typography::languageChange()
 	strikeoutLineWidthSpinBox->setToolTip( tr( "Line width expressed as a percentage of the font size" ) );
 	smallcapsScalingSpinBox->setToolTip( tr( "Relative size of the small caps font compared to the normal font" ) );
 	automaticLineSpacingSpinBox->setToolTip( tr( "Percentage increase over the font size for the line spacing" ) );
+	spacesTable->setToolTip(tr("Add distances before/after chars as % of space char for current font"));
 }
 
 void Prefs_Typography::updateTable()
@@ -62,6 +63,7 @@ void Prefs_Typography::updateTable()
 		item2->setMinimum(0);
 		item2->setMaximum(999);
 		item2->setValue(spacesMap.value(chars).first);
+		item2->setSuffix("%");
 		connect(item2, SIGNAL(valueChanged(int)), this, SLOT(tableItemChanged()));
 		spacesTable->setCellWidget(row, i++, item2);
 		//Add after
@@ -69,6 +71,7 @@ void Prefs_Typography::updateTable()
 		item3->setMinimum(0);
 		item3->setMaximum(999);
 		item3->setValue(spacesMap.value(chars).second);
+		item3->setSuffix("%");
 		connect(item3, SIGNAL(valueChanged(int)), this, SLOT(tableItemChanged()));
 		spacesTable->setCellWidget(row, i++, item3);
 

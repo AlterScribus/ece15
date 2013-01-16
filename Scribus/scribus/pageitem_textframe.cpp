@@ -1836,7 +1836,23 @@ void PageItem_TextFrame::layout()
 				hl->setEffects(hl->effects() & ~ScStyle_StartOfLine);
 			}
 			hl->glyph.yadvance = 0;
-			layoutGlyphs(*hl, chstr, hl->glyph);
+			int before =0, after =0;
+			if (m_Doc->checkAddSpace(chstr[0], before, after))
+			{
+				if ((before != 0) && (a > firstInFrame()))
+				{
+					QChar ch = itemText.text(a-1);
+					if ((ch == chstr[0]) || SpecialChars::isWhiteChar(ch))
+						before = 0;
+				}
+				if ((after != 0) && (a < itemText.length()-1))
+				{
+					QChar ch = itemText.text(a+1);
+					if ((ch == chstr[0]) || SpecialChars::isWhiteChar(ch))
+						after = 0;
+				}
+			}
+			layoutGlyphs(*hl, chstr, hl->glyph, before, after);
 			
 			// find out width, ascent and descent of char
 			if (HasObject)
@@ -4949,7 +4965,6 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					break;
 				ScText* hl = itemText.item(i);
 				if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
-					//					notes2DEL.append(QPair<TextNote*, int>(hl->mark->getNotePtr(), i));
 					notes2DEL.append(qMakePair(hl->mark->getNotePtr(), i));
 			}
 		}
@@ -4988,7 +5003,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					}
 					lastIsDelete = true;
 				}
-				if(!added)
+				if (!added)
 				{
 					UndoObject * undoTarget = this;
 					is = NULL;

@@ -51,6 +51,7 @@ public:
 	static bool isBreak(QChar c, bool includeColBreak = true);
 	static bool isBreakingSpace(QChar c);
 	static bool isExpandingSpace(QChar c);
+	static bool isWhiteChar(QChar c);
 
 		enum {
 			CJK_FENCE_BEGIN = 0x0001,

@@ -220,17 +220,17 @@ void PageItem_PathText::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			if ((before != 0) && (a > firstInFrame()))
 			{
 				QChar ch = itemText.text(a-1);
-				if ((ch == chstr[0]) || ch.isSpace())
+				if ((ch == chstr[0]) || SpecialChars::isWhiteChar(ch))
 					before = 0;
 			}
 			if ((after != 0) && (a < itemText.length()-1))
 			{
 				QChar ch = itemText.text(a+1);
-				if ((ch == chstr[0]) || ch.isSpace())
+				if ((ch == chstr[0]) || SpecialChars::isWhiteChar(ch))
 					after = 0;
 			}
 		}
-		layoutGlyphs(itemRenderText.charStyle(a), chstr, hl->glyph), before, after;
+		layoutGlyphs(itemRenderText.charStyle(a), chstr, hl->glyph, before, after);
 		hl->glyph.shrink();
 		if (hl->hasObject(m_Doc))
 			totalTextLen += (hl->getItem(m_Doc)->width() + hl->getItem(m_Doc)->lineWidth()) * hl->glyph.scaleH;
@@ -288,13 +288,13 @@ void PageItem_PathText::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			if ((before != 0) && (a > firstInFrame()))
 			{
 				QChar ch = itemText.text(a-1);
-				if ((ch == chstr[0]) || ch.isSpace())
+				if ((ch == chstr[0]) || SpecialChars::isWhiteChar(ch))
 					before = 0;
 			}
 			if ((after != 0) && (a < itemText.length()-1))
 			{
 				QChar ch = itemText.text(a+1);
-				if ((ch == chstr[0]) || ch.isSpace())
+				if ((ch == chstr[0]) || SpecialChars::isWhiteChar(ch))
 					after = 0;
 			}
 		}

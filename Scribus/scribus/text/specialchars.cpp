@@ -20,7 +20,7 @@ pageitem.cpp  -  description
 *   (at your option) any later version.                                   *
 *                                                                         *
 ***************************************************************************/
-
+#include <QDebug>
 #include "specialchars.h"
 
 QChar SpecialChars::OBJECT       = QChar(25);
@@ -49,6 +49,11 @@ bool SpecialChars::isBreakingSpace(QChar c)
 bool SpecialChars::isExpandingSpace(QChar c)
 {
 	return c == BLANK || c == NBSPACE;
+}
+
+bool SpecialChars::isWhiteChar(QChar c)
+{
+	return (c.isSpace() || isBreak(c) || !c.isPrint());
 }
 
 bool SpecialChars::isBreak(QChar c, bool includeColBreak)

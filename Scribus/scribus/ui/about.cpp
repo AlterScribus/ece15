@@ -92,7 +92,7 @@ About::About( QWidget* parent, AboutMode diaMode ) : QDialog( parent )
 {
 	m_mode = diaMode;
 	m_firstShow = true;
-	setWindowTitle( tr("About Scribus %1").arg(VERSION) );
+	setWindowTitle( tr("About ScribusECE %1").arg(VERSION) );
 	setWindowIcon(loadIcon("AppIcon.png", true));
 	setModal(true);
 	aboutLayout = new QVBoxLayout( this );
@@ -117,7 +117,7 @@ About::About( QWidget* parent, AboutMode diaMode ) : QDialog( parent )
 	QString BUILD_YEAR = "2013";
 	QString BUILD_TIME = "";
 	QString BUILD_TZ = "";
-	QString BUILD_NAME = "";
+	QString BUILD_NAME = "ECE";
 
 // This is the old way:
 	QString built = tr("%1 %2 %3").arg(BUILD_DAY).arg(BUILD_MONTH).arg(BUILD_YEAR);
