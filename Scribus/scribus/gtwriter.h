@@ -64,6 +64,7 @@ public:
 	bool inNote;
 	bool inNoteBody;
 	bool showImpSettings;
+
 private:
 	gtAction *action;
 	gtFrameStyle* defaultStyle;

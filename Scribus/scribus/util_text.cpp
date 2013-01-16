@@ -79,3 +79,4 @@ QString saxedText(StoryText* story)
 	std::string xml(xmlString.str());
 	return QString(xml.c_str());
 }
+
