@@ -2343,7 +2343,7 @@ void PageItem::SetQColor(QColor *tmp, QString farbe, double shad)
     sets xadvance to the advance width without kerning. If more than one glyph
     is generated, kerning is included in all but the last xadvance.
 */
-double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, GlyphLayout& layout)
+double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, GlyphLayout& layout, int addBefore, int addAfter)
 {
 	double retval = 0.0;
 	const ScFace font = style.font();
@@ -2367,8 +2367,15 @@ double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, Glyp
 		layout.glyph = font.char2CMap(chars[0].unicode());
 	}
 	double tracking = 0.0;
+	double before = 0.0;
+	double after = 0.0;
+	if (addBefore != 0)
+		before = font.glyphWidth(font.char2CMap(' '), style.fontSize() / 10) * addBefore/100.0;
+	if (addAfter != 0)
+		after = font.glyphWidth(font.char2CMap(' '), style.fontSize() / 10) * addAfter/100.0;
+
 	if ( (style.effects() & ScStyle_StartOfLine) == 0)
-		tracking = style.fontSize() * style.tracking() / 10000.0;
+		tracking = style.fontSize() * style.tracking() / 10000.0 + before;
 
 	layout.xoffset = tracking;
 	layout.yoffset = 0;
@@ -2432,7 +2439,7 @@ double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, Glyp
 		layout.yadvance = font.glyphBBox(layout.glyph, style.fontSize() / 10).ascent * layout.scaleV;
 	}
 	if (layout.xadvance > 0)
-		layout.xadvance += tracking;
+		layout.xadvance += tracking + after;
 
 	if (chars.length() > 1) {
 		layout.grow();

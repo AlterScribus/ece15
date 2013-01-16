@@ -1794,6 +1794,9 @@ public:
 	void SubmitForm();
 	void ImportData();
 	void ResetFormFields();
+
+	//check if char should have additional space before or after
+	bool checkAddSpace(QChar ch, int &before, int &after);
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

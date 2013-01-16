@@ -18828,3 +18828,19 @@ void ScribusDoc::ResetFormFields()
 	changed();
 	regionsChanged()->update(QRect());
 }
+
+bool ScribusDoc::checkAddSpace(QChar ch, int &before, int &after)
+{
+	bool addSpace = false;
+	foreach (QString str, typographicPrefs().addSpaceMap.keys())
+	{
+		if (str.contains(ch))
+		{
+			before = typographicPrefs().addSpaceMap.value(str).first;
+			after = typographicPrefs().addSpaceMap.value(str).second;
+			addSpace = true;
+			break;
+		}
+	}
+	return addSpace;
+}

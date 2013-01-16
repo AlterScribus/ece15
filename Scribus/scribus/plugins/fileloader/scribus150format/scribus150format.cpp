@@ -1325,6 +1325,13 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 				m_Doc->setCurCheckProfile(attrs.valueAsString("currentProfile"));
 			}
 		}
+		if (tagName == "AddSpace4Chars")
+		{
+			QString chars = attrs.valueAsString("Chars");
+			int before = attrs.valueAsInt("Before");
+			int after = attrs.valueAsInt("After");
+			m_Doc->typographicPrefs().addSpaceMap.insert(chars, qMakePair(before, after));
+		}
 		if (tagName == "CheckProfile")
 		{
 			success = readCheckProfile(m_Doc, attrs);

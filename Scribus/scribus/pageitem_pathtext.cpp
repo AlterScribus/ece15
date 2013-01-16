@@ -214,7 +214,23 @@ void PageItem_PathText::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		if (a < itemRenderText.length()-1)
 			chstr += itemRenderText.text(a+1, 1);
 		hl->glyph.yadvance = 0;
-		layoutGlyphs(itemRenderText.charStyle(a), chstr, hl->glyph);
+		int before =0, after =0;
+		if (m_Doc->checkAddSpace(chstr[0], before, after))
+		{
+			if ((before != 0) && (a > firstInFrame()))
+			{
+				QChar ch = itemText.text(a-1);
+				if ((ch == chstr[0]) || ch.isSpace())
+					before = 0;
+			}
+			if ((after != 0) && (a < itemText.length()-1))
+			{
+				QChar ch = itemText.text(a+1);
+				if ((ch == chstr[0]) || ch.isSpace())
+					after = 0;
+			}
+		}
+		layoutGlyphs(itemRenderText.charStyle(a), chstr, hl->glyph), before, after;
 		hl->glyph.shrink();
 		if (hl->hasObject(m_Doc))
 			totalTextLen += (hl->getItem(m_Doc)->width() + hl->getItem(m_Doc)->lineWidth()) * hl->glyph.scaleH;
@@ -266,7 +282,23 @@ void PageItem_PathText::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		if (a < itemRenderText.length()-1)
 			chstr += itemRenderText.text(a+1, 1);
 		hl->glyph.yadvance = 0;
-		layoutGlyphs(itemRenderText.charStyle(a), chstr, hl->glyph);
+		int before =0, after =0;
+		if (m_Doc->checkAddSpace(chstr[0], before, after))
+		{
+			if ((before != 0) && (a > firstInFrame()))
+			{
+				QChar ch = itemText.text(a-1);
+				if ((ch == chstr[0]) || ch.isSpace())
+					before = 0;
+			}
+			if ((after != 0) && (a < itemText.length()-1))
+			{
+				QChar ch = itemText.text(a+1);
+				if ((ch == chstr[0]) || ch.isSpace())
+					after = 0;
+			}
+		}
+		layoutGlyphs(itemRenderText.charStyle(a), chstr, hl->glyph, before, after);
 		hl->glyph.shrink();                                                           // HACK
 		if (hl->hasObject(m_Doc))
 			dx = (hl->getItem(m_Doc)->width() + hl->getItem(m_Doc)->lineWidth()) * hl->glyph.scaleH / 2.0;

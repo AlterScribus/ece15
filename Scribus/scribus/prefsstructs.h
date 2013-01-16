@@ -72,6 +72,7 @@ struct TypoPrefs
 	int valueUnderlineWidth; //! Underline width
 	int valueStrikeThruPos; //! Strike-through displacement
 	int valueStrikeThruWidth; //! Strike-through line width
+	QMap<QString, QPair<int, int> > addSpaceMap; //! Additional space before chars
 
 	inline bool operator==(const TypoPrefs &other)
 	{

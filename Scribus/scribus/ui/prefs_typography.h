@@ -26,6 +26,15 @@ class SCRIBUS_API Prefs_Typography : public Prefs_Pane, Ui::Prefs_Typography
 
 	public slots:
 		void languageChange();
+protected:
+	virtual void updateTable();
+protected slots:
+	virtual void tableItemChanged();
+	virtual void addEntry();
+	virtual void deleteEntry();
+	virtual void clearEntries();
+private:
+	QMap<QString, QPair<int,int> > spacesMap;
 };
 
 #endif // PREFS_TYPOGRAPHY_H

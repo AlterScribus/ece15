@@ -201,6 +201,7 @@ void PrefsManager::initDefaults()
 	appPrefs.typoPrefs.valueUnderlineWidth = -1;
 	appPrefs.typoPrefs.valueStrikeThruPos = -1;
 	appPrefs.typoPrefs.valueStrikeThruWidth = -1;
+//	appPrefs.typoPrefs.addSpaceMap.insert("?!)",qMakePair(80,0));
 	appPrefs.guidesPrefs.valueBaselineGrid = 14.4;
 	appPrefs.guidesPrefs.offsetBaselineGrid = 0.0;
 	appPrefs.uiPrefs.style = "";
@@ -1482,6 +1483,17 @@ bool PrefsManager::WritePref(QString ho)
 		dcTypography.setAttribute("StrikeThruWidth", appPrefs.typoPrefs.valueStrikeThruWidth);
 	else
 		dcTypography.setAttribute("StrikeThruWidth", appPrefs.typoPrefs.valueStrikeThruWidth / 10.0);
+	if (!appPrefs.typoPrefs.addSpaceMap.isEmpty())
+	{
+		for (QMap<QString, QPair<int, int> >::Iterator asIt = appPrefs.typoPrefs.addSpaceMap.begin(); asIt != appPrefs.typoPrefs.addSpaceMap.end(); ++asIt)
+		{
+			QDomElement aselm = docu.createElement("AddSpace4Chars");
+			aselm.setAttribute("Chars", asIt.key());
+			aselm.setAttribute("Before", asIt.value().first);
+			aselm.setAttribute("After", asIt.value().second);
+			dcTypography.appendChild(aselm);
+		}
+	}
 	elem.appendChild(dcTypography);
 
 	QDomElement dcItemTools=docu.createElement("ItemTools");
@@ -2086,6 +2098,20 @@ bool PrefsManager::ReadPref(QString ho)
 				appPrefs.typoPrefs.valueStrikeThruWidth = qRound(stw * 10);
 			else
 				appPrefs.typoPrefs.valueStrikeThruWidth = -1;
+			appPrefs.typoPrefs.addSpaceMap.clear();
+			QDomNode aselm = dc.firstChild();
+			while(!aselm.isNull())
+			{
+				QDomElement asElem = aselm.toElement();
+				if (asElem.tagName()=="AddSpace4Chars")
+				{
+					QString chars = asElem.attribute("Chars");
+					int before = asElem.attribute("Before").toInt();
+					int after = asElem.attribute("After").toInt();
+					appPrefs.typoPrefs.addSpaceMap.insert(chars, qMakePair(before, after));
+				}
+				aselm = aselm.nextSibling();
+			}
 		}
 
 

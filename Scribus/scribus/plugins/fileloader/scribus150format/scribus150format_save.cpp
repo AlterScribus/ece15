@@ -254,6 +254,13 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	docu.writeAttribute("UnderlineWidth" , m_Doc->typographicPrefs().valueUnderlineWidth);
 	docu.writeAttribute("StrikeThruPos"  , m_Doc->typographicPrefs().valueStrikeThruPos);
 	docu.writeAttribute("StrikeThruWidth", m_Doc->typographicPrefs().valueStrikeThruWidth);
+	foreach(QString chars, m_Doc->typographicPrefs().addSpaceMap.keys())
+	{
+		docu.writeEmptyElement("AddSpace4Chars");
+		docu.writeAttribute("Chars",chars);
+		docu.writeAttribute("Before",m_Doc->typographicPrefs().addSpaceMap.value(chars).first);
+		docu.writeAttribute("After",m_Doc->typographicPrefs().addSpaceMap.value(chars).second);
+	}
 	docu.writeAttribute("GROUPC",m_Doc->GroupCounter);
 	docu.writeAttribute("HCMS" , static_cast<int>(m_Doc->HasCMS));
 	docu.writeAttribute("DPSo" , static_cast<int>(m_Doc->cmsSettings().SoftProofOn));
