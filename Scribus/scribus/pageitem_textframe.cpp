@@ -488,7 +488,7 @@ struct LineControl {
 	double   breakXPos;
 
 	double   maxShrink;
-	double   maxStretch;
+//	double   maxStretch;
 	
 	
 	/// remember frame dimensions and offsets
@@ -545,7 +545,7 @@ struct LineControl {
 		breakIndex = -1;
 		breakXPos = 0.0;
 		maxShrink = 0.0;
-		maxStretch = 0.0;
+//		maxStretch = 0.0;
 		width = 0.0;
 		leftIndent = 0.0;
 		rightMargin = 0.0;
@@ -562,7 +562,7 @@ struct LineControl {
 		{
 			maxShrink += (1 - style.minGlyphExtension()) * wide;
 		}
-		maxStretch += (style.maxGlyphExtension() - 1) * wide;
+//		maxStretch += (style.maxGlyphExtension() - 1) * wide;
 	}
 
 	/// called when a possible break is passed
@@ -608,7 +608,7 @@ struct LineControl {
 		line.lastItem = breakIndex;
 		line.naturalWidth = breakXPos - line.x;
 		line.width = endX - line.x;
-		maxShrink = maxStretch = 0;
+		maxShrink = /*maxStretch =*/ 0;
 	}
 
 	int restartRow(bool recalcY)
@@ -968,7 +968,7 @@ static int implicitBreak(ScText *f, ScText *s) {
 }
 
 /// called when line length is known and line is to be justified
-static void justifyLine(StoryText& itemText, LineSpec& line)
+static void justifyLine(StoryText& itemText, LineSpec& line, bool growKerning = false)
 {
 	
 	double glyphNatural = 0;
@@ -980,6 +980,7 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 
 	const ParagraphStyle& style(itemText.paragraphStyle(line.firstItem));
 
+	int glyphsCount = 0;
 	// measure natural widths for glyphs and spaces
 	for (int sof = line.firstItem; sof <= line.lastItem; ++sof)
 	{
@@ -987,6 +988,7 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 		if (!SpecialChars::isExpandingSpace(hl->ch))
 		{
 			glyphNatural += hl->glyph.wide();
+			++glyphsCount;
 		}
 		else if ( (hl->effects() & ScStyle_SuppressSpace) == 0)
 		{
@@ -995,14 +997,13 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 				imSpace = hl->glyph.wide();
 		}
 		if (sof != line.firstItem && implicitSpace(itemText.item(sof - 1), hl)) {
-			spaceInsertion += 1;
+			++spaceInsertion;
 		}
 	}
 
 	imSpace /= 2;
 
 	// decision: prio 1: stretch glyph;  prio 2: insert spaces;  prio 3: stretch spaces
-	
 	if (line.width < spaceNatural + glyphNatural * style.minGlyphExtension() && spaceNatural > 0)
 	{
 		glyphExtension = style.minGlyphExtension() - 1;
@@ -1042,6 +1043,29 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 	
 	double glyphScale = 1 + glyphExtension;
 	
+	if (growKerning)
+	{
+		if( spaceExtension > style.maxWordTracking())
+		{
+			double space4Glyphs = line.width - spaceNatural;
+			double scaledGlyphsWidth = glyphNatural * glyphScale;
+			double remaining = space4Glyphs - scaledGlyphsWidth;
+			double kernRange = (style.maxTracking() - style.charStyle().tracking())/100 +1; 
+			double newremaining = space4Glyphs - scaledGlyphsWidth * kernRange;
+			double space = remaining;
+			if (newremaining > 0)
+				space -= newremaining;
+			double glyphOffset = space / (glyphsCount -2);
+			for (int sof = line.firstItem +1; sof < line.lastItem -1; ++sof)
+			{
+				ScText* hl = itemText.item(sof);
+				if (!SpecialChars::isExpandingSpace(hl->ch))
+					hl->glyph.xadvance += glyphOffset;
+			}
+			justifyLine(itemText, line);
+			return;
+		}
+	}
 /*
 	qDebug() << QString("justify: line = %7 natural = %1 + %2 = %3 (%4); spaces + %5%%; min=%8; glyphs + %6%%; min=%9")
 		   .arg(spaceNatural).arg(glyphNatural).arg(spaceNatural+glyphNatural).arg(line.naturalWidth)
@@ -1082,11 +1106,11 @@ static void justifyLine(StoryText& itemText, LineSpec& line)
 
 
 /// called when linelength is known and line is not justified
-static void indentLine(StoryText& itemText, LineSpec& line, double leftIndent)
+static void indentLine(StoryText& itemText, LineSpec& line, double leftIndent, bool growKerning = false)
 {
 	if (line.naturalWidth > line.width)
 	{
-		justifyLine(itemText, line);
+		justifyLine(itemText, line, growKerning);
 	}
 	if (leftIndent > 0)
 	{
@@ -2739,7 +2763,7 @@ void PageItem_TextFrame::layout()
 									 hl->ch == SpecialChars::COLBREAK)
 								&&  !itemText.text(current.line.lastItem - 1).isSpace()))
 						{
-							justifyLine(itemText, current.line); 
+							justifyLine(itemText, current.line, !isEqual(style.maxTracking(),style.charStyle().tracking())); 
 						}
 						else
 						{
@@ -2816,7 +2840,7 @@ void PageItem_TextFrame::layout()
 							OFs = (current.line.width - current.line.naturalWidth) / 2;
 						
 						if ((style.alignment() == ParagraphStyle::Justified) || (style.alignment() == ParagraphStyle::Extended))
-							justifyLine(itemText, current.line);
+							justifyLine(itemText, current.line, !isEqual(style.maxTracking(),style.charStyle().tracking()));
 						else
 						{
 							if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
@@ -3045,7 +3069,7 @@ void PageItem_TextFrame::layout()
 						 hl->ch == SpecialChars::COLBREAK)
 					&&  !itemText.text(current.line.firstItem + current.itemsInLine-1).isSpace()))
 			{
-				justifyLine(itemText, current.line);
+				justifyLine(itemText, current.line, !isEqual(style.maxTracking(),style.charStyle().tracking()));
 			}
 			else
 			{
@@ -4211,7 +4235,7 @@ void PageItem_TextFrame::clearContents()
 	nextItem->asTextFrame()->deleteSelectedTextFromFrame();
 	if (!isNoteFrame())
 	{
-		if(UndoManager::undoEnabled())
+		if(UndoManager::undoEnabled() && undoManager->getLastUndo())
 			undoManager->getLastUndo()->setName(Um::ClearText);
 		nextItem->itemText.setDefaultStyle(defaultStyle);
 	}

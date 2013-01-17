@@ -688,6 +688,10 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("HyphenationMode", style.hyphenationMode());
 	if ( ! style.isInhMinWordTracking())
 		docu.writeAttribute("MinWordTrack", style.minWordTracking());
+	if ( ! style.isInhMaxWordTracking())
+		docu.writeAttribute("MaxWordTrack", style.maxWordTracking());
+	if ( ! style.isInhMaxTracking())
+		docu.writeAttribute("MaxTracking", style.maxTracking());
 	if ( ! style.isInhMinGlyphExtension())
 		docu.writeAttribute("MinGlyphShrink", style.minGlyphExtension());
 	if ( ! style.isInhMaxGlyphExtension())
@@ -2576,8 +2580,12 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 			docu.writeAttribute("TXTSTW", dStyle.charStyle().strikethruWidth() / 10.0);
 		if ( ! dStyle.charStyle().isInhTracking())
 			docu.writeAttribute("TXTKERN", dStyle.charStyle().tracking() / 10.0);
+		if ( ! dStyle.isInhMaxTracking())
+			docu.writeAttribute("maxTrack", dStyle.maxTracking());
 		if ( ! dStyle.charStyle().isInhWordTracking())
 			docu.writeAttribute("wordTrack", dStyle.charStyle().wordTracking());
+		if ( ! dStyle.isInhMaxWordTracking())
+			docu.writeAttribute("maxWordTrack", dStyle.maxWordTracking());
 		if ( ! dStyle.isInhMinWordTracking())
 			docu.writeAttribute("MinWordTrack", dStyle.minWordTracking());
 		if ( ! dStyle.isInhMinGlyphExtension())

@@ -65,7 +65,8 @@ private slots:
 	void handleTextScaleH();
 	void handleTextScaleV();
 	void handleTracking();
-
+	void handleMaxTracking();
+	void handleMaxWordTracking(); 
 };
 
 #endif

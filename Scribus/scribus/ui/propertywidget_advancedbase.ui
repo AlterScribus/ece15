@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>239</width>
-    <height>155</height>
+    <width>214</width>
+    <height>209</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,15 +26,22 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="textBaseLabel">
+   <item row="8" column="0" colspan="3">
+    <widget class="QLabel" name="maxWordtrackingLabel">
      <property name="text">
-      <string/>
+      <string>... if word spacing is above:</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="SMScrSpinBox" name="textBase">
+   <item row="6" column="0" colspan="4">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="3">
+    <widget class="SMScrSpinBox" name="maxTrackingSpinBox">
      <property name="minimum">
       <number>-100</number>
      </property>
@@ -43,40 +50,101 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QLabel" name="trackingLabel">
-     <property name="text">
-      <string/>
+   <item row="8" column="3">
+    <widget class="SMScrSpinBox" name="maxWordTrackingSpinBox">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>2000</number>
+     </property>
+     <property name="value">
+      <number>100</number>
      </property>
     </widget>
    </item>
-   <item row="0" column="3">
-    <widget class="SMScrSpinBox" name="tracking"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="scaleHLabel">
-     <property name="text">
-      <string/>
+   <item row="5" column="1">
+    <widget class="SMScrSpinBox" name="minGlyphExtSpinBox">
+     <property name="minimum">
+      <number>90</number>
+     </property>
+     <property name="maximum">
+      <number>110</number>
+     </property>
+     <property name="value">
+      <number>100</number>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="SMScrSpinBox" name="scaleH"/>
-   </item>
-   <item row="1" column="2">
-    <widget class="QLabel" name="scaleVLabel">
+   <item row="4" column="0" colspan="2">
+    <widget class="QLabel" name="glyphExtensionLabel">
      <property name="text">
-      <string/>
+      <string>Glyph Extension</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="normWordTrackingLabel">
+     <property name="text">
+      <string>Max:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QLabel" name="maxGlyphExtensionLabel">
+     <property name="text">
+      <string>Max:</string>
      </property>
     </widget>
    </item>
    <item row="1" column="3">
-    <widget class="SMScrSpinBox" name="scaleV"/>
+    <widget class="SMScrSpinBox" name="scaleV">
+     <property name="minimum">
+      <number>-100</number>
+     </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="minGlyphExtensionLabel">
+     <property name="text">
+      <string>Min:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="SMScrSpinBox" name="normWordTrackingSpinBox">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>2000</number>
+     </property>
+     <property name="value">
+      <number>100</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="textBaseLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
    <item row="2" column="0" colspan="2">
     <widget class="QLabel" name="wordTrackingLabel">
      <property name="text">
       <string>Word Spacing</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLabel" name="scaleVLabel">
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
@@ -100,50 +168,30 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="3">
-    <widget class="SMScrSpinBox" name="normWordTrackingSpinBox">
+   <item row="0" column="3">
+    <widget class="SMScrSpinBox" name="tracking">
      <property name="minimum">
-      <number>1</number>
+      <number>-100</number>
      </property>
      <property name="maximum">
-      <number>2000</number>
-     </property>
-     <property name="value">
       <number>100</number>
      </property>
     </widget>
    </item>
-   <item row="3" column="2">
-    <widget class="QLabel" name="normWordTrackingLabel">
-     <property name="text">
-      <string>Max:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QLabel" name="glyphExtensionLabel">
-     <property name="text">
-      <string>Glyph Extension</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="minGlyphExtensionLabel">
-     <property name="text">
-      <string>Min:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="SMScrSpinBox" name="minGlyphExtSpinBox">
+   <item row="1" column="1">
+    <widget class="SMScrSpinBox" name="scaleH">
      <property name="minimum">
-      <number>90</number>
+      <number>-100</number>
      </property>
      <property name="maximum">
-      <number>110</number>
-     </property>
-     <property name="value">
       <number>100</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="scaleHLabel">
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
@@ -160,10 +208,27 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
-    <widget class="QLabel" name="maxGlyphExtensionLabel">
+   <item row="0" column="1">
+    <widget class="SMScrSpinBox" name="textBase">
+     <property name="minimum">
+      <number>-100</number>
+     </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="trackingLabel">
      <property name="text">
-      <string>Max:</string>
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="3">
+    <widget class="QLabel" name="maxTrackingLabel">
+     <property name="text">
+      <string>Char spacing can grow to:</string>
      </property>
     </widget>
    </item>
