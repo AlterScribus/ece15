@@ -550,6 +550,12 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->tabList_->right_, SIGNAL(valueChanged(double)), this, SLOT(slotRightIndent()));
 	connect(pwidget_->tabList_->first_, SIGNAL(valueChanged(double)), this, SLOT(slotFirstLine()));
 
+	connect(pwidget_->hyphModeCombo, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+	connect(pwidget_->maxHyphensSpin, SIGNAL(valueChanged(int)), this, SLOT(slotMaxHyphens(int)));
+
+	connect(pwidget_->maxTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(slotMaxTracking()) );
+	connect(pwidget_->maxWordTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(slotMaxWordTracking()) );
+
 	connect(pwidget_->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParentChanged(const QString&)));
 
 	// character attributes
@@ -575,7 +581,7 @@ void SMParagraphStyle::setupConnections()
 	connect(pwidget_->cpage->baselineOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotBaselineOffset()));
 	connect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
 	connect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
-	connect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+	connect(pwidget_->hyphModeCombo, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
 	connect(pwidget_->ClearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 	connect(pwidget_, SIGNAL(useParentClearOnApply()), this, SLOT(slotParentClearOnApply()));
 }
@@ -626,7 +632,13 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->numSuffix, SIGNAL(textChanged(QString)), this, SLOT(slotNumSuffix(QString)));
 	disconnect(pwidget_->numNewLineEdit, SIGNAL(editingFinished()), this, SLOT(slotNumNew()));
 	disconnect(pwidget_->numNewLineEdit, SIGNAL(textChanged(QString)), this, SLOT(slotSelectionDirty()));
-	
+
+	disconnect(pwidget_->hyphModeCombo, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+	disconnect(pwidget_->maxHyphensSpin, SIGNAL(valueChanged(int)), this, SLOT(slotMaxHyphens(int)));
+
+	disconnect(pwidget_->maxTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(slotMaxTracking()) );
+	disconnect(pwidget_->maxWordTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(slotMaxWordTracking()) );
+
 	disconnect(pwidget_->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotParentChanged(const QString&)));
 
 	disconnect(pwidget_->keepLinesStart, SIGNAL(valueChanged(int)), this, SLOT(handleKeepLinesStart()));
@@ -662,7 +674,7 @@ void SMParagraphStyle::removeConnections()
 	disconnect(pwidget_->cpage->baselineOffset_, SIGNAL(valueChanged(double)), this, SLOT(slotBaselineOffset()));
 	disconnect(pwidget_->cpage->fontFace_, SIGNAL(fontSelected(QString)), this, SLOT(slotFont(QString)));
 	disconnect(pwidget_->cpage->parentCombo, SIGNAL(activated(const QString&)), this, SLOT(slotCharParentChanged(const QString&)));
-	disconnect(pwidget_->hyphenationMode, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
+	disconnect(pwidget_->hyphModeCombo, SIGNAL(activated(int)), this, SLOT(slotHyphenationMode(int)));
 	disconnect(pwidget_->ClearOnApplyBox, SIGNAL(toggled(bool)), this, SLOT(slotClearOnApply(bool)));
 	disconnect(pwidget_, SIGNAL(useParentClearOnApply()), this, SLOT(slotParentClearOnApply()));
 }
@@ -1345,21 +1357,6 @@ void SMParagraphStyle::slotParentWidowsOrphans()
 	}
 }
 
-void SMParagraphStyle::slotHyphenationMode(int mh)
-{
-	if (pwidget_->hyphenationMode->useParentValue())
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->parentHyphenationMode();
-	else
-		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setHyphenationMode(mh);
-	if (!selectionIsDirty_)
-	{
-		selectionIsDirty_ = true;
-		emit selectionDirty();
-	}
-}
-
 void SMParagraphStyle::slotClearOnApply(bool isOn)
 {
 	if (pwidget_->ClearOnApplyBox->useParentValue())
@@ -1897,6 +1894,89 @@ void SMParagraphStyle::slotCharParentChanged(const QString &parent)
 	}
 	
 	selected(sel);
+	
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
+void SMParagraphStyle::slotHyphenationMode(int hm)
+{
+	if (pwidget_->hyphModeCombo->useParentValue())
+		for (int i = 0; i < selection_.count(); ++i)
+			selection_[i]->resetHyphenationMode();
+	else
+		for (int i = 0; i < selection_.count(); ++i)
+		{
+			selection_[i]->setHyphenationMode(hm);
+		}
+	
+	if (hm != ParagraphStyle::NoHyphenation)
+		pwidget_->maxHyphensSpin->setEnabled(true);
+	else
+		pwidget_->maxHyphensSpin->setEnabled(false);
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
+void SMParagraphStyle::slotMaxHyphens(int mh)
+{
+	if (pwidget_->maxHyphensSpin->useParentValue())
+		for (int i = 0; i < selection_.count(); ++i)
+			selection_[i]->resetMaxHyphens();
+	else
+		for (int i = 0; i < selection_.count(); ++i)
+		{
+			selection_[i]->setMaxHyphens(mh);
+		}
+	
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+void SMParagraphStyle::slotMaxTracking()
+{
+	if (pwidget_->maxTrackingSpinBox->useParentValue())
+		for (int i = 0; i < selection_.count(); ++i)
+			selection_[i]->resetMaxTracking();
+	else
+	{
+		double a, b, value;
+		int c;
+		
+		pwidget_->maxTrackingSpinBox->getValues(&a, &b, &c, &value);
+		for (int i = 0; i < selection_.count(); ++i)
+			selection_[i]->setMaxTracking(value);
+	}
+	
+	if (!selectionIsDirty_)
+	{
+		selectionIsDirty_ = true;
+		emit selectionDirty();
+	}
+}
+
+void SMParagraphStyle::slotMaxWordTracking()
+{
+	if (pwidget_->maxWordTrackingSpinBox->useParentValue())
+		for (int i = 0; i < selection_.count(); ++i)
+			selection_[i]->resetMaxWordTracking();
+	else
+	{
+		double a, b, value;
+		int c;
+		
+		pwidget_->maxWordTrackingSpinBox->getValues(&a, &b, &c, &value);
+		for (int i = 0; i < selection_.count(); ++i)
+			selection_[i]->setMaxWordTracking(value);
+	}
 	
 	if (!selectionIsDirty_)
 	{

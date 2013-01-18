@@ -1045,9 +1045,10 @@ static void justifyLine(StoryText& itemText, LineSpec& line, bool growKerning = 
 	
 	if (growKerning)
 	{
-		if( spaceExtension > style.maxWordTracking())
+		int spaceNum = line.lastItem - line.firstItem - glyphsCount;
+		if( spaceExtension > style.maxWordTracking() || spaceNum == 0)
 		{
-			double space4Glyphs = line.width - spaceNatural;
+			double space4Glyphs = line.width - spaceNatural * style.maxWordTracking();
 			double scaledGlyphsWidth = glyphNatural * glyphScale;
 			double remaining = space4Glyphs - scaledGlyphsWidth;
 			double kernRange = (style.maxTracking() - style.charStyle().tracking())/100 +1; 
@@ -2463,13 +2464,11 @@ void PageItem_TextFrame::layout()
 			inOverflow = false;
 
 			// test if end of line reached
-			if ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && ((hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN) && !disableHyph))
+			if ((style.hyphenationMode() != ParagraphStyle::NoHyphenation) && (!disableHyph && (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)))
 				hyphWidth = charStyle.font().charWidth('-', hlcsize10) * scaleH;
 			else
 				hyphWidth = 0.0;
 			inOverflow = false;
-			if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
-				hyphWidth = font.charWidth('-', hlcsize10) * (charStyle.scaleH() / 1000.0);
 			if ((current.isEndOfLine(style.rightMargin() + hyphWidth)) || current.isEndOfCol(realDesc) || SpecialChars::isBreak(hl->ch, Cols > 1) || (current.xPos - current.maxShrink + hyphWidth) >= current.mustLineEnd)
 			{
 				//end of row reached - right column, end of column, break char or line must end
@@ -2539,7 +2538,7 @@ void PageItem_TextFrame::layout()
 					&& !disableHyph
 					&& ((hl->ch == '-')
 						|| ((style.hyphenationMode() != ParagraphStyle::NoHyphenation)
-							&& (( (hl->effects() & ScStyle_HyphenationPossible) && (current.hyphenCount < m_Doc->hyphConsecutiveLines() || m_Doc->hyphConsecutiveLines() == 0)) || hl->ch == SpecialChars::SHYPHEN))))
+							&& (( (hl->effects() & ScStyle_HyphenationPossible) && (current.hyphenCount < style.maxHyphens() || style.maxHyphens() == 0)) || hl->ch == SpecialChars::SHYPHEN))))
 				{
 					if (hl->effects() & ScStyle_HyphenationPossible || hl->ch == SpecialChars::SHYPHEN)
 					{
@@ -2651,7 +2650,7 @@ void PageItem_TextFrame::layout()
 			}
 
 			// hyphenation
-			if (!disableHyph && (style.hyphenationMode() != ParagraphStyle::NoHyphenation) && (((hl->effects() & ScStyle_HyphenationPossible) || (hl->ch == '-') || hl->ch == SpecialChars::SHYPHEN) && (!outs) && !itemText.text(a-1).isSpace() ))
+			if (!disableHyph && (style.hyphenationMode() != ParagraphStyle::NoHyphenation) && (((hl->effects() & ScStyle_HyphenationPossible) || (hl->ch == '-') || hl->ch == SpecialChars::SHYPHEN) && (!outs)))
 			{
 				breakPos = current.xPos;
 				if (hl->ch != '-')
@@ -2666,7 +2665,7 @@ void PageItem_TextFrame::layout()
 				
 				if (legacy || (breakPos - rightHang < current.colRight - style.rightMargin()))
 				{
-					if (!disableHyph &&((current.hyphenCount < m_Doc->hyphConsecutiveLines()) || (m_Doc->hyphConsecutiveLines() == 0) || hl->ch == SpecialChars::SHYPHEN))
+					if (!disableHyph && ((current.hyphenCount < style.maxHyphens()) || (style.maxHyphens() == 0) || hl->ch == SpecialChars::SHYPHEN))
 					{
 						current.rememberBreak(a, breakPos, style.rightMargin() + hyphWidth);
 					}

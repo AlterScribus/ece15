@@ -686,12 +686,14 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("OpticalMargins", style.opticalMargins());
 	if ( ! style.isInhHyphenationMode())
 		docu.writeAttribute("HyphenationMode", style.hyphenationMode());
+	if ( ! style.isInhMaxHyphens())
+		docu.writeAttribute("MaxHyphens", style.maxHyphens());
 	if ( ! style.isInhMinWordTracking())
 		docu.writeAttribute("MinWordTrack", style.minWordTracking());
 	if ( ! style.isInhMaxWordTracking())
 		docu.writeAttribute("MaxWordTrack", style.maxWordTracking());
 	if ( ! style.isInhMaxTracking())
-		docu.writeAttribute("MaxTracking", style.maxTracking());
+		docu.writeAttribute("maxTracking", style.maxTracking()/10.0);
 	if ( ! style.isInhMinGlyphExtension())
 		docu.writeAttribute("MinGlyphShrink", style.minGlyphExtension());
 	if ( ! style.isInhMaxGlyphExtension())
@@ -2581,11 +2583,11 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		if ( ! dStyle.charStyle().isInhTracking())
 			docu.writeAttribute("TXTKERN", dStyle.charStyle().tracking() / 10.0);
 		if ( ! dStyle.isInhMaxTracking())
-			docu.writeAttribute("maxTrack", dStyle.maxTracking());
+			docu.writeAttribute("maxTracking", dStyle.maxTracking()/10.0);
 		if ( ! dStyle.charStyle().isInhWordTracking())
 			docu.writeAttribute("wordTrack", dStyle.charStyle().wordTracking());
 		if ( ! dStyle.isInhMaxWordTracking())
-			docu.writeAttribute("maxWordTrack", dStyle.maxWordTracking());
+			docu.writeAttribute("MaxWordTrack", dStyle.maxWordTracking());
 		if ( ! dStyle.isInhMinWordTracking())
 			docu.writeAttribute("MinWordTrack", dStyle.minWordTracking());
 		if ( ! dStyle.isInhMinGlyphExtension())
@@ -2598,6 +2600,8 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 			docu.writeAttribute("OpticalMargins", dStyle.opticalMargins());
 		if ( ! dStyle.isInhHyphenationMode())
 			docu.writeAttribute("HyphenationMode", dStyle.hyphenationMode());
+		if ( ! dStyle.isInhMaxHyphens())
+			docu.writeAttribute("MaxHyphens", dStyle.maxHyphens());
 		if ( ! dStyle.isInhLeftMargin() )
 			docu.writeAttribute("leftMargin", dStyle.leftMargin());
 		if ( ! dStyle.isInhRightMargin())

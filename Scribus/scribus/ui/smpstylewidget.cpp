@@ -43,9 +43,9 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
 
-	hyphenationMode->addItem(tr("No Hyphenation"));
-	hyphenationMode->addItem(tr("Manual Hyphenation"));
-	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+	hyphModeCombo->addItem(tr("No Hyphenation"));
+	hyphModeCombo->addItem(tr("Manual Hyphenation"));
+	hyphModeCombo->addItem(tr("Automatic Hyphenation"));
 
 	
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
@@ -78,6 +78,9 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	fillNumRestartCombo();
 	dropCapLines->setMinimum(2);
 	dropCapLines->setMaximum(99);
+	fillHyphModeCombo();
+	maxHyphensSpin->setMinimum(0);
+	maxHyphensSpin->setMaximum(9);
 
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 	minGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
@@ -120,7 +123,7 @@ void SMPStyleWidget::languageChange()
 	lineSpacing_->setToolTip(     tr("Line Spacing"));
 	spaceAbove_->setToolTip(      tr("Space Above"));
 	spaceBelow_->setToolTip(      tr("Space Below"));
-	hyphenationMode->setToolTip(  tr("Hyphenation Mode"));
+	hyphModeCombo->setToolTip(  tr("Hyphenation Mode"));
 	lineSpacingLabel->setToolTip(lineSpacing_->toolTip());
 	spaceAboveLabel->setToolTip(spaceAbove_->toolTip());
 	spaceBelowLabel->setToolTip(spaceBelow_->toolTip());
@@ -163,11 +166,6 @@ void SMPStyleWidget::languageChange()
 	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
 	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
 	
-	hyphenationMode->addItem(tr("No Hyphenation"));
-	hyphenationMode->addItem(tr("Manual Hyphenation"));
-	hyphenationMode->addItem(tr("Automatic Hyphenation"));
-	hyphenationModeLabel->setText(tr("Hyphenation Mode"));
-
 //	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -223,6 +221,10 @@ void SMPStyleWidget::languageChange()
 	glyphExtensionLabel->setText( tr("Glyph Extension"));
 	minGlyphExtLabel->setText( tr("Min:", "Glyph Extension"));
 	maxGlyphExtLabel->setText (tr("Max:", "Glyph Extension"));
+
+	hyphBox->setTitle(tr("Hypehantion Settings"));
+	fillHyphModeCombo();
+	maxHyphensLabel->setText(tr("Consecutive Hyphenations Allowed:"));
 
 	opticalMarginsGroupBox->setTitle( tr("Optical Margins"));
 	optMarginRadioNone->setText( tr("None","optical margins") );
@@ -298,6 +300,14 @@ void SMPStyleWidget::fillNumRestartCombo()
 	numRestartCombo->addItem(tr("Frame"));
 }
 
+void SMPStyleWidget::fillHyphModeCombo()
+{
+	hyphModeCombo->clear();
+	hyphModeCombo->addItem(tr("No Hyphenation"));
+	hyphModeCombo->addItem(tr("Manual Hyphenation"));
+	hyphModeCombo->addItem(tr("Automatic Hyphenation"));
+}
+
 void SMPStyleWidget::checkParEffectState()
 {
 	bool enable = false;
@@ -322,10 +332,10 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
 	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
 	
-	hyphenationMode->clear();
-	hyphenationMode->addItem(tr("No Hyphenation"));
-	hyphenationMode->addItem(tr("Manual Hyphenation"));
-	hyphenationMode->addItem(tr("Automatic Hyphenation"));
+	hyphModeCombo->clear();
+	hyphModeCombo->addItem(tr("No Hyphenation"));
+	hyphModeCombo->addItem(tr("Manual Hyphenation"));
+	hyphModeCombo->addItem(tr("Automatic Hyphenation"));
 
 //	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
@@ -340,10 +350,11 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	minGlyphExtSpin->setRange(90.0,100.0);
 	maxGlyphExtSpin->setRange(100.0,110.0);
 	
-	//fillBulletStrEditCombo();
-	//fillNumFormatCombo();
-	//fillNumerationsCombo();
-	//fillNumRestartCombo();
+	fillBulletStrEditCombo();
+	fillNumFormatCombo();
+	fillNumerationsCombo();
+	fillNumRestartCombo();
+	fillHyphModeCombo();
 
 	if (hasParent_)
 	{
@@ -438,8 +449,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numSuffix->setText(pstyle->numSuffix());
 		setWidgetBoldFont(numSuffix, pstyle->isInhNumSuffix());
 
-		hyphenationMode->setCurrentItem(pstyle->hyphenationMode(), pstyle->isInhHyphenationMode());
-		hyphenationMode->setParentItem(parent->hyphenationMode());
+		hyphModeCombo->setCurrentItem(pstyle->hyphenationMode(), pstyle->isInhHyphenationMode());
+		hyphModeCombo->setParentItem(parent->hyphenationMode());
 
 		ClearOnApplyBox->setChecked(pstyle->clearOnApply(), pstyle->isInhClearOnApply());
 		ClearOnApplyBox->setParentValue(parent->clearOnApply());
@@ -504,6 +515,17 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numRestartOtherBox->setParentValue(parent->numOther());
 		numRestartHigherBox->setChecked(pstyle->numHigher(), pstyle->isInhNumHigher());
 		numRestartHigherBox->setParentValue(parent->numHigher());
+
+		int hm = pstyle->hyphenationMode();
+		hyphModeCombo->setCurrentItem(hm, pstyle->isInhHyphenationMode());
+		maxHyphensSpin->setValue(pstyle->maxHyphens(), pstyle->isInhMaxHyphens());
+		maxHyphensSpin->setParentValue(parent->maxHyphens());
+		if (hm == ParagraphStyle::NoHyphenation)
+			maxHyphensSpin->setEnabled(false);
+		else
+			maxHyphensSpin->setEnabled(true);
+		maxTrackingSpinBox->setValue(pstyle->maxTracking(), pstyle->isInhMaxTracking());
+		maxWordTrackingSpinBox->setValue(pstyle->maxWordTracking(), pstyle->isInhMaxWordTracking());
 	}
 	else
 	{
@@ -582,7 +604,11 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		keepWithNext->setChecked (pstyle->keepWithNext());
 		owParentButton->hide();
 
-		hyphenationMode->setCurrentItem(pstyle->hyphenationMode());
+		int hm = pstyle->hyphenationMode();
+		hyphModeCombo->setCurrentItem(hm);
+		setMaxHyphensSpin(hm, pstyle->maxHyphens());
+		maxTrackingSpinBox->setValue(pstyle->maxTracking());
+		maxWordTrackingSpinBox->setValue(pstyle->maxWordTracking());
 		ClearOnApplyBox->setChecked(pstyle->clearOnApply());
 		coaParentButton->hide();
 	}
@@ -665,6 +691,8 @@ void SMPStyleWidget::show(QList<ParagraphStyle*> &pstyles, QList<ParagraphStyle>
 		showDropCap(pstyles, cstyles, unitIndex);
 		showBullet(pstyles, cstyles, unitIndex);
 		showNumeration(pstyles, cstyles, unitIndex);
+		showHyphenation(pstyles);
+		showMTracking(pstyles);
 		showAlignment(pstyles);
 		showOpticalMargin(pstyles);
 		showMinSpace(pstyles);
@@ -899,6 +927,65 @@ void SMPStyleWidget::showNumeration(QList<ParagraphStyle *> &pstyles, QList<Char
 	numFormatCombo->setEnabled(true);
 	numLevelSpin->setEnabled(true);
 	connectPESignals();
+}
+
+void SMPStyleWidget::showHyphenation(QList<ParagraphStyle *> &pstyles)
+{
+	if(pstyles.isEmpty())
+	{
+		qDebug()<<"Warning showMaxGlyphExt called with an empty list of styles";
+		return;
+	}
+	int hm = pstyles[0]->hyphenationMode();
+	int mh = pstyles[0]->maxHyphens();
+	for (int i = 0; i < pstyles.count(); ++i)
+	{
+		if ((hm != pstyles[i]->hyphenationMode()) || (hm !=ParagraphStyle::NoHyphenation && mh != pstyles[i]->maxHyphens()))
+		{
+			hyphModeCombo->setCurrentItem(pstyles[i]->hyphenationMode());
+			setMaxHyphensSpin(pstyles[i]->hyphenationMode(),pstyles[i]->maxHyphens());
+			return;
+		}
+		
+	}
+	hyphModeCombo->setCurrentItem(hm);
+	setMaxHyphensSpin(hm, mh);
+}
+
+void SMPStyleWidget::setMaxHyphensSpin(int hm, int mh)
+{
+	if (hm == ParagraphStyle::NoHyphenation)
+	{
+		maxHyphensSpin->setEnabled(false);
+	}
+	else
+	{
+		maxHyphensSpin->setValue(mh);
+		maxHyphensSpin->setEnabled(true);
+	}
+}
+
+void SMPStyleWidget::showMTracking(QList<ParagraphStyle *> &pstyles)
+{
+	if(pstyles.isEmpty())
+	{
+		qDebug()<<"Warning showMtracking called with an empty list of styles";
+		return;
+	}
+	int mT = pstyles[0]->maxTracking();
+	int mWT = pstyles[0]->maxWordTracking();
+	for (int i = 0; i < pstyles.count(); ++i)
+	{
+		if ((mT != pstyles[i]->maxTracking()) || mWT != pstyles[i]->maxWordTracking())
+		{
+			maxTrackingSpinBox->setValue(pstyles[i]->maxTracking());
+			maxWordTrackingSpinBox->setValue(pstyles[i]->maxWordTracking());
+			return;
+		}
+		
+	}
+	maxTrackingSpinBox->setValue(mT);
+	maxWordTrackingSpinBox->setValue(mWT);
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
@@ -1344,7 +1431,7 @@ void SMPStyleWidget::showHyphenationMode(QList<ParagraphStyle*> &pstyles)
 {
 	if(pstyles.isEmpty())
 	{
-		qDebug()<<"Warning showHyphenationMode called with an empty list of styles";
+		qDebug()<<"Warning showhyphModeCombo called with an empty list of styles";
 		return;
 	}
 	int hm = (pstyles[0]->hyphenationMode());
@@ -1352,18 +1439,18 @@ void SMPStyleWidget::showHyphenationMode(QList<ParagraphStyle*> &pstyles)
 	{
 		if (hm != (pstyles[i]->hyphenationMode()))
 		{
-			hyphenationMode->setCurrentItem(pstyles[i]->hyphenationMode(), (hasParent_ && pstyles[i]->isInhHyphenationMode()));
+			hyphModeCombo->setCurrentItem(pstyles[i]->hyphenationMode(), (hasParent_ && pstyles[i]->isInhHyphenationMode()));
 			return;
 		}
 	}
-	hyphenationMode->setCurrentItem(hm, (hasParent_ && pstyles[0]->isInhHyphenationMode()));
+	hyphModeCombo->setCurrentItem(hm, (hasParent_ && pstyles[0]->isInhHyphenationMode()));
 }
 
 void SMPStyleWidget::showClearOnApply(QList<ParagraphStyle *> &pstyles)
 {
 	if(pstyles.isEmpty())
 	{
-		qDebug()<<"Warning showHyphenationMode called with an empty list of styles";
+		qDebug()<<"Warning showhyphModeCombo called with an empty list of styles";
 		return;
 	}
 	bool coa = (pstyles[0]->clearOnApply());
@@ -1387,7 +1474,7 @@ void SMPStyleWidget::showWidowsOrphans(QList<ParagraphStyle *> &pstyles)
 {
 	if(pstyles.isEmpty())
 	{
-		qDebug()<<"Warning showHyphenationMode called with an empty list of styles";
+		qDebug()<<"Warning showhyphModeCombo called with an empty list of styles";
 		return;
 	}
 

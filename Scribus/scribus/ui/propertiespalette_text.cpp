@@ -244,6 +244,7 @@ void PropertiesPalette_Text::unsetDoc()
 	pathTextWidgets->setDoc(0);
 
 	m_haveItem = false;
+	oldParagraphStyle = ParagraphStyle();
 
 	setEnabled(false);
 	connectSignals(true);
@@ -540,6 +541,7 @@ void PropertiesPalette_Text::setupLineSpacingSpinbox(int mode, double value)
 		lineSpacing->setEnabled(true);
 	}
 	lineSpacing->blockSignals(blocked);
+	lineSpacing->update();
 }
 
 void PropertiesPalette_Text::updateCharStyle(const CharStyle& charStyle)

@@ -78,7 +78,7 @@ void PropertyWidget_Advanced::setDoc(ScribusDoc *d)
 	maxTrackingSpinBox->setValues( -300, 300, 2, 0);
 	minWordTrackingSpinBox->setValues(1, 2000, 2, 100);
 	normWordTrackingSpinBox->setValues(1, 2000, 2, 100);
-	maxWordTrackingSpinBox->setValues(1, 2000, 2, 100);
+	maxWordTrackingSpinBox->setValues(1, 10000, 2, 200);
 	minGlyphExtSpinBox->setValues(90, 100, 2, 100);
 	maxGlyphExtSpinBox->setValues(100, 120, 2, 100);
 
@@ -130,8 +130,8 @@ void PropertyWidget_Advanced::connectSignals()
 	connect(normWordTrackingSpinBox, SIGNAL(valueChanged(double)), this, SLOT(handleNormWordTracking()) );
 	connect(minGlyphExtSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMinGlyphExtension()) );
 	connect(maxGlyphExtSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMaxGlyphExtension()) );
-	connect(maxTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handlemaxTracking()) );
-	connect(maxWordTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handlemaxWordTracking()) );
+	connect(maxTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMaxTracking()) );
+	connect(maxWordTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMaxWordTracking()) );
 }
 
 void PropertyWidget_Advanced::disconnectSignals()
@@ -144,8 +144,8 @@ void PropertyWidget_Advanced::disconnectSignals()
 	disconnect(normWordTrackingSpinBox, SIGNAL(valueChanged(double)), this, SLOT(handleNormWordTracking()) );
 	disconnect(minGlyphExtSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMinGlyphExtension()) );
 	disconnect(maxGlyphExtSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMaxGlyphExtension()) );
-	disconnect(maxTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handlemaxTracking()) );
-	disconnect(maxWordTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handlemaxWordTracking()) );
+	disconnect(maxTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMaxTracking()) );
+	disconnect(maxWordTrackingSpinBox     , SIGNAL(valueChanged(double)), this, SLOT(handleMaxWordTracking()) );
 }
 
 void PropertyWidget_Advanced::configureWidgets(void)
@@ -344,7 +344,7 @@ void PropertyWidget_Advanced::handleMaxTracking()
 		Selection tempSelection(this, false);
 		tempSelection.addItem(i2, true);
 		ParagraphStyle newStyle;
-		newStyle.setMaxTracking(maxTrackingSpinBox->value() * 10.0);
+		newStyle.setMaxTracking(qRound(maxTrackingSpinBox->value() * 10.0));
 		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
 	}
 }
@@ -397,7 +397,6 @@ void PropertyWidget_Advanced::updateStyle(const ParagraphStyle& newCurrent)
 	normWordTrackingSpinBox->showValue(newCurrent.charStyle().wordTracking() * 100.0);
 	minGlyphExtSpinBox->showValue(newCurrent.minGlyphExtension() * 100.0);
 	maxGlyphExtSpinBox->showValue(newCurrent.maxGlyphExtension() * 100.0);
-	maxTrackingSpinBox->setMinimum(charStyle.tracking() / 10.0);
 	if (newCurrent.maxTracking() < charStyle.tracking())
 	{
 		maxTrackingSpinBox->setValue(charStyle.tracking() / 10.0);
@@ -405,7 +404,7 @@ void PropertyWidget_Advanced::updateStyle(const ParagraphStyle& newCurrent)
 	}
 	else
 		maxTrackingSpinBox->showValue(newCurrent.maxTracking() / 10.0);
-	maxWordTrackingSpinBox->setMinimum(charStyle.wordTracking() * 100.0);
+	maxTrackingSpinBox->setMinimum(charStyle.tracking() / 10.0);
 	if (newCurrent.maxWordTracking() < charStyle.wordTracking())
 	{
 		maxWordTrackingSpinBox->setValue(charStyle.wordTracking() *100.0);
@@ -413,6 +412,7 @@ void PropertyWidget_Advanced::updateStyle(const ParagraphStyle& newCurrent)
 	}
 	else
 		maxWordTrackingSpinBox->showValue(newCurrent.maxWordTracking() *100.0);
+	maxWordTrackingSpinBox->setMinimum(charStyle.wordTracking() * 100.0);
 }
 
 void PropertyWidget_Advanced::changeEvent(QEvent *e)

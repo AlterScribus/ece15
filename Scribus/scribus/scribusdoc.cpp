@@ -509,10 +509,14 @@ void ScribusDoc::init()
 	pstyle.setDropCapLines(2);
 	pstyle.setParEffectOffset(0);
 	pstyle.charStyle().setParent("");
-	if (docPrefsData.hyphPrefs.Automatic)
-		pstyle.setHyphenationMode(ParagraphStyle::AutomaticHyphenation);
-	else
-		pstyle.setHyphenationMode(ParagraphStyle::ManualHyphenation);
+	if (hyphAutomatic())
+	{
+		if (hyphAutoCheck())
+			pstyle.setHyphenationMode(ParagraphStyle::AutomaticHyphenation);
+		else
+			pstyle.setHyphenationMode(ParagraphStyle::ManualHyphenation);
+	} //else hyphenationMode is NoHyphenation
+	pstyle.setMaxHyphens(hyphConsecutiveLines());
 	
 	CharStyle cstyle;
 	cstyle.setDefaultStyle(true);
@@ -1533,11 +1537,17 @@ void ScribusDoc::redefineStyles(const StyleSet<ParagraphStyle>& newStyles, bool 
 //set HyphenationMode to doc default
 		if (sty.hyphenationMode() == ParagraphStyle::HyphModeNotSet)
 		{
-			if (docPrefsData.hyphPrefs.Automatic)
+			if (hyphAutoCheck())
 				sty.setHyphenationMode(ParagraphStyle::AutomaticHyphenation);
 			else
 				sty.setHyphenationMode(ParagraphStyle::ManualHyphenation);
 		}
+		if (sty.maxHyphens() < 0)
+			sty.setMaxHyphens(hyphConsecutiveLines());
+		if (sty.maxTracking() < sty.charStyle().tracking())
+			sty.setMaxTracking(sty.charStyle().tracking());
+		if (sty.maxWordTracking() < sty.charStyle().wordTracking())
+			sty.setMaxTracking(sty.charStyle().wordTracking());
 	}
 	docParagraphStyles.invalidate();
 	if (!isLoading())

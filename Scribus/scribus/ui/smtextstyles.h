@@ -92,6 +92,9 @@ private slots:
 	void slotNumOther(bool isOn);
 	void slotNumHigher(bool isOn);
 	void slotHyphenationMode(int mh);
+	void slotMaxHyphens(int mh);
+	void slotMaxTracking();
+	void slotMaxWordTracking();
 	void slotClearOnApply(bool isOn);
 	void slotParentClearOnApply();
 	void slotSpaceAbove();

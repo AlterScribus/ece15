@@ -27,7 +27,7 @@
     <number>3</number>
    </property>
    <item row="8" column="0" colspan="3">
-    <widget class="QLabel" name="maxWordtrackingLabel">
+    <widget class="QLabel" name="maxWordTrackingLabel">
      <property name="text">
       <string>... if word spacing is above:</string>
      </property>
@@ -56,10 +56,10 @@
       <number>1</number>
      </property>
      <property name="maximum">
-      <number>2000</number>
+      <number>10000</number>
      </property>
      <property name="value">
-      <number>100</number>
+      <number>200</number>
      </property>
     </widget>
    </item>

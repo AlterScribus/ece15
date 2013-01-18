@@ -1992,10 +1992,6 @@ namespace {
 		if (pstyle.parEffectOffset() <= -16000)
 			pstyle.resetParEffectOffset();
 		fixLegacyCharStyle(pstyle.charStyle());
-		if (pstyle.maxTracking() <= -999.0 || pstyle.maxTracking() < pstyle.charStyle().tracking())
-			pstyle.setMaxTracking(pstyle.charStyle().tracking());
-		if (pstyle.maxWordTracking() <= -999.0 || pstyle.maxWordTracking() < pstyle.charStyle().wordTracking())
-			pstyle.setMaxTracking(pstyle.charStyle().wordTracking());
 	}
 	
 }// namespace
@@ -2658,9 +2654,11 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(HyphenationMode))
 		newStyle.setHyphenationMode(attrs.valueAsInt(HyphenationMode));
 
-	static const QString MaxTracking("MaxTracking");
-	if (attrs.hasAttribute(MaxTracking))
-		newStyle.setMaxTracking(attrs.valueAsDouble(MaxTracking));
+	static const QString MaxHyphens("MaxHyphens");
+	if (attrs.hasAttribute(MaxHyphens))
+		newStyle.setMaxHyphens(attrs.valueAsInt(MaxHyphens));
+	else
+		newStyle.setMaxHyphens(m_Doc->hyphConsecutiveLines());
 
 	static const QString MinWordTrack("MinWordTrack");
 	if (attrs.hasAttribute(MinWordTrack))
@@ -2703,6 +2701,12 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 		newStyle.setKeepTogether(attrs.valueAsInt(KeepTogether));
 
 	readCharacterStyleAttrs( doc, attrs, newStyle.charStyle());
+
+	static const QString MaxTracking("maxTracking");
+	if (attrs.hasAttribute(MaxTracking))
+		newStyle.setMaxTracking(qRound(attrs.valueAsDouble(MaxTracking)) * 10.0);
+	else
+		newStyle.setMaxTracking(newStyle.charStyle().tracking());
 
 	//	newStyle.tabValues().clear();
 	QList<ParagraphStyle::TabRecord> tbs;
@@ -4688,7 +4692,7 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 	if (attrs.hasAttribute("TXTKERN"))
 		pstyle.charStyle().setTracking(qRound(attrs.valueAsDouble("TXTKERN", 0.0) * 10));
 	if (attrs.hasAttribute("maxTracking"))
-		pstyle.setMaxTracking(attrs.valueAsDouble("maxTracking"));
+		pstyle.setMaxTracking(qRound(attrs.valueAsDouble("maxTracking", 0.0) * 10));
 	if (attrs.hasAttribute("wordTrack"))
 		pstyle.charStyle().setWordTracking(attrs.valueAsDouble("wordTrack"));
 	if (attrs.hasAttribute("MinWordTrack"))
@@ -4707,6 +4711,8 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		pstyle.setHyphenationMode(attrs.valueAsInt("HyphenationMode"));
 	else
 		pstyle.setHyphenationMode(ParagraphStyle::HyphModeNotSet);
+	if (attrs.hasAttribute("MaxHyphens"))
+		pstyle.setMaxHyphens(attrs.valueAsInt("MaxHyphens"));
 	if (attrs.hasAttribute("leftMargin"))
 		pstyle.setLeftMargin(attrs.valueAsDouble("leftMargin"));
 	if (attrs.hasAttribute("rightMargin"))

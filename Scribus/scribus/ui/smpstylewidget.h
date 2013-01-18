@@ -45,6 +45,7 @@ private:
 	void fillNumFormatCombo();
 	void fillNumerationsCombo();
 	void fillNumRestartCombo();
+	void fillHyphModeCombo();
 	void checkParEffectState();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
@@ -63,6 +64,9 @@ private:
 	void showHyphenationMode(QList<ParagraphStyle*> &pstyles);
 	void showClearOnApply(QList<ParagraphStyle*> &pstyles);
 	void showWidowsOrphans(QList<ParagraphStyle*> &pstyles);
+	void showHyphenation(QList<ParagraphStyle*> &pstyles);
+	void setMaxHyphensSpin(int, int);
+	void showMTracking(QList<ParagraphStyle*> &pstyles);
 	
 	void openEnhanced();
 	void closeEnhanced(bool show = false);
