@@ -1953,7 +1953,7 @@ void SMParagraphStyle::slotMaxTracking()
 		
 		pwidget_->maxTrackingSpinBox->getValues(&a, &b, &c, &value);
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setMaxTracking(value);
+			selection_[i]->setMaxTracking(value * 10);
 	}
 	
 	if (!selectionIsDirty_)
@@ -1975,7 +1975,7 @@ void SMParagraphStyle::slotMaxWordTracking()
 		
 		pwidget_->maxWordTrackingSpinBox->getValues(&a, &b, &c, &value);
 		for (int i = 0; i < selection_.count(); ++i)
-			selection_[i]->setMaxWordTracking(value);
+			selection_[i]->setMaxWordTracking(value/100.0);
 	}
 	
 	if (!selectionIsDirty_)

@@ -2508,7 +2508,7 @@ void Scribus150Format::readNamedCharacterStyleAttrs(ScribusDoc *doc, ScXmlStream
 		newStyle.setParent(QString());
 }
 
-void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& reader, ParagraphStyle& newStyle)
+void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& reader, ParagraphStyle& newStyle, CharStyle * lastStyle)
 {
 	ScXmlStreamAttributes attrs = reader.scAttributes();
 
@@ -2667,6 +2667,8 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	static const QString MaxWordTrack("MaxWordTrack");
 	if (attrs.hasAttribute(MaxWordTrack))
 		newStyle.setMaxWordTracking(attrs.valueAsDouble(MaxWordTrack));
+	else
+		newStyle.setMaxWordTracking(qRound(2 * newStyle.charStyle().wordTracking()));
 
 	static const QString NormWordTrack("NormWordTrack");
 	if (attrs.hasAttribute(NormWordTrack))
@@ -2706,7 +2708,12 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(MaxTracking))
 		newStyle.setMaxTracking(qRound(attrs.valueAsDouble(MaxTracking)) * 10.0);
 	else
-		newStyle.setMaxTracking(newStyle.charStyle().tracking());
+	{
+		if (lastStyle)
+			newStyle.setMaxTracking(lastStyle->tracking());
+		else
+			newStyle.setMaxTracking(newStyle.charStyle().tracking());
+	}
 
 	//	newStyle.tabValues().clear();
 	QList<ParagraphStyle::TabRecord> tbs;
@@ -3751,7 +3758,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 		{
 			newItem->itemText.insertChars(newItem->itemText.length(), SpecialChars::PARSEP);
 			ParagraphStyle newStyle;
-			readParagraphStyle(doc, reader, newStyle);
+			readParagraphStyle(doc, reader, newStyle, &lastStyle->Style);
 			newItem->itemText.setStyle(newItem->itemText.length()-1, newStyle);
 			newItem->itemText.setCharStyle(newItem->itemText.length()-1, 1, lastStyle->Style);
 		}
@@ -4690,7 +4697,10 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 	if (attrs.hasAttribute("TXTSTYLE"))
 		pstyle.charStyle().setFeatures(static_cast<StyleFlag>(attrs.valueAsInt("TXTSTYLE")).featureList());
 	if (attrs.hasAttribute("TXTKERN"))
+	{
 		pstyle.charStyle().setTracking(qRound(attrs.valueAsDouble("TXTKERN", 0.0) * 10));
+		pstyle.setMaxTracking(pstyle.charStyle().tracking());
+	}
 	if (attrs.hasAttribute("maxTracking"))
 		pstyle.setMaxTracking(qRound(attrs.valueAsDouble("maxTracking", 0.0) * 10));
 	if (attrs.hasAttribute("wordTrack"))
@@ -4699,6 +4709,8 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		pstyle.setMinWordTracking(attrs.valueAsDouble("MinWordTrack"));
 	if (attrs.hasAttribute("MaxWordTrack"))
 		pstyle.setMaxWordTracking(attrs.valueAsDouble("MaxWordTrack"));
+	else
+		pstyle.setMaxWordTracking(qRound(2 * pstyle.charStyle().wordTracking()));
 	if (attrs.hasAttribute("MinGlyphShrink"))
 		pstyle.setMinGlyphExtension(attrs.valueAsDouble("MinGlyphShrink"));
 	if (attrs.hasAttribute("MaxGlyphExtend"))

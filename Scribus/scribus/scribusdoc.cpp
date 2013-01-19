@@ -517,6 +517,8 @@ void ScribusDoc::init()
 			pstyle.setHyphenationMode(ParagraphStyle::ManualHyphenation);
 	} //else hyphenationMode is NoHyphenation
 	pstyle.setMaxHyphens(hyphConsecutiveLines());
+	pstyle.setMaxTracking(0);
+	pstyle.setMaxWordTracking(200);
 	
 	CharStyle cstyle;
 	cstyle.setDefaultStyle(true);

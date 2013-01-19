@@ -16,14 +16,6 @@ for which a new license (GPL+exception) is in place.
 #include "util_icon.h"
 //#include "ui/charselectenhanced.h"
 
-//static bool isEqual(double a, double b)
-//{
-//	Q_ASSERT(a >  -21473 && b > -21473 && a < 21474 && b < 21474);
-//	long al = static_cast<long>(10000 * a);
-//	long bl = static_cast<long>(10000 * b);
-//    return al == bl;
-//}
-
 SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 {
 	m_Doc = doc;
@@ -43,11 +35,6 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
 	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
 
-	hyphModeCombo->addItem(tr("No Hyphenation"));
-	hyphModeCombo->addItem(tr("Manual Hyphenation"));
-	hyphModeCombo->addItem(tr("Automatic Hyphenation"));
-
-	
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
 //	optMarginCombo->addItem(tr("Right Protruding"), ParagraphStyle::OM_RightProtruding);
@@ -85,6 +72,8 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	minSpaceSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 	minGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 	maxGlyphExtSpin->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
+	maxTrackingSpinBox->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
+	maxWordTrackingSpinBox->setSuffix(unitGetSuffixFromIndex(SC_PERCENT));
 
 	connect(optMarginDefaultButton, SIGNAL(clicked()), this, SLOT(slotDefaultOpticalMargins()));
 	connect(advSetDefaultButton, SIGNAL(clicked()), this, SLOT(slotDefaultAdvancedSettings()));
@@ -149,6 +138,10 @@ void SMPStyleWidget::languageChange()
 	minGlyphExtLabel->setToolTip(minGlyphExtSpin->toolTip());
 	maxGlyphExtSpin->setToolTip(tr("Maximum extension of glyphs"));
 	maxGlyphExtLabel->setToolTip(maxGlyphExtSpin->toolTip());
+	maxTrackingSpinBox->setToolTip(tr("Char spacing can grow to this value which is equivalent of tracking value (kerning)"));
+	maxTrackingLabel->setToolTip(maxTrackingSpinBox->toolTip());
+	maxWordTrackingSpinBox->setToolTip(tr("Char spacing will grow if word spaces will be wider than this value of normal space width"));
+	maxTrackingLabel->setToolTip(maxTrackingSpinBox->toolTip());
 
 	keepLinesStart->setToolTip ("<qt>" + tr ("Ensure that first lines of a paragraph won't end up separated from the rest (known as widow/orphan control)") + "</qt>");
 	keepLinesEnd->setToolTip ("<qt>" + tr ("Ensure that last lines of a paragraph won't end up separated from the rest (known as widow/orphan control)") + "</qt>");
@@ -161,11 +154,6 @@ void SMPStyleWidget::languageChange()
 /*      End Tooltips               */
 /***********************************/
 
-	lineSpacingMode_->clear();
-	lineSpacingMode_->addItem( tr("Fixed Linespacing"));
-	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
-	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
-	
 //	optMarginCombo->clear();
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -214,17 +202,18 @@ void SMPStyleWidget::languageChange()
 	tabsBox->setTitle( tr("Tabulators and Indentation"));
 	tabWidget->setTabText(0, tr("Properties"));
 	tabWidget->setTabText(1, tr("Character Style"));
-	tabWidget->setTabText(2, tr("Paragraph Effects"));
+	tabWidget->setTabText(2, tr("Advances Settings"));
+	tabWidget->setTabText(3, tr("Paragraph Effects"));
 	
-	advSettingsGroupBox->setTitle( tr("Advanced Settings"));
 	minSpaceLabel->setText( tr("Min. Space Width:"));
-	glyphExtensionLabel->setText( tr("Glyph Extension"));
 	minGlyphExtLabel->setText( tr("Min:", "Glyph Extension"));
 	maxGlyphExtLabel->setText (tr("Max:", "Glyph Extension"));
+	maxTrackingLabel->setText(tr("Max Char Spacing"));
+	maxWordTrackingLabel->setText(tr("Max. Word Spacing"));
 
 	hyphBox->setTitle(tr("Hypehantion Settings"));
 	fillHyphModeCombo();
-	maxHyphensLabel->setText(tr("Consecutive Hyphenations Allowed:"));
+	maxHyphensLabel->setText(tr("Max Hyphens"));
 
 	opticalMarginsGroupBox->setTitle( tr("Optical Margins"));
 	optMarginRadioNone->setText( tr("None","optical margins") );
@@ -348,7 +337,9 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	// One could think it’s too much (aesthetic) or not enough (freedom)!
 	minSpaceSpin->setRange(1.0,100.0);
 	minGlyphExtSpin->setRange(90.0,100.0);
-	maxGlyphExtSpin->setRange(100.0,110.0);
+	maxGlyphExtSpin->setRange(100.0,120.0);
+	maxTrackingSpinBox->setRange(-99,99);
+	maxWordTrackingSpinBox->setRange(1,99999);
 	
 	fillBulletStrEditCombo();
 	fillNumFormatCombo();
@@ -524,8 +515,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 			maxHyphensSpin->setEnabled(false);
 		else
 			maxHyphensSpin->setEnabled(true);
-		maxTrackingSpinBox->setValue(pstyle->maxTracking(), pstyle->isInhMaxTracking());
-		maxWordTrackingSpinBox->setValue(pstyle->maxWordTracking(), pstyle->isInhMaxWordTracking());
+		maxTrackingSpinBox->setValue(pstyle->maxTracking() / 10.0, pstyle->isInhMaxTracking());
+		maxWordTrackingSpinBox->setValue(pstyle->maxWordTracking() *100.0, pstyle->isInhMaxWordTracking());
 	}
 	else
 	{
@@ -607,8 +598,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		int hm = pstyle->hyphenationMode();
 		hyphModeCombo->setCurrentItem(hm);
 		setMaxHyphensSpin(hm, pstyle->maxHyphens());
-		maxTrackingSpinBox->setValue(pstyle->maxTracking());
-		maxWordTrackingSpinBox->setValue(pstyle->maxWordTracking());
+		maxTrackingSpinBox->setValue(pstyle->maxTracking() / 10.0);
+		maxWordTrackingSpinBox->setValue(pstyle->maxWordTracking() * 100);
 		ClearOnApplyBox->setChecked(pstyle->clearOnApply());
 		coaParentButton->hide();
 	}
@@ -978,14 +969,14 @@ void SMPStyleWidget::showMTracking(QList<ParagraphStyle *> &pstyles)
 	{
 		if ((mT != pstyles[i]->maxTracking()) || mWT != pstyles[i]->maxWordTracking())
 		{
-			maxTrackingSpinBox->setValue(pstyles[i]->maxTracking());
-			maxWordTrackingSpinBox->setValue(pstyles[i]->maxWordTracking());
+			maxTrackingSpinBox->setValue(pstyles[i]->maxTracking() /10.0);
+			maxWordTrackingSpinBox->setValue(pstyles[i]->maxWordTracking() * 100);
 			return;
 		}
 		
 	}
-	maxTrackingSpinBox->setValue(mT);
-	maxWordTrackingSpinBox->setValue(mWT);
+	maxTrackingSpinBox->setValue(mT / 10.0);
+	maxWordTrackingSpinBox->setValue(mWT * 100);
 }
 
 void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)

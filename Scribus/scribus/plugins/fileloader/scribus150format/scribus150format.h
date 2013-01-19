@@ -120,7 +120,7 @@ class PLUGIN_API Scribus150Format : public LoadSavePlugin
 		bool readPage(ScribusDoc* doc, ScXmlStreamReader& reader);
 		bool readPageItemAttributes(PageItem* item, ScXmlStreamReader& reader);
 		bool readPageSets(ScribusDoc* doc, ScXmlStreamReader& reader);
-		void readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& reader, ParagraphStyle& newStyle);
+		void readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& reader, ParagraphStyle& newStyle, CharStyle * lastStyle = NULL);
 		void readTableStyle(ScribusDoc *doc, ScXmlStreamReader& reader, TableStyle& newStyle);
 		void readCellStyle(ScribusDoc *doc, ScXmlStreamReader& reader, CellStyle& newStyle);
 		bool readPattern(ScribusDoc* doc, ScXmlStreamReader& reader, const QString& baseDir);
