@@ -1126,7 +1126,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/imposition/impositionoutputfile.h \
     scribus/imposition/impositionoptions.h \
     scribus/imposition/impositioninputfile.h \
-    scribus/imposition/imposition.h
+    scribus/imposition/imposition.h \
+    scribus/ui/testingbase.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1262,7 +1263,8 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/tools/spellcheck/aspellpluginbase.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
-         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui
+         scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
+    scribus/ui/testingbase.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2175,7 +2177,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/imposition/impositionoutputfile.cpp \
     scribus/imposition/impositionoptions.cpp \
     scribus/imposition/impositioninputfile.cpp \
-    scribus/imposition/imposition.cpp
+    scribus/imposition/imposition.cpp \
+    scribus/ui/testingbase.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \

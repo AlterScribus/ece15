@@ -176,6 +176,7 @@ SET(SCRIBUS_UI_SRC
   ui/unicodesearch.ui
   ui/useprintermarginsdialog.ui
   ui/weldeditbase.ui
+ui/testingbase.ui
 #  ${SCRIBUS_ITEMSETTERS_UI_SRC}
   ${SCRIBUS_OSG_UI_SRC}
 )
@@ -492,6 +493,7 @@ SET(SCRIBUS_MOC_CLASSES
   ui/useprintermarginsdialog.h
   ui/vruler.h
   ui/weldedit.h
+ui/testingbase.h
 #  ${SCRIBUS_ITEMSETTERS_CLASS}
   ${SCRIBUS_OSG_CLASS}
 )
@@ -944,6 +946,7 @@ SET(SCRIBUS_SOURCES
   ui/vruler.cpp
   ui/useprintermarginsdialog.cpp
   ui/weldedit.cpp
+ui/testingbase.cpp
 #  ${SCRIBUS_ITEMSETTERS_SRC}
   ${SCRIBUS_OSG_SRC}
   ${SCRIBUS_GMAGICK_SRC}

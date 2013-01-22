@@ -922,11 +922,14 @@ void ActionManager::initExtrasMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasSetClearAttributes";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="extrasDoTesting";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	connect( (*scrActions)["extrasManageImages"], SIGNAL(triggered()), mainWindow, SLOT(StatusPic()) );
 	connect( (*scrActions)["extrasGenerateTableOfContents"], SIGNAL(triggered()), mainWindow, SLOT(generateTableOfContents()) );
 	connect( (*scrActions)["extrasUpdateDocument"], SIGNAL(triggered()), mainWindow, SLOT(updateDocument()) );
 	connect( (*scrActions)["extrasClearDocument"], SIGNAL(triggered()), mainWindow, SLOT(clearDocument()) );
 	connect( (*scrActions)["extrasSetClearAttributes"], SIGNAL(triggered()), mainWindow, SLOT(setClearAttributes()) );
+	connect( (*scrActions)["extrasDoTesting"], SIGNAL(triggered()), mainWindow, SLOT(doTesting()) );
 }
 
 
@@ -1357,8 +1360,8 @@ void ActionManager::enableActionStringList(QMap<QString, QPointer<ScrAction> > *
 					charCode==28 ||
 					charCode==29 ||
 					charCode==30 ||
-					((*mainWindow->doc->AllFonts)[fontName].usable() &&
-					(*mainWindow->doc->AllFonts)[fontName].canRender(charCode)) )
+					((*mainWindow->m_Doc->AllFonts)[fontName].usable() &&
+					(*mainWindow->m_Doc->AllFonts)[fontName].canRender(charCode)) )
 						(*actionMap)[*it]->setEnabled(true);
 				else
 					(*actionMap)[*it]->setEnabled(false);
@@ -1377,7 +1380,7 @@ void ActionManager::setPDFActions(ScribusView *currView)
 {
 	if (currView==NULL)
 		return;
-	PageItem* currItem = mainWindow->doc->m_Selection->itemAt(0);
+	PageItem* currItem = mainWindow->m_Doc->m_Selection->itemAt(0);
 	if (currItem==NULL)
 		return;
 
@@ -1688,6 +1691,7 @@ void ActionManager::languageChange()
 	(*scrActions)["extrasUpdateDocument"]->setTexts( tr("&Update Document"));
 	(*scrActions)["extrasClearDocument"]->setTexts( tr("&Clear Document"));
 	(*scrActions)["extrasSetClearAttributes"]->setTexts( tr("Set Clear Attributes"));
+	(*scrActions)["extrasDoTesting"]->setTexts( tr("Run Tests"));
 
 	//Windows Menu
 	(*scrActions)["windowsCascade"]->setText( tr("&Cascade"));
@@ -2226,7 +2230,8 @@ void ActionManager::createDefaultMenus()
 		<< "extrasGenerateTableOfContents"
 		<< "extrasUpdateDocument"
 		<< "extrasClearDocument"
-		<< "extrasSetClearAttributes";
+		<< "extrasSetClearAttributes"
+		<< "extrasDoTesting";
 	//Windows
 	++itmenu;
 	itmenu->second

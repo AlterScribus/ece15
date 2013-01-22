@@ -198,11 +198,12 @@ public:
 	/** \brief doc represents your actual document and is created only once. It keeps
 	 * information such as filename and does the serialization of your files.
 	 */
-	ScribusDoc *doc;
+	ScribusDoc *m_Doc;
+private:
 	/** \brief private doc for managing default patterns. */
-	ScribusDoc* m_doc;
+	ScribusDoc* tmp_doc;
 
-
+public:
 	QProgressBar* mainWindowProgressBar;
 	QLabel* mainWindowXPosLabel;
 	QLabel* mainWindowXPosDataLabel;
@@ -542,6 +543,8 @@ public slots:
 	void slotUpdateMarks();
 	bool editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem = NULL);
 
+	void doTesting();
+
 signals:
 	void AppModeChanged(int oldMode, int newMode);
 	void TextStyle(const ParagraphStyle&);
@@ -648,6 +651,9 @@ public:
 
 	bool m_WasAutoSave;
 	bool m_pagePalVisible;
+	void test1();
+	void test2();
+	void resetTests();
 };
 
 #endif

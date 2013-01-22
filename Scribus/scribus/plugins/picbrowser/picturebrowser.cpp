@@ -317,7 +317,7 @@ void PictureBrowser::previewIconDoubleClicked ( const QModelIndex &index )
 
 	if ( row >= 0 )
 	{
-		ScribusDoc *currentDoc ( ScMW->doc );
+		ScribusDoc *currentDoc ( ScMW->m_Doc );
 		Imagedialog *id ( new Imagedialog ( pImages->previewImagesList.at ( row )->fileInformation.absoluteFilePath(), currentDoc ,this ) );
 
 		if ( id )

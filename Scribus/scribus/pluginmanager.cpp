@@ -439,7 +439,7 @@ void PluginManager::enableOnlyStartupPluginActions(ScribusMainWindow* mw)
 void PluginManager::enablePluginActionsForSelection(ScribusMainWindow* mw)
 {
 	Q_CHECK_PTR(mw);
-	ScribusDoc* doc=mw->doc;
+	ScribusDoc* doc=mw->m_Doc;
 	if (!doc)
 		return;
 

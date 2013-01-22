@@ -117,7 +117,7 @@ bool FlattenPathPlugin::run(ScribusDoc* doc, QString)
 {
 	ScribusDoc* currDoc = doc;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMainWindow()->m_Doc;
 	if (currDoc->m_Selection->count() > 0)
 	{
 		PageItem *currItem = currDoc->m_Selection->itemAt(0);

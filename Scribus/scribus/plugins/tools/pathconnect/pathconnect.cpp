@@ -115,7 +115,7 @@ bool PathConnectPlugin::run(ScribusDoc* doc, QString)
 	currDoc = doc;
 	firstUpdate = true;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMainWindow()->m_Doc;
 	if (currDoc->m_Selection->count() > 1)
 	{
 		Item1 = currDoc->m_Selection->itemAt(0);

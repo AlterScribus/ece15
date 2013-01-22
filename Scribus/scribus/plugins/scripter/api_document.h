@@ -73,12 +73,12 @@ class DocumentAPI : public QObject
 
 		void moveSelectionToFront()
 		{
-			ScCore->primaryMainWindow()->doc->bringItemSelectionToFront();
+			ScCore->primaryMainWindow()->m_Doc->bringItemSelectionToFront();
 		}
 
 		void moveSelectionToBack()
 		{
-			ScCore->primaryMainWindow()->doc->sendItemSelectionToBack();
+			ScCore->primaryMainWindow()->m_Doc->sendItemSelectionToBack();
 		}
 
 		QObject* selectItem(QString name);

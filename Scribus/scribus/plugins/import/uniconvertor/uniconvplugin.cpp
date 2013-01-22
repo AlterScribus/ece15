@@ -131,7 +131,7 @@ bool UniconvImportPlugin::import(QString fileName, int flags)
 	if (!checkFlags(flags))
 		return false;
 
-	m_Doc = ScCore->primaryMainWindow()->doc;
+	m_Doc = ScCore->primaryMainWindow()->m_Doc;
 	ScribusMainWindow *mw =
 		(m_Doc==0) ? ScCore->primaryMainWindow() : m_Doc->scMW();
 

@@ -158,7 +158,7 @@ bool PathAlongPathPlugin::run(ScribusDoc* doc, QString)
 	originalYPosG.clear();
 	patternItemG.clear();
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMainWindow()->m_Doc;
 	if (currDoc->m_Selection->count() > 1)
 	{
 		if ((currDoc->m_Selection->itemAt(0)->isGroup()) || (currDoc->m_Selection->itemAt(1)->isGroup()))

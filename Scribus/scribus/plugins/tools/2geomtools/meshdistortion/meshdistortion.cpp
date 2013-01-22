@@ -114,7 +114,7 @@ bool MeshDistortionPlugin::run(ScribusDoc* doc, QString)
 {
 	currDoc = doc;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMainWindow()->m_Doc;
 	if (currDoc->m_Selection->count() > 0)
 	{
 		patternItem = currDoc->m_Selection->itemAt(0);

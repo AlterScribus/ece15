@@ -107,7 +107,7 @@ bool ImportIdml::run(ScribusDoc* doc, QString target)
 		else
 			return true;
 	}
-	m_Doc=ScCore->primaryMainWindow()->doc;
+	m_Doc=ScCore->primaryMainWindow()->m_Doc;
 	ImportIdmlImpl *myPluginImpl = new ImportIdmlImpl();
 	Q_CHECK_PTR(myPluginImpl);
 	bool result = myPluginImpl->run(target, m_Doc);

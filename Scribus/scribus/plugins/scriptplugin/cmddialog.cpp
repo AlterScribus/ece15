@@ -113,7 +113,7 @@ PyObject *scribus_newstyledialog(PyObject*, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 
-	ScribusDoc *d = ScCore->primaryMainWindow()->doc;
+	ScribusDoc *d = ScCore->primaryMainWindow()->m_Doc;
 	bool ok;
 	QString s = QInputDialog::getText(ScCore->primaryMainWindow(), "New Paragraph Style",
 			"Enter name of the new paragraph style:", QLineEdit::Normal,
