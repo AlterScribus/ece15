@@ -9602,6 +9602,8 @@ void ScribusMainWindow::changeLayer(int )
 		NoFrameEdit();
 	view->Deselect(true);
 	rebuildLayersList();
+	layerPalette->rebuildList();
+	layerPalette->markActiveLayer();
 	view->updateLayerMenu();
 	view->setLayerMenuText(m_Doc->activeLayerName());
 	view->DrawNew();

@@ -16124,7 +16124,7 @@ void NodeEditContext::moveClipPoint(PageItem *currItem, FPoint ip)
 	currItem->FrameType = 3;
 	uint EndInd = Clip.size();
 	uint StartInd = 0;
-	for (uint n = ClRe; n < Clip.size(); ++n)
+	for (int n = ClRe; n < Clip.size(); ++n)
 	{
 		if (Clip.point(n).x() > 900000)
 		{
@@ -16354,7 +16354,7 @@ void NodeEditContext::resetControl(PageItem* currItem)
 		Clip = currItem->PoLine.copy();
 	int EndInd = Clip.size();
 	int StartInd = 0;
-	for (uint n = ClRe; n < Clip.size(); ++n)
+	for (int n = ClRe; n < Clip.size(); ++n)
 	{
 		if (Clip.point(n).x() > 900000)
 		{
