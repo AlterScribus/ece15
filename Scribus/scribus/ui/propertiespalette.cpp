@@ -512,8 +512,8 @@ void  PropertiesPalette::handleSelectionChanged()
 				TabStack->setItemEnabled(idLineItem, true);
 				if (currItem->PictureIsAvailable)
 					TabStack->setCurrentIndex(idImageItem, true);
-				else
-					TabStack->setCurrentIndex(idShapeItem, true);
+//				else
+//					TabStack->setCurrentIndex(idShapeItem, true);
 			}
 			break;
 		case PageItem::TextFrame:
@@ -523,8 +523,8 @@ void  PropertiesPalette::handleSelectionChanged()
 			TabStack->setItemEnabled(idLineItem, true);
 			if (currItem->itemText.length() > 0)
 				TabStack->setCurrentIndex(idTextItem, true);
-			else
-				TabStack->setCurrentIndex(idShapeItem, true);
+//			else
+//				TabStack->setCurrentIndex(idShapeItem, true);
 			break;
 		case PageItem::Line:
 			TabStack->setItemEnabled(idShapeItem, false);
