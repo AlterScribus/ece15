@@ -3127,54 +3127,65 @@ NoRoom:
 	//Prefligth warnings
 	if (m_Doc->guidesPrefs().showPreflight)
 	{
-		if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
+		QList<QPair<int, int> > wL1, wL2;
+		#pragma omp parallel sections
 		{
-			uint nrPar;
-			int pos;
-			for (int i = 0; i < Cols; i++)
+			#pragma omp section
 			{
-				//get start of column for orphans check
-				pos = getColumnSE(i, true);
-				if ( pos < 0 ) //probably empty column
-					break;
-				nrPar = itemText.nrOfParagraph(pos);
-				if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
-					 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
-					 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
-					warnedList.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
-				//get end of column for widows check
-				pos = getColumnSE(i, false)-1;
-				nrPar = itemText.nrOfParagraph(pos);
-				if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
-					 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
-					 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
-					warnedList.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
-			}
-		}
-		
-		//check for RGB text
-		int startRGB = -1;
-		int endRGB = -1;
-		for (int e = firstInFrame(); e <= lastInFrame(); e++)
-		{
-			if (!itemText.paragraphStyle(e).isDefaultStyle())
-			{
-				ScColor col = m_Doc->PageColors.value(itemText.charStyle(e).fillColor());
-				if (col.getColorModel() == colorModelRGB || col.isRegistrationColor())
+				if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
 				{
-					if (startRGB == -1)
-						startRGB = e;
+					uint nrPar;
+					int pos;
+					for (int i = 0; i < Cols; i++)
+					{
+						//get start of column for orphans check
+						pos = getColumnSE(i, true);
+						if ( pos < 0 ) //probably empty column
+							break;
+						nrPar = itemText.nrOfParagraph(pos);
+						if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
+							 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
+							 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
+							wL1.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
+						//get end of column for widows check
+						pos = getColumnSE(i, false)-1;
+						nrPar = itemText.nrOfParagraph(pos);
+						if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
+							 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
+							 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
+							wL1.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
+					}
 				}
-				else if (startRGB > -1)
-					endRGB = e;
 			}
-			if (startRGB < endRGB)
+			#pragma omp section
 			{
-				warnedList.append(qMakePair(startRGB, endRGB -1));
-				startRGB = -1;
-				endRGB = -1;
+				//check for RGB text
+				int startRGB = -1;
+				int endRGB = -1;
+				for (int e = firstInFrame(); e <= lastInFrame(); e++)
+				{
+					if (!itemText.paragraphStyle(e).isDefaultStyle())
+					{
+						ScColor col = m_Doc->PageColors.value(itemText.charStyle(e).fillColor());
+						if (col.getColorModel() == colorModelRGB || col.isRegistrationColor())
+						{
+							if (startRGB == -1)
+								startRGB = e;
+						}
+						else if (startRGB > -1)
+							endRGB = e;
+					}
+					if (startRGB < endRGB)
+					{
+						wL2.append(qMakePair(startRGB, endRGB -1));
+						startRGB = -1;
+						endRGB = -1;
+					}
+				}
 			}
 		}
+		warnedList.append(wL1);
+		warnedList.append(wL2);
 	}
 	PageItem_TextFrame* nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (nextFrame != NULL)
@@ -3278,7 +3289,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 	QColor cachedFillQ;
 	QColor cachedStrokeQ;
 	//	QValueList<ParagraphStyle::TabRecord> tTabValues;
-	double desc, asce;
 	//	tTabValues.clear();
 	p->save(); //SA1
 	//	QRect e2;
@@ -3749,33 +3759,25 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 		}
 		assert( firstInFrame() >= 0 );
 		assert( lastInFrame() < itemText.length() );
-		LineSpec ls;
-		double CurX;
-		bool previousWasObject;
-		double selX;
-		ScText *hls;
-		int last;
-		bool selecteds;
-		bool HasObject;
+
 		for (uint ll=0; ll < itemText.lines(); ++ll)
 		{
-			ls = itemText.line(ll);
-			CurX = ls.x;
+			LineSpec ls = itemText.line(ll);
+			double CurX = ls.x;
 
 			// Draw text selection and preflight rectangles
 			QRectF selectedFrame;
 			QList<QRectF> sFList;
 			QRectF warnFrame;
 			QList<QRectF> wFList;
-			previousWasObject = false;
-			selX = ls.x;
-			hls = 0;
-			last = qMin(ls.lastItem, itemText.length() - 1);
+			bool previousWasObject = false;
+			double selX = ls.x;
+			int last = qMin(ls.lastItem, itemText.length() - 1);
 			for (int as = ls.firstItem; as <= last; ++as)
 			{
-				selecteds = itemText.selected(as);
-				hls = itemText.item(as);
-				HasObject = hls->hasObject(m_Doc);
+				bool selecteds = itemText.selected(as);
+				ScText* hls = itemText.item(as);
+				bool HasObject = hls->hasObject(m_Doc);
 				if (hls->mark != NULL && (hls->mark->isType(MARKAnchorType) || hls->mark->isType(MARKIndexType)))
 					continue;
 				const CharStyle& charStyleS(itemText.charStyle(as));
@@ -3804,10 +3806,6 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 									xcoZli -= hls->glyph.xoffset;
 								}
 							}
-							const ScFace font = charStyleS.font();
-							double fontSize = charStyleS.fontSize() / 10.0;
-							desc = - font.descent(fontSize);
-							asce = font.ascent(fontSize);
 							QRectF scr;
 							if (HasObject)
 							{
@@ -3820,8 +3818,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 							{
 								const ScFace font = charStyleS.font();
 								double fontSize = charStyleS.fontSize() / 10.0;
-								desc = - font.descent(fontSize);
-								asce = font.ascent(fontSize);
+								double desc = - font.descent(fontSize);
+								double asce = font.ascent(fontSize);
 								scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, hls->glyph.wide(), (asce+desc) * (hls->glyph.scaleV));
 							}
 							selectedFrame |=  scr;
@@ -3863,8 +3861,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 						{
 							const ScFace font = charStyleS.font();
 							double fontSize = charStyleS.fontSize() / 10.0;
-							desc = - font.descent(fontSize);
-							asce = font.ascent(fontSize);
+							double desc = - font.descent(fontSize);
+							double asce = font.ascent(fontSize);
 							scr = QRectF(xcoZli, ls.y + hls->glyph.yoffset - asce * hls->glyph.scaleV, hls->glyph.wide(), (asce+desc) * (hls->glyph.scaleV));
 						}
 						warnFrame |=  scr;
@@ -3916,13 +3914,12 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 			}
 			//	End of preflight warnings
 
-			QColor tmp;
-			ScText *hl = 0;
 			for (int a = ls.firstItem; a <= last; ++a)
 			{
-				hl = itemText.item(a);
+				ScText* hl = itemText.item(a);
 				const CharStyle& charStyle(itemText.charStyle(a));
-				selecteds = itemText.selected(a);
+				bool selecteds = itemText.selected(a);
+				QColor tmp;
 
 				actFill = charStyle.fillColor();
 				actFillShade = charStyle.fillShade();
@@ -3947,8 +3944,8 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 				{
 					const ScFace font = charStyle.font();
 					double fontSize = charStyle.fontSize() / 10.0;
-					desc = - font.descent(fontSize);
-					asce = font.ascent(fontSize);
+					double desc = - font.descent(fontSize);
+					double asce = font.ascent(fontSize);
 					if ((selecteds && (m_isSelected || NextBox != 0 || BackBox != 0)) && (m_Doc->appMode == modeEdit || m_Doc->appMode == modeEditTable))
 					{
 						// set text color to highlight if its selected
