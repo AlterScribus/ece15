@@ -8722,8 +8722,8 @@ void ScribusMainWindow::slotChangeUnit(int unitIndex, bool draw)
 		qApp->setStyleSheet(QString(stylesheet));
 	}
 
-	doc->setUnitIndex(unitIndex);
-	setCurrentComboItem(view->unitSwitcher, unitGetStrFromIndex(doc->unitIndex()));
+	m_Doc->setUnitIndex(unitIndex);
+	setCurrentComboItem(view->unitSwitcher, unitGetStrFromIndex(m_Doc->unitIndex()));
 	view->unitChange();
 	propertiesPalette->unitChange();
 	nodePalette->unitChange();
