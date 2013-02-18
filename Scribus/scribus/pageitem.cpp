@@ -7635,7 +7635,7 @@ void PageItem::setGradientShade1(int val)
 
 void PageItem::setGradientShade2(int val)
 {
-	if(GrCol1Shade==val)
+	if(GrCol2Shade==val)
 		return;
 	if(UndoManager::undoEnabled())
 	{
@@ -7650,7 +7650,7 @@ void PageItem::setGradientShade2(int val)
 
 void PageItem::setGradientShade3(int val)
 {
-	if(GrCol1Shade==val)
+	if(GrCol3Shade==val)
 		return;
 	if(UndoManager::undoEnabled())
 	{
@@ -7665,7 +7665,7 @@ void PageItem::setGradientShade3(int val)
 
 void PageItem::setGradientShade4(int val)
 {
-	if(GrCol1Shade==val)
+	if(GrCol4Shade==val)
 		return;
 	if(UndoManager::undoEnabled())
 	{
