@@ -52,6 +52,7 @@ public slots:
 	void displayTextScaleH(double e);
 	void displayTextScaleV(double e);
 	void displayTracking(double e);
+	void displayWordTracking(double e);
 
 	void updateCharStyle(const CharStyle& charStyle);
 	void updateStyle(const ParagraphStyle& newCurrent);

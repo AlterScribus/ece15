@@ -203,6 +203,12 @@ void PropertyWidget_Advanced::displayTracking(double e)
 		return;
 	tracking->showValue(e / 10.0);
 }
+void PropertyWidget_Advanced::displayWordTracking(double e)
+{
+	if (!m_ScMW || m_ScMW->scriptIsRunning())
+		return;
+	normWordTrackingSpinBox->showValue(e * 100.0);
+}
 
 void PropertyWidget_Advanced::handleBaselineOffset()
 {
@@ -247,9 +253,7 @@ void PropertyWidget_Advanced::handleNormWordTracking()
 	{
 		Selection tempSelection(this, false);
 		tempSelection.addItem(i2, true);
-		ParagraphStyle newStyle;
-		newStyle.charStyle().setWordTracking(normWordTrackingSpinBox->value() / 100.0);
-		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
+		m_doc->itemSelection_SetWordTracking(normWordTrackingSpinBox->value() / 100.0, &tempSelection);
 	}
 }
 
@@ -374,9 +378,9 @@ void PropertyWidget_Advanced::updateCharStyle(const CharStyle& charStyle)
 	displayTextScaleH(charStyle.scaleH());
 	displayTextScaleV(charStyle.scaleV());
 	displayTracking(charStyle.tracking());
+	displayWordTracking(charStyle.wordTracking());
 	displayBaseLineOffset(charStyle.baselineOffset());
 
-	normWordTrackingSpinBox->showValue(charStyle.wordTracking() * 100.0);
 	maxTrackingSpinBox->setMinimum(charStyle.tracking() / 10.0);
 	maxWordTrackingSpinBox->setMinimum(charStyle.wordTracking() * 100.0);
 }
@@ -391,10 +395,10 @@ void PropertyWidget_Advanced::updateStyle(const ParagraphStyle& newCurrent)
 	displayTextScaleH(charStyle.scaleH());
 	displayTextScaleV(charStyle.scaleV());
 	displayTracking(charStyle.tracking());
+	displayWordTracking(charStyle.wordTracking());
 	displayBaseLineOffset(charStyle.baselineOffset());
 
 	minWordTrackingSpinBox->showValue(newCurrent.minWordTracking() * 100.0);
-	normWordTrackingSpinBox->showValue(newCurrent.charStyle().wordTracking() * 100.0);
 	minGlyphExtSpinBox->showValue(newCurrent.minGlyphExtension() * 100.0);
 	maxGlyphExtSpinBox->showValue(newCurrent.maxGlyphExtension() * 100.0);
 	if (newCurrent.maxTracking() < charStyle.tracking())

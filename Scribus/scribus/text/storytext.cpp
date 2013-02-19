@@ -818,14 +818,19 @@ const CharStyle & StoryText::charStyle(int pos) const
 		return defaultStyle().charStyle();
 	}
 	else if (pos == length()) {
-		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
+//		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
-	//for notes frames - get style from note text, not from mark
-	if ((pos+1 < length()) && hasMark(pos) && mark(pos)->isNoteType())
-		++pos;
+//	//for notes frames - get style from note text, not from mark
+//	if ((pos+1 < length()) && hasMark(pos) && mark(pos)->isNoteType())
+//		++pos; FIXME - why in fact?
 	if (text(pos) == SpecialChars::PARSEP)
-		return paragraphStyle(pos).charStyle();
+	{
+		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP)
+			return paragraphStyle(pos).charStyle();
+		else //get charStyle from last char in paragraph
+			--pos;
+	}
 	StoryText* that = const_cast<StoryText *>(this);
 	return dynamic_cast<const CharStyle &> (*that->d->at(pos));
 }

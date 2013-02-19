@@ -1080,6 +1080,7 @@ public:
 //	void chAbStyle(PageItem *currItem, int s);
 
 	void itemSelection_SetTracking(int us, Selection* customSelection=0);
+	void itemSelection_SetWordTracking(double us, Selection* customSelection=0);
 	void itemSelection_SetFontSize(int size, Selection* customSelection=0);
 	//void FlipImageH();
 	//void FlipImageV();

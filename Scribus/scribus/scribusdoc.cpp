@@ -9029,6 +9029,13 @@ void ScribusDoc::itemSelection_SetTracking(int kern, Selection* customSelection)
 	itemSelection_ApplyCharStyle(newStyle, customSelection, "TRACKING");
 }
 
+void ScribusDoc::itemSelection_SetWordTracking(double track, Selection* customSelection)
+{
+	CharStyle newStyle;
+	newStyle.setWordTracking(track);
+	itemSelection_ApplyCharStyle(newStyle, customSelection, "WORDTRACKING");
+}
+
 void ScribusDoc::itemSelection_SetLineSpacingMode(int m, Selection* customSelection)
 {
 	ParagraphStyle newStyle;
