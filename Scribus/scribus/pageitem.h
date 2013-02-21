@@ -1763,7 +1763,7 @@ signals:
 
 public:
 	void expandParaSelection(bool includeEOL = false);
-
+	void validateItemText();
 };
 
 Q_DECLARE_METATYPE(PageItem*)

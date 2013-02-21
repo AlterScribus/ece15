@@ -9305,7 +9305,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 
 void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newStyle, Selection* customSelection, bool rmDirectFormatting)
 {
-	if (newStyle.clearOnApply() || (newStyle.hasParent() && paragraphStyle(newStyle.parent()).clearOnApply()))
+	if ((!newStyle.name().isEmpty() && newStyle.clearOnApply()) || (newStyle.hasParent() && paragraphStyle(newStyle.parent()).clearOnApply()))
 		rmDirectFormatting = true;
 	Selection* itemSelection = (customSelection!=0) ? customSelection : m_Selection;
 	assert(itemSelection!=0);

@@ -382,18 +382,18 @@ void StoryText::insertParSep(int pos)
  */
 void StoryText::removeParSep(int pos)
 {
+	ParagraphStyle curPS = paragraphStyle(pos);
+	int nextParEnd = pos+1;
+	while (nextParEnd < length() && item_p(nextParEnd)->ch != SpecialChars::PARSEP)
+		++nextParEnd;
 	ScText* it = item_p(pos);
 	if (it->parstyle) {
-//		const CharStyle* oldP = & it->parstyle->charStyle();
-//		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
-//		d->replaceParentStyle(pos, oldP, newP);
 		delete it->parstyle;
 		it->parstyle = 0;
 	}
-	// demote this parsep so the assert code in replaceCharStyleContextInParagraph()
-	// doesnt choke:
 	it->ch = 0;
-	d->replaceCharStyleContextInParagraph(pos, paragraphStyle(pos+1).charStyleContext());	
+	applyStyle(nextParEnd, curPS);
+	d->replaceCharStyleContextInParagraph(nextParEnd, paragraphStyle(nextParEnd).charStyleContext());
 }
 
 void StoryText::removeChars(int pos, uint len)
@@ -821,9 +821,9 @@ const CharStyle & StoryText::charStyle(int pos) const
 //		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
-//	//for notes frames - get style from note text, not from mark
-//	if ((pos+1 < length()) && hasMark(pos) && mark(pos)->isNoteType())
-//		++pos; FIXME - why in fact?
+	//for notes frames - get style from note text, not from mark
+	if ((pos+1 < length()) && hasMark(pos) && mark(pos)->isNoteType())
+		++pos;
 	if (text(pos) == SpecialChars::PARSEP)
 	{
 		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP)

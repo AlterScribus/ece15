@@ -914,6 +914,8 @@ void ActionManager::initExtrasMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasDeHyphenateText";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="extrasValidateText";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasGenerateTableOfContents";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasUpdateDocument";
@@ -926,6 +928,7 @@ void ActionManager::initExtrasMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	connect( (*scrActions)["extrasManageImages"], SIGNAL(triggered()), mainWindow, SLOT(StatusPic()) );
 	connect( (*scrActions)["extrasGenerateTableOfContents"], SIGNAL(triggered()), mainWindow, SLOT(generateTableOfContents()) );
+	connect( (*scrActions)["extrasValidateText"], SIGNAL(triggered()), mainWindow, SLOT(validateText()) );
 	connect( (*scrActions)["extrasUpdateDocument"], SIGNAL(triggered()), mainWindow, SLOT(updateDocument()) );
 	connect( (*scrActions)["extrasClearDocument"], SIGNAL(triggered()), mainWindow, SLOT(clearDocument()) );
 	connect( (*scrActions)["extrasSetClearAttributes"], SIGNAL(triggered()), mainWindow, SLOT(setClearAttributes()) );
@@ -1687,6 +1690,7 @@ void ActionManager::languageChange()
 	(*scrActions)["extrasManageImages"]->setTexts( tr("&Manage Images"));
 	(*scrActions)["extrasHyphenateText"]->setTexts( tr("&Hyphenate Text"));
 	(*scrActions)["extrasDeHyphenateText"]->setTexts( tr("Dehyphenate Text"));
+	(*scrActions)["extrasValidateText"]->setTexts( tr("Validate Text"));
 	(*scrActions)["extrasGenerateTableOfContents"]->setTexts( tr("&Generate Table Of Contents"));
 	(*scrActions)["extrasUpdateDocument"]->setTexts( tr("&Update Document"));
 	(*scrActions)["extrasClearDocument"]->setTexts( tr("&Clear Document"));
@@ -2227,6 +2231,7 @@ void ActionManager::createDefaultMenus()
 		<< "extrasManageImages"
 		<< "extrasHyphenateText"
 		<< "extrasDeHyphenateText"
+		<< "extrasValidateText"
 		<< "extrasGenerateTableOfContents"
 		<< "extrasUpdateDocument"
 		<< "extrasClearDocument"
