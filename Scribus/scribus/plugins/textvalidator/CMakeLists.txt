@@ -1,0 +1,45 @@
+INCLUDE_DIRECTORIES(
+${CMAKE_SOURCE_DIR}
+${CMAKE_SOURCE_DIR}/scribus
+)
+
+SET(TV_PLUGIN_UI_SRC
+  tvdialog.ui
+  prefs_textvalidator.ui
+)
+
+SET(TV_PLUGIN_MOC_CLASSES
+  textvalidator.h
+  textvalidatorimpl.h
+  tvconfig.h
+  prefs_textvalidator.h
+  tvdialog.h
+  tvprefsgui.h
+)
+
+SET(TV_PLUGIN_SOURCES
+  textvalidator.cpp
+  textvalidatorimpl.cpp
+  tvconfig.cpp
+  prefs_textvalidator.cpp
+  tvdialog.cpp
+  tvprefsgui.cpp
+)
+
+SET(SCRIBUS_TV_PLUGIN "textvalidator")
+
+QT4_WRAP_UI(TV_PLUGIN_UI_SOURCES ${TV_PLUGIN_UI_SRC} )
+QT4_WRAP_CPP(TV_PLUGIN_MOC_SOURCES ${TV_PLUGIN_MOC_CLASSES})
+
+ADD_LIBRARY(${SCRIBUS_TV_PLUGIN} MODULE ${TV_PLUGIN_SOURCES}
+${TV_PLUGIN_MOC_SOURCES}
+${TV_PLUGIN_UI_SOURCES})
+
+TARGET_LINK_LIBRARIES(${SCRIBUS_TV_PLUGIN} ${PLUGIN_LIBRARIES})
+
+INSTALL(TARGETS ${SCRIBUS_TV_PLUGIN}
+  LIBRARY
+  DESTINATION ${PLUGINDIR}
+  PERMISSIONS ${PLUGIN_PERMISSIONS}
+)
+

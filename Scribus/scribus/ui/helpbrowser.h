@@ -29,6 +29,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef HELPBROWSER_H
 #define HELPBROWSER_H
 
+#include <QObject>
 #include <QAction>
 #include <QItemSelection>
 #include <QList>

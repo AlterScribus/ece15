@@ -1127,7 +1127,14 @@ HEADERS += scribus/actionmanager.h \
     scribus/imposition/impositionoptions.h \
     scribus/imposition/impositioninputfile.h \
     scribus/imposition/imposition.h \
-    scribus/ui/testingbase.h
+    scribus/ui/testingbase.h \
+    scribus/plugins/textvalidator/textvalidatorimpl.h \
+    scribus/plugins/textvalidator/textvalidator.h \
+    scribus/plugins/textvalidator/tvprefsgui.h \
+    scribus/plugins/textvalidator/tvdialog.h \
+    scribus/plugins/textvalidator/textvalidator.cpp.autosave \
+    scribus/plugins/textvalidator/prefs_textvalidator.h \
+    scribus/plugins/textvalidator/tvconfig.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1264,7 +1271,9 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/scripter/python/sceditor/mainwindow.ui \
          scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.ui \
          scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
-    scribus/ui/testingbase.ui
+    scribus/ui/testingbase.ui \
+    scribus/plugins/textvalidator/tvdialog.ui \
+    scribus/plugins/textvalidator/prefs_textvalidator.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2178,7 +2187,13 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/imposition/impositionoptions.cpp \
     scribus/imposition/impositioninputfile.cpp \
     scribus/imposition/imposition.cpp \
-    scribus/ui/testingbase.cpp
+    scribus/ui/testingbase.cpp \
+    scribus/plugins/textvalidator/textvalidatorimpl.cpp \
+    scribus/plugins/textvalidator/textvalidator.cpp \
+    scribus/plugins/textvalidator/tvprefsgui.cpp \
+    scribus/plugins/textvalidator/tvdialog.cpp \
+    scribus/plugins/textvalidator/prefs_textvalidator.cpp \
+    scribus/plugins/textvalidator/tvconfig.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
@@ -2226,4 +2241,5 @@ TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.zh_TW.ts
 
 OTHER_FILES += \
-    scribus/imposition/CMakeLists.txt
+    scribus/imposition/CMakeLists.txt \
+    scribus/plugins/textvalidator/CMakeLists.txt

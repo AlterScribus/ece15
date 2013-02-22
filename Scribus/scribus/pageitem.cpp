@@ -10580,7 +10580,7 @@ void PageItem::validateItemText()
 			continue;
 		}
 		//remove empty lines
-		if (ch == SpecialChars::PARSEP)
+		if (ch == SpecialChars::PARSEP && vpref.removeEmptyLines)
 		{
 			if ((i+1 == itemText.length()) || (i > 0 && itemText.text(i-1) == SpecialChars::PARSEP))
 			{
