@@ -73,7 +73,14 @@
            </widget>
           </item>
           <item>
-           <layout class="QFormLayout" name="formLayout">
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="remSpacesAfter">
+              <property name="text">
+               <string>after:</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="1">
              <widget class="QLineEdit" name="remSpacesAfterChars"/>
             </item>
@@ -86,13 +93,6 @@
             </item>
             <item row="1" column="1">
              <widget class="QLineEdit" name="remSpacesBeforeChars"/>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="remSpacesAfter">
-              <property name="text">
-               <string>after:</string>
-              </property>
-             </widget>
             </item>
            </layout>
           </item>

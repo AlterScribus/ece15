@@ -37,9 +37,11 @@ class TextValidatorImpl : public QObject
 		bool removeBreaks;
 		bool removeHyphenation;
 		bool convertSpacesToNormal;
-		QString removeSpaceBefore;
-		QString removeSpaceAfter;
-		QMap<QChar, QString> removeCharBefore;
+        QString removeSpacesBeforeChars;
+        QString removeSpacesAfterChars;
+        bool removeSpacesBefore;
+        bool removeSpacesAfter;
+        QMap<QChar, QString> removeCharBefore;
 		QMap<QChar, QString> removeCharAfter;
 };
 

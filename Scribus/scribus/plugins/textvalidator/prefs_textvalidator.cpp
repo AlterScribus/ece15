@@ -19,6 +19,7 @@ Prefs_TextValidator::Prefs_TextValidator(QWidget* parent)
 	: Prefs_Pane(parent)
 {
 	setupUi(this);
+    readPrefs();
 	languageChange();
 
 	// defaults
@@ -31,6 +32,7 @@ Prefs_TextValidator::Prefs_TextValidator(QWidget* parent)
 
 Prefs_TextValidator::~Prefs_TextValidator()
 {
+    savePrefs();
 }
 
 void Prefs_TextValidator::languageChange()
@@ -89,8 +91,10 @@ void Prefs_TextValidator::readPrefs()
 	remBreaks->setChecked(tvPluginPrefs->getBool("removeBreaks", true));
 	remHyphenation->setChecked(tvPluginPrefs->getBool("removeHyphenation", false));
 	convertSpaces->setChecked(tvPluginPrefs->getBool("convertSpacesToNormal", false));
-	remSpacesBeforeChars->setText(tvPluginPrefs->get("removeSpaceBefore", ",.:;)"));
-	remSpacesAfterChars->setText(tvPluginPrefs->get("removeSpaceAfter", "("));
+    remSpacesBeforeChars->setText(tvPluginPrefs->get("removeSpacesBeforeChars", ",.:;)"));
+    remSpacesBefore->setChecked(tvPluginPrefs->getBool("removeSpacesBefore", true));
+    remSpacesAfterChars->setText(tvPluginPrefs->get("removeSpacesAfterChars", "("));
+    remSpacesAfter->setChecked(tvPluginPrefs->getBool("removeSpacesAfter", true));
 
 	QList<QLineEdit*> charsLE;
 	charsLE << char1 << char2 << char3 << char4 << char5;
@@ -123,10 +127,12 @@ void Prefs_TextValidator::savePrefs()
 	tvPluginPrefs->set("removeSpacesParaEnd", remSpacesEnd->isChecked());
 	tvPluginPrefs->set("removeEmptyLines", remEmptyLines->isChecked());
 	tvPluginPrefs->set("removeBreaks", remBreaks->isChecked());
-	tvPluginPrefs->set("removehyphenation", remHyphenation->isChecked());
+    tvPluginPrefs->set("removeHyphenation", remHyphenation->isChecked());
 	tvPluginPrefs->set("convertSpacesToNormal", convertSpaces->isChecked());
-	tvPluginPrefs->set("removeSpaceBefore", remSpacesBeforeChars->text());
-	tvPluginPrefs->set("removeSpaceAfter", remSpacesAfterChars->text());
+    tvPluginPrefs->set("removeSpacesBefore", remSpacesBefore->isChecked());
+    tvPluginPrefs->set("removeSpacesAfter", remSpacesAfter->isChecked());
+    tvPluginPrefs->set("removeSpacesBeforeChars", remSpacesBeforeChars->text());
+    tvPluginPrefs->set("removeSpacesAfterChars", remSpacesAfterChars->text());
 
 	QList<QLineEdit*> charsLE;
 	charsLE << char1 << char2 << char3 << char4 << char5;
@@ -137,10 +143,10 @@ void Prefs_TextValidator::savePrefs()
 	QString charsKeys = "";
 	for (int i = 0;  i < charsLE.length(); ++i)
 	{
-		QString chstr = charsLE.at(i)->text().trimmed().at(0);
+        QString chstr = charsLE.at(i)->text().trimmed();
 		if (chstr.isEmpty())
 			chstr = " ";
-		charsKeys.append(chstr);
+        charsKeys.append(chstr.at(0));
 		charsLE.at(i)->setText(charsKeys.at(i));
 		tvPluginPrefs->set("RCB_" + QString::number(i), beforeLE.at(i)->text());
 		tvPluginPrefs->set("RCA_" + QString::number(i), afterLE.at(i)->text());
