@@ -26,6 +26,7 @@ gtFileDialog::gtFileDialog(const QString& filters, const QStringList& importers,
 	importerCombo->addItems(importers);
 
 	textOnlyCheckBox->setToolTip( tr("Import text without any formatting"));
+	runTextValidatorCheckBox->setToolTip(tr("Run Text Validator after text import"));
 
 	QList<QByteArray> codecNames = QTextCodec::availableCodecs();
 	QStringList codecList;
@@ -89,6 +90,8 @@ void gtFileDialog::loadSettings(void)
 		bool textOnly = context->getBool("textonly");
 		textOnlyCheckBox->setChecked(textOnly);
 	}
+	if (context->contains("runtextvalidator"))
+		runTextValidatorCheckBox->setChecked(context->getBool("runtextvalidator"));
 	if (context->contains("reset"))
 	{
 		bool reset = context->getBool("reset");
@@ -103,6 +106,7 @@ void gtFileDialog::saveSettings(void)
 	context->set("importer", importerCombo->currentText());
 	context->set("encoding", encodingCombo->currentText());
 	context->set("textonly", textOnlyCheckBox->isChecked());
+	context->set("runtextvalidator", runTextValidatorCheckBox->isChecked());
 	context->set("reset", showImpSettingsCheckBox->isChecked());
 }
 

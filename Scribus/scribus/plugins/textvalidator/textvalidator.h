@@ -14,6 +14,9 @@ for which a new license (GPL+exception) is in place.
 That documentatation is not duplicated here.
 Please don't implement the functionality of your plugin here; do that
 in textvalidatorimpl.h and textvalidatorimpl.cpp. */
+class PageItem;
+class ScribusDoc;
+
 class PLUGIN_API TextValidator : public ScActionPlugin
 {
 	Q_OBJECT
@@ -34,6 +37,7 @@ class PLUGIN_API TextValidator : public ScActionPlugin
 										 QString& caption, QPixmap& icon);
 		virtual bool newPrefsPanelWidget(QWidget* parent, Prefs_Pane*& panel,
 										 QString& caption, QPixmap& icon);
+		virtual int validateItem(ScribusDoc* doc, PageItem* item);
 };
 
 extern "C" PLUGIN_API int textvalidator_getPluginAPIVersion();

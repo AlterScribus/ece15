@@ -121,13 +121,13 @@ gtDialogs::gtDialogs()
 	pwd = QDir::currentPath();
 }
 
-bool gtDialogs::runFileDialog(const QString& filters, const QStringList& importers)
+bool gtDialogs::runFileDialog(const QString& filters, const QStringList& importers, bool runTextValidator)
 {
 	bool accepted = false;
 	PrefsContext* dirs = PrefsManager::instance()->prefsFile->getContext("dirs");
 	QString dir = dirs->get("get_text", ".");
 	fdia = new gtFileDialog(filters, importers, dir);
-	
+	fdia->runTextValidatorCheckBox->setChecked(runTextValidator);
 	if (fdia->exec() == QDialog::Accepted)
 	{
 		fileName = fdia->selectedFile();
@@ -238,6 +238,14 @@ bool gtDialogs::showImportSettings()
 	bool ret = false;
 	if (fdia)
 		ret = fdia->showImpSettingsCheckBox->isChecked();
+	return ret;
+}
+
+bool gtDialogs::runTextValidator()
+{
+	bool ret = false;
+	if (fdia)
+		ret = fdia->runTextValidatorCheckBox->isChecked();
 	return ret;
 }
 

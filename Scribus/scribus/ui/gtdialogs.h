@@ -68,7 +68,8 @@ public:
 	int getImporter();
 	bool importTextOnly();
 	bool showImportSettings();
-	bool runFileDialog(const QString& filters, const QStringList& importers);
+	bool runTextValidator();
+	bool runFileDialog(const QString& filters, const QStringList& importers, bool runTextValidator = false);
 	bool runImporterDialog(const QStringList& importers);
 };
 

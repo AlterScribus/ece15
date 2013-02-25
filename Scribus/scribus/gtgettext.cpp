@@ -26,8 +26,13 @@ for which a new license (GPL+exception) is in place.
 
 #include "gtgettext.h"
 #include "pluginmanager.h"
+#include "plugins/textvalidator/textvalidator.h"
+#include "prefsfile.h"
+#include "prefscontext.h"
+#include "prefsmanager.h"
 #include "scpaths.h"
 #include "pageitem.h"
+#include "scribus.h"
 #include "scribusdoc.h"
 #include "selection.h"
 #include "ui/gtdialogs.h"
@@ -47,7 +52,7 @@ gtGetText::gtGetText(ScribusDoc* doc)
 
 // Look at the results of the file selection dialog and figure out if you need to use an importer.
 // Prompt the user if the importer to use isn't obvious.
-void gtGetText::launchImporter(int importer, const QString& filename, bool textOnly, bool showImpSettings, 
+void gtGetText::launchImporter(int importer, const QString& filename, bool textOnly, bool showImpSettings, bool runTextValidator, 
 								const QString& encoding, bool append, PageItem* target)
 {
 	// Struct for the plugin info, we'll load this up from the array.
@@ -104,7 +109,7 @@ void gtGetText::launchImporter(int importer, const QString& filename, bool textO
 	// If the targetframe is not zero, and we do need to call the importer, 
 	// Run the importer via "CallDLL" and pass it what it needs to know.
 	if (targetFrame!=0 && callImporter)
-		CallDLL(ida, filename, encoding, textOnly, showImpSettings, append, targetFrame);
+		CallDLL(ida, filename, encoding, textOnly, showImpSettings, runTextValidator, append, targetFrame);
 }  //void gtGetText::launchImporter(int importer, const QString& filename, bool textOnly, 
    //						const QString& encoding, bool append, PageItem* target)
 
@@ -197,7 +202,9 @@ ImportSetup gtGetText::run()
 	// INitialize runDialog to false
 	impsetup.runDialog=false;
 	// If we get a true back from the File selection Dialog ( which we send our filters and extensions lists )
-	if (dias->runFileDialog(filters, ilist))
+	PrefsFile* prefsFile = PrefsManager::instance()->applicationPrefsFile();
+	PrefsContext *tvPluginPrefs = prefsFile->getPluginContext("TextValidatorPlugin");
+	if (dias->runFileDialog(filters, ilist,tvPluginPrefs->getBool("runOnImport", false)))
 	{
 		// Set the runDialog to true
 		impsetup.runDialog=true;
@@ -206,6 +213,7 @@ ImportSetup gtGetText::run()
 		impsetup.filename=dias->getFileName();
 		impsetup.importer=dias->getImporter();
 		impsetup.textOnly=dias->importTextOnly();
+		impsetup.runTextValidator=dias->runTextValidator();
 		impsetup.showImportSettings=dias->showImportSettings();
 // 		launchImporter(dias->getImporter(), dias->getFileName(),
 // 		               dias->importTextOnly(), dias->getEncoding(), append);
@@ -218,7 +226,7 @@ ImportSetup gtGetText::run()
 
 // Loads, validates, and executes the Importer code.
 void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
-                        const QString& encoding, bool textOnly, bool showImpSettings, bool append, PageItem* importItem)
+                        const QString& encoding, bool textOnly, bool showImpSettings, bool runTextValidator, bool append, PageItem* importItem)
 {
 	// Pointer for the loaded plugin.
 	void* gtplugin;
@@ -272,8 +280,17 @@ void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
 	importItem->itemText.fixLegacyFormatting();
 	// Unload the plugin.
 	PluginManager::unloadDLL(gtplugin);
-}  // void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
-   //                     const QString& encoding, bool textOnly, bool append, PageItem* importItem)
+	//run Text Validator if is set in Prefs
+	if (runTextValidator)
+	{
+		QString pluginName("textvalidator");
+		TextValidator* tvPlug = (TextValidator*) PluginManager::instance().getPlugin(pluginName, false);
+		if (tvPlug)
+			tvPlug->validateItem(m_Doc, importItem);
+	}
+}
+// void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
+//                     const QString& encoding, bool textOnly, bool append, PageItem* importItem)
 
 // Loads the "DLL", validates the importer is good, populates the passed parameters with 
 // the plugin information.

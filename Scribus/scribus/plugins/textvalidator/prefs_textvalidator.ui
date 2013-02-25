@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>410</height>
+    <width>646</width>
+    <height>513</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,6 +46,55 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
+        <widget class="QCheckBox" name="remEmptyLines">
+         <property name="text">
+          <string>remove empty lines</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="remBreaks">
+         <property name="text">
+          <string>remove line breaks</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="remHyphenation">
+         <property name="text">
+          <string>remove manual hyphenation</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QCheckBox" name="autoQuotesBox">
+           <property name="text">
+            <string>auto-Quotes for</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="autoQuotesLangCombo"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="convertSpaces">
+         <property name="text">
+          <string>convert fixed spaces to normal</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="convertTabs">
+         <property name="text">
+          <string>convert tabs to spaces</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="remSpacesGroupBox">
          <property name="title">
           <string>Remove Spaces</string>
@@ -75,6 +124,13 @@
           <item>
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="0">
+             <widget class="QCheckBox" name="remSpacesBefore">
+              <property name="text">
+               <string>before:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
              <widget class="QCheckBox" name="remSpacesAfter">
               <property name="text">
                <string>after:</string>
@@ -82,49 +138,14 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="remSpacesAfterChars"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="remSpacesBefore">
-              <property name="text">
-               <string>before:</string>
-              </property>
-             </widget>
+             <widget class="QLineEdit" name="remSpacesBeforeChars"/>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="remSpacesBeforeChars"/>
+             <widget class="QLineEdit" name="remSpacesAfterChars"/>
             </item>
            </layout>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="convertSpaces">
-         <property name="text">
-          <string>convert fixed spaces to normal</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="remEmptyLines">
-         <property name="text">
-          <string>remove empty lines</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="remHyphenation">
-         <property name="text">
-          <string>remove manual hyphenation</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="remBreaks">
-         <property name="text">
-          <string>remove line breaks</string>
-         </property>
         </widget>
        </item>
        <item>
@@ -318,119 +339,124 @@
             </item>
            </layout>
           </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="replaceGroup">
+         <property name="title">
+          <string>Replace Strings</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout4">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QLabel" name="charlabel4">
+             <widget class="QCheckBox" name="replace1">
               <property name="text">
-               <string>Char:</string>
+               <string/>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="char4">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>25</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="maxLength">
-               <number>1</number>
-              </property>
-             </widget>
+             <widget class="QLineEdit" name="replaceSource1"/>
             </item>
             <item>
-             <widget class="QLabel" name="before4">
+             <widget class="QLabel" name="with1">
               <property name="text">
-               <string>before</string>
+               <string>with</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="remCharsBeforeChars4"/>
-            </item>
-            <item>
-             <widget class="QLabel" name="after4">
-              <property name="text">
-               <string>after</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="remCharsAfterChars4"/>
+             <widget class="QLineEdit" name="replaceTarget1"/>
             </item>
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout5">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QLabel" name="charlabel5">
+             <widget class="QCheckBox" name="replace2">
               <property name="text">
-               <string>Char:</string>
+               <string/>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="char5">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>25</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="maxLength">
-               <number>1</number>
-              </property>
-             </widget>
+             <widget class="QLineEdit" name="replaceSource2"/>
             </item>
             <item>
-             <widget class="QLabel" name="before5">
+             <widget class="QLabel" name="with2">
               <property name="text">
-               <string>before</string>
+               <string>with</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="remCharsBeforeChars5"/>
+             <widget class="QLineEdit" name="replaceTarget2"/>
             </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="QLabel" name="after5">
+             <widget class="QCheckBox" name="replace3">
               <property name="text">
-               <string>after</string>
+               <string/>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="remCharsAfterChars5"/>
+             <widget class="QLineEdit" name="replaceSource3"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="with3">
+              <property name="text">
+               <string>with</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="replaceTarget3"/>
             </item>
            </layout>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="ensureSpacesGroup">
+         <property name="title">
+          <string>Ensure space exists</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="ensureSpacesBefore">
+            <property name="text">
+             <string>before chars:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="ensureSpacesBeforeChars"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="ensureSpacesAfter">
+            <property name="text">
+             <string>after chars:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="ensureSpacesAfterChars"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="shortWordsBox">
+         <property name="text">
+          <string>run Short-Words plugin</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -447,6 +473,24 @@
         </spacer>
        </item>
       </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QCheckBox" name="runOnImportBox">
+       <property name="text">
+        <string>run Text Validator on importing text from file</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

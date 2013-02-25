@@ -95,6 +95,15 @@ bool TextValidator::newPrefsPanelWidget(QWidget* parent, Prefs_Pane*& panel, QSt
 	return true;
 }
 
+int TextValidator::validateItem(ScribusDoc* doc, PageItem *item)
+{
+	TextValidatorImpl *tvPluginImpl = new TextValidatorImpl(doc);
+	Q_CHECK_PTR(tvPluginImpl);
+	int result = tvPluginImpl->validateItemText(item, true);
+	delete tvPluginImpl;
+	return result;
+}
+
 // Low level plugin API
 int textvalidator_getPluginAPIVersion()
 {

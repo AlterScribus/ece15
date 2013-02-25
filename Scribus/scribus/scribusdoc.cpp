@@ -5631,7 +5631,7 @@ int ScribusDoc::itemAddUserFrame(InsertAFrameData &iafData)
 				{
 					gtGetText* gt = new gtGetText(this);
 					if (iafData.impsetup.runDialog)
-						gt->launchImporter(iafData.impsetup.importer, iafData.impsetup.filename, iafData.impsetup.textOnly, iafData.impsetup.showImportSettings, iafData.impsetup.encoding, true, currItem);
+						gt->launchImporter(iafData.impsetup.importer, iafData.impsetup.filename, iafData.impsetup.textOnly, iafData.impsetup.showImportSettings, iafData.impsetup.runTextValidator, iafData.impsetup.encoding, true, currItem);
 					delete gt;
 				}
 				prevItem=currItem;

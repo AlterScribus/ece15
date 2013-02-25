@@ -216,7 +216,9 @@ INCLUDEPATH += . \
                scribus/plugins/tools/spellcheck \
                scribus/plugins/tools/subdivide \
                scribus/plugins/tools/2geomtools/meshdistortion \
-               scribus/plugins/tools/2geomtools/pathalongpath
+               scribus/plugins/tools/2geomtools/pathalongpath \
+/usr/include \
+/usr/include/python2.7
 
 # Input
 HEADERS += scribus/actionmanager.h \

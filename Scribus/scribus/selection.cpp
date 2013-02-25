@@ -204,7 +204,8 @@ bool Selection::addItem(PageItem *item, bool ignoreGUI)
 			m_sigSelectionChanged = true;
 			m_sigSelectionIsMultiple = true;
 		}
-		sendSignals();
+		if (!ignoreGUI)
+			sendSignals();
 		return true;
 	}
 	return false;

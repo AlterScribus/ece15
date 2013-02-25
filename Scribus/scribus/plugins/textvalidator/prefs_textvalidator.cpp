@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QMessageBox>
 
+#include "pluginmanager.h"
 #include "prefs_textvalidator.h"
 #include "prefsstructs.h"
 #include <prefsfile.h>
@@ -19,11 +20,17 @@ Prefs_TextValidator::Prefs_TextValidator(QWidget* parent)
 	: Prefs_Pane(parent)
 {
 	setupUi(this);
-    readPrefs();
 	languageChange();
-
+	
 	// defaults
 	saveButton->setEnabled(false);
+	//check if Shrt Words plugin is enabled
+	shortWordsBox->setEnabled(PluginManager::instance().DLLexists("scribusshortwords"));
+	QStringList langs;
+	langs <<"af"<<"be"<<"ch"<<"cs"<<"de"<<"en"<<"es"<<"et"<<"fi"<<"fr"<<"hu"<<"is"<<"lt"<<"mk"<<"nl"<<"pl"<<"ru"<<"se"<<"sk"<<"sl"<<"sq"<<"uk";
+	autoQuotesLangCombo->addItems(langs);
+
+	readPrefs();
 
 	// signals
 	connect(saveButton, SIGNAL(clicked()), this, SLOT(saveButton_pressed()));
@@ -32,13 +39,13 @@ Prefs_TextValidator::Prefs_TextValidator(QWidget* parent)
 
 Prefs_TextValidator::~Prefs_TextValidator()
 {
-    savePrefs();
+	savePrefs();
 }
 
 void Prefs_TextValidator::languageChange()
 {
 	remSpacesGroupBox->setTitle(tr("Remove Spaces"));
-	remSpacesAfter->setText(tr("afterChars"));
+	remSpacesAfter->setText(tr("after Chars"));
 	remSpacesBefore->setText(tr("before Chars"));
 	remEmptyLines->setText(tr("remove empty lines"));
 	remHyphenation->setText(tr("remove manual hyphenation"));
@@ -48,8 +55,16 @@ void Prefs_TextValidator::languageChange()
 	charlabel1->setText(tr("Remove") + ":");
 	charlabel2->setText(tr("Remove") + ":");
 	charlabel3->setText(tr("Remove") + ":");
-	charlabel4->setText(tr("Remove") + ":");
-	charlabel5->setText(tr("Remove") + ":");
+	replaceGroup->setTitle(tr("Replace Strings"));
+	with1->setText(tr("with"));
+	with2->setText(tr("with"));
+	with3->setText(tr("with"));
+	autoQuotesBox->setText(tr("auto-Quotes for language"));
+	shortWordsBox->setText(tr("Run Short-Words plugin"));
+	runOnImportBox->setText(tr("run Text Validator on importing text from file"));
+	ensureSpacesGroup->setTitle(tr("Ensure spaces existing"));
+	ensureSpacesBefore->setText(tr("before Chars"));
+	ensureSpacesAfter->setText(tr("after Chars"));
 }
 
 void Prefs_TextValidator::restoreDefaults(struct ApplicationPrefs *prefsData)
@@ -83,7 +98,9 @@ void Prefs_TextValidator::readPrefs()
 {
 	PrefsFile* prefsFile = PrefsManager::instance()->applicationPrefsFile();
 	PrefsContext *tvPluginPrefs = prefsFile->getPluginContext("TextValidatorPlugin");
-	//	runShortWords = tvPluginPrefs->getBool("runShortWords", false);
+	shortWordsBox->setChecked(tvPluginPrefs->getBool("runShortWords", false));
+	autoQuotesBox->setChecked(tvPluginPrefs->getBool("runAutoQuotes", false));
+	autoQuotesLangCombo->setCurrentIndex(autoQuotesLangCombo->findText(tvPluginPrefs->get("autoQuotesLang","en")));
 	remMultiplySpaces->setChecked(tvPluginPrefs->getBool("removeMultiSpaces", true));
 	remSpacesBegin->setChecked(tvPluginPrefs->getBool("removeSpacesParaStart", true));
 	remSpacesEnd->setChecked(tvPluginPrefs->getBool("removeSpacesParaEnd", true));
@@ -91,20 +108,26 @@ void Prefs_TextValidator::readPrefs()
 	remBreaks->setChecked(tvPluginPrefs->getBool("removeBreaks", true));
 	remHyphenation->setChecked(tvPluginPrefs->getBool("removeHyphenation", false));
 	convertSpaces->setChecked(tvPluginPrefs->getBool("convertSpacesToNormal", false));
-    remSpacesBeforeChars->setText(tvPluginPrefs->get("removeSpacesBeforeChars", ",.:;)"));
-    remSpacesBefore->setChecked(tvPluginPrefs->getBool("removeSpacesBefore", true));
-    remSpacesAfterChars->setText(tvPluginPrefs->get("removeSpacesAfterChars", "("));
-    remSpacesAfter->setChecked(tvPluginPrefs->getBool("removeSpacesAfter", true));
-
-	QList<QLineEdit*> charsLE;
-	charsLE << char1 << char2 << char3 << char4 << char5;
-	QList<QLineEdit*> beforeLE;
-	beforeLE << remCharsBeforeChars1 << remCharsBeforeChars2 << remCharsBeforeChars3 << remCharsBeforeChars4 << remCharsBeforeChars5;
-	QList<QLineEdit*> afterLE;
-	afterLE << remCharsAfterChars1 << remCharsAfterChars2 << remCharsAfterChars3 << remCharsAfterChars4 << remCharsAfterChars5;
+	convertTabs->setChecked(tvPluginPrefs->getBool("convertTabs", false));
+	remSpacesBeforeChars->setText(tvPluginPrefs->get("removeSpacesBeforeChars", ",.:;)"));
+	remSpacesBefore->setChecked(tvPluginPrefs->getBool("removeSpacesBefore", true));
+	remSpacesAfterChars->setText(tvPluginPrefs->get("removeSpacesAfterChars", "("));
+	remSpacesAfter->setChecked(tvPluginPrefs->getBool("removeSpacesAfter", true));
+	ensureSpacesBeforeChars->setText(tvPluginPrefs->get("ensureSpacesBeforeChars", "("));
+	ensureSpacesBefore->setChecked(tvPluginPrefs->getBool("ensureSpacesBefore", true));
+	ensureSpacesAfterChars->setText(tvPluginPrefs->get("ensureSpacesAfterChars", ")"));
+	ensureSpacesAfter->setChecked(tvPluginPrefs->getBool("ensureSpacesAfter", true));
+	runOnImportBox->setChecked(tvPluginPrefs->getBool("runOnImport", true));
+	
 	QString charsKeys = tvPluginPrefs->get("removeCharsKeys", "");
 	if (!charsKeys.isEmpty())
 	{
+		QList<QLineEdit*> charsLE;
+		charsLE << char1 << char2 << char3;
+		QList<QLineEdit*> beforeLE;
+		beforeLE << remCharsBeforeChars1 << remCharsBeforeChars2 << remCharsBeforeChars3;
+		QList<QLineEdit*> afterLE;
+		afterLE << remCharsAfterChars1 << remCharsAfterChars2 << remCharsAfterChars3;
 		for (int i = 0;  i < charsKeys.length(); ++i)
 		{
 			QChar ch = charsKeys.at(i);
@@ -127,26 +150,35 @@ void Prefs_TextValidator::savePrefs()
 	tvPluginPrefs->set("removeSpacesParaEnd", remSpacesEnd->isChecked());
 	tvPluginPrefs->set("removeEmptyLines", remEmptyLines->isChecked());
 	tvPluginPrefs->set("removeBreaks", remBreaks->isChecked());
-    tvPluginPrefs->set("removeHyphenation", remHyphenation->isChecked());
+	tvPluginPrefs->set("removeHyphenation", remHyphenation->isChecked());
 	tvPluginPrefs->set("convertSpacesToNormal", convertSpaces->isChecked());
-    tvPluginPrefs->set("removeSpacesBefore", remSpacesBefore->isChecked());
-    tvPluginPrefs->set("removeSpacesAfter", remSpacesAfter->isChecked());
-    tvPluginPrefs->set("removeSpacesBeforeChars", remSpacesBeforeChars->text());
-    tvPluginPrefs->set("removeSpacesAfterChars", remSpacesAfterChars->text());
-
+	tvPluginPrefs->set("removeSpacesBefore", remSpacesBefore->isChecked());
+	tvPluginPrefs->set("removeSpacesAfter", remSpacesAfter->isChecked());
+	tvPluginPrefs->set("removeSpacesBeforeChars", remSpacesBeforeChars->text());
+	tvPluginPrefs->set("removeSpacesAfterChars", remSpacesAfterChars->text());
+	tvPluginPrefs->set("ensureSpacesBefore", ensureSpacesBefore->isChecked());
+	tvPluginPrefs->set("ensureSpacesAfter", ensureSpacesAfter->isChecked());
+	tvPluginPrefs->set("ensureSpacesBeforeChars", ensureSpacesBeforeChars->text());
+	tvPluginPrefs->set("ensureSpacesAfterChars", ensureSpacesAfterChars->text());
+	tvPluginPrefs->set("runShortWords", shortWordsBox->isEnabled() && shortWordsBox->isChecked());
+	tvPluginPrefs->set("runAutoQuotes", autoQuotesBox->isChecked());
+	tvPluginPrefs->set("autoQuotesLang", autoQuotesLangCombo->currentText());
+	tvPluginPrefs->set("runOnImport", runOnImportBox->isChecked());
+	tvPluginPrefs->set("convertTabs", convertTabs->isChecked());
+	
 	QList<QLineEdit*> charsLE;
-	charsLE << char1 << char2 << char3 << char4 << char5;
+	charsLE << char1 << char2 << char3;
 	QList<QLineEdit*> beforeLE;
-	beforeLE << remCharsBeforeChars1 << remCharsBeforeChars2 << remCharsBeforeChars3 << remCharsBeforeChars4 << remCharsBeforeChars5;
+	beforeLE << remCharsBeforeChars1 << remCharsBeforeChars2 << remCharsBeforeChars3;
 	QList<QLineEdit*> afterLE;
-	afterLE << remCharsAfterChars1 << remCharsAfterChars2 << remCharsAfterChars3 << remCharsAfterChars4 << remCharsAfterChars5;
+	afterLE << remCharsAfterChars1 << remCharsAfterChars2 << remCharsAfterChars3;
 	QString charsKeys = "";
 	for (int i = 0;  i < charsLE.length(); ++i)
 	{
-        QString chstr = charsLE.at(i)->text().trimmed();
+		QString chstr = charsLE.at(i)->text().trimmed();
 		if (chstr.isEmpty())
 			chstr = " ";
-        charsKeys.append(chstr.at(0));
+		charsKeys.append(chstr.at(0));
 		charsLE.at(i)->setText(charsKeys.at(i));
 		tvPluginPrefs->set("RCB_" + QString::number(i), beforeLE.at(i)->text());
 		tvPluginPrefs->set("RCA_" + QString::number(i), afterLE.at(i)->text());

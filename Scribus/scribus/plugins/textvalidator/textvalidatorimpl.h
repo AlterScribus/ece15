@@ -21,28 +21,38 @@ class ScribusDoc;
 class TextValidatorImpl : public QObject
 {
 	Q_OBJECT
-	public:
-		TextValidatorImpl(ScribusDoc* doc);
-		~TextValidatorImpl() {}
-		bool run();
-		
-	private:
-		ScribusDoc* m_Doc;
-		int validateItemText(PageItem* item); //validate text and retruns number of changes
-		bool removeMultiSpaces;
-//		bool runShortWords;
-		bool removeSpacesParaStart;
-		bool removeSpacesParaEnd;
-		bool removeEmptyLines;
-		bool removeBreaks;
-		bool removeHyphenation;
-		bool convertSpacesToNormal;
-        QString removeSpacesBeforeChars;
-        QString removeSpacesAfterChars;
-        bool removeSpacesBefore;
-        bool removeSpacesAfter;
-        QMap<QChar, QString> removeCharBefore;
-		QMap<QChar, QString> removeCharAfter;
+public:
+	TextValidatorImpl(ScribusDoc* doc);
+	~TextValidatorImpl() {}
+	bool run();
+	
+	int setAutoQuotes();
+	int validateItemText(PageItem* item, bool force= false); //validate text and retruns number of changes
+
+private:
+	ScribusDoc* m_Doc;
+	bool removeMultiSpaces;
+	bool runShortWords;
+	bool runAutoQuotes;
+	bool removeSpacesParaStart;
+	bool removeSpacesParaEnd;
+	bool removeEmptyLines;
+	bool removeBreaks;
+	bool removeHyphenation;
+	bool convertSpacesToNormal;
+	bool convertTabs;
+	QString removeSpacesBeforeChars;
+	QString removeSpacesAfterChars;
+	bool removeSpacesBefore;
+	bool removeSpacesAfter;
+	QString ensureSpacesBeforeChars;
+	QString ensureSpacesAfterChars;
+	bool ensureSpacesBefore;
+	bool ensureSpacesAfter;
+	QMap<QChar, QString> removeCharBefore;
+	QMap<QChar, QString> removeCharAfter;
+	QString autoQuotesLang;
+	QChar lead_double, follow_double, lead_single, follow_single;
 };
 
 #endif
