@@ -450,7 +450,6 @@ public slots:
 	void objectAttributes();
 	void getImageInfo();
 	void generateTableOfContents();
-	void validateText();
 	void updateDocument();
 	void clearDocument();
 	void setClearAttributes();

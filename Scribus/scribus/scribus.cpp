@@ -1041,7 +1041,6 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItem(scrActions["extrasDeHyphenateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasGenerateTableOfContents"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasUpdateDocument"], "Extras", false);
-	scrMenuMgr->addMenuItem(scrActions["extrasValidateText"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["itemUpdateMarks"], "Extras", true);
 	scrMenuMgr->addMenuItem(scrActions["extrasClearDocument"], "Extras", false);
 	scrMenuMgr->addMenuItem(scrActions["extrasSetClearAttributes"], "Extras", false);
@@ -2327,7 +2326,6 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 	scrActions["extrasClearDocument"]->setEnabled(true);
 	scrActions["extrasSetClearAttributes"]->setEnabled(true);
 	scrActions["extrasDoTesting"]->setEnabled(true);
-	scrActions["extrasValidateText"]->setEnabled(true);
 	if (!m_Doc->masterPageMode())
 		pagePalette->Rebuild();
 	outlinePalette->setDoc(m_Doc);
@@ -8103,7 +8101,6 @@ void ScribusMainWindow::slotDocSetup()
 		scrActions["extrasClearDocument"]->setEnabled(true);
 		scrActions["extrasSetClearAttributes"]->setEnabled(true);
 		scrActions["extrasDoTesting"]->setEnabled(true);
-		scrActions["extrasValidateText"]->setEnabled(true);
 		view->cmsToolbarButton->setChecked(m_Doc->HasCMS);
 		//doc emits changed() via this
 		setStatusBarInfoText( tr("Reform Pages"));
@@ -10053,18 +10050,6 @@ void ScribusMainWindow::generateTableOfContents()
 {
 	if (HaveDoc)
 		tocGenerator->generateDefault();
-}
-
-void ScribusMainWindow::validateText()
-{
-	if (!HaveDoc)
-		return;
-	foreach (PageItem* item, m_Doc->DocItems)
-	{
-		if (item->itemText.length() >0)
-			item->validateItemText();
-	}
-	slotDocCh();
 }
 
 void ScribusMainWindow::updateDocument()

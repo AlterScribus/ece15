@@ -425,18 +425,6 @@ void PrefsManager::initDefaults()
 	appPrefs.verifierPrefs.curCheckProfile = CommonStrings::PostScript;
 	appPrefs.verifierPrefs.showPagesWithoutErrors=false;
 	appPrefs.verifierPrefs.showNonPrintingLayerErrors=false;
-	appPrefs.textValidatorPrefs.convertSpacesToNormal = false;
-	appPrefs.textValidatorPrefs.removeCharAfter.clear();
-	appPrefs.textValidatorPrefs.removeCharBefore.clear();
-	appPrefs.textValidatorPrefs.removeEmptyLines = true;
-	appPrefs.textValidatorPrefs.removeBreaks = false;
-	appPrefs.textValidatorPrefs.removeHyphenation = false;
-	appPrefs.textValidatorPrefs.removeMultiSpaces = true;
-	appPrefs.textValidatorPrefs.removeSpaceAfter = "(";
-	appPrefs.textValidatorPrefs.removeSpaceBefore = "),.?!";
-	appPrefs.textValidatorPrefs.removeSpacesParaEnd = true;
-	appPrefs.textValidatorPrefs.removeSpacesParaStart = true;
-	appPrefs.textValidatorPrefs.runShortWords = true;
 	appPrefs.pdfPrefs.Thumbnails = false;
 	appPrefs.pdfPrefs.Articles = false;
 	appPrefs.pdfPrefs.useLayers = false;

@@ -60,22 +60,6 @@ struct VerifierPrefs
 	QString curCheckProfile;
 };
 
-struct TextValidatorPrefs
-{
-	bool removeMultiSpaces;
-	bool runShortWords;
-	bool removeSpacesParaStart;
-	bool removeSpacesParaEnd;
-	bool removeEmptyLines;
-	bool removeBreaks;
-	bool removeHyphenation;
-	bool convertSpacesToNormal;
-	QString removeSpaceBefore;
-	QString removeSpaceAfter;
-	QMap<QChar, QString> removeCharBefore;
-	QMap<QChar, QString> removeCharAfter;
-};
-
 struct TypoPrefs
 {
 	int valueSuperScript; //! Displacement of superscript
@@ -465,7 +449,6 @@ struct ApplicationPrefs
 	TypoPrefs typoPrefs;
 	UIPrefs uiPrefs;
 	VerifierPrefs verifierPrefs;
-	TextValidatorPrefs textValidatorPrefs;
 
 	QList<ArrowDesc> arrowStyles;
 	QHash<QString, VGradient> defaultGradients;
