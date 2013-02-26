@@ -66,6 +66,18 @@ TextValidatorImpl::TextValidatorImpl(ScribusDoc* doc) : QObject(0)
 			removeCharAfter.insert(ch, tvPluginPrefs->get("RCA_" + QString(ch), ""));
 		}
 	}
+	for (int i = 0; i < 3; ++i)
+	{
+		if (tvPluginPrefs->getBool("replace" + QString::number(i), false))
+		{
+			QString source = tvPluginPrefs->get("replaceSource" + QString::number(i));
+			if (!source.isEmpty())
+			{
+				QString target = tvPluginPrefs->get("replaceTarget" + QString::number(i));
+				replaceStrings.insert(source, target);
+			}
+		}
+	}
 }
 
 bool TextValidatorImpl::run()
@@ -186,6 +198,37 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 			item->itemText.replaceChar(i, ' ');
 			++count;
 			ch = ' ';
+		}
+		if (!replaceStrings.isEmpty())
+		{
+			foreach(QString source, replaceStrings.keys())
+			{
+				if (ch == source.at(0))
+				{
+					bool doReplace = true;
+					int len = source.length();
+					if (i + len >= item->itemText.length())
+						break;
+					if (len > 1)
+					{
+						for (int j = 1; j < len; ++j)
+						{
+							if (item->itemText.text(j+i) != source.at(j))
+							{
+								doReplace = false;
+								break;
+							}
+						}
+					}
+					if (doReplace)
+					{
+						item->itemText.removeChars(i, len);
+						item->itemText.insertChars(i, replaceStrings.value(source), true);
+						++count;
+						break;
+					}
+				}
+			}
 		}
 		if (ch.isSpace())
 		{

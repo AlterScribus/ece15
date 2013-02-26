@@ -139,6 +139,19 @@ void Prefs_TextValidator::readPrefs()
 			}
 		}
 	}
+	QList<QCheckBox*> replacesCB;
+	replacesCB << replace1 << replace2 << replace3;
+	QList<QLineEdit*> strSourcesLE;
+	strSourcesLE << replaceSource1 << replaceSource2 << replaceSource3;
+	QList<QLineEdit*> strTargetsLE;
+	strTargetsLE << replaceTarget1 << replaceTarget2 << replaceTarget3;
+	for (int i = 0; i < 3; ++i)
+	{
+		replacesCB.at(i)->setChecked(tvPluginPrefs->getBool("replace" + QString::number(i), false));
+		strSourcesLE.at(i)->setText(tvPluginPrefs->get("replaceSource" + QString::number(i)));
+		strTargetsLE.at(i)->setText(tvPluginPrefs->get("replaceTarget" + QString::number(i)));
+	}
+	
 }
 
 void Prefs_TextValidator::savePrefs()
@@ -183,5 +196,18 @@ void Prefs_TextValidator::savePrefs()
 		tvPluginPrefs->set("RCB_" + QString::number(i), beforeLE.at(i)->text());
 		tvPluginPrefs->set("RCA_" + QString::number(i), afterLE.at(i)->text());
 	}
+	QList<QCheckBox*> replacesCB;
+	replacesCB << replace1 << replace2 << replace3;
+	QList<QLineEdit*> strSourcesLE;
+	strSourcesLE << replaceSource1 << replaceSource2 << replaceSource3;
+	QList<QLineEdit*> strTargetsLE;
+	strTargetsLE << replaceTarget1 << replaceTarget2 << replaceTarget3;
+	for (int i = 0; i < 3; ++i)
+	{
+		tvPluginPrefs->set("replace" + QString::number(i), replacesCB.at(i)->isChecked());
+		tvPluginPrefs->set("replaceSource" + QString::number(i), strSourcesLE.at(i)->text());
+		tvPluginPrefs->set("replaceTarget" + QString::number(i), strTargetsLE.at(i)->text());
+	}
+
 	tvPluginPrefs->set("removeCharsKeys", charsKeys);
 }

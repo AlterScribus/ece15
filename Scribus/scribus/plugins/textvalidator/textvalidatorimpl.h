@@ -51,6 +51,7 @@ private:
 	bool ensureSpacesAfter;
 	QMap<QChar, QString> removeCharBefore;
 	QMap<QChar, QString> removeCharAfter;
+	QMap<QString, QString> replaceStrings;
 	QString autoQuotesLang;
 	QChar lead_double, follow_double, lead_single, follow_single;
 };
