@@ -64,6 +64,11 @@ bool SpecialChars::isBreak(QChar c, bool includeColBreak)
 			|| (includeColBreak && c == COLBREAK));
 }
 
+bool SpecialChars::isRealSpace(QChar c)
+{
+	return (c.isSpace() && !(isBreak(c) || c == TAB));
+}
+
 int SpecialChars::getCJKAttr(QChar c)
 {
 	static uchar attr_3000[0x100] = {

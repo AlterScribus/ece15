@@ -32,23 +32,13 @@ public:
 	/*! \brief Writes config into the ui cfg file */
 	~TVConfig(){}
 
-	/*! \brief Id of the UI radiobutton  */
-	uint range;
-	//*! \brief UI checkbox */
-	//uint userConfig;
-	bool useStyle;
-	int currentLanguage;
-
 	/*! \brief Save cfg. */
 	void saveConfig();
-
+	uint range;
+	
 private:
 	/*! \brief Configuration structure */
 	PrefsContext* prefs;
-	/*! \brief getShortWords use this one. for each case from GUI select the right config file (or both).
-	\param lang language
-	\param filename configuration file.
-	\retval QStringList parsed SW. Each SW in one string item. */
 };
 
 #endif

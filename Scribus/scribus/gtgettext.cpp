@@ -283,8 +283,7 @@ void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
 	//run Text Validator if is set in Prefs
 	if (runTextValidator)
 	{
-		QString pluginName("textvalidator");
-		TextValidator* tvPlug = (TextValidator*) PluginManager::instance().getPlugin(pluginName, false);
+		TextValidator* tvPlug = (TextValidator*) PluginManager::instance().getPlugin("textvalidator", false);
 		if (tvPlug)
 			tvPlug->validateItem(m_Doc, importItem);
 	}

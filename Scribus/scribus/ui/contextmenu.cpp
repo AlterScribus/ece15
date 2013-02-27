@@ -25,6 +25,7 @@
 #include "contextmenu.h"
 #include "prefsmanager.h"
 #include "pageitem_textframe.h"
+#include "pluginmanager.h"
 #include "scmimedata.h"
 #include "scraction.h"
 #include "scrapbookpalette.h"
@@ -484,6 +485,11 @@ void ContextMenu::createMenuItems_Selection()
 	addSeparator();
 	addAction(m_AP->scrActions["toolsProperties"]);
 	//-->
+	if (PluginManager::instance().DLLexists("textvalidator", false))
+	{
+		addSeparator();
+		addAction(m_AP->scrActions["textvalidator"]);
+	}
 }
 
 void ContextMenu::createMenuItems_NoSelection(double mx, double my)

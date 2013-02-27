@@ -64,7 +64,7 @@ int TVDialog::actionSelected()
 		return 1;
 	else if (allRadio->isChecked())
 		return 2;
-	return 0;
+	return -1;
 }
 
 void TVDialog::savePrefs()
@@ -80,7 +80,7 @@ void TVDialog::savePrefs()
 void TVDialog::languageChange()
 {
 	setWindowTitle( tr("Text Validator", "text validator plugin"));
-	buttonGroup->setTitle( tr("Validate text in:", "text validator plugin"));
+	radioGroup->setTitle( tr("Validate text", "text validator plugin"));
 	frameRadio->setText( tr("&Selected Frames", "text validator plugin"));
 	pageRadio->setText( tr("Active &Page", "text validator plugin"));
 	allRadio->setText( tr("&All Items", "text validator plugin"));
@@ -105,7 +105,7 @@ void TVDialog::selectAction(int aAction)
 {
 	if (aAction!=0 && aAction!=1 && aAction!=2)
 		aAction = 0;
-	if (aAction == 0)
+	if (aAction == 0 && frameRadio->isEnabled())
 		frameRadio->setChecked(true);
 	else if (aAction == 1)
 		pageRadio->setChecked(true);

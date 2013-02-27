@@ -105,7 +105,7 @@ void Prefs_TextValidator::readPrefs()
 	remSpacesBegin->setChecked(tvPluginPrefs->getBool("removeSpacesParaStart", true));
 	remSpacesEnd->setChecked(tvPluginPrefs->getBool("removeSpacesParaEnd", true));
 	remEmptyLines->setChecked(tvPluginPrefs->getBool("removeEmptyLines", true));
-	remBreaks->setChecked(tvPluginPrefs->getBool("removeBreaks", true));
+	remBreaks->setChecked(tvPluginPrefs->getBool("removeBreaks", false));
 	remHyphenation->setChecked(tvPluginPrefs->getBool("removeHyphenation", false));
 	convertSpaces->setChecked(tvPluginPrefs->getBool("convertSpacesToNormal", false));
 	convertTabs->setChecked(tvPluginPrefs->getBool("convertTabs", false));
@@ -117,7 +117,7 @@ void Prefs_TextValidator::readPrefs()
 	ensureSpacesBefore->setChecked(tvPluginPrefs->getBool("ensureSpacesBefore", true));
 	ensureSpacesAfterChars->setText(tvPluginPrefs->get("ensureSpacesAfterChars", ")"));
 	ensureSpacesAfter->setChecked(tvPluginPrefs->getBool("ensureSpacesAfter", true));
-	runOnImportBox->setChecked(tvPluginPrefs->getBool("runOnImport", true));
+	runOnImportBox->setChecked(tvPluginPrefs->getBool("runOnImport", false));
 	
 	QString charsKeys = tvPluginPrefs->get("removeCharsKeys", "");
 	if (!charsKeys.isEmpty())

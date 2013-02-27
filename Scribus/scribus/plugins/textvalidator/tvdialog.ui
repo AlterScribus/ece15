@@ -14,33 +14,23 @@
    <string>Short Words</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <item row="2" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
-    <widget class="QGroupBox" name="buttonGroup">
+    <widget class="QGroupBox" name="radioGroup">
      <property name="title">
-      <string>Valdate Text in</string>
+      <string>Valdate Text</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <widget class="QRadioButton" name="frameRadio">
         <property name="text">
-         <string>&amp;Selected Frames</string>
+         <string>in &amp;Selected Frames</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QRadioButton" name="pageRadio">
         <property name="text">
-         <string>Active &amp;Page</string>
+         <string>on Active &amp;Page</string>
         </property>
        </widget>
       </item>
@@ -66,6 +56,27 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="3" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="Msg">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

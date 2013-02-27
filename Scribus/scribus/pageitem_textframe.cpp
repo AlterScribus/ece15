@@ -5456,7 +5456,6 @@ void PageItem_TextFrame::applicableActions(QStringList & actionList)
 	{
 		actionList << "editClearContents";
 		actionList << "itemAdjustFrameHeightToText";
-		actionList << "itemClearPStyle";
 	}
 }
 

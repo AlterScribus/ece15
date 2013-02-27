@@ -36,7 +36,7 @@ TextValidatorImpl::TextValidatorImpl(ScribusDoc* doc) : QObject(0)
 	removeSpacesParaStart = tvPluginPrefs->getBool("removeSpacesParaStart", true);
 	removeSpacesParaEnd = tvPluginPrefs->getBool("removeSpacesParaEnd", true);
 	removeEmptyLines = tvPluginPrefs->getBool("removeEmptyLines", true);
-	removeBreaks = tvPluginPrefs->getBool("removeBreaks", true);
+	removeBreaks = tvPluginPrefs->getBool("removeBreaks", false);
 	removeHyphenation = tvPluginPrefs->getBool("removeHyphenation", false);
 	convertSpacesToNormal = tvPluginPrefs->getBool("convertSpacesToNormal", false);
 	convertTabs = tvPluginPrefs->getBool("convertTabs", false);
@@ -85,23 +85,25 @@ bool TextValidatorImpl::run()
 	if (m_Doc==NULL)
 		return false;
 	TVDialog *dlg = new TVDialog();
+	uint docSelectionCount = m_Doc->m_Selection->count();
+	if (docSelectionCount == 0)
+		dlg->frameRadio->setEnabled(false);
 	if (dlg->exec() == QDialog::Accepted) {
-		m_Doc->view()->setUpdatesEnabled(false);
+//		m_Doc->view()->setUpdatesEnabled(false);
 		m_Doc->blockSignals(true);
 		QApplication::changeOverrideCursor(QCursor(Qt::WaitCursor));
 		m_Doc->scMW()->setStatusBarInfoText(QObject::tr("Text Validator processing. Wait please...", "text validator plugin"));
 		int res = 0;
-		Selection tmpSelection(m_Doc->m_Selection);
 		switch (dlg->actionSelected()) {
 			case 0: //selection
 			{
-				uint docSelectionCount = m_Doc->m_Selection->count();
+				
 				if (docSelectionCount != 0)
 				{
 					m_Doc->scMW()->mainWindowProgressBar->setMaximum(docSelectionCount);
 					for (uint i=0; i < docSelectionCount; ++i)
 					{
-						PageItem * item = tmpSelection.itemAt(i);
+						PageItem * item = m_Doc->m_Selection->itemAt(i);
 						m_Doc->scMW()->mainWindowProgressBar->setValue(i);
 						res += validateItemText(item);
 					}
@@ -146,9 +148,7 @@ bool TextValidatorImpl::run()
 			break;
 		}
 		//revert selection back
-		*(m_Doc->m_Selection) = tmpSelection;
 		m_Doc->blockSignals(false);
-		m_Doc->view()->setUpdatesEnabled(true);
 		if (res > 0)
 		{
 			m_Doc->changed();
@@ -165,10 +165,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 {
 	if (item == NULL || item->itemText.length() == 0 || (item->invalid && !force))
 		return 0;
-	
-	m_Doc->m_Selection->clear();
-	m_Doc->m_Selection->addItem(item, true);
-	
+
 	int count = 0;
 	bool firstInPara = true;
 	
@@ -230,7 +227,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 				}
 			}
 		}
-		if (ch.isSpace())
+		if (SpecialChars::isRealSpace(ch))
 		{
 			//spaces at start of paragraph
 			if (removeSpacesParaStart && firstInPara)
@@ -249,7 +246,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 			//if not last character
 			if (next != QChar(0))
 			{
-				if (removeMultiSpaces && next.isSpace() && next != SpecialChars::TAB)
+				if (removeMultiSpaces && SpecialChars::isRealSpace(next))
 				{
 					item->itemText.removeChars(i,1);
 					++count;
@@ -288,7 +285,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 		//remove line breaks
 		else if (removeBreaks && (ch == SpecialChars::LINEBREAK))
 		{
-			if (prev.isSpace() && removeMultiSpaces)
+			if (removeMultiSpaces && SpecialChars::isRealSpace(prev))
 				item->itemText.removeChars(i,1);
 			else
 				item->itemText.replaceChar(i, ' ');
@@ -389,15 +386,22 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 				++count;
 				continue;
 			}
-			if (ensureSpacesBefore && ensureSpacesBeforeChars.contains(ch) && !(prev.isSpace() || SpecialChars::isBreak(ch) || removeSpacesAfterChars.contains(prev)))
+			if (ensureSpacesBefore && ensureSpacesBeforeChars.contains(ch) && !(prev.isSpace() || SpecialChars::isBreak(prev) || removeSpacesAfterChars.contains(prev)))
 			{
 				item->itemText.insertChars(i, " ", true);
 				++count;
 				i = i + 1;
 				continue;
 			}
-			if (ensureSpacesAfter && ensureSpacesAfterChars.contains(ch) && !(next.isSpace() || SpecialChars::isBreak(ch) || removeSpacesBeforeChars.contains(next)))
+			if (ensureSpacesAfter && ensureSpacesAfterChars.contains(ch) && !(next.isSpace() || SpecialChars::isBreak(next) || removeSpacesBeforeChars.contains(next)))
 			{
+				//hack for omit some insertions with numbers or dates
+				if ((ch == '.' || ch == ',' || ch == ':' || ch == '-')
+						&& next.isDigit())
+				{
+					++i;
+					continue;
+				}
 				item->itemText.insertChars(i+1, " ", true);
 				++count;
 				i = i + 1;
@@ -412,6 +416,8 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 		SWParse *parse = new SWParse();
 		parse->lang = ""; // get it from style
 		parse->parseItem(item);
+		count += parse->modify;
+		delete parse;
 	}
 	//invalidate item or whole text chain
 	if (item->isTextFrame())

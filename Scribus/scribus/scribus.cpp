@@ -11773,6 +11773,7 @@ void ScribusMainWindow::checkExternals()
 	}
 	m_Doc->updatePic();
 }
+
 typedef void (ScribusMainWindow::*wskaznik)(void);
 
 void ScribusMainWindow::doTesting()

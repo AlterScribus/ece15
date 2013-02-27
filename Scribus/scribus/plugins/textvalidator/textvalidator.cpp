@@ -29,7 +29,7 @@ void TextValidator::languageChange()
 	// Note that we leave the unused members unset. They'll be initialised
 	// with their default ctors during construction.
 	// Action name
-	m_actionInfo.name = "TextValidator";
+	m_actionInfo.name = "textvalidator";
 	// Action text for menu, including &accel
 	m_actionInfo.text = tr("Text &Validator");
 	// Menu

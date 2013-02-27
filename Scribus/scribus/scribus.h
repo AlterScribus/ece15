@@ -643,8 +643,9 @@ private:
 	bool insertMarkDialog(PageItem_TextFrame* item, MarkType mT, ScItemsState* &is);
 	int m_marksCount; //remember marks count from last call
 
-//for styles shortcuts
+
 public:
+	//for styles shortcuts
 	bool stylesShortcutKeyEvent(const QKeyEvent*);
 	//! \brief check for missing externals files (images for now)
 	void checkExternals();
