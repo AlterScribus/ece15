@@ -1605,8 +1605,8 @@ void PageItem_TextFrame::layout()
 							itemText.applyCharStyle(a, 1, marksStyle);
 						}
 					}
-					else
-						itemText.eraseCharStyle(a, 1, newStyle);
+//					else
+//						itemText.eraseCharStyle(a, 1, newStyle);
 					if (hl->mark->isType(MARKNoteMasterType))
 					{
 						if (nStyle->isSuperscriptInMaster())
@@ -1624,29 +1624,32 @@ void PageItem_TextFrame::layout()
 				}
 			}
 			BulNumMode = false;
-			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
+			if ( ! (hl->hasMark() && hl->mark->isType(MARKNoteFrameType)))
 			{
-				autoLeftIndent = 0.0;
-				style = itemText.paragraphStyle(a);
-				if (style.hasBullet() || style.hasNum())
+				if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
 				{
-					BulNumMode = true;
-					if (hl->mark == NULL || !hl->mark->isType(MARKBullNumType))
+					autoLeftIndent = 0.0;
+					style = itemText.paragraphStyle(a);
+					if (style.hasBullet() || style.hasNum())
 					{
-						BulNumMark* bnMark = new BulNumMark();
-						itemText.insertMark(bnMark,a);
-						a--;
-						itLen = itemText.length();
-						continue;
-					}
-					if (style.hasBullet())
-						hl->mark->setString(style.bulletStr());
-					else if (style.hasNum())
-					{
-						if (hl->mark->getString().isEmpty())
+						BulNumMode = true;
+						if (hl->mark == NULL || !hl->mark->isType(MARKBullNumType))
 						{
-							hl->mark->setString("?");
-							m_Doc->flag_Renumber = true;
+							BulNumMark* bnMark = new BulNumMark();
+							itemText.insertMark(bnMark,a);
+							a--;
+							itLen = itemText.length();
+							continue;
+						}
+						if (style.hasBullet())
+							hl->mark->setString(style.bulletStr());
+						else if (style.hasNum())
+						{
+							if (hl->mark->getString().isEmpty())
+							{
+								hl->mark->setString("?");
+								m_Doc->flag_Renumber = true;
+							}
 						}
 					}
 				}

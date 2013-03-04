@@ -4331,7 +4331,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		ActWin = NULL;
 		newActWin(w->getSubWin());
 		m_Doc->updateNumbers(true);
-		emit UpdateRequest(reqNumUpdate);
 		m_Doc->setCurrentPage(m_Doc->DocPages.at(0));
 		view->cmsToolbarButton->setChecked(m_Doc->HasCMS);
 		view->zoom();
@@ -11145,7 +11144,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 		mrk->OwnPage = currItem->OwnPage;
 		currItem->itemText.insertMark(mrk);
 		currItem->invalidateLayout();
-		currItem->layout();
+//		currItem->layout();
 		if (mrk->getNotePtr()->isEndNote())
 			m_Doc->flag_updateEndNotes = true;
 		m_Doc->regionsChanged()->update(QRectF());

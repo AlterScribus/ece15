@@ -18292,7 +18292,7 @@ void ScribusDoc::updateNotesFramesStyles(NotesStyle *nStyle)
 					{
 						//set back style from master frame
 						newStyle.setParent(item->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
-						newStyle.applyStyle(item->asNoteFrame()->masterFrame()->currentStyle());
+						newStyle.applyStyle(item->asNoteFrame()->masterFrame()->itemText.defaultStyle());
 					}
 					else
 						newStyle.setParent(item->itemText.defaultStyle().parent());

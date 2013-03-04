@@ -265,7 +265,7 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 	if (!note->saxedText().isEmpty())
 		story = desaxeString(m_Doc, note->saxedText());
 	story.insertMark(mrk, 0);
-	story.setDefaultStyle(itemText.defaultStyle());
+//	story.setDefaultStyle(itemText.defaultStyle());
 //	story.applyCharStyle(0, story.length(), itemText.charStyle());
 	if (itemText.length() > 0)
 		itemText.insertChars(itemText.length(), SpecialChars::PARSEP);
