@@ -717,8 +717,6 @@ void ScribusView::leaveEvent(QEvent *e)
 {
 	m_canvasMode->leaveEvent(e);
 	return;
-	if (!m_canvas->m_viewMode.m_MouseButtonPressed)
-		qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 }
 
 void ScribusView::contentsDragEnterEvent(QDragEnterEvent *e)
@@ -1159,7 +1157,6 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 					if (!Doc->leaveDrag)
 					{
 						QMenu *pmen = new QMenu();
-						qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 						pmen->addAction( tr("Copy Here"));
 						QAction* mov = pmen->addAction( tr("Move Here"));
 						pmen->addAction( tr("Cancel"));
@@ -1753,14 +1750,14 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	if (mpo.contains(tx) || mpo.contains(tx2))
 	{
 		if (Doc->appMode == modeRotation)
-			qApp->changeOverrideCursor(QCursor(loadIcon("Rotieren2.png")));
+			setCursor(QCursor(loadIcon("Rotieren2.png")));
 		else
 		{
 			double rr = fabs(currItem->rotation());
 			if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >=315.0) && (rr <= 360.0)))
-				qApp->changeOverrideCursor(QCursor(Qt::SizeBDiagCursor));
+				setCursor(QCursor(Qt::SizeBDiagCursor));
 			if (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0)))
-				qApp->changeOverrideCursor(QCursor(Qt::SizeFDiagCursor));
+				setCursor(QCursor(Qt::SizeFDiagCursor));
 		}
 	}
 	tx = ma.map(QPoint(static_cast<int>(currItem->width()), static_cast<int>(currItem->height())/2));
@@ -1769,9 +1766,9 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	{
 		double rr = fabs(currItem->rotation());
 		if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >= 315.0) && (rr <= 360.0)))
-			qApp->changeOverrideCursor(QCursor(Qt::SizeHorCursor));
+			setCursor(QCursor(Qt::SizeHorCursor));
 		if (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0)))
-			qApp->changeOverrideCursor(QCursor(Qt::SizeVerCursor));
+			setCursor(QCursor(Qt::SizeVerCursor));
 	}
 	tx = ma.map(QPoint(static_cast<int>(currItem->width())/2, 0));
 	tx2 = ma.map(QPoint(static_cast<int>(currItem->width())/2, static_cast<int>(currItem->height())));
@@ -1779,28 +1776,28 @@ void ScribusView::HandleCurs(PageItem *currItem, QRect mpo)
 	{
 		double rr = fabs(currItem->rotation());
 		if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) || ((rr >= 315.0) && (rr <= 360.0)))
-			qApp->changeOverrideCursor(QCursor(Qt::SizeVerCursor));
+			setCursor(QCursor(Qt::SizeVerCursor));
 		if (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0)))
-			qApp->changeOverrideCursor(QCursor(Qt::SizeHorCursor));
+			setCursor(QCursor(Qt::SizeHorCursor));
 	}
 	tx = ma.map(QPoint(static_cast<int>(currItem->width()), static_cast<int>(currItem->height())));
 	tx2 = ma.map(QPoint(0, 0));
 	if (mpo.contains(tx) || mpo.contains(tx2))
 	{
 		if (Doc->appMode == modeRotation)
-			qApp->changeOverrideCursor(QCursor(loadIcon("Rotieren2.png")));
+			setCursor(QCursor(loadIcon("Rotieren2.png")));
 		else if (!currItem->sizeHLocked() && ! currItem->sizeVLocked())
 		{
 			double rr = fabs(currItem->rotation());
 			if (((rr >= 0.0) && (rr < 45.0)) || ((rr >= 135.0) && (rr < 225.0)) ||
 			        ((rr >= 315.0) && (rr <= 360.0)))
-				qApp->changeOverrideCursor(QCursor(Qt::SizeFDiagCursor));
+				setCursor(QCursor(Qt::SizeFDiagCursor));
 			if (((rr >= 45.0) && (rr < 135.0)) || ((rr >= 225.0) && (rr < 315.0)))
-				qApp->changeOverrideCursor(QCursor(Qt::SizeBDiagCursor));
+				setCursor(QCursor(Qt::SizeBDiagCursor));
 		}
 	}
 	if (Doc->appMode == modeEditClip)
-		qApp->changeOverrideCursor(QCursor(Qt::CrossCursor));
+		setCursor(QCursor(Qt::CrossCursor));
 }
 
 void ScribusView::SelectItemNr(uint nr, bool draw, bool single)
