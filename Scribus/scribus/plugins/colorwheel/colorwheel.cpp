@@ -86,7 +86,7 @@ bool ColorWheelPlugin::run(ScribusDoc* doc, QString target)
 		currDoc=ScCore->primaryMainWindow()->m_Doc;
 	if (currDoc==0)
 		return false;
-	CWDialog *dlg = new CWDialog(currDoc->scMW(), currDoc, "dlg", true, 0);
+	CWDialog *dlg = new CWDialog(currDoc->scMW(), currDoc, "dlg", true);
 	if (dlg)
 	{
 		dlg->exec();

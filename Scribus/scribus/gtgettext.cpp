@@ -244,7 +244,7 @@ void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
 	// If gtplugin is NULL we failed to load the plugin. Report an error to the user and exit the method.
 	if (!gtplugin)
 	{
-		qWarning("Failed to load plugin %s", pluginFilePath.toAscii().constData());
+		qWarning("Failed to load plugin %s", pluginFilePath.toLatin1().constData());
 		return;
 	} // if (!gtplugin)
 
@@ -273,7 +273,7 @@ void gtGetText::CallDLL(const ImporterData& idata, const QString& filePath,
 		}  // if (!fp_GetText)
 		else
 		{
-			qWarning("Failed to get GetText() from %s",pluginFilePath.toAscii().constData());
+			qWarning("Failed to get GetText() from %s",pluginFilePath.toLatin1().constData());
 		}
 	}
 	// GetText is not quite up to date vs styles, clean char formatting already specified at paragraph level
@@ -312,7 +312,7 @@ bool gtGetText::DLLName(QString name, QString *ffName, QStringList *fEndings)
 	// if gtplugin is NULL we were unable to load the plugin. Return an error and exit the method.
 	if (!gtplugin)
 	{
-		qWarning("Failed to load plugin %s", pluginFilePath.toAscii().constData());
+		qWarning("Failed to load plugin %s", pluginFilePath.toLatin1().constData());
 		return false;
 	}
 	// Attempt to resolve the plugin symbol to the importer name (FileFormatName)
@@ -321,7 +321,7 @@ bool gtGetText::DLLName(QString name, QString *ffName, QStringList *fEndings)
 	// Report an error, unload the plugin, and exit the method.
 	if (!fp_FileFormatName)
 	{
-		qWarning("Failed to get FileFormatName() from %s", pluginFilePath.toAscii().constData());
+		qWarning("Failed to get FileFormatName() from %s", pluginFilePath.toLatin1().constData());
 		PluginManager::unloadDLL(gtplugin);
 		return false;
 	}
@@ -331,7 +331,7 @@ bool gtGetText::DLLName(QString name, QString *ffName, QStringList *fEndings)
 	// Report an error, unload the plugin, and exit the method.
 	if (!fp_FileExtensions)
 	{
-		qWarning("Failed to get FileExtensions() from %s", pluginFilePath.toAscii().constData());
+		qWarning("Failed to get FileExtensions() from %s", pluginFilePath.toLatin1().constData());
 		PluginManager::unloadDLL(gtplugin);
 		return false;
 	}

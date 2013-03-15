@@ -506,10 +506,7 @@ void SVGPlug::convert(const TransactionSettings& trSettings, int flags)
 			}
 			tmpSel->setGroupRect();
 			ScElemMimeData* md = ScriXmlDoc::WriteToMimeData(m_Doc, tmpSel);
-/*#ifndef Q_WS_MAC*/
-// see #2526
 			m_Doc->itemSelection_DeleteItem(tmpSel);
-/*#endif*/
 			m_Doc->view()->updatesOn(true);
 			if ((importedColors.count() != 0) && (!((flags & LoadSavePlugin::lfKeepGradients) || (flags & LoadSavePlugin::lfKeepColors) || (flags & LoadSavePlugin::lfKeepPatterns))))
 			{
@@ -1530,10 +1527,13 @@ QList<PageItem*> SVGPlug::parseImage(const QDomElement &e)
 			ba.append(fname);
 			if (dataType.contains("base64"))
 				ba = QByteArray::fromBase64(ba);
-			ite->tempImageFile = new QTemporaryFile(QDir::tempPath() + "/scribus_temp_svg_XXXXXX.png");
-			ite->tempImageFile->open();
-			QString fileName = getLongPathName(ite->tempImageFile->fileName());
-			ite->tempImageFile->close();
+			QTemporaryFile *tempFile = new QTemporaryFile(QDir::tempPath() + "/scribus_temp_svg_XXXXXX.png");
+			tempFile->setAutoRemove(false);
+			tempFile->open();
+			QString fileName = getLongPathName(tempFile->fileName());
+			tempFile->close();
+			delete tempFile;
+			ite->isTempFile = true;
 			ite->isInlineImage = true;
 			QImage img;
 			img.loadFromData(ba);

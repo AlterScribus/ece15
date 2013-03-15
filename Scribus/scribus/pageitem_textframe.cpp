@@ -117,7 +117,7 @@ static QRegion itemShape(PageItem* docItem, double xOffset, double yOffset)
 	{
 		QList<uint> Segs;
 		QPolygon Clip2 = FlattenPath(docItem->imageClip, Segs);
-		res = QRegion(pp.map(Clip2)).intersect(QRegion(pp.map(docItem->Clip)));
+		res = QRegion(pp.map(Clip2)).intersected(QRegion(pp.map(docItem->Clip)));
 	}
 	else if ((docItem->textFlowUsesContourLine()) && (docItem->ContourLine.size() != 0))
 	{
@@ -694,7 +694,7 @@ struct LineControl {
 		QRegion lineI = shape.intersected (p.boundingRect());
 		// if the intersection only has 1 rectangle, then nothing gets in the way
 		StartX = static_cast<long>(ceil(StartX + morespace));
-		if (lineI.numRects() == 1)
+		if (lineI.rectCount() == 1)
 		{
 			QRect cRect (QPoint(StartX, yAsc), QPoint(StartX, yDesc -1));
 			if (QRegion(cRect).subtracted(shape).isEmpty())
@@ -4807,7 +4807,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				ushort uni = k->text().at(0).unicode();
 				controlCharHack = ((uni < 32) && (uni != SpecialChars::TAB.unicode()));
 			}
-#if defined (Q_WS_X11)
+#if defined (Q_OS_LINUX)
 			if ((k->text().size()==1) && (k->modifiers() & Qt::ShiftModifier) && (k->modifiers() & Qt::ControlModifier) && (k->nativeVirtualKey() < 1000))
 				x11Hack=true;
 #endif

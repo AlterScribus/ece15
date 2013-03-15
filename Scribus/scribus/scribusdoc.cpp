@@ -38,7 +38,7 @@ for which a new license (GPL+exception) is in place.
 #include <QProgressBar>
 #include <QtAlgorithms>
 #include <QTime>
-#include <qtconcurrentmap.h>
+//#include <qtconcurrentmap.h>
 
 #include "canvas.h"
 #include "ui/masterpagepalette.h"
@@ -447,7 +447,7 @@ void ScribusDoc::init()
 	docPrefsData.pdfPrefs.SolidProf = docPrefsData.colorPrefs.DCMSset.DefaultSolidColorRGBProfile;
 	docPrefsData.pdfPrefs.ImageProf = docPrefsData.colorPrefs.DCMSset.DefaultImageRGBProfile;
 	docPrefsData.pdfPrefs.PrintProf = docPrefsData.colorPrefs.DCMSset.DefaultPrinterProfile;
-	docPrefsData.pdfPrefs.Intent = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
+	docPrefsData.pdfPrefs.Intent  = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
 	docPrefsData.pdfPrefs.Intent2 = docPrefsData.colorPrefs.DCMSset.DefaultIntentImages;
 
 	AddFont(appPrefsData.itemToolPrefs.textFont);//, prefsData.AvailFonts[prefsData.itemToolPrefs.textFont]->Font);
@@ -827,7 +827,7 @@ void ScribusDoc::setup(const int unitIndex, const int fp, const int firstLeft, c
 	docPrefsData.pdfPrefs.SolidProf = docPrefsData.colorPrefs.DCMSset.DefaultSolidColorRGBProfile;
 	docPrefsData.pdfPrefs.ImageProf = docPrefsData.colorPrefs.DCMSset.DefaultImageRGBProfile;
 	docPrefsData.pdfPrefs.PrintProf = docPrefsData.colorPrefs.DCMSset.DefaultPrinterProfile;
-	docPrefsData.pdfPrefs.Intent = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
+	docPrefsData.pdfPrefs.Intent  = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
 	docPrefsData.pdfPrefs.Intent2 = docPrefsData.colorPrefs.DCMSset.DefaultIntentImages;
 
   /* Imposition defaults */
@@ -1101,7 +1101,8 @@ void ScribusDoc::enableCMS(bool enable)
 		docPrefsData.pdfPrefs.SolidProf = docPrefsData.colorPrefs.DCMSset.DefaultSolidColorRGBProfile;
 		docPrefsData.pdfPrefs.ImageProf = docPrefsData.colorPrefs.DCMSset.DefaultImageRGBProfile;
 		docPrefsData.pdfPrefs.PrintProf = docPrefsData.colorPrefs.DCMSset.DefaultPrinterProfile;
-		docPrefsData.pdfPrefs.Intent = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
+		docPrefsData.pdfPrefs.Intent  = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
+		docPrefsData.pdfPrefs.Intent2 = docPrefsData.colorPrefs.DCMSset.DefaultIntentImages;
 		m_ScMW->recalcColors(m_ScMW->mainWindowProgressBar);
 		RecalcPictures(&ScCore->InputProfiles, &ScCore->InputProfilesCMYK, m_ScMW->mainWindowProgressBar);
 	}
@@ -5842,10 +5843,10 @@ bool ScribusDoc::loadPict(QString fn, PageItem *pageItem, bool reload, bool show
 		if ((ScCore->fileWatcher->files().contains(pageItem->Pfile) != 0) && (pageItem->PictureIsAvailable))
 		{
 			ScCore->fileWatcher->removeFile(pageItem->Pfile);
-			if (pageItem->tempImageFile != NULL)
-				delete pageItem->tempImageFile;
-			pageItem->tempImageFile = NULL;
+			QFile::remove(pageItem->Pfile);
+			pageItem->Pfile = "";
 			pageItem->isInlineImage = false;
+			pageItem->isTempFile = false;
 		}
 	}
 	if(!pageItem->loadImage(fn, reload, -1, showMsg))
@@ -11747,7 +11748,8 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 	}
 	
 	regionsChanged()->update(QRectF());
-	m_View->setCursor(QCursor(Qt::ArrowCursor));
+	if (m_View)
+		m_View->setCursor(QCursor(Qt::ArrowCursor));
 	//CB FIXME remove this and tree.h too
 //	m_ScMW->outlinePalette->BuildTree();
 
@@ -14389,7 +14391,7 @@ void ScribusDoc::RotateItem(double angle, PageItem *currItem)
 	if (!loading)
 	{
 		QRectF newR(currItem->getBoundingRect());
-		regionsChanged()->update(newR.unite(oldR));
+		regionsChanged()->update(newR.united(oldR));
 	}
 	//emit SetAngle(currItem->rotation());
 }
@@ -14515,12 +14517,12 @@ bool ScribusDoc::SizeItem(double newX, double newY, PageItem *pi, bool fromMP, b
 	if (!loading)
 	{
 		QRectF newR(currItem->getBoundingRect());
-		invalidateRegion(newR.unite(oldR));
+		invalidateRegion(newR.united(oldR));
 	}
 	if ((redraw) && (!loading))
 	{
 		QRectF newR(currItem->getBoundingRect());
-		regionsChanged()->update(newR.unite(oldR));
+		regionsChanged()->update(newR.united(oldR));
 	}
 	if (!fromMP)
 	{
@@ -14769,7 +14771,7 @@ void ScribusDoc::rotateGroup(double angle, FPoint RCenter, Selection* customSele
 	itemSelection->getGroupRect(&gxS, &gyS, &gwS, &ghS);
 //	gxS -= minCanvasCoordinate.x();
 //	gyS -= minCanvasCoordinate.y();
-	regionsChanged()->update(QRectF(gxS-5, gyS-5, gwS+10, ghS+10).unite(oldR));
+	regionsChanged()->update(QRectF(gxS-5, gyS-5, gwS+10, ghS+10).united(oldR));
 }
 
 void ScribusDoc::scaleGroup(double scx, double scy, bool scaleText, Selection* customSelection, bool scaleLine)
@@ -14965,7 +14967,7 @@ void ScribusDoc::scaleGroup(double scx, double scy, bool scaleText, Selection* c
 //	gx -= minCanvasCoordinate.x();
 //	gy -= minCanvasCoordinate.y();
 	updateManager()->setUpdatesEnabled();
-	regionsChanged()->update(QRectF(gx-5, gy-5, gw+10, gh+10).unite(oldR));
+	regionsChanged()->update(QRectF(gx-5, gy-5, gw+10, gh+10).united(oldR));
 	itemSelection->setGroupRect();
 	itemSelection->getGroupRect(&gx, &gy, &gw, &gh);
 	for (uint a = 0; a < selectedItemCount; ++a)
@@ -16656,7 +16658,8 @@ void ScribusDoc::setNewPrefs(const ApplicationPrefs& prefsData, const Applicatio
 				docPrefsData.pdfPrefs.SolidProf = docPrefsData.colorPrefs.DCMSset.DefaultSolidColorRGBProfile;
 				docPrefsData.pdfPrefs.ImageProf = docPrefsData.colorPrefs.DCMSset.DefaultImageRGBProfile;
 				docPrefsData.pdfPrefs.PrintProf = docPrefsData.colorPrefs.DCMSset.DefaultPrinterProfile;
-				docPrefsData.pdfPrefs.Intent = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
+				docPrefsData.pdfPrefs.Intent  = docPrefsData.colorPrefs.DCMSset.DefaultIntentColors;
+				docPrefsData.pdfPrefs.Intent2 = docPrefsData.colorPrefs.DCMSset.DefaultIntentImages;
 				updCol = true;
 			}
 			else

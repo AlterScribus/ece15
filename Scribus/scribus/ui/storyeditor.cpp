@@ -1545,7 +1545,7 @@ StoryEditor::StoryEditor(QWidget* parent) : QMainWindow(parent, Qt::Window), // 
 {
 	m_spellActive=false;
 	prefsManager=PrefsManager::instance();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	noIcon = loadIcon("noicon.xpm");
 #endif
 	buildGUI();
@@ -1630,7 +1630,7 @@ void StoryEditor::loadPrefs()
 		vheight = qMax( gStrut.height(), scr.height() - vtop );
 	setGeometry(vleft, vtop, vwidth, vheight);
 	QByteArray state = "";
-	state = prefs->get("winstate","").toAscii();
+	state = prefs->get("winstate","").toLatin1();
 	if (!state.isEmpty())
 		restoreState(QByteArray::fromBase64(state));
 	int side = prefs->getInt("side", -1);
