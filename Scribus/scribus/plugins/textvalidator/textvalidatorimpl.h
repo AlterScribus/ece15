@@ -26,7 +26,7 @@ public:
 	~TextValidatorImpl() {}
 	bool run();
 	
-	int setAutoQuotes();
+	void setAutoQuotes();
 	int validateItemText(PageItem* item, bool force= false); //validate text and retruns number of changes
 
 private:

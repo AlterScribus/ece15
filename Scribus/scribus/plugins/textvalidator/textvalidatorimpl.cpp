@@ -427,7 +427,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 	return count;
 }
 
-int TextValidatorImpl::setAutoQuotes()
+void TextValidatorImpl::setAutoQuotes()
 {
 	if (autoQuotesLang == "en")
 	{
