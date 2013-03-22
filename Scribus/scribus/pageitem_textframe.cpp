@@ -6238,14 +6238,23 @@ void PageItem_TextFrame::setMaxY(long y)
 
 void PageItem_TextFrame::setTextFrameHeight()
 {
+	m_Doc->view()->updatesOn(false);
 	//ugly hack increasing min frame`s height against strange glyph painting if it is too close of bottom
 	double hackValue = 0.25;
 
+	if (frameOverflows() && nextInChain() == NULL)
+	{
+		//expand frame to page bottom
+		double pH = m_Doc->currentPage()->height();
+		m_height = pH - (m_yPos - m_Doc->currentPage()->yOffset());
+		updateClip(true);
+		invalid = true;
+		layout(); //calculate current maxY
+	}
 	setHeight(maxY/1000.0 + m_textDistanceMargins.Bottom + hackValue);
 	updateClip();
-	checkChanges(true);
-	invalid = true;
 	m_Doc->changed();
+	m_Doc->view()->updatesOn(true);
 	m_Doc->regionsChanged()->update(QRect());
 }
 
