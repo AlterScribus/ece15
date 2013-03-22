@@ -18859,3 +18859,116 @@ bool ScribusDoc::checkAddSpace(QChar ch, int &before, int &after)
 	}
 	return addSpace;
 }
+
+QString ScribusDoc::getTextWithStyle(PageItem *it, StyleVariableMark *mrk)
+{
+//	searchCombo->addItem(tr("Backward")); //0
+//	searchCombo->addItem(tr("Forward")); //1
+//	searchCombo->addItem(tr("First on Current Page")); //2
+//	searchCombo->addItem(tr("Last on Current Page")); //3
+	
+	int startPage = it->OwnPage;
+	//TODO go through visible text occurence not in order in stack
+	if (mrk->searching == 0 || mrk->searching == 2)
+	{
+		//search current page first
+		for (int i = 0; i < DocItems.count(); ++i)
+		{
+			PageItem* item = DocItems.at(i);
+			if (item->itemText.length() && item->OwnPage == startPage)
+			{
+				int pos = item->firstInFrame();
+				while (pos < item->lastInFrame())
+				{
+					if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
+						return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+					pos = item->itemText.nextParagraph(pos);
+				}
+			}
+		}
+		if (mrk->searching == 2)
+			return "";
+		//previous pages
+		for (int page = startPage -1; page > 0; --page)
+		{
+			for (int i = DocItems.count() -1; i >=0; --i)
+			{
+				PageItem* item = DocItems.at(i);
+				if (item->itemText.length() && item->OwnPage == page)
+				{
+					int pos = item->lastInFrame();
+					while (pos > item->firstInFrame())
+					{
+						if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
+							return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+						pos = item->itemText.prevParagraph(pos);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		//search current page first
+		for (int i = DocItems.count() -1; i >= 0; --i)
+		{
+			PageItem* item = DocItems.at(i);
+			if (item->itemText.length() && item->OwnPage == startPage)
+			{
+				int pos = item->lastInFrame();
+				while (pos < item->firstInFrame())
+				{
+					if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
+						return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+					pos = item->itemText.prevParagraph(pos);
+				}
+			}
+		}
+		if (mrk->searching == 3)
+			return "";
+		//previous pages
+		for (int page = startPage +1; page < DocPages.count(); ++page)
+		{
+			for (int i = 0; i < DocItems.count(); ++i)
+			{
+				PageItem* item = DocItems.at(i);
+				if (item->itemText.length() && item->OwnPage == page)
+				{
+					int pos = item->firstInFrame();
+					while (pos > item->lastInFrame())
+					{
+						if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
+							return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+						pos = item->itemText.nextParagraph(pos);
+					}
+				}
+			}
+		}
+	}
+	return QString();
+}
+
+QString ScribusDoc::getTextFromParagraph(PageItem* item, int pos, int length, int ending)
+{
+	int paraStart = item->itemText.startOfParagraph(pos);
+	int textEnd = 0;
+	if (ending == 0) //whole paragraph
+		textEnd = item->itemText.endOfParagraph(pos);
+	else if (ending == 1) //first sentense
+	{
+		int posn;
+		return item->itemText.sentence(pos,posn);
+	}
+	else if (ending == 2) //first line
+		textEnd = item->itemText.endOfLine(paraStart);
+	else if (ending == 3)  //exact value
+		return item->itemText.text(paraStart, length);
+	else if (ending == 4) //last space
+	{
+		QString text = item->itemText.text(paraStart, length);
+		int pos = text.lastIndexOf(' ');
+		if (pos)
+			textEnd = pos -1;
+	}
+	return item->itemText.text(paraStart, textEnd - paraStart);
+}

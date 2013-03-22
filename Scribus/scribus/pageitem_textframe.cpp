@@ -5406,6 +5406,7 @@ void PageItem_TextFrame::togleEditModeActions()
 	bool editMode = (m_Doc->appMode == modeEdit);
 	bool masterMode = m_Doc->masterPageMode();
 	m_Doc->scMW()->scrActions["insertMarkVariableText"]->setEnabled(editMode);
+	m_Doc->scMW()->scrActions["insertMarkStyleText"]->setEnabled(editMode);
 	m_Doc->scMW()->scrActions["insertMarkAnchor"]->setEnabled(editMode && !masterMode);
 	m_Doc->scMW()->scrActions["insertMarkItem"]->setEnabled(editMode && !masterMode);
 	m_Doc->scMW()->scrActions["insertMark2Mark"]->setEnabled(editMode && !masterMode);
@@ -5428,7 +5429,7 @@ void PageItem_TextFrame::togleEditModeActions()
 
 void PageItem_TextFrame::applicableActions(QStringList & actionList)
 {
-	actionList << "insertMarkVariableText";
+	actionList << "insertMarkVariableText" << "insertMarkStyleText";
 	if (!m_Doc->masterPageMode())
 		actionList << "insertMarkAnchor";
 	//notes frames are not simply text frames

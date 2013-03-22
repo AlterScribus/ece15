@@ -173,6 +173,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/markanchor.h"
 #include "ui/marknote.h"
 #include "ui/markvariabletext.h"
+#include "ui/markparastyletext.h"
 #include "ui/markinsert.h"
 #include "ui/marksmanager.h"
 #include "ui/masterpagepalette.h"
@@ -968,6 +969,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->createMenu("InsertMark", tr("Marks"), "Insert");
 	scrMenuMgr->addMenuItem(scrActions["insertMarkAnchor"], "InsertMark", false);
 	scrMenuMgr->addMenuItem(scrActions["insertMarkVariableText"], "InsertMark", false);
+	scrMenuMgr->addMenuItem(scrActions["insertMarkStyleText"], "InsertMark", false);
 	scrMenuMgr->addMenuItem(scrActions["insertMarkItem"], "InsertMark", false);
 	scrMenuMgr->addMenuItem(scrActions["insertMark2Mark"], "InsertMark", false);
 	scrMenuMgr->addMenuItem(scrActions["insertMarkNote"], "InsertMark", false);
@@ -10970,6 +10972,7 @@ void ScribusMainWindow::enableTextActions(QMap<QString, QPointer<ScrAction> > *a
 	if (!enabled)
 	{
 		scrActions["insertMarkVariableText"]->setEnabled(false);
+		scrActions["insertMarkStyleText"]->setEnabled(false);
 		scrActions["insertMarkAnchor"]->setEnabled(false);
 		scrActions["insertMarkItem"]->setEnabled(false);
 		scrActions["insertMark2Mark"]->setEnabled(false);
@@ -11189,7 +11192,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 
 bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType mrkType, ScItemsState* &is)
 {
-	if (m_Doc->masterPageMode() && (mrkType != MARKVariableTextType))
+	if (m_Doc->masterPageMode() && !(mrkType == MARKVariableTextType || mrkType == MARKStyleTextType))
 		//avoid inserting in master pages other marks than Variable Text
 		return false;
 	
@@ -11213,6 +11216,15 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		break;
 	case MARKIndexType:
 		break;
+	case MARKStyleTextType:
+		{
+			QStringList pstylesList;
+			for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
+				pstylesList.append(m_Doc->paragraphStyles()[i].name());
+			pstylesList.sort();
+			insertMDialog = (MarkInsert*) new MarkParaStyleText(pstylesList, this);
+		}
+		break;
 	default:
 		break;
 	}
@@ -11234,6 +11246,9 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		QString label = "", text = "";
 		NotesStyle* NStyle = NULL;
 		bool insertExistedMark = false;
+		QString vStyleName;
+		int search, limit, ending;
+		
 		switch (mrkType)
 		{
 		case MARKAnchorType:
@@ -11250,6 +11265,10 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 			if (label.isEmpty())
 				label = tr("Mark with <%1> variable text").arg(text);
 			d.strtxt = text;
+			break;
+		case MARKStyleTextType:
+			insertMDialog->values(vStyleName, search, limit, ending);
+			label = tr("Mark with <%1> style text").arg(vStyleName);
 			break;
 		case MARK2ItemType:
 			insertMDialog->values(label, d.itemPtr);
@@ -11328,6 +11347,14 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 			mrk->getNotePtr()->setMasterMark(mrk);
 			mrk->setString("");
 		}
+		else if (mrk->isType(MARKStyleTextType))
+		{
+			StyleVariableMark* msvm = (StyleVariableMark*) mrk;
+			msvm->srcParaStyleName = vStyleName;
+			msvm->searching = search;
+			msvm->textLimit = limit;
+			msvm->ending = ending;
+		}
 
 		if (UndoManager::undoEnabled())
 		{
@@ -11403,6 +11430,21 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				editMDialog = (MarkInsert*) new MarkVariableText(m_Doc->marksList(), this);
 			editMDialog->setValues(mrk->label, mrk->getString());
 			break;
+		case MARKStyleTextType:
+		{
+			QStringList pstylesList;
+			for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
+				pstylesList.append(m_Doc->paragraphStyles()[i].name());
+			pstylesList.sort();
+			if (currItem == NULL)
+				//invoked from Marks Manager
+				editMDialog = (MarkInsert*) new MarkParaStyleText(mrk, pstylesList, this);
+			else
+				//invoked from mark`s entry in text
+				editMDialog = (MarkInsert*) new MarkParaStyleText(pstylesList, this);
+			editMDialog->setValues(mrk->label, mrk->getString());
+		}
+		break;
 		case MARK2ItemType:
 			editMDialog = (MarkInsert*) new Mark2Item(this);
 			editMDialog->setValues(mrk->label, mrk->getItemPtr());

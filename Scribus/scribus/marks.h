@@ -20,7 +20,8 @@ enum MarkType
 	MARKNoteMasterType = 4,  //mark contain footnote reference
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
 	MARKIndexType = 6, // index entry
-	MARKBullNumType = 7
+	MARKBullNumType = 7,
+	MARKStyleTextType = 8 //insert text from last occurence of selected style
 };
 
 struct MarkData
@@ -42,6 +43,8 @@ class SCRIBUS_API Mark
 	friend class ScribusDoc;
 	friend class ScribusMainWindow;
 	friend class BulNumMark;
+	friend class StyleVariableMark;
+	
 	//only ScribusDoc && ScribusMainWindow can create and delete marks
 private:
 	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
@@ -88,7 +91,7 @@ public:
 	bool hasItemPtr() { return data.itemPtr != NULL; }
 	bool hasString() { return !data.strtxt.isEmpty(); }
 	bool hasMark() { return data.destmarkName != ""; }
-	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
+	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKStyleTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
 	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) { return t==typ; }
 
@@ -102,6 +105,18 @@ class SCRIBUS_API BulNumMark : public Mark
 public:
 	BulNumMark() : Mark() { label = "BullNumMark"; typ = MARKBullNumType; }
 	~BulNumMark() {}
+};
+
+class SCRIBUS_API StyleVariableMark : public Mark
+{
+public:
+	StyleVariableMark() : Mark(), srcParaStyleName(QString()), searching(0), textLimit(0), ending(0)
+		{ label = "StyleText"; typ = MARKStyleTextType; }
+	~StyleVariableMark() {}
+	QString srcParaStyleName;
+	int searching;
+	int textLimit;
+	int ending;
 };
 
 #endif // MARKS_H

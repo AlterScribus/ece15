@@ -16,21 +16,24 @@ public:
 	MarkInsert(const QList<Mark*>&, QWidget *parent = 0) : QDialog(parent) {}
 	MarkInsert(const Mark*, QWidget *parent = 0) : QDialog(parent) {}
 	MarkInsert(const QList<NotesStyle*>&, QWidget *parent = 0) : QDialog(parent) {}
+	MarkInsert(const QStringList&, QWidget *parent = 0) : QDialog(parent) {}
 	MarkInsert(QWidget *parent = 0) : QDialog(parent) {}
 	~MarkInsert() {}
 
-	virtual void values(QString &label) {}
-	virtual void values(QString &label, PageItem* &item) {}
-	virtual Mark* values(QString& label, QString& text) { return NULL; }
-	virtual void values(QString& label, Mark* &mrk) {}
+	virtual void values(QString&) {}
+	virtual void values(QString&, PageItem* &item) {}
+	virtual Mark* values(QString&, QString&) { return NULL; }
+	virtual void values(QString&, Mark* &mrk) {}
 	virtual NotesStyle* values() { return NULL; }
+	virtual void values(QString&, int&, int&, int&) {}
 
-	virtual void setValues(const QString label) {}
-	virtual void setValues(const QString label, const QString text) {}
-	virtual void setValues(const QString label, const PageItem* ptr) {}
-	virtual void setValues(const QString label, const Mark* ptr) {}
-	virtual void setValues(const NotesStyle* defaultStyle) {}
-	
+	virtual void setValues(const QString&) {}
+	virtual void setValues(const QString&, const QString&) {}
+	virtual void setValues(const QString&, const PageItem*) {}
+	virtual void setValues(const QString&, const Mark*) {}
+	virtual void setValues(const NotesStyle*) {}
+	virtual void setValues(const QString, int, int, int) {}
+
 signals:
 
 public slots:

@@ -2316,8 +2316,19 @@ QString PageItem::ExpandToken(uint base)
 	else if (ch == SpecialChars::OBJECT)
 	{
 		ScText* hl = itemText.item(base);
-		if ((hl->mark != NULL) && !hl->mark->isType(MARKAnchorType) && !hl->mark->isType(MARKIndexType))
-			chstr = hl->mark->getString();
+		if (hl->hasMark() && !hl->mark->isType(MARKAnchorType) && !hl->mark->isType(MARKIndexType))
+		{
+			if (hl->mark->isType(MARKStyleTextType))
+			{
+				StyleVariableMark * msvt = (StyleVariableMark *) hl->mark;
+				if (m_Doc->masterPageMode())
+					chstr = "#" + msvt->srcParaStyleName;
+				else
+					chstr = m_Doc->getTextWithStyle(this, msvt);
+			}
+			else
+				chstr = hl->mark->getString();
+		}
 	}
 	return chstr;
 }

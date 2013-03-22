@@ -1,0 +1,85 @@
+#include "marks.h"
+#include "markparastyletext.h"
+
+MarkParaStyleText::MarkParaStyleText(const QStringList& stylesList, QWidget *parent) :
+	MarkInsert(stylesList, parent)
+{
+	setupUi(this);
+	setUiContent(stylesList);
+}
+
+MarkParaStyleText::MarkParaStyleText(const Mark * mrk, const QStringList& stylesList, QWidget *parent)
+{
+	//for editing by marks Manager - user can change label and variable text
+	setupUi(this);
+	setUiContent(stylesList);
+
+	StyleVariableMark* m = (StyleVariableMark*) mrk;
+	setValues(m->srcParaStyleName, m->searching, m->textLimit, m->ending);
+}
+
+void MarkParaStyleText::setUiContent(const QStringList stylesList)
+{
+	styleLabel->setText(tr("Get text from:"));
+	styleCombo->addItems(stylesList);
+	searchLabel->setText(tr("searching"));
+	searchCombo->addItem(tr("Backward")); //0
+	searchCombo->addItem(tr("Forward")); //1
+	searchCombo->addItem(tr("First on Current Page")); //2
+	searchCombo->addItem(tr("Last on Current Page")); //3
+	limitLabel->setText(tr("Limit text lenght to"));
+	limitSpin->setSuffix(tr("chars"));
+	limitSpin->setRange(0,999);
+	limitSpin->setValue(0);
+	limitSpin->setSpecialValueText(tr("No limit"));
+	endCombo->addItem(tr("Get whole paragraph"));	//0
+	endCombo->addItem(tr("Get first sentence"));	//1
+	endCombo->addItem(tr("Get first line"));		//2
+	endCombo->addItem(tr("Exact value"));			//3
+	endCombo->addItem(tr("Last space"));			//4
+	endLabel->setText(tr("end at"));
+	setWindowTitle(tr("Mark with text from Paragraph Style occurence"));
+}
+void MarkParaStyleText::changeEvent(QEvent *e)
+{
+	QDialog::changeEvent(e);
+	switch (e->type()) {
+		case QEvent::LanguageChange:
+			retranslateUi(this);
+		break;
+		default:
+		break;
+	}
+}
+
+void MarkParaStyleText::values(QString &styleName, int &search, int &limit, int &ending)
+{
+	styleName = styleCombo->currentText();
+	search = searchCombo->currentIndex();
+	limit = limitSpin->value();
+	ending = endCombo->currentIndex();
+}
+
+void MarkParaStyleText::setValues(QString styleName, int search, int limit, int ending)
+{
+	styleCombo->setCurrentIndex(styleCombo->findText(styleName));
+	searchCombo->setCurrentIndex(search);
+	limitSpin->setValue(limit);
+	endCombo->setCurrentIndex(ending);
+	endLabel->setEnabled(limit);
+	endCombo->setEnabled(limit);
+}
+
+void MarkParaStyleText::on_limitSpin_valueChanged(int arg1)
+{
+	if (arg1 == 0)
+		endCombo->setCurrentIndex(0);
+	else if (endCombo->currentIndex() < 3)
+		endCombo->setCurrentIndex(3);
+}
+
+void MarkParaStyleText::on_endCombo_currentIndexChanged(int index)
+{
+	limitLabel->setEnabled(index >= 3);
+	limitSpin->setEnabled(index >= 3);
+}

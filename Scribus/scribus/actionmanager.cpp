@@ -560,6 +560,9 @@ void ActionManager::initInsertMenuActions()
 	name="insertMarkVariableText";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	(*scrActions)[name]->setEnabled(true);
+	name="insertMarkStyleText";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	(*scrActions)[name]->setEnabled(true);
 	name="insertMarkItem";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	(*scrActions)[name]->setEnabled(true);
@@ -586,6 +589,7 @@ void ActionManager::initInsertMenuActions()
 
 	connect( (*scrActions)["insertMarkAnchor"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkAnchor()) );
 	connect( (*scrActions)["insertMarkVariableText"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkVariableText()) );
+	connect( (*scrActions)["insertMarkStyleText"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkStyleText()));
 	connect( (*scrActions)["insertMarkItem"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkItem()) );
 	connect( (*scrActions)["insertMark2Mark"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMark2Mark()) );
 	connect( (*scrActions)["insertMarkNote"], SIGNAL(triggered()), mainWindow, SLOT(slotInsertMarkNote()) );
@@ -1579,6 +1583,7 @@ void ActionManager::languageChange()
 	(*scrActions)["stickyTools"]->setTexts( tr("Sticky Tools"));
 	(*scrActions)["insertMarkAnchor"]->setTexts( tr("Anchor Mark"));
 	(*scrActions)["insertMarkVariableText"]->setTexts( tr("Variable Text"));
+	(*scrActions)["insertMarkStyleText"]->setTexts( tr("Variable Text from Style"));
 	(*scrActions)["insertMarkItem"]->setTexts( tr("Reference to Item"));
 	(*scrActions)["insertMark2Mark"]->setTexts( tr("Reference to Mark"));
 	(*scrActions)["insertMarkNote"]->setTexts( tr("Foot/Endnote"));
@@ -2090,6 +2095,7 @@ void ActionManager::createDefaultMenus()
 		<< "insertSampleText"
 		<< "insertMarkAnchor"
 		<< "insertMarkVariableText"
+		<< "insertMarkStyleText"
 		<< "insertMarkItem"
 		<< "insertMark2Mark"
 		<< "insertMarkNote"

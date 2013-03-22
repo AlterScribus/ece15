@@ -175,6 +175,7 @@ void ContextMenu::createMenuItems_Selection()
 			QAction *act2 = addMenu(menuMark);
 			act2->setText( ScribusView::tr("Insert Mark"));
 			menuMark->addAction(m_AP->scrActions["insertMarkVariableText"]);
+			menuMark->addAction(m_AP->scrActions["insertMarkStyleText"]);
 			if (m_actionList.contains("insertMarkAnchor"))
 			{
 				menuMark->addAction(m_AP->scrActions["insertMarkAnchor"]);

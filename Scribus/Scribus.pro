@@ -1136,7 +1136,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/plugins/textvalidator/tvdialog.h \
     scribus/plugins/textvalidator/textvalidator.cpp.autosave \
     scribus/plugins/textvalidator/prefs_textvalidator.h \
-    scribus/plugins/textvalidator/tvconfig.h
+    scribus/plugins/textvalidator/tvconfig.h \
+    scribus/ui/markparastyletext.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1275,7 +1276,8 @@ FORMS += scribus/ui/aboutplugins.ui \
          scribus/plugins/tools/2geomtools/pathalongpath/pathdialogbase.ui \
     scribus/ui/testingbase.ui \
     scribus/plugins/textvalidator/tvdialog.ui \
-    scribus/plugins/textvalidator/prefs_textvalidator.ui
+    scribus/plugins/textvalidator/prefs_textvalidator.ui \
+    scribus/ui/markparastyletext.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2195,7 +2197,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/plugins/textvalidator/tvprefsgui.cpp \
     scribus/plugins/textvalidator/tvdialog.cpp \
     scribus/plugins/textvalidator/prefs_textvalidator.cpp \
-    scribus/plugins/textvalidator/tvconfig.cpp
+    scribus/plugins/textvalidator/tvconfig.cpp \
+    scribus/ui/markparastyletext.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/po/scribus.af.ts \
                 resources/translations/po/scribus.ar.ts \
