@@ -114,6 +114,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/mark2mark.h"
 #include "ui/markanchor.h"
 #include "ui/markvariabletext.h"
+#include "ui/markparastyletext.h"
 #include "ui/marksmanager.h"
 #include "ui/storyeditor.h"
 #include "imposition/impositionoptions.h"
@@ -2137,6 +2138,18 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setMark(is->get("dNameOLD"), (MarkType) is->getInt("dTypeOLD"));
 						if (is->getItem("itemPtrOLD") != NULL)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
+						if (mrk->isType(MARKStyleVariableType))
+						{
+							StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+							if (is->contains("pstylenameOLD"))
+								svmrk->pStyleName = is->get("parstylenameOLD");
+							if (is->contains("searchOLD"))
+								svmrk->searchDirection = is->getInt("searchOLD");
+							if (is->contains("limitOLD"))
+								svmrk->textLimit = is->getInt("limitOLD");
+							if (is->contains("endingOLD"))
+								svmrk->ending = is->getInt("endingOLD");
+						}
 					}
 					else if (is->get("MARK") == "insert_existing")
 					{
@@ -2154,11 +2167,27 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 					}
 					else if (is->get("MARK") == "delete")
 					{
-						mrk = newMark();
-						mrk->label = is->get("label");
-						mrk->setType((MarkType) is->getInt("type"));
 						Q_ASSERT(pos >= 0);
 						Q_ASSERT(currItem != NULL);
+						MarkType typ = (MarkType) is->getInt("type");
+						if (typ == MARKStyleVariableType)
+						{
+							StyleVariableMark * svmrk = newStyleVariableMark();
+							if (is->contains("pstylename"))
+								svmrk->pStyleName = is->get("pstylename");
+							if (is->contains("search"))
+								svmrk->searchDirection = is->getInt("search");
+							if (is->contains("limit"))
+								svmrk->textLimit = is->getInt("limit");
+							if (is->contains("ending"))
+								svmrk->ending = is->getInt("ending");
+						}
+						else
+						{
+							mrk = newMark();
+							mrk->setType(typ);
+						}
+						mrk->label = is->get("label");
 						currItem->itemText.insertMark(mrk, pos);
 						if (is->contains("strtxt"))
 						{
@@ -2211,9 +2240,27 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							qDebug() << "Wrong inItem in undo step for mark";
 							return;
 						}
-						mrk = newMark();
+						MarkType typ = (MarkType) is->getInt("type");
+						if (typ == MARKStyleVariableType)
+						{
+							StyleVariableMark * svmrk = newStyleVariableMark();
+							if (is->contains("pstylename"))
+								svmrk->pStyleName = is->get("pstylename");
+							if (is->contains("search"))
+								svmrk->searchDirection = is->getInt("search");
+							if (is->contains("limit"))
+								svmrk->textLimit = is->getInt("limit");
+							if (is->contains("ending"))
+								svmrk->ending = is->getInt("ending");
+							mrk = (Mark*) svmrk;
+						}
+						else
+						{
+							mrk = newMark();
+							mrk->setType((MarkType) is->getInt("type"));
+						}
 						mrk->label = is->get("label");
-						mrk->setType((MarkType) is->getInt("type"));
+						
 						Q_ASSERT(currItem != NULL);
 						Q_ASSERT(pos >= 0);
 						currItem->itemText.insertMark(mrk, pos);
@@ -2260,6 +2307,18 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 							mrk->setMark(is->get("dNameNEW"), (MarkType) is->getInt("dTypeNEW"));
 						if (is->getItem("itemPtrNEW") != NULL)
 							mrk->setItemPtr((PageItem*) is->getItem("itemPtrNEW"));
+						if (mrk->isType(MARKStyleVariableType))
+						{
+							StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+							if (is->contains("pstylenameNEW"))
+								svmrk->pStyleName = is->get("pstylenameNEW");
+							if (is->contains("searchNEW"))
+								svmrk->searchDirection = is->getInt("searchNEW");
+							if (is->contains("limitNEW"))
+								svmrk->textLimit = is->getInt("limitNEW");
+							if (is->contains("endingNEW"))
+								svmrk->ending = is->getInt("endingNEW");
+						}
 					}
 					else if (is->get("MARK") == "insert_existing")
 					{
@@ -17247,7 +17306,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 
 				int pos = item->firstInFrame();
 				if ((pos != 0) && (item->itemText.text(pos-1) != SpecialChars::PARSEP))
-					pos = item->itemText.nextParagraph(pos)+1;
+					pos = item->itemText.nextParagraph(pos);
 				int last = item->lastInFrame();
 				int len = item->itemText.length();
 				while (pos <= last)
@@ -17305,7 +17364,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 							++pos;
 						else
 						{
-							pos = item->itemText.nextParagraph(pos)+1;
+							pos = item->itemText.nextParagraph(pos);
 							if (pos == len)
 								break;
 						}
@@ -17359,10 +17418,23 @@ Mark* ScribusDoc::getMarkDefinied(QString l, MarkType t)
 
 Mark *ScribusDoc::newMark(Mark* mrk)
 {
-	Mark* newMrk = new Mark();
-	if (mrk != NULL)
-		*newMrk = *mrk;
+	Mark* newMrk;
+	if (mrk)
+		newMrk = new Mark(*mrk);
+	else
+		newMrk = new Mark();
 	m_docMarksList.append(newMrk);
+	return newMrk;
+}
+
+StyleVariableMark *ScribusDoc::newStyleVariableMark(StyleVariableMark *mrk)
+{
+	StyleVariableMark* newMrk;
+	if (mrk)
+		newMrk = new StyleVariableMark(*mrk);
+	else
+		newMrk = new StyleVariableMark();
+	m_docMarksList.append((Mark*) newMrk);
 	return newMrk;
 }
 
@@ -17572,8 +17644,16 @@ void ScribusDoc::setUndoDelMark(Mark *mrk)
 				ims->set("dName", dName);
 				ims->set("dType", (int) dType);
 			}
-			if (mrk->isType(MARK2ItemType))
+			else if (mrk->isType(MARK2ItemType))
 				ims->insertItem("itemPtr", mrk->getItemPtr());
+			else if (mrk->isType(MARKStyleVariableType))
+			{
+				StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+				ims->set("pstylename", svmrk->pStyleName);
+				ims->set("search", svmrk->searchDirection);
+				ims->set("limit", svmrk->textLimit);
+				ims->set("ending", svmrk->ending);
+			}
 		}
 		else
 		{
@@ -17677,6 +17757,11 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 				PageItem* mItem = findFirstMarkItem(mrk);
 				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
 				mrk->setItemName((mItem != NULL) ? mItem->itemName() : QString(""));
+//				if (mrk->isType(MARKStyleVariableType) && mrk->getItemPtr())
+//				{
+//					mrk->getItemPtr()->invalid = true;
+//					docWasChanged = true;
+//				}
 			}
 		}
 	}
@@ -18860,35 +18945,36 @@ bool ScribusDoc::checkAddSpace(QChar ch, int &before, int &after)
 	return addSpace;
 }
 
-QString ScribusDoc::getTextWithStyle(PageItem *it, StyleVariableMark *mrk)
+QString ScribusDoc::getTextFromPStyleOccurence(PageItem *it, StyleVariableMark *mrk)
 {
-//	searchCombo->addItem(tr("Backward")); //0
-//	searchCombo->addItem(tr("Forward")); //1
-//	searchCombo->addItem(tr("First on Current Page")); //2
-//	searchCombo->addItem(tr("Last on Current Page")); //3
-	
 	int startPage = it->OwnPage;
 	//TODO go through visible text occurence not in order in stack
-	if (mrk->searching == 0 || mrk->searching == 2)
+	if (mrk->searchDirection == SEARCH_BACKWARD || mrk->searchDirection == FIRST_ON_PAGE)
 	{
-		//search current page first
+		//search first occur on current page
 		for (int i = 0; i < DocItems.count(); ++i)
 		{
 			PageItem* item = DocItems.at(i);
 			if (item->itemText.length() && item->OwnPage == startPage)
 			{
 				int pos = item->firstInFrame();
+				if (item->itemText.findParagraphStart(pos) < pos)
+					pos = item->itemText.findParagraphEnd(pos) +1;
 				while (pos < item->lastInFrame())
 				{
-					if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
-						return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+					if (item->itemText.paragraphStyle(pos).parent() == mrk->pStyleName)
+					{
+						QString result = getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+						if (!result.trimmed().isEmpty())
+							return result.trimmed();
+					}
 					pos = item->itemText.nextParagraph(pos);
 				}
 			}
 		}
-		if (mrk->searching == 2)
-			return "";
-		//previous pages
+		if (mrk->searchDirection == FIRST_ON_PAGE)
+			return QString();
+		//previous pages - search last occur
 		for (int page = startPage -1; page > 0; --page)
 		{
 			for (int i = DocItems.count() -1; i >=0; --i)
@@ -18897,36 +18983,52 @@ QString ScribusDoc::getTextWithStyle(PageItem *it, StyleVariableMark *mrk)
 				if (item->itemText.length() && item->OwnPage == page)
 				{
 					int pos = item->lastInFrame();
-					while (pos > item->firstInFrame())
+					int end = item->firstInFrame();
+					if (end > 0)
+						end = item->itemText.findParagraphEnd(item->firstInFrame()) +1;
+					while (pos > end)
 					{
-						if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
-							return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
-						pos = item->itemText.prevParagraph(pos);
+						if (item->itemText.paragraphStyle(pos).parent() == mrk->pStyleName)
+						{
+							QString result = getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+							if (!result.trimmed().isEmpty())
+								return result.trimmed();
+						}
+						pos = item->itemText.findParagraphStart(item->itemText.prevParagraph(pos));
 					}
 				}
 			}
 		}
 	}
-	else
+	else //if (mrk->searchDirection == SEARCH_FORWARD || mrk->searchDirection == LAST_ON_PAGE)
 	{
-		//search current page first
+		//search last occur on current page
 		for (int i = DocItems.count() -1; i >= 0; --i)
 		{
 			PageItem* item = DocItems.at(i);
 			if (item->itemText.length() && item->OwnPage == startPage)
 			{
-				int pos = item->lastInFrame();
-				while (pos < item->firstInFrame())
+				int pos = item->itemText.findParagraphStart(item->lastInFrame());
+				if (pos < 0)
+					continue;
+				int end = item->firstInFrame();
+				if (end > 0)
+					end = item->itemText.findParagraphEnd(end);
+				while (pos > end)
 				{
-					if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
-						return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
-					pos = item->itemText.prevParagraph(pos);
+					if (item->itemText.paragraphStyle(pos).parent() == mrk->pStyleName)
+					{
+						QString result = getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+						if (!result.trimmed().isEmpty())
+							return result.trimmed();
+					}
+					pos = item->itemText.findParagraphStart(item->itemText.prevParagraph(pos));
 				}
 			}
 		}
-		if (mrk->searching == 3)
-			return "";
-		//previous pages
+		if (mrk->searchDirection == LAST_ON_PAGE)
+			return QString();
+		//search first occur on next pages
 		for (int page = startPage +1; page < DocPages.count(); ++page)
 		{
 			for (int i = 0; i < DocItems.count(); ++i)
@@ -18935,10 +19037,16 @@ QString ScribusDoc::getTextWithStyle(PageItem *it, StyleVariableMark *mrk)
 				if (item->itemText.length() && item->OwnPage == page)
 				{
 					int pos = item->firstInFrame();
-					while (pos > item->lastInFrame())
+					if (item->itemText.findParagraphStart(pos) < pos)
+						pos = item->itemText.findParagraphEnd(pos) +1;
+					while (pos < item->lastInFrame())
 					{
-						if (item->itemText.paragraphStyle(pos).parent() == mrk->srcParaStyleName)
-							return getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+						if (item->itemText.paragraphStyle(pos).parent() == mrk->pStyleName)
+						{
+							QString result = getTextFromParagraph(item, pos, mrk->textLimit, mrk->ending);
+							if (!result.trimmed().isEmpty())
+								return result.trimmed();
+						}
 						pos = item->itemText.nextParagraph(pos);
 					}
 				}
@@ -18950,25 +19058,32 @@ QString ScribusDoc::getTextWithStyle(PageItem *it, StyleVariableMark *mrk)
 
 QString ScribusDoc::getTextFromParagraph(PageItem* item, int pos, int length, int ending)
 {
-	int paraStart = item->itemText.startOfParagraph(pos);
+	if (item->itemText.text(pos) == SpecialChars::PARSEP)
+		return QString();
+
+	int paraStart = item->itemText.findParagraphStart(pos);
+	length = qMin(length, item->itemText.length() - paraStart);
 	int textEnd = 0;
-	if (ending == 0) //whole paragraph
-		textEnd = item->itemText.endOfParagraph(pos);
-	else if (ending == 1) //first sentense
+
+	if (ending == WHOLE_PARAGRAPH)
+		textEnd = item->itemText.findParagraphEnd(pos);
+	else if (ending == FIRST_SENTENCE)
 	{
 		int posn;
-		return item->itemText.sentence(pos,posn);
+		return item->itemText.sentence(paraStart,posn);
 	}
-	else if (ending == 2) //first line
+	else if (ending == FIRST_LINE)
 		textEnd = item->itemText.endOfLine(paraStart);
-	else if (ending == 3)  //exact value
+	else if (ending == EXACT_LENGHT)
 		return item->itemText.text(paraStart, length);
-	else if (ending == 4) //last space
+	else if (ending == LAST_SPACE)
 	{
 		QString text = item->itemText.text(paraStart, length);
 		int pos = text.lastIndexOf(' ');
 		if (pos)
-			textEnd = pos -1;
+			textEnd = pos;
+		else
+			textEnd = paraStart + length;
 	}
 	return item->itemText.text(paraStart, textEnd - paraStart);
 }

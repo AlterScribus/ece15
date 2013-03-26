@@ -719,8 +719,9 @@ QString StoryText::text(int pos, uint len) const
 
 QString StoryText::sentence(int pos, int &posn)
 {
-	int sentencePos=qMax(0, prevSentence(pos));
-	sentencePos=qMax(sentencePos, nextWord(sentencePos));
+	int sentencePos = prevSentence(pos);
+	if (sentencePos > 0)
+		sentencePos=qMax(sentencePos +1, nextWord(sentencePos));
 	posn=sentencePos;
 	int nextSentencePos=qMin(length(), nextSentence(pos+1));
 	return text(sentencePos, nextSentencePos-sentencePos);
@@ -1234,6 +1235,30 @@ int StoryText::startOfParagraph(uint index) const
 	return length();
 }
 
+int StoryText::findParagraphStart(int currentPos) const
+{
+	StoryText* that = const_cast<StoryText *>(this);
+	while (currentPos > 0)
+	{
+		if (that->d->at(currentPos-1)->ch == SpecialChars::PARSEP)
+			break;
+		--currentPos;
+	}
+	return currentPos;
+}
+
+int StoryText::findParagraphEnd(int currentPos) const
+{
+	StoryText* that = const_cast<StoryText *>(this);
+	while (currentPos < length())
+	{
+		if (that->d->at(currentPos)->ch == SpecialChars::PARSEP)
+			break;
+		++currentPos;
+	}
+	return currentPos;
+}
+
 int StoryText::endOfParagraph() const
 {
 	return endOfParagraph(nrOfParagraph());
@@ -1305,7 +1330,7 @@ int StoryText::firstWord()
 int StoryText::nextWord(int pos)
 {
 	int len = length();
-	if (text(pos).isLetter())
+	if (text(pos).isLetterOrNumber())
 		pos = qMin(len, pos+1);
 	else
 		pos = qMin(len, pos);
@@ -1315,7 +1340,7 @@ int StoryText::nextWord(int pos)
 
 	while (pos < len)
 	{
-		if(text(pos).isLetter())
+		if(text(pos).isLetterOrNumber())
 			++pos;
 		else
 			break;
@@ -1348,16 +1373,18 @@ int StoryText::nextSentence(int pos)
 {
 	int len = length();
 	pos = qMin(len, pos+1);
-	while (pos < len && sentenceBoundaries.indexOf(text(pos)) < 0)
+	while (pos < len && sentenceBoundaries.indexOf(text(pos)) < 0 && !SpecialChars::isBreak(text(pos)))
 		++pos;
 	return pos < len ? pos + 1 : pos;
 }
 int StoryText::prevSentence(int pos)
 {
+	if (pos == 0)
+		return 0;
 	pos = qMax(0, pos-1);
-	while (pos > 0 && sentenceBoundaries.indexOf(text(pos)) < 0)
+	while (pos > 0 && sentenceBoundaries.indexOf(text(pos)) < 0 && !SpecialChars::isBreak(text(pos)))
 		--pos;
-	return sentenceBoundaries.indexOf(text(pos)) < 0 ? pos + 1 : pos;
+	return pos;
 }
 int StoryText::nextParagraph(int pos)
 {
@@ -1365,12 +1392,11 @@ int StoryText::nextParagraph(int pos)
 	pos = qMin(len, pos+1);
 	while (pos < len && text(pos) != SpecialChars::PARSEP)
 		++pos;
-	return pos;
+	return pos +1;
 }
 int StoryText::prevParagraph(int pos)
 {
-	pos = qMax(0, pos-1);
-	while (pos > 0 && text(pos) != SpecialChars::PARSEP)
+	while (pos > 0 && text(pos -1) != SpecialChars::PARSEP)
 		--pos;
 	return pos;
 }
@@ -2178,7 +2204,24 @@ public:
 			{
 				ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
 				//				ParagraphStyle* pstyle = NULL;
-				if (t == MARKVariableTextType)
+				if (t == MARKStyleVariableType)
+				{
+					StyleVariableMark * svmrk = doc->newStyleVariableMark();
+					Xml_attr::iterator ite = attr.find("pstylename");
+					if (ite != attr.end())
+						svmrk->pStyleName = Xml_data(ite);
+					ite = attr.find("search");
+					if (ite != attr.end())
+						svmrk->searchDirection = parseInt(Xml_data(ite));
+					ite = attr.find("limit");
+					if (ite != attr.end())
+						svmrk->textLimit = parseInt(Xml_data(ite));
+					ite = attr.find("ending");
+					if (ite != attr.end())
+						svmrk->ending = parseInt(Xml_data(ite));
+					mrk = (Mark*) svmrk;
+				}
+				else if (t == MARKVariableTextType)
 					mrk = doc->getMarkDefinied(l,t);
 				//			else if (t == MARKBullNumType)
 				//			{
@@ -2288,16 +2331,6 @@ public:
 					doc->newMark(mrk);
 				}
 				story->insertMark(mrk);
-				//			if (pstyle != NULL)
-				//			{
-				//				int i = story->cursorPosition() -1;
-				//				if (story->item(i)->parstyle == NULL) {
-				//					story->item(i)->parstyle = new ParagraphStyle(*pstyle);
-				//					story->item(i)->parstyle->setContext( &doc->paragraphStyles());
-				//				}
-				//				else
-				//					story->item(i)->parstyle->applyStyle(*pstyle);
-				//			}
 			}
 		}
 	}

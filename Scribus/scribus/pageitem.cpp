@@ -2318,13 +2318,13 @@ QString PageItem::ExpandToken(uint base)
 		ScText* hl = itemText.item(base);
 		if (hl->hasMark() && !hl->mark->isType(MARKAnchorType) && !hl->mark->isType(MARKIndexType))
 		{
-			if (hl->mark->isType(MARKStyleTextType))
+			if (hl->mark->isType(MARKStyleVariableType))
 			{
 				StyleVariableMark * msvt = (StyleVariableMark *) hl->mark;
 				if (m_Doc->masterPageMode())
-					chstr = "#" + msvt->srcParaStyleName;
+					chstr = "#" + msvt->pStyleName;
 				else
-					chstr = m_Doc->getTextWithStyle(this, msvt);
+					chstr = m_Doc->getTextFromPStyleOccurence(this, msvt);
 			}
 			else
 				chstr = hl->mark->getString();

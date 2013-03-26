@@ -1683,6 +1683,7 @@ public:
 	//return mark definied with gioven label and given type
 	Mark* getMarkDefinied(QString label, MarkType type); //returns mark with label and type (labels are unique only for same type marks)
 	Mark* newMark(Mark* mrk = NULL);
+	StyleVariableMark* newStyleVariableMark(StyleVariableMark* mrk = NULL);
 	TextNote* newNote(NotesStyle* NS);
 	
 	bool isMarkUsed(Mark* mrk, bool visible = false);
@@ -1800,7 +1801,7 @@ public:
 	bool checkAddSpace(QChar ch, int &before, int &after);
 	
 	//varaible style text marks
-	QString getTextWithStyle(PageItem*, StyleVariableMark*);
+	QString getTextFromPStyleOccurence(PageItem*, StyleVariableMark*);
 private:
 	QString getTextFromParagraph(PageItem* item, int pos, int length, int ending);
 };

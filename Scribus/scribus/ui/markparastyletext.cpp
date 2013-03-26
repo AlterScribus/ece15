@@ -15,7 +15,7 @@ MarkParaStyleText::MarkParaStyleText(const Mark * mrk, const QStringList& styles
 	setUiContent(stylesList);
 
 	StyleVariableMark* m = (StyleVariableMark*) mrk;
-	setValues(m->srcParaStyleName, m->searching, m->textLimit, m->ending);
+	setValues(m->pStyleName, m->searchDirection, m->textLimit, m->ending);
 }
 
 void MarkParaStyleText::setUiContent(const QStringList stylesList)
@@ -29,13 +29,12 @@ void MarkParaStyleText::setUiContent(const QStringList stylesList)
 	searchCombo->addItem(tr("Last on Current Page")); //3
 	limitLabel->setText(tr("Limit text lenght to"));
 	limitSpin->setSuffix(tr("chars"));
-	limitSpin->setRange(0,999);
-	limitSpin->setValue(0);
-	limitSpin->setSpecialValueText(tr("No limit"));
+	limitSpin->setRange(1,999);
+	limitSpin->setValue(1);
 	endCombo->addItem(tr("Get whole paragraph"));	//0
 	endCombo->addItem(tr("Get first sentence"));	//1
 	endCombo->addItem(tr("Get first line"));		//2
-	endCombo->addItem(tr("Exact value"));			//3
+	endCombo->addItem(tr("Exact lenght"));			//3
 	endCombo->addItem(tr("Last space"));			//4
 	endLabel->setText(tr("end at"));
 	setWindowTitle(tr("Mark with text from Paragraph Style occurence"));
@@ -66,20 +65,20 @@ void MarkParaStyleText::setValues(QString styleName, int search, int limit, int 
 	searchCombo->setCurrentIndex(search);
 	limitSpin->setValue(limit);
 	endCombo->setCurrentIndex(ending);
-	endLabel->setEnabled(limit);
-	endCombo->setEnabled(limit);
+	limitLabel->setEnabled(ending >= EXACT_LENGHT);
+	limitSpin->setEnabled(ending >= EXACT_LENGHT);
 }
 
 void MarkParaStyleText::on_limitSpin_valueChanged(int arg1)
 {
 	if (arg1 == 0)
 		endCombo->setCurrentIndex(0);
-	else if (endCombo->currentIndex() < 3)
-		endCombo->setCurrentIndex(3);
+	else if (endCombo->currentIndex() < EXACT_LENGHT)
+		endCombo->setCurrentIndex(EXACT_LENGHT);
 }
 
 void MarkParaStyleText::on_endCombo_currentIndexChanged(int index)
 {
-	limitLabel->setEnabled(index >= 3);
-	limitSpin->setEnabled(index >= 3);
+	limitLabel->setEnabled(index >= EXACT_LENGHT);
+	limitSpin->setEnabled(index >= EXACT_LENGHT);
 }

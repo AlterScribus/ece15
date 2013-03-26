@@ -184,7 +184,7 @@ void SideBar::paintEvent(QPaintEvent *e)
 			}
 			else
 			{
-				pos1 = editor->StyledText.nextParagraph(pos1) + 1;
+				pos1 = editor->StyledText.nextParagraph(pos1);
 				paraInfo.second = qMax(0, qMin(pos1 - 1, editor->StyledText.length() - 1));
 			}
 			paraList.append(paraInfo);

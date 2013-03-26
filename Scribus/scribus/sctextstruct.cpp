@@ -91,6 +91,6 @@ bool ScText::isVisible(ScribusDoc *doc)
 
 void ScText::setNewMark(Mark *mrk)
 {
-	if (!mrk->isUnique())
+//	if (!mrk->isUnique())
 		mark = mrk;
 }

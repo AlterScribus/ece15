@@ -11192,7 +11192,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 
 bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType mrkType, ScItemsState* &is)
 {
-	if (m_Doc->masterPageMode() && !(mrkType == MARKVariableTextType || mrkType == MARKStyleTextType))
+	if (m_Doc->masterPageMode() && !(mrkType == MARKVariableTextType || mrkType == MARKStyleVariableType))
 		//avoid inserting in master pages other marks than Variable Text
 		return false;
 	
@@ -11216,7 +11216,7 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		break;
 	case MARKIndexType:
 		break;
-	case MARKStyleTextType:
+	case MARKStyleVariableType:
 		{
 			QStringList pstylesList;
 			for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
@@ -11246,8 +11246,8 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		QString label = "", text = "";
 		NotesStyle* NStyle = NULL;
 		bool insertExistedMark = false;
-		QString vStyleName;
-		int search, limit, ending;
+		QString pstyleName;
+		int searchingDirection, textLimit, ending;
 		
 		switch (mrkType)
 		{
@@ -11266,9 +11266,9 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 				label = tr("Mark with <%1> variable text").arg(text);
 			d.strtxt = text;
 			break;
-		case MARKStyleTextType:
-			insertMDialog->values(vStyleName, search, limit, ending);
-			label = tr("Mark with <%1> style text").arg(vStyleName);
+		case MARKStyleVariableType:
+			insertMDialog->values(pstyleName, searchingDirection, textLimit, ending);
+			label = tr("Mark of <%1>").arg(pstyleName);
 			break;
 		case MARK2ItemType:
 			insertMDialog->values(label, d.itemPtr);
@@ -11326,7 +11326,17 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 			}
 			else
 				getUniqueName(label,m_Doc->marksLabelsList(mrkType), "_");
-			mrk = m_Doc->newMark();
+			if (mrkType == MARKStyleVariableType)
+			{
+				StyleVariableMark * svmrk = m_Doc->newStyleVariableMark();
+				svmrk->pStyleName = pstyleName;
+				svmrk->searchDirection = searchingDirection;
+				svmrk->textLimit = textLimit;
+				svmrk->ending = ending;
+				mrk = (Mark*) svmrk;
+			}
+			else
+				mrk = m_Doc->newMark();
 			mrk->setValues(label, currItem->OwnPage, mrkType, d);
 		}
 		else
@@ -11346,14 +11356,6 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		{
 			mrk->getNotePtr()->setMasterMark(mrk);
 			mrk->setString("");
-		}
-		else if (mrk->isType(MARKStyleTextType))
-		{
-			StyleVariableMark* msvm = (StyleVariableMark*) mrk;
-			msvm->srcParaStyleName = vStyleName;
-			msvm->searching = search;
-			msvm->textLimit = limit;
-			msvm->ending = ending;
 		}
 
 		if (UndoManager::undoEnabled())
@@ -11396,8 +11398,16 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 				}
 				if (mrk->isType(MARK2ItemType))
 					is->insertItem("itemPtr", mrk->getItemPtr());
-				if (mrk->isType(MARKNoteMasterType))
+				else if (mrk->isType(MARKNoteMasterType))
 					is->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
+				else if (mrk->isType(MARKStyleVariableType))
+				{
+					StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+					is->set("pstylename", svmrk->pStyleName);
+					is->set("search", svmrk->searchDirection);
+					is->set("limit", svmrk->textLimit);
+					is->set("ending", svmrk->ending);
+				}
 			}
 			is->set("at", currItem->itemText.cursorPosition() -1);
 			if (currItem->isNoteFrame())
@@ -11430,19 +11440,15 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				editMDialog = (MarkInsert*) new MarkVariableText(m_Doc->marksList(), this);
 			editMDialog->setValues(mrk->label, mrk->getString());
 			break;
-		case MARKStyleTextType:
+		case MARKStyleVariableType:
 		{
+			StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
 			QStringList pstylesList;
 			for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
 				pstylesList.append(m_Doc->paragraphStyles()[i].name());
 			pstylesList.sort();
-			if (currItem == NULL)
-				//invoked from Marks Manager
-				editMDialog = (MarkInsert*) new MarkParaStyleText(mrk, pstylesList, this);
-			else
-				//invoked from mark`s entry in text
-				editMDialog = (MarkInsert*) new MarkParaStyleText(pstylesList, this);
-			editMDialog->setValues(mrk->label, mrk->getString());
+			editMDialog = (MarkInsert*) new MarkParaStyleText(svmrk, pstylesList, this);
+			editMDialog->setValues(svmrk->pStyleName, svmrk->searchDirection, svmrk->textLimit, svmrk->ending);
 		}
 		break;
 		case MARK2ItemType:
@@ -11495,6 +11501,8 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 	if (editMDialog == NULL) return false;
 
 	bool docWasChanged = false;
+	QString pstyleName;
+	int searchDirection, textLimit, ending;
 
 	editMDialog->setWindowTitle(tr("Edit ") + editMDialog->windowTitle());
 	if (editMDialog->exec())
@@ -11506,6 +11514,8 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 			d.itemName = currItem->itemName();
 		QString label = "", text = "";
 		QString oldStr = mrk->getString();
+		QString oldPStyleName;
+		int oldSearch, oldLimit, oldEnding;
 		bool newMark = false;
 		bool replaceMark = false;
 		switch (mrk->getType())
@@ -11559,6 +11569,23 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					hl->mark = mrk;
 					docWasChanged = true;
 					newMark = true;
+				}
+				break;
+			case MARKStyleVariableType:
+				{
+					StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+					oldPStyleName = svmrk->pStyleName;
+					oldSearch = svmrk->searchDirection;
+					oldLimit = svmrk->textLimit;
+					oldEnding = svmrk->ending;
+
+					editMDialog->values(pstyleName, searchDirection, textLimit, ending);
+
+					svmrk->pStyleName = pstyleName;
+					svmrk->searchDirection = searchDirection;
+					svmrk->textLimit = textLimit;
+					svmrk->ending = ending;
+					docWasChanged = true;
 				}
 				break;
 			case MARK2ItemType:
@@ -11679,10 +11706,34 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 						is->set("dTypeNEW", (int) dType);
 					}
 				}
-				if (mrk->isType(MARK2ItemType) && mrk->getItemPtr() != oldMark.getItemPtr())
+				else if (mrk->isType(MARK2ItemType) && mrk->getItemPtr() != oldMark.getItemPtr())
 				{
 					is->insertItem("itemPtrOLD", oldMark.getItemPtr());
 					is->insertItem("itemPtrNEW", mrk->getItemPtr());
+				}
+				else if (mrk->isType(MARKStyleVariableType))
+				{
+					StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+					if (oldPStyleName != svmrk->pStyleName)
+					{
+						is->set("pstylenameNEW", svmrk->pStyleName);
+						is->set("pstylenameOLD", oldPStyleName);
+					}
+					if (oldSearch != svmrk->searchDirection)
+					{
+						is->set("searchNEW", svmrk->searchDirection);
+						is->set("searchOLD", oldSearch);
+					}
+					if (oldLimit != svmrk->textLimit)
+					{
+						is->set("limitNEW", svmrk->textLimit);
+						is->set("limitOLD", oldLimit);
+					}
+					if (oldEnding != svmrk->ending)
+					{
+						is->set("endingNEW", svmrk->ending);
+						is->set("endingOLD", oldEnding);
+					}
 				}
 			}
 			undoManager->action(m_Doc, is);

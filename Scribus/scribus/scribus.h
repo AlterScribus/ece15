@@ -535,7 +535,7 @@ public slots:
 	void slotInsertMark2Mark() { insertMark(MARK2MarkType); }
 	void slotInsertMarkAnchor() { insertMark(MARKAnchorType); }
 	void slotInsertMarkVariableText() { insertMark(MARKVariableTextType); }
-	void slotInsertMarkStyleText() { insertMark(MARKStyleTextType); }
+	void slotInsertMarkStyleText() { insertMark(MARKStyleVariableType); }
 	void slotInsertMarkItem() { insertMark(MARK2ItemType); }
 	void slotInsertMarkNote();
 	void slotInsertMarkIndex() { insertMark(MARKIndexType); }

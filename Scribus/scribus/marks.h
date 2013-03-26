@@ -21,7 +21,7 @@ enum MarkType
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
 	MARKIndexType = 6, // index entry
 	MARKBullNumType = 7,
-	MARKStyleTextType = 8 //insert text from last occurence of selected style
+	MARKStyleVariableType = 8 //insert text from last occurence of selected style
 };
 
 struct MarkData
@@ -91,7 +91,7 @@ public:
 	bool hasItemPtr() { return data.itemPtr != NULL; }
 	bool hasString() { return !data.strtxt.isEmpty(); }
 	bool hasMark() { return data.destmarkName != ""; }
-	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKStyleTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
+	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
 	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) { return t==typ; }
 
@@ -110,11 +110,21 @@ public:
 class SCRIBUS_API StyleVariableMark : public Mark
 {
 public:
-	StyleVariableMark() : Mark(), srcParaStyleName(QString()), searching(0), textLimit(0), ending(0)
-		{ label = "StyleText"; typ = MARKStyleTextType; }
+	StyleVariableMark() : Mark(), pStyleName(QString()), searchDirection(0), textLimit(0), ending(0)
+		{ label = "VariableStyleText"; typ = MARKStyleVariableType; }
+	StyleVariableMark(const Mark& other) : Mark(other)
+	{
+		pStyleName = ((StyleVariableMark) other).pStyleName;
+		searchDirection = ((StyleVariableMark) other).searchDirection;
+		textLimit = ((StyleVariableMark) other).textLimit;
+		ending = ((StyleVariableMark) other).ending;
+		label = other.label + "_";
+	}
+private:
 	~StyleVariableMark() {}
-	QString srcParaStyleName;
-	int searching;
+public:
+	QString pStyleName;
+	int searchDirection;
 	int textLimit;
 	int ending;
 };
