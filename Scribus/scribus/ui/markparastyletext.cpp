@@ -15,7 +15,7 @@ MarkParaStyleText::MarkParaStyleText(const Mark * mrk, const QStringList& styles
 	setUiContent(stylesList);
 
 	StyleVariableMark* m = (StyleVariableMark*) mrk;
-	setValues(m->pStyleName, m->searchDirection, m->textLimit, m->ending);
+	setValues(m->pStyleName, m->searchDirection, m->textLimit, m->range);
 }
 
 void MarkParaStyleText::setUiContent(const QStringList stylesList)
@@ -31,12 +31,12 @@ void MarkParaStyleText::setUiContent(const QStringList stylesList)
 	limitSpin->setSuffix(tr("chars"));
 	limitSpin->setRange(1,999);
 	limitSpin->setValue(1);
-	endCombo->addItem(tr("Get whole paragraph"));	//0
-	endCombo->addItem(tr("Get first sentence"));	//1
-	endCombo->addItem(tr("Get first line"));		//2
-	endCombo->addItem(tr("Exact lenght"));			//3
-	endCombo->addItem(tr("Last space"));			//4
-	endLabel->setText(tr("end at"));
+	rangeCombo->addItem(tr("Get whole paragraph"));	//0
+	rangeCombo->addItem(tr("Get first sentence"));	//1
+	rangeCombo->addItem(tr("Get first line"));		//2
+	rangeCombo->addItem(tr("Exact lenght"));			//3
+	rangeCombo->addItem(tr("Last space"));			//4
+	rangeLabel->setText(tr("end at"));
 	setWindowTitle(tr("Mark with text from Paragraph Style occurence"));
 }
 void MarkParaStyleText::changeEvent(QEvent *e)
@@ -51,33 +51,33 @@ void MarkParaStyleText::changeEvent(QEvent *e)
 	}
 }
 
-void MarkParaStyleText::values(QString &styleName, int &search, int &limit, int &ending)
+void MarkParaStyleText::values(QString &styleName, int &search, int &limit, int &range)
 {
 	styleName = styleCombo->currentText();
 	search = searchCombo->currentIndex();
 	limit = limitSpin->value();
-	ending = endCombo->currentIndex();
+	range = rangeCombo->currentIndex();
 }
 
-void MarkParaStyleText::setValues(QString styleName, int search, int limit, int ending)
+void MarkParaStyleText::setValues(QString styleName, int search, int limit, int range)
 {
 	styleCombo->setCurrentIndex(styleCombo->findText(styleName));
 	searchCombo->setCurrentIndex(search);
 	limitSpin->setValue(limit);
-	endCombo->setCurrentIndex(ending);
-	limitLabel->setEnabled(ending >= EXACT_LENGHT);
-	limitSpin->setEnabled(ending >= EXACT_LENGHT);
+	rangeCombo->setCurrentIndex(range);
+	limitLabel->setEnabled(range >= EXACT_LENGHT);
+	limitSpin->setEnabled(range >= EXACT_LENGHT);
 }
 
 void MarkParaStyleText::on_limitSpin_valueChanged(int arg1)
 {
 	if (arg1 == 0)
-		endCombo->setCurrentIndex(0);
-	else if (endCombo->currentIndex() < EXACT_LENGHT)
-		endCombo->setCurrentIndex(EXACT_LENGHT);
+		rangeCombo->setCurrentIndex(0);
+	else if (rangeCombo->currentIndex() < EXACT_LENGHT)
+		rangeCombo->setCurrentIndex(EXACT_LENGHT);
 }
 
-void MarkParaStyleText::on_endCombo_currentIndexChanged(int index)
+void MarkParaStyleText::on_rangeCombo_currentIndexChanged(int index)
 {
 	limitLabel->setEnabled(index >= EXACT_LENGHT);
 	limitSpin->setEnabled(index >= EXACT_LENGHT);

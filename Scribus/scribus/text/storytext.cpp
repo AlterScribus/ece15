@@ -1396,7 +1396,8 @@ int StoryText::nextParagraph(int pos)
 }
 int StoryText::prevParagraph(int pos)
 {
-	while (pos > 0 && text(pos -1) != SpecialChars::PARSEP)
+	--pos;
+	while (pos >= 0 && text(pos) != SpecialChars::PARSEP)
 		--pos;
 	return pos;
 }
@@ -2216,9 +2217,9 @@ public:
 					ite = attr.find("limit");
 					if (ite != attr.end())
 						svmrk->textLimit = parseInt(Xml_data(ite));
-					ite = attr.find("ending");
+					ite = attr.find("range");
 					if (ite != attr.end())
-						svmrk->ending = parseInt(Xml_data(ite));
+						svmrk->range = parseInt(Xml_data(ite));
 					mrk = (Mark*) svmrk;
 				}
 				else if (t == MARKVariableTextType)

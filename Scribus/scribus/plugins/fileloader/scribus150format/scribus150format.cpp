@@ -3421,7 +3421,7 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 				svmrk->pStyleName = attrs.valueAsString("pstylename");
 				svmrk->searchDirection = attrs.valueAsInt("search");
 				svmrk->textLimit = attrs.valueAsInt("limit");
-				svmrk->ending = attrs.valueAsInt("ending");
+				svmrk->range = attrs.valueAsInt("range");
 				svmrk->label = label;
 			}
 			else if (label != "" && type != MARKNoType)

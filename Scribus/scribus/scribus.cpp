@@ -11332,7 +11332,7 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 				svmrk->pStyleName = pstyleName;
 				svmrk->searchDirection = searchingDirection;
 				svmrk->textLimit = textLimit;
-				svmrk->ending = ending;
+				svmrk->range = ending;
 				mrk = (Mark*) svmrk;
 			}
 			else
@@ -11406,7 +11406,7 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 					is->set("pstylename", svmrk->pStyleName);
 					is->set("search", svmrk->searchDirection);
 					is->set("limit", svmrk->textLimit);
-					is->set("ending", svmrk->ending);
+					is->set("range", svmrk->range);
 				}
 			}
 			is->set("at", currItem->itemText.cursorPosition() -1);
@@ -11448,7 +11448,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				pstylesList.append(m_Doc->paragraphStyles()[i].name());
 			pstylesList.sort();
 			editMDialog = (MarkInsert*) new MarkParaStyleText(svmrk, pstylesList, this);
-			editMDialog->setValues(svmrk->pStyleName, svmrk->searchDirection, svmrk->textLimit, svmrk->ending);
+			editMDialog->setValues(svmrk->pStyleName, svmrk->searchDirection, svmrk->textLimit, svmrk->range);
 		}
 		break;
 		case MARK2ItemType:
@@ -11577,14 +11577,14 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					oldPStyleName = svmrk->pStyleName;
 					oldSearch = svmrk->searchDirection;
 					oldLimit = svmrk->textLimit;
-					oldEnding = svmrk->ending;
+					oldEnding = svmrk->range;
 
 					editMDialog->values(pstyleName, searchDirection, textLimit, ending);
 
 					svmrk->pStyleName = pstyleName;
 					svmrk->searchDirection = searchDirection;
 					svmrk->textLimit = textLimit;
-					svmrk->ending = ending;
+					svmrk->range = ending;
 					docWasChanged = true;
 				}
 				break;
@@ -11729,9 +11729,9 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 						is->set("limitNEW", svmrk->textLimit);
 						is->set("limitOLD", oldLimit);
 					}
-					if (oldEnding != svmrk->ending)
+					if (oldEnding != svmrk->range)
 					{
-						is->set("endingNEW", svmrk->ending);
+						is->set("endingNEW", svmrk->range);
 						is->set("endingOLD", oldEnding);
 					}
 				}

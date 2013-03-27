@@ -1799,11 +1799,6 @@ public:
 
 	//check if char should have additional space before or after
 	bool checkAddSpace(QChar ch, int &before, int &after);
-	
-	//varaible style text marks
-	QString getTextFromPStyleOccurence(PageItem*, StyleVariableMark*);
-private:
-	QString getTextFromParagraph(PageItem* item, int pos, int length, int ending);
 };
 
 Q_DECLARE_METATYPE(ScribusDoc*);

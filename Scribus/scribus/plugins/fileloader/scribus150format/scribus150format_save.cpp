@@ -1301,7 +1301,7 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 			docu.writeAttribute("pstylename", svmrk->pStyleName);
 			docu.writeAttribute("search", svmrk->searchDirection);
 			docu.writeAttribute("limit", svmrk->textLimit);
-			docu.writeAttribute("ending", svmrk->ending);
+			docu.writeAttribute("range", svmrk->range);
 		}
 		else if (mrk->isType(MARK2MarkType) && mrk->hasMark())
 		{

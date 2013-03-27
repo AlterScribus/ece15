@@ -1763,6 +1763,10 @@ signals:
 
 public:
 	void expandParaSelection(bool includeEOL = false);
+
+	//varaible style text marks
+	QString getTextFromPStyleOccurence(StyleVariableMark*svmrk);  //search for PStyle occurence and returns text string from this occurence
+	QString getTextFromParagraph(int pos, int length, int range); //returns text from paragraph at pos position in text; ending means 
 };
 
 Q_DECLARE_METATYPE(PageItem*)

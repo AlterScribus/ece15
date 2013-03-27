@@ -2320,11 +2320,11 @@ QString PageItem::ExpandToken(uint base)
 		{
 			if (hl->mark->isType(MARKStyleVariableType))
 			{
-				StyleVariableMark * msvt = (StyleVariableMark *) hl->mark;
+				StyleVariableMark * svmrk = (StyleVariableMark *) hl->mark;
 				if (m_Doc->masterPageMode())
-					chstr = "#" + msvt->pStyleName;
+					chstr = "#" + svmrk->pStyleName;
 				else
-					chstr = m_Doc->getTextFromPStyleOccurence(this, msvt);
+					chstr = getTextFromPStyleOccurence(svmrk);
 			}
 			else
 				chstr = hl->mark->getString();
@@ -10511,6 +10511,156 @@ void PageItem::expandParaSelection(bool includeEOL)
 
 	itemText.select(selStart, selLength);
 	HasSel = true;
+}
+
+QString PageItem::getTextFromPStyleOccurence(StyleVariableMark * svmrk)
+{
+	int startPage = OwnPage;
+	//TODO go through visible text occurence not in order in stack
+	if (svmrk->searchDirection == SEARCH_BACKWARD || svmrk->searchDirection == FIRST_ON_PAGE)
+	{
+		//search first occur on current page
+		for (int i = 0; i < m_Doc->DocItems.count(); ++i)
+		{
+			PageItem* item = m_Doc->DocItems.at(i);
+			if (item->itemText.length() && item->OwnPage == startPage)
+			{
+				int pos = item->firstInFrame();
+				if (item->itemText.findParagraphStart(pos) < pos)
+					pos = item->itemText.findParagraphEnd(pos) +1;
+				while (pos < item->lastInFrame())
+				{
+					if (item->itemText.paragraphStyle(pos).parent() == svmrk->pStyleName)
+					{
+						QString result = item->getTextFromParagraph(pos, svmrk->textLimit, svmrk->range);
+						if (!result.trimmed().isEmpty())
+							return result.trimmed();
+					}
+					pos = item->itemText.nextParagraph(pos);
+				}
+			}
+		}
+		if (svmrk->searchDirection == FIRST_ON_PAGE)
+			return QString();
+		//previous pages - search last occur
+		for (int page = startPage -1; page > 0; --page)
+		{
+			for (int i = m_Doc->DocItems.count() -1; i >=0; --i)
+			{
+				PageItem* item = m_Doc->DocItems.at(i);
+				if (item->itemText.length() && item->OwnPage == page)
+				{
+					int pos = item->lastInFrame();
+					int end = item->firstInFrame();
+					if (end > 0)
+						end = item->itemText.findParagraphEnd(item->firstInFrame()) +1;
+					while (pos > end)
+					{
+						if (item->itemText.paragraphStyle(pos).parent() == svmrk->pStyleName)
+						{
+							QString result = item->getTextFromParagraph(pos, svmrk->textLimit, svmrk->range);
+							if (!result.trimmed().isEmpty())
+								return result.trimmed();
+						}
+						pos = item->itemText.findParagraphStart(item->itemText.prevParagraph(pos));
+					}
+				}
+			}
+		}
+	}
+	else //if (mrk->searchDirection == SEARCH_FORWARD || mrk->searchDirection == LAST_ON_PAGE)
+	{
+		//search last occur on current page
+		for (int i = m_Doc->DocItems.count() -1; i >= 0; --i)
+		{
+			PageItem* item = m_Doc->DocItems.at(i);
+			if (item->itemText.length() && item->OwnPage == startPage)
+			{
+				int pos = item->itemText.findParagraphStart(item->lastInFrame());
+				if (pos < 0)
+					continue;
+				int end = item->firstInFrame();
+				if (end > 0)
+					end = item->itemText.findParagraphEnd(end);
+				while (pos > end)
+				{
+					if (item->itemText.paragraphStyle(pos).parent() == svmrk->pStyleName)
+					{
+						QString result = item->getTextFromParagraph(pos, svmrk->textLimit, svmrk->range);
+						if (!result.trimmed().isEmpty())
+							return result.trimmed();
+					}
+					pos = item->itemText.findParagraphStart(item->itemText.prevParagraph(pos));
+				}
+			}
+		}
+		if (svmrk->searchDirection == LAST_ON_PAGE)
+			return QString();
+		//search first occur on next pages
+		for (int page = startPage +1; page < m_Doc->DocPages.count(); ++page)
+		{
+			for (int i = 0; i < m_Doc->DocItems.count(); ++i)
+			{
+				PageItem* item = m_Doc->DocItems.at(i);
+				if (item->itemText.length() && item->OwnPage == page)
+				{
+					int pos = item->firstInFrame();
+					if (item->itemText.findParagraphStart(pos) < pos)
+						pos = item->itemText.findParagraphEnd(pos) +1;
+					while (pos < item->lastInFrame())
+					{
+						if (item->itemText.paragraphStyle(pos).parent() == svmrk->pStyleName)
+						{
+							QString result = item->getTextFromParagraph(pos, svmrk->textLimit, svmrk->range);
+							if (!result.trimmed().isEmpty())
+								return result.trimmed();
+						}
+						pos = item->itemText.nextParagraph(pos);
+					}
+				}
+			}
+		}
+	}
+	return QString();
+}
+
+QString PageItem::getTextFromParagraph(int pos, int length, int range)
+{
+	if (itemText.text(pos) == SpecialChars::PARSEP)
+		return QString();
+
+	int paraStart = itemText.findParagraphStart(pos);
+	int paraEnd = itemText.findParagraphEnd(pos);
+	while (((paraEnd -1) >= paraStart) && !itemText.text(paraEnd -1).isLetterOrNumber())
+		--paraEnd;
+	while (!itemText.text(paraStart).isLetterOrNumber() && paraStart < paraEnd)
+		++paraStart;
+	length = qMin(length, paraEnd - paraStart +1);
+	if (length <= 0)
+		return QString();
+
+	int textEnd = 0;
+	if (range == WHOLE_PARAGRAPH)
+		textEnd = itemText.findParagraphEnd(pos);
+	else if (range == FIRST_SENTENCE)
+	{
+		int posn;
+		return itemText.sentence(paraStart,posn);
+	}
+	else if (range == FIRST_LINE)
+		textEnd = itemText.endOfLine(paraStart);
+	else if (range == EXACT_LENGHT)
+		return itemText.text(paraStart, length);
+	else if (range == LAST_SPACE)
+	{
+		QString text = itemText.text(paraStart, length);
+		int pos = text.lastIndexOf(' ');
+		if (pos > 0)
+			textEnd = paraStart + pos;
+		else
+			textEnd = paraStart + length;
+	}
+	return itemText.text(paraStart, textEnd - paraStart).trimmed();
 }
 
 QString PageItem::getItemTextSaxed(int selStart, int selLength)

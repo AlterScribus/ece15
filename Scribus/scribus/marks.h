@@ -110,14 +110,14 @@ public:
 class SCRIBUS_API StyleVariableMark : public Mark
 {
 public:
-	StyleVariableMark() : Mark(), pStyleName(QString()), searchDirection(0), textLimit(0), ending(0)
+	StyleVariableMark() : Mark(), pStyleName(QString()), searchDirection(0), textLimit(0), range(0)
 		{ label = "VariableStyleText"; typ = MARKStyleVariableType; }
 	StyleVariableMark(const Mark& other) : Mark(other)
 	{
 		pStyleName = ((StyleVariableMark) other).pStyleName;
 		searchDirection = ((StyleVariableMark) other).searchDirection;
 		textLimit = ((StyleVariableMark) other).textLimit;
-		ending = ((StyleVariableMark) other).ending;
+		range = ((StyleVariableMark) other).range;
 		label = other.label + "_";
 	}
 private:
@@ -126,7 +126,18 @@ public:
 	QString pStyleName;
 	int searchDirection;
 	int textLimit;
-	int ending;
+	int range;
 };
+//searchingDirection
+const int SEARCH_BACKWARD = 0;
+const int SEARCH_FORWARD = 1;
+const int FIRST_ON_PAGE = 2;
+const int LAST_ON_PAGE = 3;
+//range
+const int WHOLE_PARAGRAPH = 0;
+const int FIRST_SENTENCE = 1;
+const int FIRST_LINE = 2;
+const int EXACT_LENGHT = 3;
+const int LAST_SPACE = 4;
 
 #endif // MARKS_H
