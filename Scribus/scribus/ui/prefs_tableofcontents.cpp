@@ -129,6 +129,7 @@ void Prefs_TableOfContents::generatePageItemList()
 
 void Prefs_TableOfContents::setupItemAttrs( QStringList newNames )
 {
+	docAttributesList = newNames;
 	disconnect( itemAttrComboBox, SIGNAL( activated(const QString&) ), this, SLOT( itemAttributeSelected(const QString&) ) );
 	itemAttrComboBox->clear();
 	itemAttrComboBox->addItem(CommonStrings::tr_None);
@@ -404,3 +405,28 @@ void Prefs_TableOfContents::nonPrintingFramesSelected( bool showNonPrinting )
 	}
 }
 
+void Prefs_TableOfContents::on_itemAttrRadio_clicked()
+{
+	bool itemAttrMode = !itemAttrRadio->isChecked();
+	itemAttrRadio->setChecked(itemAttrMode);
+	paraStyleRadio->setChecked(!itemAttrMode);
+	if (itemAttrMode)
+		setupItemAttrs(docAttributesList);
+	else
+	{
+		itemAttrComboBox->clear();
+		if(m_Doc!=NULL) // && m_Doc->docParagraphStyles.count()>5)
+		{
+			paragraphStyleList.clear();
+			for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
+				paragraphStyleList.append(m_Doc->paragraphStyles()[i].name());
+			paragraphStyleList.sort();
+			itemAttrComboBox->addItems(paragraphStyleList);
+		}
+	}
+}
+
+void Prefs_TableOfContents::on_paraStyleRadio_clicked()
+{
+    
+}

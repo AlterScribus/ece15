@@ -61,8 +61,13 @@ class SCRIBUS_API Prefs_TableOfContents : public Prefs_Pane, Ui::Prefs_TableOfCo
 		ScribusDoc* m_Doc;
 		QString selectedTOCAttrName;
 		QStringList paragraphStyleList;
+		QStringList docAttributesList;
 
-	private:
+private slots:
+		void on_itemAttrRadio_clicked();
+		void on_paraStyleRadio_clicked();
+
+private:
 		void destroy();
 
 };
