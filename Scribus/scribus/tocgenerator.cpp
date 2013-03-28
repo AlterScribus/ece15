@@ -79,6 +79,7 @@ void TOCGenerator::generateDefault()
 
 		PageItem *currentDocItem;
 		QMap<QString, QString> tocMap;
+		QList<int> tocLevels;
 
 		uint *pageCounter = new uint[currDoc->DocPages.count()];
 		if (pageCounter == NULL)
@@ -95,62 +96,78 @@ void TOCGenerator::generateDefault()
 			//Item not on a page, continue
 			if (currentDocItem->OwnPage == -1)
 				continue;
-			//If we dont want to list non printing frames and this one is set to not print, continue
-			if (!tocSetupIt->listNonPrintingFrames && !currentDocItem->printEnabled())
-				continue;
-
-			ObjectAttribute objAttr;
-			QList<ObjectAttribute> objAttrs = currentDocItem->getObjectAttributes(tocSetupIt->itemAttrName);
-			if (objAttrs.count() <= 0)
-				continue;
-
 			QString pageID = QString("%1").arg(currentDocItem->OwnPage + currDoc->FirstPnum, pageNumberWidth);
 			QString sectionID = currDoc->getSectionPageNumberForPageIndex(currentDocItem->OwnPage);
-
-			for (int i = 0; i < objAttrs.count(); ++i)
+			for (int lv=0; lv < tocSetupIt->levels.count(); ++lv)
 			{
-				objAttr = objAttrs.at(i);
-				if (objAttr.name.isNull())
+				TOCLevelSetup level = tocSetupIt->levels.at(lv);
+				//If we dont want to list non printing frames and this one is set to not print, continue
+				if (!level.listNonPrintingFrames && !currentDocItem->printEnabled())
 					continue;
-
-				//The key is generated to produce a sequence of numbers for the page numbers
-				//First is the page of the item
-				//Second is an incremented counter for the item so multiple per page works
-				//Third is the section based page number which is actually used in the TOC.
-				QString tocID = QString("%1").arg(pageCounter[currentDocItem->OwnPage]++, 3 , 10, QChar('0'));
-				QString key   = QString("%1,%2,%3").arg(pageID).arg(tocID).arg(sectionID);
-				tocMap.insert(key, objAttr.value);
+				if (level.attributeMode)
+				{
+					ObjectAttribute objAttr;
+					QList<ObjectAttribute> objAttrs = currentDocItem->getObjectAttributes(level.searchName);
+					if (objAttrs.count() <= 0)
+						continue;
+					for (int i = 0; i < objAttrs.count(); ++i)
+					{
+						objAttr = objAttrs.at(i);
+						if (objAttr.name.isNull())
+							continue;
+						
+						//The key is generated to produce a sequence of numbers for the page numbers
+						//First is the page of the item
+						//Second is an incremented counter for the item so multiple per page works
+						//Third is the section based page number which is actually used in the TOC.
+						QString tocID = QString("%1").arg(pageCounter[currentDocItem->OwnPage]++, 3 , 10, QChar('0'));
+						QString key   = QString("%1,%2,%3").arg(pageID).arg(tocID).arg(sectionID);
+						tocMap.insert(key, objAttr.value);
+						tocLevels.append(lv);
+					}
+				}
+				//ParagraphStyle mode is only for items with text and without "No-TOC" attribute
+				else if (currentDocItem->itemText.length() > 0 && currentDocItem->getObjectAttribute("NO_TOC").name.isNull())
+				{
+					int pos = currentDocItem->firstInFrame();
+					if (pos > 0)
+						pos = currentDocItem->itemText.findParagraphEnd(pos) +1;
+					while (pos < currentDocItem->lastInFrame())
+					{
+						if (currentDocItem->itemText.paragraphStyle(pos).parent() == level.searchName)
+						{
+							QString result = currentDocItem->getTextFromParagraph(pos, level.textLimit, level.textRange).trimmed();
+							if (!result.isEmpty())
+							{
+								QString tocID = QString("%1").arg(pageCounter[currentDocItem->OwnPage]++, 3 , 10, QChar('0'));
+								QString key   = QString("%1,%2,%3").arg(pageID).arg(tocID).arg(sectionID);
+								tocMap.insert(key, result);
+								tocLevels.append(lv);
+							}
+						}
+						pos = currentDocItem->itemText.nextParagraph(pos);
+					}
+				}
 			}
 		}
-
-		//Set up the gtWriter instance with the selected paragraph style
-		gtWriter writer(false, tocFrame);
-		writer.setUpdateParagraphStyles(false);
-		writer.setOverridePStyleFont(false);
-		gtFrameStyle* fstyle = writer.getDefaultStyle();
-		gtParagraphStyle* pstyle = new gtParagraphStyle(*fstyle);
-		pstyle->setName(tocSetupIt->textStyle);
-		writer.setParagraphStyle(pstyle);
-		
+		tocFrame->itemText.clear();
 		QString oldTocPage = QString::null;
+		int lv = 0;
 		for (QMap<QString, QString>::Iterator tocIt=tocMap.begin(); tocIt != tocMap.end();++tocIt)
 		{
+			TOCLevelSetup levelSetup = tocSetupIt->levels.at(tocLevels.at(lv));
 			QString tocPage(tocIt.key().section( ',', 2, 2 ).trimmed());
-			QString tocLine;
-			//Start with text or numbers
-			if (tocSetupIt->pageLocation == End || tocSetupIt->pageLocation == NotShown)
-				tocLine = tocIt.value();
-			if (tocSetupIt->pageLocation == Beginning && oldTocPage != tocPage)
-				tocLine = tocPage;
-			//Add in the tab for the leaders
-			tocLine += "\t";
-			//End with text or numbers
-			if (tocSetupIt->pageLocation == Beginning)
-				tocLine += tocIt.value();
-			if (tocSetupIt->pageLocation == End && oldTocPage != tocPage)
-				tocLine += tocPage;
-			tocLine += "\n";
-			writer.append(tocLine);
+			QString tocLine = QString();
+			if (levelSetup.pageLocation == End || levelSetup.pageLocation == NotShown)
+				tocLine.append(tocIt.value() + SpecialChars::TAB + tocPage);
+			if (levelSetup.pageLocation == Beginning && oldTocPage != tocPage)
+				tocLine.append(tocPage + SpecialChars::TAB + tocIt.value());
+			tocLine.append(SpecialChars::PARSEP);
+			int pos = tocFrame->itemText.length();
+			tocFrame->itemText.insertChars(pos, tocLine);
+			ParagraphStyle pstyle = currDoc->paragraphStyle(levelSetup.textStyle);
+			tocFrame->itemText.applyStyle(pos, pstyle);
+			++lv;
 		}
 
 		delete[] pageCounter;

@@ -1,5 +1,6 @@
 #include "marks.h"
 #include "markparastyletext.h"
+#include "util.h"
 
 MarkParaStyleText::MarkParaStyleText(const QStringList& stylesList, QWidget *parent) :
 	MarkInsert(stylesList, parent)
@@ -27,16 +28,16 @@ void MarkParaStyleText::setUiContent(const QStringList stylesList)
 	searchCombo->addItem(tr("Forward")); //1
 	searchCombo->addItem(tr("First on Current Page")); //2
 	searchCombo->addItem(tr("Last on Current Page")); //3
-	limitLabel->setText(tr("Limit text lenght to"));
+	limitLabel->setText(tr("Limit text length to"));
 	limitSpin->setSuffix(tr("chars"));
 	limitSpin->setRange(1,999);
 	limitSpin->setValue(1);
 	rangeCombo->addItem(tr("Get whole paragraph"));	//0
 	rangeCombo->addItem(tr("Get first sentence"));	//1
 	rangeCombo->addItem(tr("Get first line"));		//2
-	rangeCombo->addItem(tr("Exact lenght"));			//3
+	rangeCombo->addItem(tr("Exact length"));			//3
 	rangeCombo->addItem(tr("Last space"));			//4
-	rangeLabel->setText(tr("end at"));
+	rangeLabel->setText(tr("Max Length"));
 	setWindowTitle(tr("Mark with text from Paragraph Style occurence"));
 }
 void MarkParaStyleText::changeEvent(QEvent *e)
@@ -65,20 +66,20 @@ void MarkParaStyleText::setValues(QString styleName, int search, int limit, int 
 	searchCombo->setCurrentIndex(search);
 	limitSpin->setValue(limit);
 	rangeCombo->setCurrentIndex(range);
-	limitLabel->setEnabled(range >= EXACT_LENGHT);
-	limitSpin->setEnabled(range >= EXACT_LENGHT);
+	limitLabel->setEnabled(range >= EXACT_LENGTH);
+	limitSpin->setEnabled(range >= EXACT_LENGTH);
 }
 
 void MarkParaStyleText::on_limitSpin_valueChanged(int arg1)
 {
 	if (arg1 == 0)
 		rangeCombo->setCurrentIndex(0);
-	else if (rangeCombo->currentIndex() < EXACT_LENGHT)
-		rangeCombo->setCurrentIndex(EXACT_LENGHT);
+	else if (rangeCombo->currentIndex() < EXACT_LENGTH)
+		rangeCombo->setCurrentIndex(EXACT_LENGTH);
 }
 
 void MarkParaStyleText::on_rangeCombo_currentIndexChanged(int index)
 {
-	limitLabel->setEnabled(index >= EXACT_LENGHT);
-	limitSpin->setEnabled(index >= EXACT_LENGHT);
+	limitLabel->setEnabled(index >= EXACT_LENGTH);
+	limitSpin->setEnabled(index >= EXACT_LENGTH);
 }

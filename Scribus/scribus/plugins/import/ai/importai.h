@@ -136,7 +136,7 @@ private:
 	QTransform currentGradientMatrix;
 	QPointF currentGradientOrigin;
 	double currentGradientAngle;
-	double currentGradientLenght;
+	double currentGradientLength;
 	bool gradientMode;
 	bool wasBC;
 	bool itemRendered;

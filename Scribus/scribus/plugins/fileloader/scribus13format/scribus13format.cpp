@@ -735,17 +735,20 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 					{
 						ToCSetup tocsetup;
 						tocsetup.name=tocElem.attribute("Name");
-						tocsetup.itemAttrName=tocElem.attribute("ItemAttributeName");
 						tocsetup.frameName=tocElem.attribute("FrameName");
-						tocsetup.listNonPrintingFrames=QVariant(tocElem.attribute("ListNonPrinting")).toBool();
-						tocsetup.textStyle=tocElem.attribute("Style");
-						QString numberPlacement=tocElem.attribute("NumberPlacement");
-						if (numberPlacement=="Beginning")
-							tocsetup.pageLocation=Beginning;
-						if (numberPlacement=="End")
-							tocsetup.pageLocation=End;
-						if (numberPlacement=="NotShown")
-							tocsetup.pageLocation=NotShown;
+						TOCLevelSetup levelSetup;
+						levelSetup.attributeMode = true;
+						levelSetup.searchName = tocElem.attribute("ItemAttributeName");
+						levelSetup.textStyle = tocElem.attribute("Style");
+						levelSetup.listNonPrintingFrames = QVariant(tocElem.attribute("ListNonPrinting")).toBool();
+						QString numberPlacement(tocElem.attribute("NumberPlacement"));
+						if (numberPlacement == "Beginning")
+							levelSetup.pageLocation = Beginning;
+						if (numberPlacement == "End")
+							levelSetup.pageLocation = End;
+						if (numberPlacement == "NotShown")
+							levelSetup.pageLocation = NotShown;
+						tocsetup.levels.append(levelSetup);
 						m_Doc->appendToTocSetups(tocsetup);
 					}
 					TOC = TOC.nextSibling();

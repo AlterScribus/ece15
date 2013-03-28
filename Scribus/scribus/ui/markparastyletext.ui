@@ -31,7 +31,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="rangeLabel">
        <property name="text">
-        <string>Amount of text</string>
+        <string>Get Text from:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -44,7 +44,7 @@
      <item row="1" column="2">
       <widget class="QLabel" name="limitLabel">
        <property name="text">
-        <string>Limit text lenght to</string>
+        <string>Max Length:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -57,7 +57,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="styleLabel">
        <property name="text">
-        <string>Get text from</string>
+        <string>Search Paragraph Style:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -70,7 +70,7 @@
      <item row="0" column="2">
       <widget class="QLabel" name="searchLabel">
        <property name="text">
-        <string>Searching Direction</string>
+        <string>Searching Direction:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

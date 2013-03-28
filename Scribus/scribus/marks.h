@@ -133,11 +133,5 @@ const int SEARCH_BACKWARD = 0;
 const int SEARCH_FORWARD = 1;
 const int FIRST_ON_PAGE = 2;
 const int LAST_ON_PAGE = 3;
-//range
-const int WHOLE_PARAGRAPH = 0;
-const int FIRST_SENTENCE = 1;
-const int FIRST_LINE = 2;
-const int EXACT_LENGHT = 3;
-const int LAST_SPACE = 4;
 
 #endif // MARKS_H

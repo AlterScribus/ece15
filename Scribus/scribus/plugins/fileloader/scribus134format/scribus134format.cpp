@@ -1689,17 +1689,20 @@ bool Scribus134Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			ToCSetup tocsetup;
 			tocsetup.name = attrs.valueAsString("Name");
-			tocsetup.itemAttrName = attrs.valueAsString("ItemAttributeName");
 			tocsetup.frameName    = attrs.valueAsString("FrameName");
-			tocsetup.textStyle    = attrs.valueAsString("Style");
-			tocsetup.listNonPrintingFrames = QVariant(attrs.valueAsString("ListNonPrinting")).toBool();
-			QString numberPlacement = attrs.valueAsString("NumberPlacement");
+			TOCLevelSetup levelSetup;
+			levelSetup.attributeMode = true;
+			levelSetup.searchName = attrs.valueAsString("ItemAttributeName");
+			levelSetup.textStyle    = attrs.valueAsString("Style");
+			levelSetup.listNonPrintingFrames = QVariant(attrs.valueAsString("ListNonPrinting")).toBool();
+			QString numberPlacement(attrs.valueAsString("NumberPlacement"));
 			if (numberPlacement == "Beginning")
-				tocsetup.pageLocation = Beginning;
+				levelSetup.pageLocation = Beginning;
 			if (numberPlacement == "End")
-				tocsetup.pageLocation = End;
+				levelSetup.pageLocation = End;
 			if (numberPlacement == "NotShown")
-				tocsetup.pageLocation = NotShown;
+				levelSetup.pageLocation = NotShown;
+			tocsetup.levels.append(levelSetup);
 			doc->appendToTocSetups(tocsetup);
 		}
 	}

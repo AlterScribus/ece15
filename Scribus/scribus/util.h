@@ -39,6 +39,13 @@ class  ScribusView;
 class  ScStreamFilter;
 struct CopyPasteBuffer;
 
+//text range - used by StyleViariableMark and style mode of TOC
+const int WHOLE_PARAGRAPH = 0;
+const int FIRST_SENTENCE = 1;
+const int FIRST_LINE = 2;
+const int EXACT_LENGTH = 3;
+const int LAST_SPACE = 4;
+
 // class Foi;
 
 /*! \brief Compare double values by pre-multiplying by 10000 and converting to long if possible.

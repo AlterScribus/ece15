@@ -1932,7 +1932,7 @@ void AIPlug::processData(QString data)
 				m1.rotate(-currentGradientAngle);
 				ite->GrStartX = currentGradientOrigin.x() - ite->xPos() + m_Doc->currentPage()->xOffset();
 				ite->GrStartY = currentGradientOrigin.y() - ite->yPos() + m_Doc->currentPage()->yOffset();
-				QPointF target = m1.map(QPointF(currentGradientLenght, 0.0));
+				QPointF target = m1.map(QPointF(currentGradientLength, 0.0));
 				ite->GrEndX = target.x();
 				ite->GrEndY = target.y();
 				if (wasBC)
@@ -1943,7 +1943,7 @@ void AIPlug::processData(QString data)
 					QTransform m2;
 					m2.rotate(-currentGradientAngle);
 					m2 *= endMatrix;
-					QPointF target = m2.map(QPointF(currentGradientLenght, 0.0));
+					QPointF target = m2.map(QPointF(currentGradientLength, 0.0));
 					ite->GrEndX = target.x();
 					ite->GrEndY = target.y();
 				}
@@ -1952,7 +1952,7 @@ void AIPlug::processData(QString data)
 			currentGradientMatrix = QTransform();
 			currentGradientOrigin = QPointF(0.0, 0.0);
 			currentGradientAngle = 0.0;
-			currentGradientLenght = 1.0;
+			currentGradientLength = 1.0;
 			itemRendered = false;
 		}
 		else if (command == "Bg")
@@ -1964,7 +1964,7 @@ void AIPlug::processData(QString data)
 			QString tmpS = Cdata.mid(en+1, Cdata.size() - en);
 			ScTextStream gVals(&tmpS, QIODevice::ReadOnly);
 			double xOrig, yOrig, m1, m2, m3, m4, m5, m6;
-			gVals >> xOrig >> yOrig >> currentGradientAngle >> currentGradientLenght >> m1 >> m2 >> m3 >> m4 >> m5 >> m6;
+			gVals >> xOrig >> yOrig >> currentGradientAngle >> currentGradientLength >> m1 >> m2 >> m3 >> m4 >> m5 >> m6;
 			currentGradientOrigin = QPointF(xOrig - docX, docHeight - (yOrig - docY));
 			currentGradientMatrix = QTransform(m1, m2, m3, m4, m5, m6);
 		}
@@ -3408,7 +3408,7 @@ bool AIPlug::convert(QString fn)
 	currentGradientMatrix = QTransform();
 	currentGradientOrigin = QPointF(0.0, 0.0);
 	currentGradientAngle = 0.0;
-	currentGradientLenght = 1.0;
+	currentGradientLength = 1.0;
 	currentPatternName = "";
 	currentPatternX = 0.0;
 	currentPatternY = 0.0;

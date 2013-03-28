@@ -1833,11 +1833,21 @@ bool PrefsManager::WritePref(QString ho)
 	{
 		QDomElement tocsetup = docu.createElement("TableOfContents");
 		tocsetup.setAttribute("Name", (*tocSetupIt).name);
-		tocsetup.setAttribute("ItemAttributeName", (*tocSetupIt).itemAttrName);
 		tocsetup.setAttribute("FrameName", (*tocSetupIt).frameName);
-		tocsetup.setAttribute("ListNonPrinting", (*tocSetupIt).listNonPrintingFrames);
-		tocsetup.setAttribute("Style", (*tocSetupIt).textStyle);
-		tocsetup.setAttribute("NumberPlacement", (*tocSetupIt).pageLocation);
+		tocsetup.setAttribute("TOCLevels", (*tocSetupIt).levels.count());
+		for (int i=0; i < (*tocSetupIt).levels.count(); ++i)
+		{
+			TOCLevelSetup levelSetup = (*tocSetupIt).levels.at(i);
+			QDomElement levelElem = docu.createElement("tocLevel");
+			levelElem.setAttribute("AttributeMode", (int) levelSetup.attributeMode);
+			levelElem.setAttribute("ListNonPrinting", (int) levelSetup.listNonPrintingFrames);
+			levelElem.setAttribute("NumberPlacement", (int) levelSetup.pageLocation);
+			levelElem.setAttribute("SearchName", levelSetup.searchName);
+			levelElem.setAttribute("TextRange", levelSetup.textRange);
+			levelElem.setAttribute("TextLimit", levelSetup.textLimit);
+			levelElem.setAttribute("Style", levelSetup.textStyle);
+			tocsetup.appendChild(levelElem);
+		}
 		tocElem.appendChild(tocsetup);
 	}
 	elem.appendChild(tocElem);
@@ -2607,17 +2617,24 @@ bool PrefsManager::ReadPref(QString ho)
 				{
 					ToCSetup tocsetup;
 					tocsetup.name=tocElem.attribute("Name");
-					tocsetup.itemAttrName=tocElem.attribute("ItemAttributeName");
 					tocsetup.frameName=tocElem.attribute("FrameName");
-					tocsetup.listNonPrintingFrames=static_cast<bool>(tocElem.attribute("ListNonPrinting").toInt());
-					tocsetup.textStyle=tocElem.attribute("Style");
-					QString numberPlacement=tocElem.attribute("NumberPlacement");
-					if (numberPlacement=="Beginning")
-						tocsetup.pageLocation=Beginning;
-					if (numberPlacement=="End")
-						tocsetup.pageLocation=End;
-					if (numberPlacement=="NotShown")
-						tocsetup.pageLocation=NotShown;
+					QDomNode TOCL = DOC.firstChild();
+					while(!TOCL.isNull())
+					{
+						QDomElement levelElem = TOCL.toElement();
+						if (levelElem.tagName() == "tocLevel")
+						{
+							TOCLevelSetup levelSetup;
+							levelSetup.attributeMode = static_cast<bool>(levelElem.attribute("AttributeMode").toInt());
+							levelSetup.listNonPrintingFrames = static_cast<bool>(levelElem.attribute("ListNonPrinting").toInt());
+							levelSetup.pageLocation = (TOCPageLocation) levelElem.attribute("NumberPlacement").toInt();
+							levelSetup.searchName = levelElem.attribute("SearchName");
+							levelSetup.textRange = levelElem.attribute("TextRange").toInt();
+							levelSetup.textLimit = levelElem.attribute("TextLimit").toInt();
+							levelSetup.textStyle = levelElem.attribute("Style");
+							tocsetup.levels.append(levelSetup);
+						}
+					}
 					appPrefs.tocPrefs.defaultToCSetups.append(tocsetup);
 				}
 				TOC = TOC.nextSibling();

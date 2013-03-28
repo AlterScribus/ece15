@@ -27,14 +27,22 @@ typedef QList<ObjectAttribute> ObjAttrVector;
 
 typedef enum {Beginning, End, NotShown} TOCPageLocation;
 
-struct ToCSetup
+struct TOCLevelSetup
 {
-	QString name; //Name of ToC
-	QString itemAttrName; //Attribute to Scan for
-	QString frameName; //Destination frame
+	QString searchName; //Attribute or ParagraphStyle to Scan for
 	TOCPageLocation pageLocation; //Place the page number for the TOC at the beginning, end or not at all
 	bool listNonPrintingFrames; //List non printing frames in the TOC
 	QString textStyle; //Paragraph style for text
+	bool attributeMode; //search for Attribute or for ParagraphStyle
+	int textRange; //amount of text to get as entry
+	int textLimit;
+};
+
+struct ToCSetup
+{
+	QString name; //Name of ToC
+	QString frameName; //Destination frame
+	QList<TOCLevelSetup> levels;
 	//QString leaderParaStyle; //Paragraph style for leaders
 	//QString pageNumberParaStyle; //Paragraph style for page numbers
 };

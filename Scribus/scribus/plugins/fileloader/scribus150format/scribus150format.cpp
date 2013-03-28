@@ -3271,17 +3271,47 @@ bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			ToCSetup tocsetup;
 			tocsetup.name = attrs.valueAsString("Name");
-			tocsetup.itemAttrName = attrs.valueAsString("ItemAttributeName");
+			if (attrs.hasAttribute("TOClevels"))
+			{
+				//new TOC setup with levels and based on pstyles feature
+				while(!reader.atEnd() && !reader.hasError())
+				{
+					reader.readNext();
+					if (reader.isEndElement() && reader.name() == tagName)
+						break;
+					if(reader.isStartElement() && reader.name() == "tocLevel")
+					{
+						ScXmlStreamAttributes attrs = reader.scAttributes();
+						TOCLevelSetup levelSetup;
+						levelSetup.attributeMode = attrs.valueAsBool("AttributeMode");
+						levelSetup.listNonPrintingFrames = attrs.valueAsBool("ListNonPrinting");
+						levelSetup.pageLocation = (TOCPageLocation) attrs.valueAsInt("NumberPlacement");
+						levelSetup.searchName = attrs.valueAsString("SearchName");
+						levelSetup.textRange = attrs.valueAsInt("TextRange");
+						levelSetup.textLimit = attrs.valueAsInt("TextLimit");
+						levelSetup.textStyle = attrs.valueAsString("Style");
+						tocsetup.levels.append(levelSetup);
+					}
+				}
+			}
+			else
+			{
+				//old TOC type only with one level and based only on item`s attributes
+				TOCLevelSetup levelSetup;
+				levelSetup.attributeMode = true;
+				levelSetup.searchName = attrs.valueAsString("ItemAttributeName");
+				levelSetup.textStyle    = attrs.valueAsString("Style");
+				levelSetup.listNonPrintingFrames = QVariant(attrs.valueAsString("ListNonPrinting")).toBool();
+				QString numberPlacement(attrs.valueAsString("NumberPlacement"));
+				if (numberPlacement == "Beginning")
+					levelSetup.pageLocation = Beginning;
+				if (numberPlacement == "End")
+					levelSetup.pageLocation = End;
+				if (numberPlacement == "NotShown")
+					levelSetup.pageLocation = NotShown;
+				tocsetup.levels.append(levelSetup);
+			}
 			tocsetup.frameName    = attrs.valueAsString("FrameName");
-			tocsetup.textStyle    = attrs.valueAsString("Style");
-			tocsetup.listNonPrintingFrames = QVariant(attrs.valueAsString("ListNonPrinting")).toBool();
-			QString numberPlacement(attrs.valueAsString("NumberPlacement"));
-			if (numberPlacement == "Beginning")
-				tocsetup.pageLocation = Beginning;
-			if (numberPlacement == "End")
-				tocsetup.pageLocation = End;
-			if (numberPlacement == "NotShown")
-				tocsetup.pageLocation = NotShown;
 			doc->appendToTocSetups(tocsetup);
 		}
 	}

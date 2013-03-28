@@ -10649,7 +10649,7 @@ QString PageItem::getTextFromParagraph(int pos, int length, int range)
 	}
 	else if (range == FIRST_LINE)
 		textEnd = itemText.endOfLine(paraStart);
-	else if (range == EXACT_LENGHT)
+	else if (range == EXACT_LENGTH)
 		return itemText.text(paraStart, length);
 	else if (range == LAST_SPACE)
 	{

@@ -1209,21 +1209,19 @@ void Scribus150Format::writeTOC(ScXmlStreamWriter & docu)
 	{
 		docu.writeEmptyElement("TableOfContents");
 		docu.writeAttribute("Name", (*tocSetupIt).name);
-		docu.writeAttribute("ItemAttributeName", (*tocSetupIt).itemAttrName);
 		docu.writeAttribute("FrameName", (*tocSetupIt).frameName);
-		docu.writeAttribute("ListNonPrinting", (*tocSetupIt).listNonPrintingFrames);
-		docu.writeAttribute("Style", (*tocSetupIt).textStyle);
-		switch ((*tocSetupIt).pageLocation)
+		docu.writeAttribute("TOCLevels", (*tocSetupIt).levels.count());
+		for (int i=0; i < (*tocSetupIt).levels.count(); ++i)
 		{
-			case Beginning:
-				docu.writeAttribute("NumberPlacement", "Beginning");
-				break;
-			case End:
-				docu.writeAttribute("NumberPlacement", "End");
-				break;
-			case NotShown:
-				docu.writeAttribute("NumberPlacement", "NotShown");
-				break;
+			docu.writeEmptyElement("tocLevel");
+			TOCLevelSetup levelSetup = (*tocSetupIt).levels.at(i);
+			docu.writeAttribute("AttributeMode", (int) levelSetup.attributeMode);
+			docu.writeAttribute("ListNonPrinting", (int) levelSetup.listNonPrintingFrames);
+			docu.writeAttribute("NumberPlacement", (int) levelSetup.pageLocation);
+			docu.writeAttribute("SearchName", levelSetup.searchName);
+			docu.writeAttribute("TextRange", levelSetup.textRange);
+			docu.writeAttribute("TextLimit", levelSetup.textLimit);
+			docu.writeAttribute("Style", levelSetup.textStyle);
 		}
 	}
 	docu.writeEndElement();
