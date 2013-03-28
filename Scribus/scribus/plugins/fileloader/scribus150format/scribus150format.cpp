@@ -3271,13 +3271,14 @@ bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			ToCSetup tocsetup;
 			tocsetup.name = attrs.valueAsString("Name");
-			if (attrs.hasAttribute("TOClevels"))
+			tocsetup.frameName = attrs.valueAsString("FrameName");
+			if (attrs.hasAttribute("TOCLevels"))
 			{
 				//new TOC setup with levels and based on pstyles feature
 				while(!reader.atEnd() && !reader.hasError())
 				{
 					reader.readNext();
-					if (reader.isEndElement() && reader.name() == tagName)
+					if (reader.isEndElement() && reader.name() == "tocLevel")
 						break;
 					if(reader.isStartElement() && reader.name() == "tocLevel")
 					{
@@ -3309,9 +3310,10 @@ bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 					levelSetup.pageLocation = End;
 				if (numberPlacement == "NotShown")
 					levelSetup.pageLocation = NotShown;
+				levelSetup.textRange = 0;
+				levelSetup.textLimit = 999;
 				tocsetup.levels.append(levelSetup);
 			}
-			tocsetup.frameName    = attrs.valueAsString("FrameName");
 			doc->appendToTocSetups(tocsetup);
 		}
 	}

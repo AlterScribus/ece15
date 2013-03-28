@@ -47,13 +47,13 @@ public slots:
 	virtual void nonPrintingFramesSelected( bool showNonPrinting );
 	
 protected:
+	ScribusDoc* m_Doc;
 	int numSelected;
 	int levelSelected;
 	QString trStrPNNotShown;
 	QString trStrPNEnd;
 	QString trStrPNBeginning;
 	ToCSetupVector localToCSetupVector;
-	ScribusDoc* m_Doc;
 	QString selectedTOCAttrName;
 	QStringList paragraphStyleList;
 	QStringList docAttributesList;

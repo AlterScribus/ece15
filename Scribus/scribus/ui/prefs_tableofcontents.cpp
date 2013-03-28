@@ -19,7 +19,7 @@ const int PNNotShown = 2;
 
 Prefs_TableOfContents::Prefs_TableOfContents(QWidget* parent, ScribusDoc* doc)
 	: Prefs_Pane(parent),
-	m_Doc(doc)
+      m_Doc(doc), numSelected(-1), levelSelected(0)
 {
 	setupUi(this);
 	languageChange();
@@ -340,10 +340,10 @@ void Prefs_TableOfContents::enableGUIWidgets()
 	itemNumberPlacementComboBox->setEnabled(enabled);
 	itemAttrRadio->setEnabled(enabled);
 	paraStyleRadio->setEnabled(enabled);
-	rangeCombo->setEnabled(enabled && localToCSetupVector[numSelected].levels.at(levelSelected).textRange >= EXACT_LENGTH);
-	limitSpin->setEnabled(enabled && localToCSetupVector[numSelected].levels.at(levelSelected).textRange >= EXACT_LENGTH);
+	rangeCombo->setEnabled(enabled);
+	limitSpin->setEnabled(enabled);
 	levelAddButton->setEnabled(enabled);
-	levelDelButton->setEnabled(enabled && localToCSetupVector[numSelected].levels.count() > 1);
+	levelDelButton->setEnabled(enabled);
 	bool haveDoc=enabled && m_Doc!=NULL;
 	itemDestFrameComboBox->setEnabled(haveDoc);
 	levelParagraphStyleComboBox->setEnabled(haveDoc);
@@ -618,7 +618,8 @@ void Prefs_TableOfContents::on_limitSpin_valueChanged(int arg1)
 		++it;
 		++i;
 	}
-	TOCLevelSetup level = (*it).levels.at(levelSelected);
+	ToCSetup* toc = &(*it);
+	TOCLevelSetup level = toc->levels.at(levelSelected);
 	level.textLimit = arg1;
 	(*it).levels.replace(levelSelected, level);
 }
