@@ -10070,6 +10070,7 @@ void ScribusMainWindow::updateDocument()
 	{
 		m_Doc->updateNumbers(true);
 		m_Doc->updateMarks(true);
+		generateTableOfContents();
 		m_Doc->regionsChanged()->update(QRect());
 		emit UpdateRequest(reqNumUpdate);
 	}

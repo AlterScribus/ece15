@@ -3260,10 +3260,12 @@ bool Scribus150Format::readDocItemAttributes(ScribusDoc *doc, ScXmlStreamReader&
 bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& reader)
 {
 	QStringRef tagName = reader.name();
+	qDebug() << reader.name();
 	m_Doc->clearTocSetups();
 	while(!reader.atEnd() && !reader.hasError())
 	{
 		reader.readNext();
+		qDebug() << reader.name();
 		if (reader.isEndElement() && reader.name() == tagName)
 			break;
 		if(reader.isStartElement() && reader.name() == "TableOfContents")
@@ -3275,12 +3277,15 @@ bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 			if (attrs.hasAttribute("TOCLevels"))
 			{
 				//new TOC setup with levels and based on pstyles feature
-				while(!reader.atEnd() && !reader.hasError())
+				int levelsNum = attrs.valueAsInt("TOCLevels");
+				for (int i=0; i < levelsNum; )
 				{
 					reader.readNext();
-					if (reader.isEndElement() && reader.name() == "tocLevel")
+					qDebug() << reader.name();
+					if (reader.isEndElement() && reader.name() == tagName)
 						break;
-					if(reader.isStartElement() && reader.name() == "tocLevel")
+					QString elemName = "tocLevel" + QString::number(i);
+					if(reader.isStartElement() && reader.name() == elemName)
 					{
 						ScXmlStreamAttributes attrs = reader.scAttributes();
 						TOCLevelSetup levelSetup;
@@ -3292,6 +3297,7 @@ bool Scribus150Format::readTableOfContents(ScribusDoc* doc, ScXmlStreamReader& r
 						levelSetup.textLimit = attrs.valueAsInt("TextLimit");
 						levelSetup.textStyle = attrs.valueAsString("Style");
 						tocsetup.levels.append(levelSetup);
+						++i;
 					}
 				}
 			}

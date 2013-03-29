@@ -13,8 +13,8 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "util.h"
 
-const int PNEnd = 0;
-const int PNBeginning = 1;
+const int PNBeginning = 0;
+const int PNEnd = 1;
 const int PNNotShown = 2;
 
 Prefs_TableOfContents::Prefs_TableOfContents(QWidget* parent, ScribusDoc* doc)
@@ -23,16 +23,15 @@ Prefs_TableOfContents::Prefs_TableOfContents(QWidget* parent, ScribusDoc* doc)
 {
 	setupUi(this);
 	languageChange();
-	itemDestFrameComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
-	itemAttrComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
-	itemNumberPlacementComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
-	levelParagraphStyleComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
+//	itemDestFrameComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
+//	itemAttrComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
+//	itemNumberPlacementComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
+//	levelParagraphStyleComboBox->setMaximumWidth(fontMetrics().width( "This is a very long Name" ));
 
 	limitSpin->setRange(1,999);
 	limitSpin->setValue(1);
 	limitSpin->setSuffix(" " + tr("char"));
 	
-	// signals and slots connections
 	//do not connect( tocListBox, SIGNAL( currentRowChanged(int) ), this, SLOT( selectToC(int) ) );
 	connect( tocAddButton, SIGNAL( clicked() ), this, SLOT( addToC() ) );
 	connect( tocDeleteButton, SIGNAL( clicked() ), this, SLOT( deleteToC() ) );
@@ -69,8 +68,8 @@ void Prefs_TableOfContents::restoreDefaults(struct ApplicationPrefs *prefsData)
 	{
 		updateToCListBox();
 		updateParagraphStyleComboBox();
-//		tocListBox->setCurrentItem(0);
-//		selectToC(0);
+		tocListBox->setCurrentItem(0);
+		selectToC(0);
 	}
 	else
 		tocListBox->clear();
@@ -93,17 +92,19 @@ void Prefs_TableOfContents::languageChange()
 	limitSpin->setSuffix(tr("chars"));
 	limitSpin->setRange(1,999);
 	limitSpin->setValue(1);
+	int i = rangeCombo->currentIndex();
 	rangeCombo->addItem(tr("Get whole paragraph"));	//0
 	rangeCombo->addItem(tr("Get first sentence"));	//1
 	rangeCombo->addItem(tr("Get first line"));		//2
 	rangeCombo->addItem(tr("Exact length"));		//3
 	rangeCombo->addItem(tr("Last space"));			//4
+	rangeCombo->setCurrentIndex(i);
 	rangeLabel->setText(tr("Max Length"));
 
-	int i=itemNumberPlacementComboBox->currentIndex();
+	i=itemNumberPlacementComboBox->currentIndex();
 	itemNumberPlacementComboBox->clear();
-	itemNumberPlacementComboBox->addItem(trStrPNEnd);
 	itemNumberPlacementComboBox->addItem(trStrPNBeginning);
+	itemNumberPlacementComboBox->addItem(trStrPNEnd);
 	itemNumberPlacementComboBox->addItem(trStrPNNotShown);
 	itemNumberPlacementComboBox->setCurrentIndex(i);
 	helpNote->setText(tr("TIP: in Paragraph Style mode if some text frame must be ignored during TOC generating\nthen set 'NO_TOC' attribute to it."));
@@ -180,13 +181,20 @@ void Prefs_TableOfContents::setupAttrComboForPStyleMode()
 {
 	itemAttrComboBox->blockSignals(true);
 	itemAttrComboBox->clear();
-	if(m_Doc!=NULL) // && m_Doc->docParagraphStyles.count()>5)
+	if(m_Doc!=NULL)
 	{
 		paragraphStyleList.clear();
 		for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
 			paragraphStyleList.append(m_Doc->paragraphStyles()[i].name());
 		paragraphStyleList.sort();
 		itemAttrComboBox->addItems(paragraphStyleList);
+	}
+	if (numSelected!=999 && numSelected!=-1)
+	{
+		if (localToCSetupVector[numSelected].levels.at(levelSelected).searchName == CommonStrings::None)
+			setCurrentComboItem(itemAttrComboBox, CommonStrings::tr_None);
+		else
+			setCurrentComboItem(itemAttrComboBox, localToCSetupVector[numSelected].levels.at(levelSelected).searchName);
 	}
 	itemAttrLabel->setText(tr("Search Paragraph Style:"));
 	itemAttrComboBox->blockSignals(false);
@@ -215,14 +223,6 @@ void Prefs_TableOfContents::selectToC( int numberSelected )
 			setCurrentComboItem(itemDestFrameComboBox, CommonStrings::tr_None);
 		else
 			setCurrentComboItem(itemDestFrameComboBox, currTOC.frameName);
-
-		if (levelParagraphStyleComboBox->count()>0)
-		{
-			if (!paragraphStyleList.contains(currTOC.levels.at(levelSelected).textStyle) || currTOC.levels.at(levelSelected).textStyle==CommonStrings::None)
-				setCurrentComboItem(levelParagraphStyleComboBox, CommonStrings::tr_None);
-			else
-				setCurrentComboItem(levelParagraphStyleComboBox, currTOC.levels.at(levelSelected).textStyle);
-		}
 	}
 
 	if (tocListBox->currentItem())
@@ -258,12 +258,14 @@ void Prefs_TableOfContents::showTOCLevel()
 		setCurrentComboItem(itemAttrComboBox, CommonStrings::tr_None);
 	else
 		setCurrentComboItem(itemAttrComboBox, currLevel.searchName);
-	if (currLevel.pageLocation==NotShown)
-		setCurrentComboItem(itemNumberPlacementComboBox, trStrPNNotShown);
-	else if (currLevel.pageLocation==Beginning)
-		setCurrentComboItem(itemNumberPlacementComboBox, trStrPNBeginning);
-	else
-		setCurrentComboItem(itemNumberPlacementComboBox, trStrPNEnd);
+	if (levelParagraphStyleComboBox->count()>0)
+	{
+		if (!paragraphStyleList.contains(currLevel.textStyle) || currLevel.textStyle==CommonStrings::None)
+			setCurrentComboItem(levelParagraphStyleComboBox, CommonStrings::tr_None);
+		else
+			setCurrentComboItem(levelParagraphStyleComboBox, currLevel.textStyle);
+	}
+	itemNumberPlacementComboBox->setCurrentIndex(currLevel.pageLocation);
 	itemListNonPrintingCheckBox->setChecked(currLevel.listNonPrintingFrames);
 	levelSpin->setValue(levelSelected +1);
 	blockSignals(false);
@@ -319,7 +321,6 @@ void Prefs_TableOfContents::updateParagraphStyleComboBox()
 {
 	paragraphStyleList.clear();
 	paragraphStyleList.append(CommonStrings::tr_None);
-
 	if(m_Doc!=NULL) // && m_Doc->docParagraphStyles.count()>5)
 	{
 		for (int i = 0; i < m_Doc->paragraphStyles().count(); ++i)
@@ -328,7 +329,6 @@ void Prefs_TableOfContents::updateParagraphStyleComboBox()
 	levelParagraphStyleComboBox->clear();
 	levelParagraphStyleComboBox->addItems(paragraphStyleList);
 }
-
 
 void Prefs_TableOfContents::enableGUIWidgets()
 {
@@ -351,12 +351,11 @@ void Prefs_TableOfContents::enableGUIWidgets()
 
 void Prefs_TableOfContents::deleteToC()
 {
-	int numberSelected=tocListBox->currentRow();
-	if (numberSelected>=0)
+	if (numSelected>=0)
 	{
 		int i=0;
 		ToCSetupVector::Iterator it=localToCSetupVector.begin();
-		while (it!= localToCSetupVector.end() && i<numberSelected)
+		while (it!= localToCSetupVector.end() && i<numSelected)
 		{
 			++it;
 			++i;
@@ -372,12 +371,11 @@ void Prefs_TableOfContents::deleteToC()
 
 void Prefs_TableOfContents::itemAttributeSelected( const QString& searchForName )
 {
-	int numberSelected=tocListBox->currentRow();
-	if (numberSelected>=0)
+	if (numSelected>=0)
 	{
 		int i=0;
 		ToCSetupVector::Iterator it=localToCSetupVector.begin();
-		while (it!= localToCSetupVector.end() && i<numberSelected)
+		while (it!= localToCSetupVector.end() && i<numSelected)
 		{
 			++it;
 			++i;
@@ -393,12 +391,11 @@ void Prefs_TableOfContents::itemAttributeSelected( const QString& searchForName 
 
 void Prefs_TableOfContents::itemFrameSelected( const QString& frameName )
 {
-	int numberSelected=tocListBox->currentRow();
-	if (numberSelected>=0)
+	if (numSelected>=0)
 	{
 		int i=0;
 		ToCSetupVector::Iterator it=localToCSetupVector.begin();
-		while (it!= localToCSetupVector.end() && i<numberSelected)
+		while (it!= localToCSetupVector.end() && i<numSelected)
 		{
 			++it;
 			++i;
@@ -413,23 +410,17 @@ void Prefs_TableOfContents::itemFrameSelected( const QString& frameName )
 
 void Prefs_TableOfContents::itemPageNumberPlacedSelected( const int pageLocation )
 {
-	int numberSelected=tocListBox->currentRow();
-	if (numberSelected>=0)
+	if (numSelected>=0)
 	{
 		int i=0;
 		ToCSetupVector::Iterator it=localToCSetupVector.begin();
-		while (it!= localToCSetupVector.end() && i<numberSelected)
+		while (it!= localToCSetupVector.end() && i<numSelected)
 		{
 			++it;
 			++i;
 		}
 		TOCLevelSetup level = (*it).levels.at(levelSelected);
-		if (pageLocation==PNBeginning)
-			level.pageLocation=Beginning;
-		else if (pageLocation==PNEnd)
-			level.pageLocation=End;
-		else
-			level.pageLocation=NotShown;
+		level.pageLocation= (TOCPageLocation) pageLocation;
 		(*it).levels.replace(levelSelected, level);
 	}
 }
@@ -457,13 +448,12 @@ void Prefs_TableOfContents::itemParagraphStyleSelected( const QString& itemStyle
 
 void Prefs_TableOfContents::setToCName( const QString &newName )
 {
-	int numberSelected=tocListBox->currentRow();
-	if (numberSelected!=-1)
+	if (numSelected!=-1)
 	{
-		tocListBox->item(numberSelected)->setText(newName);
+		tocListBox->item(numSelected)->setText(newName);
 		int i=0;
 		ToCSetupVector::Iterator it=localToCSetupVector.begin();
-		while (it!= localToCSetupVector.end() && i<numberSelected)
+		while (it!= localToCSetupVector.end() && i<numSelected)
 		{
 			++it;
 			++i;
@@ -474,12 +464,11 @@ void Prefs_TableOfContents::setToCName( const QString &newName )
 
 void Prefs_TableOfContents::nonPrintingFramesSelected( bool showNonPrinting )
 {
-	int numberSelected=tocListBox->currentRow();
-	if (numberSelected>=0)
+	if (numSelected>=0)
 	{
 		int i=0;
 		ToCSetupVector::Iterator it=localToCSetupVector.begin();
-		while (it!= localToCSetupVector.end() && i<numberSelected)
+		while (it!= localToCSetupVector.end() && i<numSelected)
 		{
 			++it;
 			++i;
@@ -547,6 +536,8 @@ void Prefs_TableOfContents::on_levelAddButton_clicked()
 	level.textStyle=CommonStrings::None;
 	level.pageLocation=End;
 	level.listNonPrintingFrames=false;
+	level.textRange=0;
+	level.textLimit=1;
 	
 	int i=0;
 	ToCSetupVector::Iterator it=localToCSetupVector.begin();
@@ -618,8 +609,7 @@ void Prefs_TableOfContents::on_limitSpin_valueChanged(int arg1)
 		++it;
 		++i;
 	}
-	ToCSetup* toc = &(*it);
-	TOCLevelSetup level = toc->levels.at(levelSelected);
+	TOCLevelSetup level = (*it).levels.at(levelSelected);
 	level.textLimit = arg1;
 	(*it).levels.replace(levelSelected, level);
 }

@@ -1213,7 +1213,7 @@ void Scribus150Format::writeTOC(ScXmlStreamWriter & docu)
 		docu.writeAttribute("TOCLevels", (*tocSetupIt).levels.count());
 		for (int i=0; i < (*tocSetupIt).levels.count(); ++i)
 		{
-			docu.writeStartElement("tocLevel");
+			docu.writeEmptyElement("tocLevel" + QString::number(i));
 			TOCLevelSetup levelSetup = (*tocSetupIt).levels.at(i);
 			docu.writeAttribute("AttributeMode", (int) levelSetup.attributeMode);
 			docu.writeAttribute("ListNonPrinting", (int) levelSetup.listNonPrintingFrames);
@@ -1222,7 +1222,6 @@ void Scribus150Format::writeTOC(ScXmlStreamWriter & docu)
 			docu.writeAttribute("TextRange", levelSetup.textRange);
 			docu.writeAttribute("TextLimit", levelSetup.textLimit);
 			docu.writeAttribute("Style", levelSetup.textStyle);
-			docu.writeEndElement();
 		}
 	}
 	docu.writeEndElement();

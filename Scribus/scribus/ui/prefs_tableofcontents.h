@@ -64,9 +64,7 @@ private slots:
 	void on_levelAddButton_clicked();
 	void on_levelDelButton_clicked();
 	void on_levelSpin_valueChanged(int arg1);
-
 	void on_rangeCombo_currentIndexChanged(int index);
-	
 	void on_limitSpin_valueChanged(int arg1);
 	
 private:
