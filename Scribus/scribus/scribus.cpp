@@ -6466,7 +6466,7 @@ void ScribusMainWindow::ToggleUGrid()
 	if (m_Doc)
 	{
 		m_Doc->SnapGrid = !m_Doc->SnapGrid;
-		slotDocCh();
+//		slotDocCh();
 	}
 }
 
@@ -6475,7 +6475,7 @@ void ScribusMainWindow::ToggleUGuides()
 	if (m_Doc)
 	{
 		m_Doc->SnapGuides = !m_Doc->SnapGuides;
-		slotDocCh();
+//		slotDocCh();
 	}
 }
 
@@ -6484,12 +6484,14 @@ void ScribusMainWindow::ToggleUElements()
 	if (m_Doc)
 	{
 		m_Doc->SnapElement = !m_Doc->SnapElement;
-		slotDocCh();
+//		slotDocCh();
 	}
 }
 
 void ScribusMainWindow::SetSnapElements(bool b)
 {
+	if (m_Doc->appMode == modeEdit)
+		return;
 	if(m_Doc && m_Doc->SnapElement != b)
 		ToggleUElements();
 }

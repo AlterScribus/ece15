@@ -4937,8 +4937,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			NextBox->update();
 			m_Doc->scMW()->selectItemsFromOutlines(NextBox);
 		}
-		else
-			doc()->changed();
+//		else
+//			doc()->changed();
 		break;
 	}
 // 	update();
