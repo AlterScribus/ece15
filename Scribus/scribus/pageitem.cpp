@@ -10034,6 +10034,12 @@ void PageItem::updateClip(bool updateWelded)
 					for (int i = 0 ; i < weldList.count(); i++)
 					{
 						weldingInfo wInf = weldList.at(i);
+						if (wInf.weldItem == NULL)
+						{
+							weldList.removeAt(i);
+							i = -1;
+							continue;
+						}
 						if (wInf.weldItem->isNoteFrame())
 						{
 							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
@@ -10292,6 +10298,7 @@ void PageItem::makeImageExternal(QString path)
 
 void PageItem::addWelded(PageItem* iPt)
 {
+	Q_ASSERT(iPt == NULL);
 	FPoint centerI = FPoint(xPos() + (width() / 2.0), yPos() + (height() / 2.0));
 	FPoint centerP = FPoint(iPt->xPos() + (iPt->width() / 2.0), iPt->yPos() + (iPt->height() / 2.0));
 	weldingInfo wInf;
@@ -10303,6 +10310,7 @@ void PageItem::addWelded(PageItem* iPt)
 //welded frames
 void PageItem::weldTo(PageItem* pIt)
 {
+	Q_ASSERT(pIt == NULL);
 	for (int i = 0 ; i <  weldList.count(); i++)
 	{
 		PageItem::weldingInfo wInf = weldList.at(i);
