@@ -3100,6 +3100,11 @@ void PageItem_TextFrame::layout()
 NoRoom:
 	invalid = false;
 	int pos = itemText.lastInFrame();
+	if (pos < 0)
+	{
+		qDebug() << "textframe:layout - negative last in frame";
+		return;
+	}
 	if (pos < itemText.length());
 		adjustParagraphEndings (pos, true);
 
@@ -6243,17 +6248,20 @@ void PageItem_TextFrame::setTextFrameHeight()
 	//ugly hack increasing min frame`s height against strange glyph painting if it is too close of bottom
 	double hackValue = 0.25;
 
+	setHeight(maxY/1000.0 + m_textDistanceMargins.Bottom + hackValue);
+	updateClip();
 	if (frameOverflows() && nextInChain() == NULL)
 	{
 		//expand frame to page bottom
-		double pH = m_Doc->currentPage()->height();
-		m_height = pH - (m_yPos - m_Doc->currentPage()->yOffset());
-		updateClip(true);
-		invalid = true;
-		layout(); //calculate current maxY
+		double maxY = m_Doc->currentPage()->height() + m_Doc->currentPage()->yOffset();
+		while (frameOverflows() && m_height < maxY)
+		{
+			m_height += hackValue;
+			updateClip(true);
+			invalid = true;
+			layout(); //calculate current maxY
+		}
 	}
-	setHeight(maxY/1000.0 + m_textDistanceMargins.Bottom + hackValue);
-	updateClip();
 	m_Doc->changed();
 	m_Doc->view()->updatesOn(true);
 	m_Doc->regionsChanged()->update(QRect());
