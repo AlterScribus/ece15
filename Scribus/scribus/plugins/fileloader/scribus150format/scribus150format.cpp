@@ -455,6 +455,8 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 				{
 					PageItem * Its = LinkID[lc.key()];
 					PageItem * Itn = LinkID[lc.value()];
+					if (Itn == NULL)
+						continue;
 					if (!Its->testLinkCandidate(Itn))
 					{
 						qDebug() << "scribus150format: corruption in linked textframes detected";

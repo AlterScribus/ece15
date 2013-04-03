@@ -120,7 +120,6 @@ void defaultCrashHandler(int sig)
 {
 	static int crashRecursionCounter = 0;
 	crashRecursionCounter++;
-	signal(SIGALRM, SIG_DFL);
 	if (crashRecursionCounter < 2)
 	{
 		emergencyActivated=true;
@@ -141,5 +140,6 @@ void defaultCrashHandler(int sig)
 		}
 		alarm(300);
 	}
+	signal(SIGALRM, SIG_DFL);
 	exit(255);
 }

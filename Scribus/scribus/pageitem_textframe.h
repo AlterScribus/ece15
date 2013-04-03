@@ -194,6 +194,7 @@ public:
 	void adjustParagraphEndings2();
 	bool moveLinesFromPreviousFrame2();
 	void layout3();
+	void increaseHeightAndUpdate(double addValue);
 };
 
 #endif

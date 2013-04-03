@@ -500,8 +500,8 @@ PageItem::PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double 
 	switch (m_ItemType)
 	{
 		case Polygon:
-			Clip.setPoints(4, static_cast<int>(w/2), 0, static_cast<int>(w), static_cast<int>(h/2),
-								static_cast<int>(w/2), static_cast<int>(h), 0,static_cast<int>(h/2));
+			Clip.setPoints(4, static_cast<int>(ceil(w/2)), 0, static_cast<int>(ceil(w)), static_cast<int>(ceil(h/2)),
+						   static_cast<int>(ceil(w/2)), static_cast<int>(ceil(h)), 0,static_cast<int>(ceil(h/2)));
 			break;
 		default:
 			Clip.setPoints(4, 0,0, static_cast<int>(w),0, static_cast<int>(w), static_cast<int>(h), 0,static_cast<int>(h));
@@ -9930,9 +9930,9 @@ void PageItem::updateClip(bool updateWelded)
 	switch (itemType())
 	{
 	case PageItem::Line:
-		Clip.setPoints(4, -ph,-ph, static_cast<int>(width()+ph),-ph,
-		                  static_cast<int>(width()+ph),static_cast<int>(height()+ph),
-		                  -ph,static_cast<int>(height()+ph));
+		Clip.setPoints(4, -ph,-ph, static_cast<int>(ceil(width()+ph)),-ph,
+					   static_cast<int>(ceil(width()+ph)),static_cast<int>(ceil(height()+ph)),
+					   -ph,static_cast<int>(ceil(height()+ph)));
 		break;
 	default:
 		if (((!ClipEdited) || (FrameType < 3)) && !(asPathText()))

@@ -524,7 +524,7 @@ struct LineControl {
 	
 	bool isEndOfCol(double morespace = 0)
 	{
-		return (long) ((yPos + morespace + insets.Bottom + lineCorr)*1000) > (long) (frameHeight*1000);
+		return qRound(yPos + morespace + insets.Bottom + lineCorr) > qRound(frameHeight);
 	}
 
 	/**
@@ -1546,7 +1546,7 @@ void PageItem_TextFrame::layout()
 		//why emit invalidating signals each time text is changed by appling styles?
 		//this speed up layouting in case of using notes marks and drop caps
 		itemText.blockSignals(true);
-		setMaxY(-1);
+		maxY = 0;
 		long maxYAsc = 0, maxYDesc = 0;
 		//double maxYAsc = 0.0, maxYDesc = 0.0;
 		double offset = 0.0;
@@ -2156,7 +2156,7 @@ void PageItem_TextFrame::layout()
 			//fix for glyphs with negative realAsce value
 			maxYAsc = qMax(maxYAsc, (long) 0);
 			maxYDesc = (long) ceil((current.yPos + realDesc) * 1000);
-			int maxYAsc1000 = ceil(maxYAsc/1000.0);
+			int maxYAsc1000 = floor(maxYAsc/1000.0);
 			int maxYDesc1000 = floor(maxYDesc/1000.0);
 
 			if (current.itemsInLine == 0 && !current.afterOverflow)
@@ -6233,35 +6233,52 @@ void PageItem_TextFrame::setNoteFrame(PageItem_NoteFrame *nF)
 
 void PageItem_TextFrame::setMaxY(long y)
 {
-	if (y == -1)
-		maxY = 0;
-	else
-		maxY = qMax(y, maxY);
+	if (y > maxY)
+	{
+		maxY = y;
+//		qDebug() << "new maxY" << maxY/1000.0;
+	}
 }
 
 void PageItem_TextFrame::setTextFrameHeight()
 {
 	m_Doc->view()->updatesOn(false);
 	//ugly hack increasing min frame`s height against strange glyph painting if it is too close of bottom
-	double hackValue = 0.25;
+	double hackValue = 0.0; //0.25;
+	if (nextInChain() != NULL)
+		hackValue = 0.3;
 
+	int oldLastInFrame = lastInFrame();
 	setHeight(maxY/1000.0 + m_textDistanceMargins.Bottom + hackValue);
 	updateClip();
-	if (frameOverflows() && nextInChain() == NULL)
+	invalid = true;
+	layout();
+	if (frameOverflows())
 	{
-		//expand frame to page bottom
-		double maxY = m_Doc->currentPage()->height() + m_Doc->currentPage()->yOffset();
-		while (frameOverflows() && m_height < maxY)
+		if (nextInChain() == NULL)
 		{
-			m_height += hackValue;
-			updateClip(true);
-			invalid = true;
-			layout(); //calculate current maxY
+			//expand frame to page bottom
+			double maxHeiht = m_Doc->currentPage()->height() + m_Doc->currentPage()->yOffset();
+			while (frameOverflows() && m_height < maxHeiht)
+				increaseHeightAndUpdate(0.5);
+		}
+		else
+		{
+			while (oldLastInFrame != lastInFrame())
+				increaseHeightAndUpdate(0.5);
 		}
 	}
 	m_Doc->changed();
 	m_Doc->view()->updatesOn(true);
 	m_Doc->regionsChanged()->update(QRect());
+}
+
+void PageItem_TextFrame::increaseHeightAndUpdate(double addValue)
+{
+	m_height += addValue;
+	updateClip(true);
+	invalid = true;
+	layout();
 }
 
 bool PageItem_TextFrame::isWarnedText(int pos)

@@ -203,34 +203,11 @@ void PageItem_NoteFrame::layout()
 	PageItem_TextFrame::layout();
 	int oldH = m_height;
 	if (notesStyle()->isAutoNotesHeight())
-	{
-		if (frameOverflows())
-		{
-			//increase height while text don`t fit in frame
-			double maxH = m_Doc->currentPage()->height() - m_xPos;
-			while (frameOverflows())
-			{
-				oldHeight = m_height += 8;
-				updateClip(false);
-				invalid = true;
-				PageItem_TextFrame::layout();
-				if (m_height >= maxH)
-					break;
-			}
-		}
 		setTextFrameHeight();
-		updateConstants();
-		updateClip();
-		invalid = true;
-		PageItem_TextFrame::layout();
-	}
-	if (oldH != height())
+	if (oldH != height() && masterFrame() != NULL)
 	{
-		if (masterFrame() != NULL)
-		{
-			foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
-				nF->invalid = true;
-		}
+		foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
+			nF->invalid = true;
 	}
 	invalid = false;
 	m_Doc->regionsChanged()->update(getBoundingRect());

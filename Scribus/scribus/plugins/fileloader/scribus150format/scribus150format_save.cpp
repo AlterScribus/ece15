@@ -1966,7 +1966,7 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 				if (pIt == NULL)
 				{
 					qDebug() << "Saving welding info - empty pointer!!!";
-					Q_ASSERT(false);
+//					Q_ASSERT(false);
 					continue;
 				}
 				if (pIt->isAutoNoteFrame())
