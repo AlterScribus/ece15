@@ -9345,8 +9345,8 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 				start = currItem->itemText.startOfSelection();
 				stop = currItem->itemText.endOfSelection();
 			}
-			start = currItem->itemText.startOfParagraph(currItem->itemText.nrOfParagraph(start));
-			stop = currItem->itemText.endOfParagraph(currItem->itemText.nrOfParagraph(stop));
+			start = currItem->itemText.findParagraphStart(start);
+			stop = currItem->itemText.findParagraphEnd(stop);
 			for (int pos=start; pos < stop; ++pos)
 			{
 				ScText* hl = currItem->itemText.item(pos);

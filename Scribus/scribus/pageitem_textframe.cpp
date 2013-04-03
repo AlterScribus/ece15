@@ -3142,7 +3142,6 @@ NoRoom:
 			{
 				if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
 				{
-					uint nrPar;
 					int pos;
 					for (int i = 0; i < Cols; i++)
 					{
@@ -3150,16 +3149,14 @@ NoRoom:
 						pos = getColumnSE(i, true);
 						if ( pos < 0 ) //probably empty column
 							break;
-						nrPar = itemText.nrOfParagraph(pos);
-						if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
-							 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
+						if ( (itemText.endOfLine(pos) == itemText.findParagraphEnd(pos))
+							 && (itemText.startOfLine(pos) != itemText.findParagraphStart(pos))
 							 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
 							wL1.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
 						//get end of column for widows check
 						pos = getColumnSE(i, false)-1;
-						nrPar = itemText.nrOfParagraph(pos);
-						if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
-							 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
+						if ( (itemText.startOfLine(pos) == itemText.findParagraphStart(pos))
+							 && (itemText.endOfLine(pos) != itemText.findParagraphEnd(pos))
 							 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
 							wL1.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
 					}
@@ -10617,7 +10614,6 @@ NoRoom:
 	{
 		if (Cols > 1 || prevInChain() != NULL || nextInChain() != NULL)
 		{
-			uint nrPar;
 			int pos;
 			for (int i = 0; i < Cols; i++)
 			{
@@ -10625,16 +10621,14 @@ NoRoom:
 				pos = getColumnSE(i, true);
 				if ( pos < 0 ) //probably empty column
 					break;
-				nrPar = itemText.nrOfParagraph(pos);
-				if ( (itemText.endOfLine(pos) == itemText.endOfParagraph(nrPar))
-					 && (itemText.startOfLine(pos) != itemText.startOfParagraph(nrPar))
+				if ( (itemText.endOfLine(pos) == itemText.findParagraphEnd(pos))
+					 && (itemText.startOfLine(pos) != itemText.findParagraphStart(pos))
 					 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
 					warnedList.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
 				//get end of column for widows check
 				pos = getColumnSE(i, false)-1;
-				nrPar = itemText.nrOfParagraph(pos);
-				if ( (itemText.startOfLine(pos) == itemText.startOfParagraph(nrPar))
-					 && (itemText.endOfLine(pos) != itemText.endOfParagraph(nrPar))
+				if ( (itemText.startOfLine(pos) == itemText.findParagraphStart(pos))
+					 && (itemText.endOfLine(pos) != itemText.findParagraphEnd(pos))
 					 && (itemText.startOfLine(pos) != itemText.endOfLine(pos)) )
 					warnedList.append(qMakePair(itemText.startOfLine(pos), itemText.endOfLine(pos)));
 			}

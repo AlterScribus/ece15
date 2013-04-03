@@ -1218,7 +1218,7 @@ uint StoryText::nrOfParagraphs() const
 
 int StoryText::startOfParagraph() const
 {
-	return startOfParagraph(nrOfParagraph());
+	return findParagraphStart(cursorPosition());
 }
 
 int StoryText::startOfParagraph(uint index) const
@@ -1261,7 +1261,7 @@ int StoryText::findParagraphEnd(int currentPos) const
 
 int StoryText::endOfParagraph() const
 {
-	return endOfParagraph(nrOfParagraph());
+	return findParagraphEnd(cursorPosition());
 }
 
 int StoryText::endOfParagraph(uint index) const

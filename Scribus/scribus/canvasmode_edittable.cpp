@@ -270,19 +270,15 @@ void CanvasMode_EditTable::mouseDoubleClickEvent(QMouseEvent* event)
 		if (event->modifiers() & Qt::ShiftModifier)
 		{
 			// Double click with Ctrl+Shift to select multiple paragraphs.
-			uint oldParNr = textFrame->itemText.nrOfParagraph(m_lastCursorPos);
-			uint newParNr = textFrame->itemText.nrOfParagraph();
-
-			start = textFrame->itemText.startOfParagraph(qMin(oldParNr, newParNr));
-			end = textFrame->itemText.endOfParagraph(qMax(oldParNr, newParNr));
+			start = textFrame->itemText.findParagraphStart(qMin(m_lastCursorPos, textFrame->itemText.cursorPosition()));
+			end = textFrame->itemText.findParagraphEnd(qMax(m_lastCursorPos, textFrame->itemText.cursorPosition()));
 		}
 		else
 		{
 			// Double click with Ctrl to select a single paragraph.
 			m_lastCursorPos = textFrame->itemText.cursorPosition();
-			uint parNr = textFrame->itemText.nrOfParagraph(m_lastCursorPos);
-			start = textFrame->itemText.startOfParagraph(parNr);
-			end = textFrame->itemText.endOfParagraph(parNr);
+			start = textFrame->itemText.findParagraphStart(m_lastCursorPos);
+			end = textFrame->itemText.findParagraphEnd(m_lastCursorPos);
 		}
 		textFrame->itemText.deselectAll();
 		textFrame->itemText.extendSelection(start, end);

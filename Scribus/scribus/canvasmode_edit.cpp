@@ -289,25 +289,23 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 
 				if (m->modifiers() & Qt::ShiftModifier)
 				{//Double click with Ctrl+Shift in a frame to select few paragraphs
-					uint oldPar = currItem->itemText.nrOfParagraph(oldCp);
-					uint newPar = currItem->itemText.nrOfParagraph();
-					if (oldPar < newPar)
+					int currCp = currItem->itemText.cursorPosition();
+					if (oldCp < currCp)
 					{
-						start = currItem->itemText.startOfParagraph(oldPar);
-						stop = currItem->itemText.endOfParagraph(newPar);
+						start = currItem->itemText.findParagraphStart(oldCp);
+						stop = currItem->itemText.findParagraphEnd(currCp);
 					}
 					else
 					{
-						start = currItem->itemText.startOfParagraph(newPar);
-						stop = currItem->itemText.endOfParagraph(oldPar);
+						start = currItem->itemText.findParagraphStart(currCp);
+						stop = currItem->itemText.findParagraphEnd(oldCp);
 					}
 				}
 				else
 				{//Double click with Ctrl in a frame to select a paragraph
 					oldCp = currItem->itemText.cursorPosition();
-					uint nrPar = currItem->itemText.nrOfParagraph(oldCp);
-					start = currItem->itemText.startOfParagraph(nrPar);
-					stop = currItem->itemText.endOfParagraph(nrPar);
+					start = currItem->itemText.findParagraphStart(oldCp);
+					stop = currItem->itemText.findParagraphEnd(oldCp);
 				}
 				currItem->itemText.deselectAll();
 				currItem->itemText.extendSelection(start, stop);

@@ -10504,8 +10504,8 @@ void PageItem::expandParaSelection(bool includeEOL)
 			itemText.select(selStart, selLength);
 		}
 		//extend selection to whole paragraphs
-		selStart  = itemText.startOfParagraph(itemText.nrOfParagraph(itemText.startOfSelection()));
-		selLength = itemText.endOfParagraph(itemText.nrOfParagraph(itemText.endOfSelection()-1)) - selStart;
+		selStart  = itemText.findParagraphStart(itemText.startOfSelection());
+		selLength = itemText.findParagraphEnd(itemText.endOfSelection()-1) - selStart;
 	}
 	else
 	{
