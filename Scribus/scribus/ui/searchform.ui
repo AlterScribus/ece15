@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SearchForm</class>
+ <widget class="QWidget" name="SearchForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>537</width>
+    <height>653</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QToolBox" name="toolBox">
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="stringsPage">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>519</width>
+        <height>486</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Text Strings</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QRadioButton" name="stringRadio">
+         <property name="text">
+          <string>Simple Strings</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QCheckBox" name="SText">
+           <property name="text">
+            <string>Text</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="STextVal"/>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="RText">
+           <property name="text">
+            <string>Replace</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="RTextVal"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="regexRadio">
+         <property name="text">
+          <string>RegEx</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <item>
+          <widget class="QCheckBox" name="SRegEx">
+           <property name="text">
+            <string>Rule</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="SRegExVal"/>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="RRegEx">
+           <property name="text">
+            <string>Replace</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="SRegExVal_2"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="stylesPage">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>519</width>
+        <height>486</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Text Style Attributes</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QGroupBox" name="StyleSearchBox">
+           <property name="title">
+            <string>Search</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout_2">
+            <property name="fieldGrowthPolicy">
+             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+            </property>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="SStyle">
+              <property name="text">
+               <string>Style</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="SStyleVal"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="SAlign">
+              <property name="text">
+               <string>Alignment</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="SAlignVal"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="SFont">
+              <property name="text">
+               <string>Font</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="SSize">
+              <property name="text">
+               <string>Font Size</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QComboBox" name="SFontVal"/>
+            </item>
+            <item row="3" column="1">
+             <widget class="QDoubleSpinBox" name="SSizeVal"/>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="SEffect">
+              <property name="text">
+               <string>Attributes</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="SFill">
+              <property name="text">
+               <string>Text Color</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QComboBox" name="SFillVal"/>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="SFillS">
+              <property name="text">
+               <string>Text Color Shading</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QSpinBox" name="SFillSVal"/>
+            </item>
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="SStroke">
+              <property name="text">
+               <string>Outline Color</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QComboBox" name="SStrokeVal"/>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="SStrokeS">
+              <property name="text">
+               <string>Outline Color Shading</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QSpinBox" name="SStrokeSVal"/>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="SLang">
+              <property name="text">
+               <string>Language</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QComboBox" name="SLangVal"/>
+            </item>
+            <item row="4" column="1">
+             <widget class="StyleSelect" name="SEffVal" native="true">
+              <layout class="QHBoxLayout" name="SEffectLayout"/>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="StyleReplaceBox">
+           <property name="title">
+            <string>Replace</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout">
+            <property name="fieldGrowthPolicy">
+             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+            </property>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="RStyle">
+              <property name="text">
+               <string>Style</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="RStyleVal"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="RAlign">
+              <property name="text">
+               <string>Justification</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="RFont">
+              <property name="text">
+               <string>Font</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="RAlignVal"/>
+            </item>
+            <item row="2" column="1">
+             <widget class="QComboBox" name="RFontVal"/>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="RSize">
+              <property name="text">
+               <string>Font Size</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QDoubleSpinBox" name="RSizeVal"/>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="REffect">
+              <property name="text">
+               <string>Attributes</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="RFill">
+              <property name="text">
+               <string>Text Color</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QComboBox" name="RFillVal"/>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="RFillS">
+              <property name="text">
+               <string>Text Color Shading</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QSpinBox" name="RFillSVal"/>
+            </item>
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="RStroke">
+              <property name="text">
+               <string>Outline Color</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QComboBox" name="RStrokeVal"/>
+            </item>
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="RStrokeS">
+              <property name="text">
+               <string>Outline Color Shading</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QSpinBox" name="RStrokeSVal"/>
+            </item>
+            <item row="9" column="0">
+             <widget class="QCheckBox" name="RLang">
+              <property name="text">
+               <string>Language</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QComboBox" name="RLangVal"/>
+            </item>
+            <item row="4" column="1">
+             <widget class="StyleSelect" name="REffVal" native="true">
+              <layout class="QHBoxLayout" name="REffectLayout"/>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="graphicsPage">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>519</width>
+        <height>486</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Graphics Attributes</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <item>
+        <widget class="QGroupBox" name="GSearchGroup">
+         <property name="title">
+          <string>Search</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_5">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="SItem">
+            <property name="text">
+             <string>Item Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="SItemVal"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="SFillMode">
+            <property name="text">
+             <string>Fill Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="SFillModeVal"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="SItemColor">
+            <property name="text">
+             <string>Fill Color</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="SItemColorVal"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="SItemO">
+            <property name="text">
+             <string>Fill Opacity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="SItemOVal"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="SItemS">
+            <property name="text">
+             <string>Fill Shading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="SItemSVal"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="SItemStrokeMode">
+            <property name="text">
+             <string>Stroke Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="SItemStrokeModeVal"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QCheckBox" name="SItemStroke">
+            <property name="text">
+             <string>Stroke Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="SItemStrokeVal"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QCheckBox" name="SItemStrokeColor">
+            <property name="text">
+             <string>Stroke Color</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="SItemStrokeColorVal"/>
+          </item>
+          <item row="8" column="0">
+           <widget class="QCheckBox" name="SItemStrokeS">
+            <property name="text">
+             <string>Stroke Shading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QSpinBox" name="SItemStrokeSVal"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="GReplaceGroup">
+         <property name="title">
+          <string>Replace</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_6">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="RSItem">
+            <property name="text">
+             <string>Item Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="RItemVal"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="RFillMode">
+            <property name="text">
+             <string>Fill Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="RFillModeVal"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="RItemColor">
+            <property name="text">
+             <string>Fill Color</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="RItemColorVal"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="RItemO">
+            <property name="text">
+             <string>Fill Opacity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="RItemOVal"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="RItemS">
+            <property name="text">
+             <string>Fill Shading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="RItemSVal"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="RItemStrokeMode">
+            <property name="text">
+             <string>Stroke Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="RItemStrokeModeVal"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QCheckBox" name="RItemStroke">
+            <property name="text">
+             <string>Stroke Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="RItemStrokeVal"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QCheckBox" name="RItemStrokeColor">
+            <property name="text">
+             <string>Stroke Color</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="RItemStrokeColorVal"/>
+          </item>
+          <item row="8" column="0">
+           <widget class="QCheckBox" name="RItemStrokeS">
+            <property name="text">
+             <string>Stroke Shading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QSpinBox" name="RItemStrokeSVal"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="rangeLabel">
+       <property name="text">
+        <string>Search Range:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="rangeCombo"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="Word">
+       <property name="text">
+        <string>Whole Word</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="CaseIgnore">
+       <property name="text">
+        <string>Case Insensitive</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="DoSearch">
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="DoReplace">
+       <property name="text">
+        <string>Replace</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="AllReplace">
+       <property name="text">
+        <string>Replace All</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="clearButton">
+       <property name="text">
+        <string>Clear Form</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Leave">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>StyleSelect</class>
+   <extends>QWidget</extends>
+   <header location="global">ui/styleselect.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

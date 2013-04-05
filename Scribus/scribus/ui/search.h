@@ -7,16 +7,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef SEARCHREPLACE_H
 #define SEARCHREPLACE_H
 
-#include <QDialog>
-class QVBoxLayout;
-class QHBoxLayout;
-class QGridLayout;
-class QCheckBox;
-class QComboBox;
-class QGroupBox;
-class QLineEdit;
-class QPushButton;
-class QLabel;
+#include "ui_searchform.h"
 
 #include "scribusapi.h"
 class ScrSpinBox;
@@ -28,7 +19,7 @@ class ColorCombo;
 class ScribusDoc;
 class PageItem;
 
-class SCRIBUS_API SearchReplace : public QDialog
+class SCRIBUS_API SearchReplace : public QDialog, public Ui::SearchForm
 {
 	Q_OBJECT
 
@@ -38,57 +29,57 @@ public:
 	virtual void slotDoSearch();
 	virtual void slotDoReplace();
 
-	QLabel* SText1;
-	QLabel* RText1;
-	QGroupBox* Search;
-	QCheckBox* SStroke;
-	QCheckBox* SFill;
-	QCheckBox* SStrokeS;
-	QCheckBox* SFillS;
-	QCheckBox* SSize;
-	QCheckBox* SFont;
-	QCheckBox* SStyle;
-	QCheckBox* SAlign;
-	QCheckBox* SText;
-	QCheckBox* SEffect;
-	QCheckBox* REffect;
-	QLineEdit* STextVal;
-	QComboBox* SStyleVal;
-	QComboBox* SAlignVal;
-	FontCombo* SFontVal;
-	ScrSpinBox* SSizeVal;
-	ColorCombo* SFillVal;
-	ShadeButton *SFillSVal;
-	ColorCombo* SStrokeVal;
-	ShadeButton *SStrokeSVal;
-	QGroupBox* Replace;
-	QCheckBox* RStroke;
-	QCheckBox* RStrokeS;
-	QCheckBox* RFill;
-	QCheckBox* RFillS;
-	QCheckBox* RSize;
-	QCheckBox* RFont;
-	QCheckBox* RStyle;
-	QCheckBox* RAlign;
-	QCheckBox* RText;
-	QLineEdit* RTextVal;
-	QComboBox* RStyleVal;
-	QComboBox* RAlignVal;
-	FontCombo* RFontVal;
-	ScrSpinBox* RSizeVal;
-	ColorCombo* RFillVal;
-	ShadeButton *RFillSVal;
-	ColorCombo* RStrokeVal;
-	ShadeButton *RStrokeSVal;
-	StyleSelect* SEffVal;
-	StyleSelect* REffVal;
-	QCheckBox* Word;
-	QCheckBox* CaseIgnore;
-	QPushButton* DoSearch;
-	QPushButton* DoReplace;
-	QPushButton* AllReplace;
-	QPushButton* clearButton;
-	QPushButton* Leave;
+//	QLabel* SText1;
+//	QLabel* RText1;
+//	QGroupBox* Search;
+//	QCheckBox* SStroke;
+//	QCheckBox* SFill;
+//	QCheckBox* SStrokeS;
+//	QCheckBox* SFillS;
+//	QCheckBox* SSize;
+//	QCheckBox* SFont;
+//	QCheckBox* SStyle;
+//	QCheckBox* SAlign;
+//	QCheckBox* SText;
+//	QCheckBox* SEffect;
+//	QCheckBox* REffect;
+//	QLineEdit* STextVal;
+//	QComboBox* SStyleVal;
+//	QComboBox* SAlignVal;
+//	FontCombo* SFontVal;
+//	ScrSpinBox* SSizeVal;
+//	ColorCombo* SFillVal;
+//	ShadeButton *SFillSVal;
+//	ColorCombo* SStrokeVal;
+//	ShadeButton *SStrokeSVal;
+//	QGroupBox* Replace;
+//	QCheckBox* RStroke;
+//	QCheckBox* RStrokeS;
+//	QCheckBox* RFill;
+//	QCheckBox* RFillS;
+//	QCheckBox* RSize;
+//	QCheckBox* RFont;
+//	QCheckBox* RStyle;
+//	QCheckBox* RAlign;
+//	QCheckBox* RText;
+//	QLineEdit* RTextVal;
+//	QComboBox* RStyleVal;
+//	QComboBox* RAlignVal;
+//	FontCombo* RFontVal;
+//	ScrSpinBox* RSizeVal;
+//	ColorCombo* RFillVal;
+//	ShadeButton *RFillSVal;
+//	ColorCombo* RStrokeVal;
+//	ShadeButton *RStrokeSVal;
+//	StyleSelect* SEffVal;
+//	StyleSelect* REffVal;
+//	QCheckBox* Word;
+//	QCheckBox* CaseIgnore;
+//	QPushButton* DoSearch;
+//	QPushButton* DoReplace;
+//	QPushButton* AllReplace;
+//	QPushButton* clearButton;
+//	QPushButton* Leave;
 	PageItem* Item;
 	ScribusDoc* Doc;
 	uint ReplStart;

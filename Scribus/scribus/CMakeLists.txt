@@ -160,6 +160,7 @@ SET(SCRIBUS_UI_SRC
   ui/propertywidget_textmarginsbase.ui
   ui/replacecolors.ui
   ui/replaceonecolor.ui
+  ui/searchreplacedialog.ui
   ui/selectobjects.ui
   ui/shortcutwidget.ui
   ui/smcellstylewidget.ui
@@ -447,7 +448,8 @@ SET(SCRIBUS_MOC_CLASSES
   ui/sctextbrowser.h
   ui/sctoolbar.h
   ui/sctreewidget.h
-  ui/search.h
+#  ui/search.h
+  ui/searchreplacedialog.h
   ui/selectobjects.h
   ui/selfield.h
   ui/shadebutton.h
@@ -898,7 +900,8 @@ SET(SCRIBUS_SOURCES
   ui/sctextbrowser.cpp
   ui/sctoolbar.cpp
   ui/sctreewidget.cpp
-  ui/search.cpp
+#  ui/search.cpp
+  ui/searchreplacedialog.cpp
   ui/selectobjects.cpp
   ui/selfield.cpp
   ui/shadebutton.cpp

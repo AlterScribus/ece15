@@ -10298,7 +10298,7 @@ void PageItem::makeImageExternal(QString path)
 
 void PageItem::addWelded(PageItem* iPt)
 {
-	Q_ASSERT(iPt == NULL);
+	Q_ASSERT(iPt != NULL);
 	FPoint centerI = FPoint(xPos() + (width() / 2.0), yPos() + (height() / 2.0));
 	FPoint centerP = FPoint(iPt->xPos() + (iPt->width() / 2.0), iPt->yPos() + (iPt->height() / 2.0));
 	weldingInfo wInf;
@@ -10310,16 +10310,10 @@ void PageItem::addWelded(PageItem* iPt)
 //welded frames
 void PageItem::weldTo(PageItem* pIt)
 {
-	Q_ASSERT(pIt == NULL);
-	for (int i = 0 ; i <  weldList.count(); i++)
-	{
-		PageItem::weldingInfo wInf = weldList.at(i);
-		if (wInf.weldItem == pIt)
-			return;
-	}
-	QList<PageItem*> ret = pIt->itemsWeldedTo();
-	if (ret.contains(this))
-		return;
+	Q_ASSERT(pIt != NULL);
+	if (itemsWeldedTo().contains(pIt) || pIt->itemsWeldedTo().contains(this))
+		return; //items already welded
+
 	addWelded(pIt);
 	pIt->addWelded(this);
 	if(!pIt->isNoteFrame() && undoManager->undoEnabled())
@@ -10339,6 +10333,7 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 		return;
 	weldingInfo wInf = weldList.at(weld);
 	PageItem *pIt = wInf.weldItem;
+	Q_ASSERT(pIt != NULL);
 	pIt->setXPos(pIt->xPos() + DX);
 	pIt->setYPos(pIt->yPos() + DY);
 	pIt->update();
@@ -10355,6 +10350,7 @@ void PageItem::moveWelded(double DX, double DY, PageItem* except)
 	{
 		weldingInfo wInf = weldList.at(i);
 		PageItem *pIt = wInf.weldItem;
+		Q_ASSERT(pIt != NULL);
 		if (pIt != except)
 		{
 			pIt->setXPos(pIt->xPos() + DX);
@@ -10393,6 +10389,7 @@ void PageItem::rotateWelded(double dR, double oldRot)
 	for (int a = 0; a < itemList.count(); a++)
 	{
 		PageItem *pIt = itemList.at(a);
+		Q_ASSERT(pIt != NULL);
 		QLineF lin = QLineF(rotCenter, QPointF(pIt->xPos(), pIt->yPos()));
 		lin.setAngle(lin.angle() - dR);
 		pIt->setXYPos(lin.p2().x(), lin.p2().y());
@@ -10404,11 +10401,11 @@ void PageItem::rotateWelded(double dR, double oldRot)
 QList<PageItem*> PageItem::itemsWeldedTo(PageItem* except)
 {
 	QList<PageItem*> ret;
-	ret.clear();
 	for (int i = 0 ; i < weldList.count(); i++)
 	{
 		weldingInfo wInf = weldList.at(i);
 		PageItem *pIt = wInf.weldItem;
+		Q_ASSERT(pIt != NULL);
 		if (pIt != except)
 		{
 			ret.append(pIt);
@@ -10424,6 +10421,7 @@ void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
 	for (int i = 0 ; i < weldList.count(); i++)
 	{
 		PageItem *pIt = weldList[i].weldItem;
+		Q_ASSERT(pIt != NULL);
 		if (pIt == pItem)
 		{
 			weldList[i].weldPoint = FPoint(DX, DY);
@@ -10442,6 +10440,7 @@ void PageItem::unWeld()
 	{
 		weldingInfo wInf = weldList.at(a);
 		PageItem *pIt = wInf.weldItem;
+		Q_ASSERT(pIt != NULL);
 		if (pIt == NULL)
 		{
 			qDebug() << "unWeld - null pointer in weldList";
@@ -10451,6 +10450,7 @@ void PageItem::unWeld()
 		{
 			weldingInfo wInf2 = pIt->weldList.at(b);
 			PageItem *pIt2 = wInf2.weldItem;
+			Q_ASSERT(pIt2 != NULL);
 			if (pIt2 == this)
 			{
 				pIt->weldList.removeAt(b);

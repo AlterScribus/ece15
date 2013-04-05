@@ -219,7 +219,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/scrapbookpalette.h"
 #include "ui/scmwmenumanager.h"
 #include "ui/selectobjects.h"
-#include "ui/search.h"
+#include "ui/searchreplacedialog.h"
 #include "ui/smcellstyle.h"
 #include "ui/smlinestyle.h"
 #include "ui/smtablestyle.h"
@@ -9899,7 +9899,7 @@ void ScribusMainWindow::SearchText()
 	PageItem *currItem = m_Doc->m_Selection->itemAt(0);
 	view->requestMode(modeEdit);
 	currItem->itemText.setCursorPosition(0);
-	SearchReplace* dia = new SearchReplace(this, m_Doc, currItem);
+	SearchReplaceDialog* dia = new SearchReplaceDialog(this, m_Doc, currItem);
 	connect(dia, SIGNAL(NewFont(const QString&)), this, SLOT(SetNewFont(const QString&)));
 	connect(dia, SIGNAL(NewAbs(int)), this, SLOT(setAlignmentValue(int)));
 	dia->exec();
