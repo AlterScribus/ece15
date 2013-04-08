@@ -6,8 +6,8 @@ for which a new license (GPL+exception) is in place.
 */
 #include "commonstrings.h"
 
-#include "importpct.h"
-#include "importpctplugin.h"
+#include "importpub.h"
+#include "importpubplugin.h"
 #include "prefscontext.h"
 #include "prefsfile.h"
 #include "prefsmanager.h"
@@ -20,27 +20,27 @@ for which a new license (GPL+exception) is in place.
 #include "ui/customfdialog.h"
 #include "ui/scmwmenumanager.h"
 
-int importpct_getPluginAPIVersion()
+int importpub_getPluginAPIVersion()
 {
 	return PLUGIN_API_VERSION;
 }
 
-ScPlugin* importpct_getPlugin()
+ScPlugin* importpub_getPlugin()
 {
-	ImportPctPlugin* plug = new ImportPctPlugin();
+	ImportPubPlugin* plug = new ImportPubPlugin();
 	Q_CHECK_PTR(plug);
 	return plug;
 }
 
-void importpct_freePlugin(ScPlugin* plugin)
+void importpub_freePlugin(ScPlugin* plugin)
 {
-	ImportPctPlugin* plug = dynamic_cast<ImportPctPlugin*>(plugin);
+	ImportPubPlugin* plug = dynamic_cast<ImportPubPlugin*>(plugin);
 	Q_ASSERT(plug);
 	delete plug;
 }
 
-ImportPctPlugin::ImportPctPlugin() : LoadSavePlugin(),
-	importAction(new ScrAction(ScrAction::DLL, "", QKeySequence(), this))
+ImportPubPlugin::ImportPubPlugin() : LoadSavePlugin(),
+	importAction(new ScrAction(ScrAction::DLL, QPixmap(), QPixmap(), "", QKeySequence(), this))
 {
 	// Set action info in languageChange, so we only have to do it in one
 	// place. This includes registering file format support.
@@ -48,79 +48,81 @@ ImportPctPlugin::ImportPctPlugin() : LoadSavePlugin(),
 	languageChange();
 }
 
-void ImportPctPlugin::languageChange()
+void ImportPubPlugin::languageChange()
 {
-	importAction->setText( tr("Import Pict..."));
-	FileFormat* fmt = getFormatByExt("pct");
-	fmt->trName = FormatsManager::instance()->nameOfFormat(FormatsManager::PCT); // Human readable name
-	fmt->filter = FormatsManager::instance()->extensionsForFormat(FormatsManager::PCT); // QFileDialog filter
+	importAction->setText( tr("Import PUB..."));
+	FileFormat* fmt = getFormatByExt("pub");
+	fmt->trName = tr("MS Publisher");
+	fmt->filter = tr("MS Publisher (*.pub *.PUB)");
 }
 
-ImportPctPlugin::~ImportPctPlugin()
+ImportPubPlugin::~ImportPubPlugin()
 {
 	unregisterAll();
-};
+}
 
-const QString ImportPctPlugin::fullTrName() const
+const QString ImportPubPlugin::fullTrName() const
 {
-	return QObject::tr("Pict Importer");
+	return QObject::tr("PUB Importer");
 }
 
 
-const ScActionPlugin::AboutData* ImportPctPlugin::getAboutData() const
+const ScActionPlugin::AboutData* ImportPubPlugin::getAboutData() const
 {
 	AboutData* about = new AboutData;
 	about->authors = "Franz Schmid <franz@scribus.info>";
-	about->shortDescription = tr("Imports Pict Files");
-	about->description = tr("Imports most Mac Pict files into the current document,\nconverting their vector data into Scribus objects.");
+	about->shortDescription = tr("Imports PUB Files");
+	about->description = tr("Imports most MS Publisher files into the current document,\nconverting their vector data into Scribus objects.");
 	about->license = "GPL";
 	Q_CHECK_PTR(about);
 	return about;
 }
 
-void ImportPctPlugin::deleteAboutData(const AboutData* about) const
+void ImportPubPlugin::deleteAboutData(const AboutData* about) const
 {
 	Q_ASSERT(about);
 	delete about;
 }
 
-void ImportPctPlugin::registerFormats()
+void ImportPubPlugin::registerFormats()
 {
 	FileFormat fmt(this);
-	fmt.trName = FormatsManager::instance()->nameOfFormat(FormatsManager::PCT); // Human readable name
-	fmt.formatId = FORMATID_PCTIMPORT;
-	fmt.filter = FormatsManager::instance()->extensionsForFormat(FormatsManager::PCT); // QFileDialog filter
-	fmt.nameMatch = QRegExp("\\."+FormatsManager::instance()->extensionListForFormat(FormatsManager::PCT, 1)+"$", Qt::CaseInsensitive);
-	fmt.fileExtensions = QStringList() << "pct" << "pic" << "pict";
+	fmt.trName = tr("MS Publisher");
+	fmt.filter = tr("MS Publisher (*.pub *.PUB)");
+	fmt.formatId = 0;
+	fmt.nameMatch = QRegExp("\\.pub$", Qt::CaseInsensitive);
+	fmt.fileExtensions = QStringList() << "pub";
 	fmt.load = true;
 	fmt.save = false;
 	fmt.thumb = true;
-	fmt.mimeTypes = FormatsManager::instance()->mimetypeOfFormat(FormatsManager::PCT); // MIME types
+	fmt.colorReading = true;
+	fmt.mimeTypes = QStringList();
+	fmt.mimeTypes.append("application/x-mspublisher");
 	fmt.priority = 64; // Priority
 	registerFormat(fmt);
 }
 
-bool ImportPctPlugin::fileSupported(QIODevice* /* file */, const QString & fileName) const
+bool ImportPubPlugin::fileSupported(QIODevice* /* file */, const QString & fileName) const
 {
 	return true;
 }
 
-bool ImportPctPlugin::loadFile(const QString & fileName, const FileFormat &, int flags, int /*index*/)
+bool ImportPubPlugin::loadFile(const QString & fileName, const FileFormat &, int flags, int /*index*/)
 {
 	// There's only one format to handle, so we just call import(...)
 	return import(fileName, flags);
 }
 
-bool ImportPctPlugin::import(QString fileName, int flags)
+bool ImportPubPlugin::import(QString fileName, int flags)
 {
 	if (!checkFlags(flags))
 		return false;
 	if( fileName.isEmpty() )
 	{
 		flags |= lfInteractive;
-		PrefsContext* prefs = PrefsManager::instance()->prefsFile->getPluginContext("importpct");
+		PrefsContext* prefs = PrefsManager::instance()->prefsFile->getPluginContext("importpub");
 		QString wdir = prefs->get("wdir", ".");
-		CustomFDialog diaf(ScCore->primaryMainWindow(), wdir, QObject::tr("Open"), tr("All Supported Formats")+" (*.pct *.PCT *.pict *.PICT);;All Files (*)");
+		CustomFDialog diaf(ScCore->primaryMainWindow(), wdir, QObject::tr("Open"), tr("All Supported Formats")+" (*.pub *.pub);;All Files (*)");
 		if (diaf.exec())
 		{
 			fileName = diaf.selectedFile();
@@ -129,7 +131,7 @@ bool ImportPctPlugin::import(QString fileName, int flags)
 		else
 			return true;
 	}
-	m_Doc=ScCore->primaryMainWindow()->m_Doc;
+	m_Doc=ScCore->primaryMainWindow()->doc;
 	UndoTransaction* activeTransaction = NULL;
 	bool emptyDoc = (m_Doc == NULL);
 	bool hasCurrentPage = (m_Doc && m_Doc->currentPage());
@@ -143,7 +145,7 @@ bool ImportPctPlugin::import(QString fileName, int flags)
 		UndoManager::instance()->setUndoEnabled(false);
 	if (UndoManager::undoEnabled())
 		activeTransaction = new UndoTransaction(UndoManager::instance()->beginTransaction(trSettings));
-	PctPlug *dia = new PctPlug(m_Doc, flags);
+	PubPlug *dia = new PubPlug(m_Doc, flags);
 	Q_CHECK_PTR(dia);
 	dia->import(fileName, trSettings, flags);
 	if (activeTransaction)
@@ -158,13 +160,13 @@ bool ImportPctPlugin::import(QString fileName, int flags)
 	return true;
 }
 
-QImage ImportPctPlugin::readThumbnail(const QString& fileName)
+QImage ImportPubPlugin::readThumbnail(const QString& fileName)
 {
 	if( fileName.isEmpty() )
 		return QImage();
 	UndoManager::instance()->setUndoEnabled(false);
 	m_Doc = NULL;
-	PctPlug *dia = new PctPlug(m_Doc, lfCreateThumbnail);
+	PubPlug *dia = new PubPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);
 	UndoManager::instance()->setUndoEnabled(true);
