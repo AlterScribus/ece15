@@ -70,7 +70,7 @@ for which a new license (GPL+exception) is in place.
 #include "scraction.h"
 #include "scribuscore.h"
 #include "scrspinbox.h"
-#include "ui/searchreplacedialog.h"rchre.h"
+#include "ui/searchreplacedialog.h"
 #include "serializer.h"
 #include "shadebutton.h"
 #include "ui/spalette.h"
@@ -2984,7 +2984,7 @@ void StoryEditor::SearchText()
 {
 	blockUpdate = true;
 	EditorBar->setRepaint(false);
-	SearchReplaceDialog* dia = new SearchReplaceDialog(this, currDoc, currItem, false);
+	SearchReplaceDialog* dia = new SearchReplaceDialog(this, currDoc, currItem, true);
 	dia->exec();
 	delete dia;
 	qApp->processEvents();

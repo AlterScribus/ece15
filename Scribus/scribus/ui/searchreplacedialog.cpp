@@ -26,9 +26,12 @@ const int RANGE_STORY = 1;
 const int RANGE_PAGE = 2;
 const int RANGE_DOCUMENT = 4;
 
-SearchReplaceDialog::SearchReplaceDialog(QWidget *parent	, ScribusDoc *doc, PageItem* ite, bool mode )
-	: QDialog( parent ),
-	  matchesFound(0)
+const int PAGE_STRINGS = 0;
+const int PAGE_STYLES = 1;
+const int PAGE_GRAPHICS = 2;
+
+SearchReplaceDialog::SearchReplaceDialog(QWidget *parent, ScribusDoc *doc, PageItem* ite, bool mode )
+	: QDialog( parent ), matchesFound(0), currItemIndex(-1)
 {
 	setupUi(this);
 	setModal(false);
@@ -38,28 +41,40 @@ SearchReplaceDialog::SearchReplaceDialog(QWidget *parent	, ScribusDoc *doc, Page
 	Doc = doc;
 	unitChange(Doc->unitIndex());
 	languageChange();
-	if (Doc->m_Selection->isEmpty())
+	styleEditorMode = mode;
+	toolBox->setCurrentIndex(0);
+	if (styleEditorMode)
 	{
-		rangeCombo->removeItem(RANGE_SELECTION);
-		rangeCombo->removeItem(RANGE_STORY);
+		toolBox->setItemEnabled(PAGE_GRAPHICS, false);
+		rangeCombo->removeItem(RANGE_DOCUMENT);
+		rangeCombo->removeItem(RANGE_PAGE);
+		rangeCombo->setCurrentIndex(rangeCombo->findData(RANGE_STORY));
 	}
 	else
 	{
-		if (Doc->m_Selection->count() ==1 && !Doc->m_Selection->itemAt(0)->isTextFrame())
-			rangeCombo->removeItem((RANGE_STORY));
-		else if (Doc->m_Selection->count() > 1)
+		toolBox->setItemEnabled(PAGE_GRAPHICS, true);
+		if (Doc->m_Selection->isEmpty())
 		{
-			int i;
-			for (i=0; i < Doc->m_Selection->count(); ++i)
-				if (Doc->m_Selection->itemAt(i)->isTextFrame())
-					break;
-			if (i == Doc->m_Selection->count())
-				rangeCombo->removeItem((RANGE_STORY));
+			rangeCombo->removeItem(RANGE_SELECTION);
+			rangeCombo->removeItem(RANGE_STORY);
 		}
+		else
+		{
+			if (Doc->m_Selection->count() ==1 && !Doc->m_Selection->itemAt(0)->isTextFrame())
+				rangeCombo->removeItem((RANGE_STORY));
+			else if (Doc->m_Selection->count() > 1)
+			{
+				int i;
+				for (i=0; i < Doc->m_Selection->count(); ++i)
+					if (Doc->m_Selection->itemAt(i)->isTextFrame())
+						break;
+				if (i == Doc->m_Selection->count())
+					rangeCombo->removeItem((RANGE_STORY));
+			}
+		}
+		rangeCombo->setCurrentIndex(rangeCombo->findData(RANGE_DOCUMENT));
 	}
-	rangeCombo->setCurrentIndex(rangeCombo->findData(RANGE_DOCUMENT));
 	NotFound = false;
-	SMode = mode;
 	STextVal->setEnabled(false);
 	SStyleVal->setEditable(false);
 	for (int x = 0; x < Doc->paragraphStyles().count(); ++x)
@@ -198,12 +213,15 @@ SearchReplaceDialog::SearchReplaceDialog(QWidget *parent	, ScribusDoc *doc, Page
 	
 	prefs = PrefsManager::instance()->prefsFile->getContext("SearchReplace");
 	readPrefs();
+	connectIndexReset();
 }
 
 void SearchReplaceDialog::languageChange()
 {
 	setWindowTitle( tr( "Search/Replace" ) );
-	//	Search->setTitle( tr( "Search for:" ) );
+	toolBox->setItemText(PAGE_STRINGS, tr("Text Strings"));
+	toolBox->setItemText(PAGE_STYLES, tr("Text Style Attributes"));
+	toolBox->setItemText(PAGE_GRAPHICS, tr("Items Properties"));
 	SText->setText( tr( "Text" ) );
 	SStyle->setText( tr( "Style" ) );
 	SAlign->setText( tr( "Alignment" ) );
@@ -261,23 +279,89 @@ void SearchReplaceDialog::slotSearch()
 {
 	//	if (SMode)
 	//		Doc->view()->slotDoCurs(false);
-	slotDoSearch();
-	if (SMode)
+	bool wasFound = false;
+	switch (rangeCombo->itemData(rangeCombo->currentIndex()).toInt())
 	{
-		//		Doc->view()->slotDoCurs(true);
-		Item->update();
+		case RANGE_DOCUMENT:
+			for (int i=currItemIndex +1; i < Doc->DocItems.count(); ++i)
+			{
+				ReplStart = 0;
+				if (checkItem(Doc->DocItems.at(i)))
+				{
+					currItemIndex = i;
+					wasFound = true;
+					break;
+				}
+			}
+		break;
+		case RANGE_PAGE:
+			for (int i=currItemIndex +1; i < Doc->DocItems.count(); ++i)
+			{
+				PageItem * item = Doc->DocItems.at(i);
+				if (item->OwnPage != Doc->currentPageNumber())
+					continue;
+				ReplStart = 0;
+				if (checkItem(item))
+				{
+					currItemIndex = i;
+					Item = item;
+					wasFound = true;
+					break;
+				}
+			}
+		break;
+		case RANGE_SELECTION:
+			if (Doc->appMode == modeEdit)
+				wasFound = checkItem(Doc->m_Selection->itemAt(0), true);
+			else
+			{
+				for (int i = 0; i < Doc->m_Selection->count(); ++i)
+					if (checkItem(Doc->m_Selection->itemAt(i)))
+					{
+						currItemIndex = i;
+						Item = Doc->m_Selection->itemAt(i);
+						wasFound = true;
+						break;
+					}
+			}
+		break;
+		case RANGE_STORY:
+			PageItem* item = Doc->m_Selection->itemAt(0);
+			item->itemText.selectAll();
+			if (checkItem(item, true))
+			{
+				wasFound = true;
+				Item = item;
+			}
+			else
+				item->itemText.deselectAll();
+		break;
+	}
+	if (!wasFound)
+	{
+		Doc->DoDrawing = true;
+		DoReplace->setEnabled(false);
+		AllReplace->setEnabled(false);
+		NotFound = false;
+		QMessageBox::information(this, tr("Search/Replace"), tr("Search finished, found %1 matches").arg(matchesFound), CommonStrings::tr_OK);
+		resetItemIndex();
+	}
+	else
+	{
+		if (Item != NULL)
+			Item->update();
 	}
 }
 
-void SearchReplaceDialog::slotDoSearch()
+bool SearchReplaceDialog::checkItem(PageItem *item, bool onlySelectedText)
 {
-	int maxChar = Item->itemText.length() - 1;
+	int maxChar = item->itemText.length() - 1;
 	DoReplace->setEnabled(false);
 	AllReplace->setEnabled(false);
-	if (SMode)
+	if (!styleEditorMode)
 	{
-		Item->itemText.deselectAll();
-		Item->HasSel = false;
+		item->itemText.deselectAll();
+		item->HasSel = false;
 	}
 	QString fCol = "";
 	QString sCol = "";
@@ -321,100 +405,75 @@ void SearchReplaceDialog::slotDoSearch()
 	if (sText.length() > 0)
 		found = false;
 	
-	uint as = Item->itemText.cursorPosition();
-	ReplStart = as;
 	int a;
-	if (SMode)
+	if (!styleEditorMode)
 	{
 		Qt::CaseSensitivity cs = Qt::CaseSensitive;
 		if (CaseIgnore->isChecked())
 			cs = Qt::CaseInsensitive;
-		for (a = as; a < Item->itemText.length(); ++a)
+
+		int start = ReplStart;
+		int stop = item->itemText.length();
+		if (onlySelectedText)
+		{
+			if (item->HasSel)
+			{
+				if (ReplStart == 0)
+					start = item->itemText.startOfSelection();
+				stop = item->itemText.endOfSelection() +1;
+			}
+			else
+			{
+				if (ReplStart == 0)
+					start = item->itemText.firstInFrame();
+				stop = item->itemText.lastInFrame() +1;
+			}
+		}
+		else if (ReplStart == 0 and Doc->appMode == modeEdit)
+			start = item->itemText.cursorPosition();
+
+		for (a = start; a < stop; ++a)
 		{
 			found = true;
 			int matchedLen = 0;
 			if (SText->isChecked())
 			{
-				if (RegEx->isChecked())
-				{
-					QRegExp reg = QRegExp(sText,cs);
-					a = Item->itemText.plainText().indexOf(reg,a);
-					matchedLen = reg.matchedLength();
-				}
-				else
-				{
-					a = Item->itemText.indexOf(sText, a, cs);
-					matchedLen = sText.length();
-				}
+				QRegExp reg = QRegExp(sText,cs, (RegEx->isChecked())? QRegExp::RegExp : QRegExp::Wildcard);
+				a = item->itemText.plainText().indexOf(reg,a);
+				matchedLen = reg.matchedLength();
 				found = (a >= 0);
 				if (!found) break;
 				
-				if (Word->isChecked() && (a > 0) && !Item->itemText.text(a - 1).isSpace())
+				if (Word->isChecked() && (a > 0) && !item->itemText.text(a - 1).isSpace())
 					found = false;
 				if (Word->isChecked())
 				{
 					int lastChar = qMin(a + matchedLen, maxChar);
-					found = ((lastChar == maxChar) || Item->itemText.text(lastChar).isSpace());
+					found = ((lastChar == maxChar) || item->itemText.text(lastChar).isSpace());
 				}
 				if (!found) continue;
 			}
-			if (SSize->isChecked())
-			{
-				if (Item->itemText.charStyle(a).fontSize() != sSize)
-					found = false;
-			}
-			if (SFont->isChecked())
-			{
-				if (Item->itemText.charStyle(a).font().scName() != sFont)
-					found = false;
-			}
-#ifndef NLS_PROTO
-			if (SStyle->isChecked())
-			{
-				if (Item->itemText.paragraphStyle(a).parent() != Doc->paragraphStyles()[sStyle].name())
-					found = false;
-			}
-#endif
-			if (SAlign->isChecked())
-			{
-				if (Item->itemText.paragraphStyle(a).alignment() != sAlign)
-					found = false;
-			}
-			if (SStroke->isChecked())
-			{
-				if (Item->itemText.charStyle(a).strokeColor() != sCol)
-					found = false;
-			}
-			if (SStrokeS->isChecked())
-			{
-				if (Item->itemText.charStyle(a).strokeShade() != sStrokeSh)
-					found = false;
-			}
-			if (SFillS->isChecked())
-			{
-				if (Item->itemText.charStyle(a).fillShade() != sFillSh)
-					found = false;
-			}
-			if (SEffect->isChecked())
-			{
-				if ((Item->itemText.charStyle(a).effects() & 1919) != sEff)
-					found = false;
-			}
-			if (SFill->isChecked())
-			{
-				if (Item->itemText.charStyle(a).fillColor() != fCol)
-					found = false;
-			}
+			if ((SSize->isChecked() && (item->itemText.charStyle(a).fontSize() != sSize))
+					|| (SFont->isChecked() && (item->itemText.charStyle(a).font().scName() != sFont))
+					|| (SStyle->isChecked() && (item->itemText.paragraphStyle(a).parent() != Doc->paragraphStyles()[sStyle].name()))
+					|| (SAlign->isChecked() && (item->itemText.paragraphStyle(a).alignment() != sAlign))
+					|| (SStroke->isChecked() && (item->itemText.charStyle(a).strokeColor() != sCol))
+					|| (SStrokeS->isChecked() && (item->itemText.charStyle(a).strokeShade() != sStrokeSh))
+					|| (SFillS->isChecked() && (item->itemText.charStyle(a).fillShade() != sFillSh))
+					|| (SEffect->isChecked() && ((item->itemText.charStyle(a).effects() & 1919) != sEff))
+					|| (SFill->isChecked() && (item->itemText.charStyle(a).fillColor() != fCol)))
+				found = false;
 			if (found)
 			{
-				Item->itemText.select(a, matchedLen);
-				Item->HasSel = true;
+				Doc->scMW()->selectItemFromOutlines(item, true,a);
+				item->itemText.select(a, matchedLen);
+				item->HasSel = true;
 				if (rep)
 				{
 					DoReplace->setEnabled(true);
 					AllReplace->setEnabled(true);
 				}
-				Item->itemText.setCursorPosition(a + matchedLen);
+				matchesFound++;
 				
 				if (!SText->isChecked())
 					break;
@@ -424,23 +483,14 @@ void SearchReplaceDialog::slotDoSearch()
 			}
 			else
 			{
+				matchesFound = 0;
 				if (SText->isChecked())
 				{
 					for (int xx = ReplStart; xx < a+1; ++xx)
-						Item->itemText.select(qMin(xx, maxChar), 1, false);
-					Item->HasSel = false;
+						item->itemText.select(qMin(xx, maxChar), 1, false);
+					item->HasSel = false;
 				}
 			}
-		}
-		if ((!found) || (a == Item->itemText.length()))
-		{
-			Doc->DoDrawing = true;
-			Item->update();
-			DoReplace->setEnabled(false);
-			AllReplace->setEnabled(false);
-			QMessageBox::information(this, tr("Search/Replace"), tr("Search finished"), CommonStrings::tr_OK);
-			Item->itemText.setCursorPosition(0);
-			NotFound = false;
 		}
 	}
 	else if (Doc->scMW()->CurrStED != NULL)
@@ -448,7 +498,7 @@ void SearchReplaceDialog::slotDoSearch()
 		found = false;
 		SEditor* storyTextEdit = Doc->scMW()->CurrStED->Editor;
 		if (storyTextEdit->StyledText.length() == 0)
-			return;
+			return false;
 		
 		if (SText->isChecked())
 		{
@@ -467,23 +517,15 @@ void SearchReplaceDialog::slotDoSearch()
 				{
 					const ParagraphStyle& parStyle = storyTextEdit->StyledText.paragraphStyle(selStart + ap);
 					const CharStyle& charStyle = storyTextEdit->StyledText.charStyle(selStart + ap);
-					if (SSize->isChecked() && (charStyle.fontSize() != sSize))
-						found = false;
-					if (SFont->isChecked() && (charStyle.font().scName() != sFont))
-						found = false;
-					if (SStyle->isChecked() && (parStyle.parent() != Doc->paragraphStyles()[sStyle].name()))
-						found = false;
-					if (SAlign->isChecked() && (parStyle.alignment() != sAlign))
-						found = false;
-					if (SFill->isChecked() && (charStyle.fillColor() != fCol))
-						found = false;
-					if (SStroke->isChecked() && (charStyle.strokeColor() != sCol))
-						found = false;
-					if (SStrokeS->isChecked() && (charStyle.strokeShade() != sStrokeSh))
-						found = false;
-					if (SFillS->isChecked() && (charStyle.fillShade() != sFillSh))
-						found = false;
-					if (SEffect->isChecked() && ((charStyle.effects() & 1919) != sEff))
+					if ((SSize->isChecked() && (charStyle.fontSize() != sSize))
+							|| (SFont->isChecked() && (charStyle.font().scName() != sFont))
+							|| (SStyle->isChecked() && (parStyle.parent() != Doc->paragraphStyles()[sStyle].name()))
+							|| (SAlign->isChecked() && (parStyle.alignment() != sAlign))
+							|| (SFill->isChecked() && (charStyle.fillColor() != fCol))
+							|| (SStroke->isChecked() && (charStyle.strokeColor() != sCol))
+							|| (SStrokeS->isChecked() && (charStyle.strokeShade() != sStrokeSh))
+							|| (SFillS->isChecked() && (charStyle.fillShade() != sFillSh))
+							|| (SEffect->isChecked() && ((charStyle.effects() & 1919) != sEff)))
 						found = false;
 				}
 			} while(!found);
@@ -552,9 +594,6 @@ void SearchReplaceDialog::slotDoSearch()
 		}
 		else
 		{
-			QMessageBox::information(this, tr("Search/Replace"),
-									 tr("Search finished, found %1 matches").arg(matchesFound),
-									 CommonStrings::tr_OK);
 			matchesFound = 0;
 			NotFound = false;
 			QTextCursor cursor = storyTextEdit->textCursor();
@@ -563,23 +602,24 @@ void SearchReplaceDialog::slotDoSearch()
 			storyTextEdit->setTextCursor(cursor);
 		}
 	}
+	return found;
 }
 
 void SearchReplaceDialog::slotReplace()
 {
 	//	if (SMode)
 	//		Doc->view()->slotDoCurs(false);
-	slotDoReplace();
-	if (SMode)
+	doReplace();
+	if (!styleEditorMode)
 	{
 		//		Doc->view()->slotDoCurs(true);
 		Item->update();
 	}
 }
 
-void SearchReplaceDialog::slotDoReplace()
+void SearchReplaceDialog::doReplace()
 {
-	if (SMode)
+	if (!styleEditorMode)
 	{
 		QString repl, sear;
 		int cs, cx;
@@ -709,23 +749,23 @@ void SearchReplaceDialog::slotDoReplace()
 	}
 	DoReplace->setEnabled(false);
 	AllReplace->setEnabled(false);
-	slotDoSearch();
+	slotSearch();
 }
 
 void SearchReplaceDialog::slotReplaceAll()
 {
-	if (SMode)
+	if (!styleEditorMode)
 	{
 		//		Doc->view()->slotDoCurs(false);
 		Doc->DoDrawing = false;
 	}
 	do
 	{
-		slotDoReplace();
+		doReplace();
 		//		slotDoSearch();
 	}
 	while (NotFound);
-	if (SMode)
+	if (!styleEditorMode)
 	{
 		Doc->DoDrawing = true;
 		//		Doc->view()->slotDoCurs(true);
@@ -842,6 +882,8 @@ void SearchReplaceDialog::enableStrokeSReplace()
 
 void SearchReplaceDialog::clear()
 {
+	SText->setChecked(false);
+	STextVal->setText("");
 	SAlign->setChecked(false);
 	SStroke->setChecked(false);
 	SFill->setChecked(false);
@@ -850,10 +892,8 @@ void SearchReplaceDialog::clear()
 	SSize->setChecked(false);
 	SFont->setChecked(false);
 	SStyle->setChecked(false);
-	SText->setChecked(false);
 	SEffect->setChecked(false);
 	REffect->setChecked(false);
-	STextVal->setText("");
 	int currentParaStyle = findParagraphStyle(Doc, Doc->currentStyle);
 	SStyleVal->setCurrentIndex(currentParaStyle);
 	RAlignVal->setCurrentIndex(Doc->currentStyle.alignment());
@@ -879,6 +919,7 @@ void SearchReplaceDialog::clear()
 	rangeCombo->setCurrentIndex(rangeCombo->findData(RANGE_DOCUMENT));
 	Word->setChecked(false);
 	CaseIgnore->setChecked(false);
+	RegEx->setChecked(false);
 	enableTxSearch();
 	enableStyleSearch();
 	enableFontSearch();
@@ -899,8 +940,18 @@ void SearchReplaceDialog::clear()
 	enableStrokeSReplace();
 }
 
+void SearchReplaceDialog::resetItemIndex()
+{
+	currItemIndex = -1;
+	ReplStart = 0;
+}
+
 void SearchReplaceDialog::readPrefs()
 {
+	toolBox->setCurrentIndex(prefs->getInt("CurrPage",0));
+	SText->setChecked(prefs->getBool("SText", false));
+	STextVal->setText(prefs->get("STextVal", ""));
+	RegEx->setChecked(prefs->getBool("RegEx", false));
 	SStroke->setChecked(prefs->getBool("SStroke", false));
 	SFill->setChecked(prefs->getBool("SFill", false));
 	SStrokeS->setChecked(prefs->getBool("SStrokeS", false));
@@ -909,10 +960,8 @@ void SearchReplaceDialog::readPrefs()
 	SFont->setChecked(prefs->getBool("SFont", false));
 	SStyle->setChecked(prefs->getBool("SStyle", false));
 	SAlign->setChecked(prefs->getBool("SAlign", false));
-	SText->setChecked(prefs->getBool("SText", false));
 	SEffect->setChecked(prefs->getBool("SEffect", false));
 	REffect->setChecked(prefs->getBool("REffect", false));
-	STextVal->setText(prefs->get("STextVal", ""));
 	int tmp = prefs->getInt("SStyleVal", findParagraphStyle(Doc, Doc->currentStyle));
 	if (tmp < 0 || tmp >= SStyleVal->count())
 		tmp = 0;
@@ -949,6 +998,7 @@ void SearchReplaceDialog::readPrefs()
 	RSizeVal->setValue(prefs->getDouble("RSizeVal", Doc->currentStyle.charStyle().fontSize() / 10.0));
 	Word->setChecked(prefs->getBool("Word", false));
 	CaseIgnore->setChecked(prefs->getBool("CaseIgnore", false));
+	rangeCombo->setCurrentIndex(prefs->getInt("Range",RANGE_DOCUMENT));
 	enableTxSearch();
 	enableStyleSearch();
 	enableAlignSearch();
@@ -971,8 +1021,29 @@ void SearchReplaceDialog::readPrefs()
 	enableStrokeSReplace();
 }
 
+void SearchReplaceDialog::connectIndexReset()
+{
+	foreach (QObject* w, children())
+	{
+		QString wClass = QString(w->metaObject()->className());
+		if ( wClass == "QCheckBox")
+			connect((QCheckBox*)(w), SIGNAL(stateChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QLineEdit")
+			connect((QLineEdit*)(w), SIGNAL(textEdited(QString)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QComboBox" || wClass == "FontCombo" || wClass == "ColorCombo")
+			connect((QComboBox*)(w), SIGNAL(currentIndexChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QSpinBox" || wClass == "ScrSpinBox")
+			connect((QSpinBox*)(w), SIGNAL(valueChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QDoubleSpinBox" || wClass == "ScrSpinBox")
+			connect((QDoubleSpinBox*)(w), SIGNAL(valueChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "ShadeButton")
+			connect((ShadeButton*)(w), SIGNAL(triggered(QAction*)), this, SLOT(resetItemIndex()));
+	}
+}
+
 void SearchReplaceDialog::writePrefs()
 {
+	prefs->set("CurrPage", toolBox->currentIndex());
 	prefs->set("SStroke", SStroke->isChecked());
 	prefs->set("SFill", SFill->isChecked());
 	prefs->set("SStrokeS", SStrokeS->isChecked());
@@ -1009,6 +1080,8 @@ void SearchReplaceDialog::writePrefs()
 	prefs->set("RStrokeVal", RStrokeVal->currentText());
 	prefs->set("Word", Word->isChecked());
 	prefs->set("CaseIgnore", CaseIgnore->isChecked());
+	prefs->set("RegEx", RegEx->isChecked());
+	prefs->set("Range", rangeCombo->itemData(rangeCombo->currentIndex()).toInt());
 	accept();
 }
 

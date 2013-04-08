@@ -17,63 +17,57 @@ class SCRIBUS_API SearchReplaceDialog : public QDialog, private Ui::Searchreplac
 	Q_OBJECT
 	
 public:
-	explicit SearchReplaceDialog(QWidget *parent, ScribusDoc *doc, PageItem* ite, bool mode = true );
+	explicit SearchReplaceDialog(QWidget *parent, ScribusDoc *doc, PageItem* ite, bool mode = false );
 	void languageChange();
 	void unitChange(int unitIndex);
-	
+
 protected:
 	void changeEvent(QEvent *e);
-	virtual void slotDoSearch();
-	virtual void slotDoReplace();
+//	void doSearch();
+	bool checkItem(PageItem* item, bool onlySelection = false);
+	void doReplace();
+	void readPrefs();
+	void connectIndexReset();
 	PageItem* Item;
 	ScribusDoc* Doc;
 	uint ReplStart;
 	PrefsContext* prefs;
 	bool NotFound;
-	bool SMode;
+	bool styleEditorMode;
+	int matchesFound;
+	int currItemIndex;
 
 public slots:
-	virtual void slotSearch();
-	virtual void slotReplace();
-	virtual void slotReplaceAll();
-	virtual void enableTxSearch();
-	virtual void enableStyleSearch();
-	virtual void enableAlignSearch();
-	virtual void enableFontSearch();
-	virtual void enableSizeSearch();
-	virtual void enableEffSearch();
-	virtual void enableFillSearch();
-	virtual void enableFillSSearch();
-	virtual void enableStrokeSearch();
-	virtual void enableStrokeSSearch();
-	virtual void enableTxReplace();
-	virtual void enableStyleReplace();
-	virtual void enableAlignReplace();
-	virtual void enableFontReplace();
-	virtual void enableSizeReplace();
-	virtual void enableEffReplace();
-	virtual void enableFillReplace();
-	virtual void enableFillSReplace();
-	virtual void enableStrokeReplace();
-	virtual void enableStrokeSReplace();
-	virtual void writePrefs();
-	virtual void clear();
+	void slotSearch();
+	void slotReplace();
+	void slotReplaceAll();
+	void enableTxSearch();
+	void enableStyleSearch();
+	void enableAlignSearch();
+	void enableFontSearch();
+	void enableSizeSearch();
+	void enableEffSearch();
+	void enableFillSearch();
+	void enableFillSSearch();
+	void enableStrokeSearch();
+	void enableStrokeSSearch();
+	void enableTxReplace();
+	void enableStyleReplace();
+	void enableAlignReplace();
+	void enableFontReplace();
+	void enableSizeReplace();
+	void enableEffReplace();
+	void enableFillReplace();
+	void enableFillSReplace();
+	void enableStrokeReplace();
+	void enableStrokeSReplace();
+	void writePrefs();
+	void clear();
+	void resetItemIndex();
 
 signals:
 	void NewFont(const QString&);
 	void NewAbs(int);
-
-protected:
-	QVBoxLayout* SearchReplaceLayout;
-	QHBoxLayout* SelLayout;
-	QGridLayout* SearchLayout;
-	QGridLayout* ReplaceLayout;
-	QHBoxLayout* OptsLayout;
-	QHBoxLayout* ButtonsLayout;
-	virtual void readPrefs();
-
-	/// Number of matches found thus far in a search
-	int matchesFound;private slots:
 };
 
 #endif // SEARCHREPLACEDIALOG_H

@@ -2502,6 +2502,7 @@ void ScribusMainWindow::SwitchWin()
 		setPreviewToolbar();
 	}
 	scrMenuMgr->setMenuEnabled("ItemLayer", m_Doc->layerCount() > 1);
+	scrActions["editSearchReplace"]->setEnabled(m_Doc->DocItems.count() > 1);
 }
 
 void ScribusMainWindow::HaveNewDoc()
@@ -2546,6 +2547,7 @@ void ScribusMainWindow::HaveNewDoc()
 	scrActions["editNotesStyles"]->setEnabled(true);
 	scrActions["editMasterPages"]->setEnabled(true);
 	scrActions["editJavascripts"]->setEnabled(true);
+	scrActions["editSearchReplace"]->setEnabled(m_Doc->DocItems.count() > 1);
 
 //	scrMenuMgr->setMenuEnabled("View", true);
 	scrActions["viewFitInWindow"]->setEnabled(true);
@@ -2865,7 +2867,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["editCut"]->setEnabled(false);
 		scrActions["editCopy"]->setEnabled(false);
 		scrActions["editCopyContents"]->setEnabled(false);
-		scrActions["editSearchReplace"]->setEnabled(false);
+//		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["extrasHyphenateText"]->setEnabled(false);
 		scrActions["extrasDeHyphenateText"]->setEnabled(false);
 
@@ -2891,7 +2893,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["editCopy"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("EditContents", true);
 		scrActions["editClearContents"]->setEnabled(true);
-		scrActions["editSearchReplace"]->setEnabled(false);
+//		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["extrasHyphenateText"]->setEnabled(false);
 		scrActions["extrasDeHyphenateText"]->setEnabled(false);
 		scrActions["itemDuplicate"]->setEnabled(true);
@@ -2946,7 +2948,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrMenuMgr->setMenuEnabled("EditContents", true);
 		scrActions["editClearContents"]->setEnabled(true);
 		scrActions["itemClearPStyle"]->setEnabled(true);
-		scrActions["editSearchReplace"]->setEnabled(currItem->itemText.length() != 0);
+//		scrActions["editSearchReplace"]->setEnabled(currItem->itemText.length() != 0);
 		scrActions["extrasHyphenateText"]->setEnabled(true);
 		scrActions["extrasDeHyphenateText"]->setEnabled(true);
 		//		scrMenuMgr->setMenuEnabled("Item", true);
@@ -3064,7 +3066,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["editCut"]->setEnabled(true);
 		scrActions["editCopy"]->setEnabled(true);
 		scrActions["editClearContents"]->setEnabled(false);
-		scrActions["editSearchReplace"]->setEnabled(false);
+//		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["extrasHyphenateText"]->setEnabled(false);
 		scrActions["extrasDeHyphenateText"]->setEnabled(false);
 		//		scrMenuMgr->setMenuEnabled("Item", true);
@@ -3131,7 +3133,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		scrActions["editCopy"]->setEnabled(true);
 		scrMenuMgr->setMenuEnabled("EditContents", false);
 		scrActions["editClearContents"]->setEnabled(false);
-		scrActions["editSearchReplace"]->setEnabled(false);
+//		scrActions["editSearchReplace"]->setEnabled(false);
 
 		scrActions["extrasHyphenateText"]->setEnabled(false);
 		scrActions["extrasDeHyphenateText"]->setEnabled(false);
@@ -3234,7 +3236,7 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 			scrActions["itemConvertToTextFrame"]->setEnabled(false);
 			scrActions["itemConvertToSymbolFrame"]->setEnabled(false);
 		}
-		scrActions["editSearchReplace"]->setEnabled(false);
+//		scrActions["editSearchReplace"]->setEnabled(false);
 
 		bool hPoly = false;
 		for (uint bx=0; bx < docSelectionCount; ++bx)
@@ -6915,7 +6917,7 @@ void ScribusMainWindow::setAppMode(int mode)
 				scrActions["editCut"]->setEnabled(currItem->HasSel);
 				scrActions["editCopy"]->setEnabled(currItem->HasSel);
 				scrActions["editClearContents"]->setEnabled(currItem->HasSel);
-				scrActions["editSearchReplace"]->setEnabled(true);
+//				scrActions["editSearchReplace"]->setEnabled(true);
 
 				// Why the hell do you want to update the item here? - pm
 // 				currItem->update();
@@ -9897,8 +9899,8 @@ void ScribusMainWindow::EditTabs()
 void ScribusMainWindow::SearchText()
 {
 	PageItem *currItem = m_Doc->m_Selection->itemAt(0);
-	view->requestMode(modeEdit);
-	currItem->itemText.setCursorPosition(0);
+//	view->requestMode(modeEdit);
+//	currItem->itemText.setCursorPosition(0);
 	SearchReplaceDialog* dia = new SearchReplaceDialog(this, m_Doc, currItem);
 	connect(dia, SIGNAL(NewFont(const QString&)), this, SLOT(SetNewFont(const QString&)));
 	connect(dia, SIGNAL(NewAbs(int)), this, SLOT(setAlignmentValue(int)));
