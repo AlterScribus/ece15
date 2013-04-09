@@ -949,9 +949,9 @@ void SearchReplaceDialog::resetItemIndex()
 void SearchReplaceDialog::readPrefs()
 {
 	toolBox->setCurrentIndex(prefs->getInt("CurrPage",0));
+
 	SText->setChecked(prefs->getBool("SText", false));
 	STextVal->setText(prefs->get("STextVal", ""));
-	RegEx->setChecked(prefs->getBool("RegEx", false));
 	SStroke->setChecked(prefs->getBool("SStroke", false));
 	SFill->setChecked(prefs->getBool("SFill", false));
 	SStrokeS->setChecked(prefs->getBool("SStrokeS", false));
@@ -961,7 +961,6 @@ void SearchReplaceDialog::readPrefs()
 	SStyle->setChecked(prefs->getBool("SStyle", false));
 	SAlign->setChecked(prefs->getBool("SAlign", false));
 	SEffect->setChecked(prefs->getBool("SEffect", false));
-	REffect->setChecked(prefs->getBool("REffect", false));
 	int tmp = prefs->getInt("SStyleVal", findParagraphStyle(Doc, Doc->currentStyle));
 	if (tmp < 0 || tmp >= SStyleVal->count())
 		tmp = 0;
@@ -974,6 +973,9 @@ void SearchReplaceDialog::readPrefs()
 	setCurrentComboItem(SFillVal, prefs->get("SFillVal", Doc->currentStyle.charStyle().fillColor()));
 	setCurrentComboItem(SStrokeVal, prefs->get("SStrokeVal", Doc->currentStyle.charStyle().strokeColor()));
 	SSizeVal->setValue(prefs->getDouble("SSizeVal", Doc->currentStyle.charStyle().fontSize() / 10.0));
+
+	RText->setChecked(prefs->getBool("RText", false));
+	RTextVal->setText(prefs->get("RTextVal", ""));
 	RStroke->setChecked(prefs->getBool("RStroke", false));
 	RStrokeS->setChecked(prefs->getBool("RStrokeS", false));
 	RFill->setChecked(prefs->getBool("RFill", false));
@@ -982,8 +984,7 @@ void SearchReplaceDialog::readPrefs()
 	RFont->setChecked(prefs->getBool("RFont", false));
 	RStyle->setChecked(prefs->getBool("RStyle", false));
 	RAlign->setChecked(prefs->getBool("RAlign", false));
-	RText->setChecked(prefs->getBool("RText", false));
-	RTextVal->setText(prefs->get("RTextVal", ""));
+	REffect->setChecked(prefs->getBool("REffect", false));
 	tmp = prefs->getInt("RStyleVal", findParagraphStyle(Doc, Doc->currentStyle));
 	if (tmp < 0 || tmp >= RStyleVal->count())
 		tmp = 0;
@@ -996,9 +997,12 @@ void SearchReplaceDialog::readPrefs()
 	setCurrentComboItem(RFillVal, prefs->get("RFillVal", Doc->currentStyle.charStyle().fillColor()));
 	setCurrentComboItem(RStrokeVal, prefs->get("RStrokeVal", Doc->currentStyle.charStyle().strokeColor()));
 	RSizeVal->setValue(prefs->getDouble("RSizeVal", Doc->currentStyle.charStyle().fontSize() / 10.0));
+
+	RegEx->setChecked(prefs->getBool("RegEx", false));
 	Word->setChecked(prefs->getBool("Word", false));
 	CaseIgnore->setChecked(prefs->getBool("CaseIgnore", false));
-	rangeCombo->setCurrentIndex(prefs->getInt("Range",RANGE_DOCUMENT));
+	rangeCombo->setCurrentIndex(rangeCombo->findData(prefs->getInt("Range",RANGE_DOCUMENT)));
+
 	enableTxSearch();
 	enableStyleSearch();
 	enableAlignSearch();
@@ -1019,26 +1023,6 @@ void SearchReplaceDialog::readPrefs()
 	enableFillSReplace();
 	enableStrokeReplace();
 	enableStrokeSReplace();
-}
-
-void SearchReplaceDialog::connectIndexReset()
-{
-	foreach (QObject* w, children())
-	{
-		QString wClass = QString(w->metaObject()->className());
-		if ( wClass == "QCheckBox")
-			connect((QCheckBox*)(w), SIGNAL(stateChanged(int)), this, SLOT(resetItemIndex()));
-		else if (wClass == "QLineEdit")
-			connect((QLineEdit*)(w), SIGNAL(textEdited(QString)), this, SLOT(resetItemIndex()));
-		else if (wClass == "QComboBox" || wClass == "FontCombo" || wClass == "ColorCombo")
-			connect((QComboBox*)(w), SIGNAL(currentIndexChanged(int)), this, SLOT(resetItemIndex()));
-		else if (wClass == "QSpinBox" || wClass == "ScrSpinBox")
-			connect((QSpinBox*)(w), SIGNAL(valueChanged(int)), this, SLOT(resetItemIndex()));
-		else if (wClass == "QDoubleSpinBox" || wClass == "ScrSpinBox")
-			connect((QDoubleSpinBox*)(w), SIGNAL(valueChanged(int)), this, SLOT(resetItemIndex()));
-		else if (wClass == "ShadeButton")
-			connect((ShadeButton*)(w), SIGNAL(triggered(QAction*)), this, SLOT(resetItemIndex()));
-	}
 }
 
 void SearchReplaceDialog::writePrefs()
@@ -1083,6 +1067,26 @@ void SearchReplaceDialog::writePrefs()
 	prefs->set("RegEx", RegEx->isChecked());
 	prefs->set("Range", rangeCombo->itemData(rangeCombo->currentIndex()).toInt());
 	accept();
+}
+
+void SearchReplaceDialog::connectIndexReset()
+{
+	foreach (QObject* w, children())
+	{
+		QString wClass = QString(w->metaObject()->className());
+		if ( wClass == "QCheckBox")
+			connect((QCheckBox*)(w), SIGNAL(stateChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QLineEdit")
+			connect((QLineEdit*)(w), SIGNAL(textEdited(QString)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QComboBox" || wClass == "FontCombo" || wClass == "ColorCombo")
+			connect((QComboBox*)(w), SIGNAL(currentIndexChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QSpinBox" || wClass == "ScrSpinBox")
+			connect((QSpinBox*)(w), SIGNAL(valueChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "QDoubleSpinBox" || wClass == "ScrSpinBox")
+			connect((QDoubleSpinBox*)(w), SIGNAL(valueChanged(int)), this, SLOT(resetItemIndex()));
+		else if (wClass == "ShadeButton")
+			connect((ShadeButton*)(w), SIGNAL(triggered(QAction*)), this, SLOT(resetItemIndex()));
+	}
 }
 
 void SearchReplaceDialog::changeEvent(QEvent *e)
