@@ -24,10 +24,12 @@ public:
 protected:
 	void changeEvent(QEvent *e);
 //	void doSearch();
-	bool checkItem(PageItem* item, bool onlySelection = false);
+	bool checkItem(PageItem* item, bool onlyItemsSearch);
+	bool onlyItemsSearch();
 	void doReplace();
 	void readPrefs();
-	void connectIndexReset();
+	void connectIndexReset(QObject * child = NULL);
+	void rebuildRangeCombo();
 	PageItem* Item;
 	ScribusDoc* Doc;
 	uint ReplStart;
@@ -63,7 +65,7 @@ public slots:
 	void enableStrokeSReplace();
 	void writePrefs();
 	void clear();
-	void resetItemIndex();
+	void resetIndexes();
 
 signals:
 	void NewFont(const QString&);
