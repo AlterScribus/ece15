@@ -283,6 +283,7 @@ ScribusMainWindow::ScribusMainWindow()
 	UrlLauncher::instance();
 	mainWindowStatusLabel=0;
 	ExternalApp=0;
+	searchReplDlg = NULL;
 #ifdef Q_OS_MAC
 	noIcon = loadIcon("noicon.xpm");
 #endif
@@ -9898,17 +9899,19 @@ void ScribusMainWindow::EditTabs()
 
 void ScribusMainWindow::SearchText()
 {
-	PageItem *currItem = m_Doc->m_Selection->itemAt(0);
-//	view->requestMode(modeEdit);
-//	currItem->itemText.setCursorPosition(0);
-	SearchReplaceDialog* dia = new SearchReplaceDialog(this, m_Doc, currItem);
-	connect(dia, SIGNAL(NewFont(const QString&)), this, SLOT(SetNewFont(const QString&)));
-	connect(dia, SIGNAL(NewAbs(int)), this, SLOT(setAlignmentValue(int)));
-	dia->exec();
-	disconnect(dia, SIGNAL(NewFont(const QString&)), this, SLOT(SetNewFont(const QString&)));
-	disconnect(dia, SIGNAL(NewAbs(int)), this, SLOT(setAlignmentValue(int)));
-	delete dia;
-	slotSelect();
+	searchReplDlg = new SearchReplaceDialog(this, m_Doc);
+	connect(searchReplDlg, SIGNAL(NewFont(const QString&)), this, SLOT(SetNewFont(const QString&)));
+	connect(searchReplDlg, SIGNAL(NewAbs(int)), this, SLOT(setAlignmentValue(int)));
+	connect(searchReplDlg, SIGNAL(finished(int)), this, SLOT(SearchDialogExit()));
+	searchReplDlg->show();
+}
+
+void ScribusMainWindow::SearchDialogExit()
+{
+	disconnect(searchReplDlg, SIGNAL(NewFont(const QString&)), this, SLOT(SetNewFont(const QString&)));
+	disconnect(searchReplDlg, SIGNAL(NewAbs(int)), this, SLOT(setAlignmentValue(int)));
+	delete searchReplDlg;
+	searchReplDlg = NULL;
 }
 
 void ScribusMainWindow::imageEditorExited(int /*exitCode*/, QProcess::ExitStatus /*exitStatus*/)
@@ -9950,15 +9953,6 @@ void ScribusMainWindow::callImageEditor()
 		{
 			int index;
 			QString imEditor;
-//			if (ExternalImageEditor != NULL)
-//			{
-//				ExternalImageEditor->terminate();
-//				if (!ExternalImageEditor->waitForFinished())
-//				{
-//					delete ExternalImageEditor;
-//					ExternalImageEditor = NULL;
-//				}
-//			}
 			if (ExternalApp == NULL)
 				ExternalApp = new QProcess(NULL);
 			QStringList cmd;
@@ -9988,13 +9982,6 @@ void ScribusMainWindow::callImageEditor()
 			}
 			cmd.append(QDir::toNativeSeparators(currItem->Pfile));
 			ExternalApp->startDetached(imEditor, cmd);
-//			if (!ExternalImageEditor->waitForStarted())
-//			{
-//				delete ExternalImageEditor;
-//				ExternalImageEditor = 0;
-//				QMessageBox::critical(this, CommonStrings::trWarning, "<qt>" + tr("The program %1 is missing!").arg(imageEditorExecutable) + "</qt>", 1, 0, 0);
-//				return;
-//			}
 			connect(ExternalApp, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(imageEditorExited(int, QProcess::ExitStatus)));
 		}
 	}
