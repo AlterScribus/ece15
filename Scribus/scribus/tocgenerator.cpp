@@ -150,7 +150,9 @@ void TOCGenerator::generateDefault()
 			}
 		}
 		tocFrame->itemText.clear();
-		tocFrame->itemText.setDefaultStyle(currDoc->paragraphStyle(tocSetupIt->levels.at(0).textStyle));
+		QString pstyleName = tocSetupIt->levels.at(0).textStyle;
+		ParagraphStyle pstyle =  (pstyleName != "") ? currDoc->paragraphStyle(pstyleName) : currDoc->paragraphStyle("Default Paragraph Style");
+		tocFrame->itemText.setDefaultStyle(pstyle);
 		QString oldTocPage = QString::null;
 		for (QMap<QString, QPair<QString, int> >::Iterator tocIt=tocMap.begin(); tocIt != tocMap.end();++tocIt)
 		{
