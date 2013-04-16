@@ -995,31 +995,36 @@ void ScribusMainWindow::initMenuBar()
 
 	//View menu
 	scrMenuMgr->createMenu("View", ActionManager::defaultMenuNameEntryTranslated("View"));
-	scrMenuMgr->addMenuItem(scrActions["viewFitInWindow"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewFitWidth"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewFit50"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewFit75"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewFit100"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewFit200"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewFit400"], "View", false);
-	scrMenuMgr->addMenuSeparator("View");
-	scrMenuMgr->addMenuItem(scrActions["viewPreviewMode"], "View", true);
-	scrMenuMgr->addMenuSeparator("View");
-	scrMenuMgr->addMenuItem(scrActions["viewShowMargins"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowBleeds"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowFrames"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowLayerMarkers"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowImages"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowGrid"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowGuides"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowColumnBorders"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowBaseline"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowTextChain"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowTextControls"], "View", true);
+	scrMenuMgr->createMenu("ViewZoom", tr("Zoom"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewFitInWindow"], "ViewZoom", false);
+	scrMenuMgr->addMenuItem(scrActions["viewFitWidth"], "ViewZoom", false);
+	scrMenuMgr->addMenuItem(scrActions["viewFit50"], "ViewZoom", false);
+	scrMenuMgr->addMenuItem(scrActions["viewFit75"], "ViewZoom", false);
+	scrMenuMgr->addMenuItem(scrActions["viewFit100"], "ViewZoom", false);
+	scrMenuMgr->addMenuItem(scrActions["viewFit200"], "ViewZoom", false);
+	scrMenuMgr->addMenuItem(scrActions["viewFit400"], "ViewZoom", false);
+	scrMenuMgr->createMenu("ViewPreview", tr("Preview"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewPreviewMode"], "ViewPreview", true);
+	scrMenuMgr->createMenu("ViewMeasuring", tr("Measures"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewShowRulers"], "ViewMeasuring", false);
+	scrMenuMgr->addMenuItem(scrActions["viewRulerMode"], "ViewMeasuring", true);
+	scrMenuMgr->addMenuItem(scrActions["showMouseCoordinates"], "ViewMeasuring", true);
+	scrMenuMgr->createMenu("ViewTextFrames", tr("Text Frames"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewShowBaseline"], "ViewTextFrames", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowColumnBorders"], "ViewTextFrames", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowTextChain"], "ViewTextFrames", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowTextControls"], "ViewTextFrames", true);
 	scrMenuMgr->addMenuItem(scrActions["viewShowTextPreflight"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["viewShowRulers"], "View", false);
-	scrMenuMgr->addMenuItem(scrActions["viewRulerMode"], "View", true);
-	scrMenuMgr->addMenuItem(scrActions["showMouseCoordinates"], "View", true);
+	scrMenuMgr->createMenu("ViewImageFrames", tr("Image Frames"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewShowImages"], "ViewImageFrames", true);
+	scrMenuMgr->createMenu("ViewDocument", tr("Document"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewShowMargins"], "ViewDocument", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowBleeds"], "ViewDocument", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowFrames"], "ViewDocument", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowLayerMarkers"], "ViewDocument", true);
+	scrMenuMgr->createMenu("ViewGrids", tr("Grids and Guides"), "View");
+	scrMenuMgr->addMenuItem(scrActions["viewShowGrid"], "ViewGrids", true);
+	scrMenuMgr->addMenuItem(scrActions["viewShowGuides"], "ViewGrids", true);
 
 	//CB If this is viewNewView imeplemented, it should be on the windows menu
 //	scrMenuMgr->addMenuItem(scrActions["viewNewView"], "View");
@@ -1084,9 +1089,9 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuToMenuBar("Item");
 	scrMenuMgr->addMenuToMenuBar("Insert");
 	scrMenuMgr->addMenuToMenuBar("Page");
-	scrMenuMgr->addMenuToMenuBar("View");
 	scrMenuMgr->addMenuToMenuBar("ItemTable");
 	scrMenuMgr->addMenuToMenuBar("Extras");
+	scrMenuMgr->addMenuToMenuBar("View");
 	scrMenuMgr->addMenuToMenuBar("Windows");
 	menuBar()->addSeparator();
 	scrMenuMgr->addMenuToMenuBar("Help");
@@ -1099,19 +1104,21 @@ void ScribusMainWindow::addDefaultWindowMenuItems()
 	scrMenuMgr->addMenuItem(scrActions["windowsCascade"], "Windows", true);
 	scrMenuMgr->addMenuItem(scrActions["windowsTile"], "Windows", true);
 	scrMenuMgr->addMenuSeparator("Windows");
-
 	scrMenuMgr->addMenuItem(scrActions["toolsProperties"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsOutline"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsScrapbook"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsLayers"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsPages"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsBookmarks"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsMeasurements"], "Windows", true);
 	scrMenuMgr->addMenuItem(scrActions["toolsActionHistory"], "Windows", true);
-	scrMenuMgr->addMenuItem(scrActions["toolsPreflightVerifier"], "Windows", true);
 	scrMenuMgr->addMenuItem(scrActions["toolsAlignDistribute"], "Windows", true);
+	scrMenuMgr->addMenuSeparator("Windows");
+	scrMenuMgr->addMenuItem(scrActions["toolsOutline"], "Windows", true);
+	scrMenuMgr->addMenuItem(scrActions["toolsPages"], "Windows", true);
+	scrMenuMgr->addMenuItem(scrActions["toolsLayers"], "Windows", true);
+	scrMenuMgr->addMenuItem(scrActions["toolsBookmarks"], "Windows", true);
+	scrMenuMgr->addMenuSeparator("Windows");
+	scrMenuMgr->addMenuItem(scrActions["toolsScrapbook"], "Windows", true);
 	scrMenuMgr->addMenuItem(scrActions["toolsSymbols"], "Windows", true);
 	scrMenuMgr->addMenuItem(scrActions["toolsInline"], "Windows", true);
+	scrMenuMgr->addMenuSeparator("Windows");
+	scrMenuMgr->addMenuItem(scrActions["toolsMeasurements"], "Windows", true);
+	scrMenuMgr->addMenuItem(scrActions["toolsPreflightVerifier"], "Windows", true);
 	scrMenuMgr->addMenuSeparator("Windows");
 	scrMenuMgr->addMenuItem(scrActions["toolsToolbarTools"], "Windows", true);
 	scrMenuMgr->addMenuItem(scrActions["toolsToolbarPDF"], "Windows", true);
@@ -3855,7 +3862,7 @@ bool ScribusMainWindow::slotPageImport()
 			{
 				qApp->setOverrideCursor(QCursor(Qt::ArrowCursor));
 				int scmReturn=ScMessageBox::information(this, tr("Import Page(s)"), "<qt>" +
-				QObject::tr("<p>You are trying to import more pages than there are available in the current document counting from the active page.</p>Choose one of the following:<br>"
+				QObject::tr("<p>You are trying to import more pages than there are available in the current document counting from the active page.</p>Choose one of the following:"
 				"<ul><li><b>Create</b> missing pages</li>"
 				"<li><b>Import</b> pages until the last page</li>"
 				"<li><b>Cancel</b></li></ul>") + "</qt>",
@@ -11507,7 +11514,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 		QString label = "", text = "";
 		QString oldStr = mrk->getString();
 		QString oldPStyleName;
-		int oldSearch, oldLimit, oldEnding;
+		int oldSearch=0, oldLimit=0, oldEnding=0;
 		bool newMark = false;
 		bool replaceMark = false;
 		switch (mrk->getType())
