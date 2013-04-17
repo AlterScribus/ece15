@@ -41,7 +41,7 @@ public:
 	Replacing strings via regular expressions. See detailed
 	description in the code of this method.
 	\param aFrame pointer to the existing text frame */
-	void parseItem(PageItem *aFrame);
+	void parseItem(PageItem *aFrame, bool wholeStory = false);
 	/*! \brief selcted frames on the page */
 	void parseSelection(ScribusDoc* doc);
 	/*! \brief one page - using actual page */

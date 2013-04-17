@@ -36,7 +36,7 @@ SWParse::SWParse()
 	modify = 0;
 }
 
-void SWParse::parseItem(PageItem *aFrame)
+void SWParse::parseItem(PageItem *aFrame, bool wholeStory)
 {
 	// the content of the frame - text itself
 	QString content = QString();
@@ -71,12 +71,15 @@ void SWParse::parseItem(PageItem *aFrame)
 	if (shorts.count()==0)
 		return; // no changes
 
-	// get text from frame
-	int i;
-	for (i=0; i < aFrame->itemText.length() && ! aFrame->frameDisplays(i); ++i)
-		;
-	for (; i < aFrame->itemText.length() && aFrame->frameDisplays(i); ++i)
-		content += aFrame->itemText.text(i,1);
+	int start = (wholeStory) ? 0 : aFrame->firstInFrame();
+	int stop;
+	if (wholeStory || (aFrame->nextInChain() == NULL)) 
+		stop = aFrame->itemText.length();
+	else
+		stop = qMax(aFrame->lastInFrame() + 1, aFrame->itemText.length());
+	// get text from story (used by TextValidator
+	for (int i = start; i < stop; ++i)
+			content += aFrame->itemText.text(i,1);
 	changes = content.count(SpecialChars::NBSPACE);
 
 	// for every config string, replace its spaces by nbsp's.
@@ -114,9 +117,7 @@ void SWParse::parseItem(PageItem *aFrame)
 		content.replace(rx, "\\1" + unbreak + "\\2");
 	}
 	// return text into frame
-	for (i=0; i < aFrame->itemText.length() && ! aFrame->frameDisplays(i); ++i)
-		;
-	for (; i < aFrame->itemText.length() && aFrame->frameDisplays(i); ++i)
+	for (int i = start; i < stop; ++i)
 		aFrame->itemText.replaceChar(i, content.at(i));
 	if (content.count(SpecialChars::NBSPACE) > changes)
 		++modify;

@@ -415,7 +415,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 	{
 		SWParse *parse = new SWParse();
 		parse->lang = ""; // get it from style
-		parse->parseItem(item);
+		parse->parseItem(item, true);
 		count += parse->modify;
 		delete parse;
 	}
