@@ -292,6 +292,9 @@ void Prefs_TableOfContents::addToC()
 	level.textStyle=CommonStrings::None;
 	level.pageLocation=End;
 	level.listNonPrintingFrames=false;
+	level.textLimit = 99;
+	level.textRange = 0;
+	level.textStyle = m_Doc->paragraphStyles()[0].name();
 	newToCEntry.levels.append(level);
 	levelSpin->setMaximum(1);
 	levelDelButton->setEnabled(false);
@@ -306,7 +309,6 @@ void Prefs_TableOfContents::addToC()
 	connect( tocListBox, SIGNAL( currentRowChanged(int) ), this, SLOT( selectToC(int) ) );
 	blockSignals(false);
 }
-
 
 void Prefs_TableOfContents::updateToCListBox()
 {

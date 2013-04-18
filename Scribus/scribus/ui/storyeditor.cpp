@@ -2984,7 +2984,7 @@ void StoryEditor::SearchText()
 {
 	blockUpdate = true;
 	EditorBar->setRepaint(false);
-	SearchReplaceDialog* dia = new SearchReplaceDialog(this, currDoc, currItem, true);
+	SearchReplaceDialog* dia = new SearchReplaceDialog(this, currDoc, true);
 	dia->exec();
 	delete dia;
 	qApp->processEvents();

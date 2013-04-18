@@ -2850,15 +2850,18 @@ void PageItem_TextFrame::layout()
 				if (inOverflow)
 					current.xPos = realEnd;
 
-				//line break or end of column
-				if (( hl->ch == SpecialChars::PARSEP || hl->ch == SpecialChars::LINEBREAK)
-				    && current.hasDropCap)
+				// line break and drop caps
+				// #11250: in case of a forced line break, we must not stop
+				// the drop cap layout process. This break case such as 
+				// layout of poetry.
+				if (hl->ch == SpecialChars::PARSEP && current.hasDropCap)
 				{
 					current.hasDropCap = false;
 					if (current.yPos < maxDY)
 						current.yPos = maxDY;
 					maxDX = 0;
 				}
+				// end of column
 				if (current.isEndOfCol(desc))
 				{
 					//check if realy line extends bottom margin
@@ -4279,8 +4282,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	}
 	int oldPos = itemText.cursorPosition(); // 15-mar-2004 jjsa for cursor movement with Shift + Arrow key
 	int kk = k->key();
-	int as = k->text()[0].unicode();
 	QString uc = k->text();
+#ifdef Q_OS_HAIKU
+	if (kk == Qt::Key_Return)
+		uc = "\r";
+#endif
+	int as = uc[0].unicode();
 	QString cr, Tcha, Twort;
 	uint Tcoun;
 	int len, pos;
@@ -4296,7 +4303,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 	//<< ISO 14755
 	//Check if we are trying to enter Unicode sequence mode first
 	QKeySequence currKeySeq = QKeySequence(k->key() | keyModifiers);
-	if(currKeySeq.matches(doc()->scMW()->scrActions["specialUnicodeSequenceBegin"]->shortcut())==QKeySequence::ExactMatch)
+	if (currKeySeq.matches(doc()->scMW()->scrActions["specialUnicodeSequenceBegin"]->shortcut())==QKeySequence::ExactMatch)
 	{
 		unicodeTextEditMode = true;
 		unicodeInputCount = 0;

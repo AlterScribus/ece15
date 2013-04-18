@@ -96,6 +96,7 @@ class ScribusCore;
 class ScribusMainWindow;
 class ScribusQApp;
 class ScribusWin;
+class SearchReplaceDialog;
 class SimpleState;
 class StoryEditor;
 class StyleManager;
@@ -492,7 +493,6 @@ public slots:
 	void ToggleUElements();
 	void SetSnapElements(bool b);
 	void EditTabs();
-	void SearchText();
 	void imageEditorExited(int, QProcess::ExitStatus);
 	/*! \brief call gimp and wait upon completion */
 	void callImageEditor();
@@ -656,6 +656,14 @@ public:
 	void test1();
 	void test2();
 	void resetTests();
+
+	//SearchReplaceDialog
+private:
+	SearchReplaceDialog* searchReplDlg;
+public slots:
+	void SearchText();
+	void SearchDialogExit();
+
 };
 
 #endif

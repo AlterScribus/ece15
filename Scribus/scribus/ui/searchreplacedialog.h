@@ -17,7 +17,7 @@ class SCRIBUS_API SearchReplaceDialog : public QDialog, private Ui::Searchreplac
 	Q_OBJECT
 	
 public:
-	explicit SearchReplaceDialog(QWidget *parent, ScribusDoc *doc, PageItem* ite, bool mode = false );
+	explicit SearchReplaceDialog(QWidget *parent, ScribusDoc *doc, bool mode = false );
 	void languageChange();
 	void unitChange(int unitIndex);
 
@@ -38,6 +38,7 @@ protected:
 	bool styleEditorMode;
 	int matchesFound;
 	int currItemIndex;
+	void fillColorCombos(QObject* w = NULL);
 
 public slots:
 	void slotSearch();
@@ -53,6 +54,8 @@ public slots:
 	void enableFillSSearch();
 	void enableStrokeSearch();
 	void enableStrokeSSearch();
+	void enableLanguageSearch();
+
 	void enableTxReplace();
 	void enableStyleReplace();
 	void enableAlignReplace();
@@ -63,6 +66,29 @@ public slots:
 	void enableFillSReplace();
 	void enableStrokeReplace();
 	void enableStrokeSReplace();
+	void enableLanguageReplace();
+
+	void enableItemTypeSearch();
+	void enableItemFillModeSearch();
+	void enableItemFillColorSearch();
+	void enableItemFillOpacitySearch();
+	void enableItemShadeSearch();
+	void enableItemStrokeSearch();
+	void enableItemStrokeModeSearch();
+	void enableItemsStrokeColorSearch();
+	void enableItemStrokeSSearch();
+
+	void enableItemTypeReplace();
+	void enableItemFillModeReplace();
+	void enableItemFillColorReplace();
+	void enableItemOReplace();
+	void enableItemSReplace();
+	void enableItemStrokeReplace();
+	void enableItemStrokeModeReplace();
+	void enableItemsStrokeColorReplace();
+	void enableItemStrokeSReplace();
+
+
 	void writePrefs();
 	void clear();
 	void resetIndexes();
