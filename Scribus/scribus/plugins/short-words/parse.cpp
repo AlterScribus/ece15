@@ -76,8 +76,8 @@ void SWParse::parseItem(PageItem *aFrame, bool wholeStory)
 	if (wholeStory || (aFrame->nextInChain() == NULL)) 
 		stop = aFrame->itemText.length();
 	else
-		stop = qMax(aFrame->lastInFrame() + 1, aFrame->itemText.length());
-	// get text from story (used by TextValidator
+		stop = aFrame->lastInFrame();
+
 	for (int i = start; i < stop; ++i)
 			content += aFrame->itemText.text(i,1);
 	changes = content.count(SpecialChars::NBSPACE);
@@ -117,8 +117,9 @@ void SWParse::parseItem(PageItem *aFrame, bool wholeStory)
 		content.replace(rx, "\\1" + unbreak + "\\2");
 	}
 	// return text into frame
+	int content_i = 0;
 	for (int i = start; i < stop; ++i)
-		aFrame->itemText.replaceChar(i, content.at(i));
+		aFrame->itemText.replaceChar(i, content.at(content_i++));
 	if (content.count(SpecialChars::NBSPACE) > changes)
 		++modify;
 
