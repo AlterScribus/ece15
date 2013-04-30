@@ -59,19 +59,20 @@ Scribus150Format::Scribus150Format() :
 {
 	// Set action info in languageChange, so we only have to do
 	// it in one place. This includes registering file formats.
+	registerFormats();
 	languageChange();
 }
 
 Scribus150Format::~Scribus150Format()
 {
 	unregisterAll();
-};
+}
 
 void Scribus150Format::languageChange()
 {
-	//(Re)register file formats.
-	unregisterAll();
-	registerFormats();
+	FileFormat* fmt = getFormatByID(FORMATID_SLA150IMPORT);
+	fmt->trName = tr("Scribus 1.5.0+ Document");
+	fmt->filter = fmt->trName + " (*.sla *.SLA *.sla.gz *.SLA.GZ *.scd *.SCD *.scd.gz *.SCD.GZ)";
 }
 
 const QString Scribus150Format::fullTrName() const
@@ -5314,7 +5315,7 @@ bool Scribus150Format::readItemTableData(PageItem_Table* item, ScXmlStreamReader
 		item->setFillColor(fColor);
 	item->setFillShade(attrs.valueAsInt("FillShade", 100));
 	QStringRef tagName = reader.name();
-	LastStyles * lastStyle = new LastStyles();
+	LastStyles lastStyle;
 	doc->dontResize = true;
 	while (!reader.atEnd() && !reader.hasError())
 	{
@@ -5326,6 +5327,7 @@ bool Scribus150Format::readItemTableData(PageItem_Table* item, ScXmlStreamReader
 			ScXmlStreamAttributes tAtt = reader.scAttributes();
 			int row = tAtt.valueAsInt("Row", -1);
 			int col = tAtt.valueAsInt("Column", -1);
+			lastStyle = LastStyles();
 			if ((row >= 0) && (col >= 0))
 			{
 				if (tAtt.hasAttribute("Style"))
@@ -5436,7 +5438,7 @@ bool Scribus150Format::readItemTableData(PageItem_Table* item, ScXmlStreamReader
 				else if (reader.name() == "ITEXT")
 				{
 					ScXmlStreamAttributes tAttT = reader.scAttributes();
-					readItemText(item->cellAt(row, col).textFrame(), tAttT, lastStyle);
+					readItemText(item->cellAt(row, col).textFrame(), tAttT, &lastStyle);
 				}
 				else if (reader.name() == "para")
 				{
@@ -5445,7 +5447,7 @@ bool Scribus150Format::readItemTableData(PageItem_Table* item, ScXmlStreamReader
 					ParagraphStyle newStyle;
 					readParagraphStyle(doc, reader, newStyle);
 					newItem->itemText.setStyle(newItem->itemText.length()-1, newStyle);
-					newItem->itemText.setCharStyle(newItem->itemText.length()-1, 1, lastStyle->Style);
+					newItem->itemText.setCharStyle(newItem->itemText.length()-1, 1, lastStyle.Style);
 				}
 				else if (reader.name() == "trail")
 				{
@@ -5461,8 +5463,8 @@ bool Scribus150Format::readItemTableData(PageItem_Table* item, ScXmlStreamReader
 					newItem->itemText.insertChars(newItem->itemText.length(), SpecialChars::TAB);
 					readCharacterStyleAttrs(doc, tAtt, newStyle);
 					newItem->itemText.setCharStyle(newItem->itemText.length()-1, 1, newStyle);
-					lastStyle->StyleStart = newItem->itemText.length()-1;
-					lastStyle->Style = newStyle;
+					lastStyle.StyleStart = newItem->itemText.length()-1;
+					lastStyle.Style = newStyle;
 				}
 				else if (reader.name() == "breakline")
 				{
@@ -5509,8 +5511,8 @@ bool Scribus150Format::readItemTableData(PageItem_Table* item, ScXmlStreamReader
 						newItem->itemText.insertChars(newItem->itemText.length(), SpecialChars::PAGECOUNT);
 					readCharacterStyleAttrs(doc, tAtt, newStyle);
 					newItem->itemText.setCharStyle(newItem->itemText.length()-1, 1, newStyle);
-					lastStyle->StyleStart = newItem->itemText.length()-1;
-					lastStyle->Style = newStyle;
+					lastStyle.StyleStart = newItem->itemText.length()-1;
+					lastStyle.Style = newStyle;
 				}
 			}
 		}
