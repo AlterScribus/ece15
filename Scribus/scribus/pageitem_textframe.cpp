@@ -2261,12 +2261,12 @@ void PageItem_TextFrame::layout()
 					current.restartX = current.xPos;
 					lastLineY = current.yPos;
 					current.rowDesc = 0;
-					a--;
-					current.recalculateY = true;
-					current.addLeftIndent = true;
-					if (adjustParagraphEndings (a, false))
-						current.startLine(a + 1);
-					continue;
+                    current.recalculateY = true;
+                    current.addLeftIndent = true;
+                    a--;
+                    if (a >= 0 && adjustParagraphEndings (a, false))
+                        current.startLine(a + 1);
+                    continue;
 				}
 				current.line.x = current.restartX = current.xPos;
 				current.line.y = current.yPos;
