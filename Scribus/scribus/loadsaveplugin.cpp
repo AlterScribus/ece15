@@ -294,8 +294,18 @@ void LoadSavePlugin::registerFormat(FileFormat & fmt)
 			id = FORMATID_FIRSTUSER;
 		else
 		{
-			id = qMax(static_cast<int>(formats.last().formatId), FORMATID_FIRSTUSER-1);
+			QList<FileFormat>::iterator it(formats.begin());
+			QList<FileFormat>::iterator itEnd(formats.end());
+			id = FORMATID_FIRSTUSER - 1;
+			while (it != itEnd)
+			{
+				id = qMax((*it).formatId, id);
+				++it;
+			}
 			id++;
+
+//			id = qMax(static_cast<int>(formats.last().formatId), FORMATID_FIRSTUSER-1);
+//			id++;
 		}
 		fmt.formatId = id;
 		formats.insert(id, fmt);

@@ -1016,10 +1016,32 @@ void printBacktrace ( int nFrames )
 }
 
 
-void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, QStack<QList<PageItem *> > *groupStackT, QList<PageItem *> *target)
+bool convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, QStack<QList<PageItem *> > *groupStackT, QList<PageItem *> *target)
 {
 	QList<double> colWidths;
 	QList<double> rowHeights;
+
+	// 1. Although this was not intended, legacy tables allowed user to link frames together
+	// New table do not support that, so if one frame has any link, we stop the conversion
+	// here, those frame will be converted to a standard group.
+	// 2. Pre-1.4.3 versions had a bug where item TopLink/LeftLink/BottomLink/RightLink were
+	// lost when copy/pasting tables. Exit conversion too so these broken tables can be
+	// converted to standard groups (at least until we find a good way to process that case)
+	bool hasTableLinks = false;
+	bool hasTextLinks = false;
+	for (int a = 0; a < gpL.count(); a++)
+	{
+		PageItem* it = gpL[a];
+		it->isTableItem = false;
+		if (it->nextInChain() || it->prevInChain())
+			hasTextLinks = true;
+		if (it->LeftLink || it->RightLink || it->BottomLink || it->TopLink)
+			hasTableLinks = true;
+	}
+
+	if (!hasTableLinks || hasTextLinks)
+		return false;
+
 	PageItem *topLeft = NULL;
 	for (int a = 0; a < gpL.count(); a++)
 	{
@@ -1043,9 +1065,19 @@ void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, 
 			break;
 		}
 	}
+
+	// Check we have found enough rows and columns so that no item will disappear
+	if ((colWidths.count() * rowHeights.count()) < gpL.count())
+		return false;
+
 	m_Doc->dontResize = true;
 	int z = m_Doc->itemAdd(PageItem::Table, PageItem::Unspecified, gItem->xPos(), gItem->yPos(), gItem->width(), gItem->height(), 0.0, CommonStrings::None, CommonStrings::None, true);
 	PageItem_Table* currItem = m_Doc->Items->takeAt(z)->asTable();
+
+	currItem->LayerID = gItem->LayerID;
+	currItem->OwnPage = gItem->OwnPage;
+	currItem->OnMasterPage = gItem->OnMasterPage;
+
 	currItem->insertRows(0, rowHeights.count()-1);
 	m_Doc->dontResize = true;
 	currItem->insertColumns(0, colWidths.count()-1);
@@ -1121,14 +1153,20 @@ void convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, 
 		if (groupStackT->count() > 0)
 		{
 			int ii = groupStackT->top().indexOf(gItem);
-			groupStackT->top().replace(ii, currItem);
+			if (ii >= 0)
+				groupStackT->top().replace(ii, currItem);
 		}
 	}
 	while (!gpL.isEmpty())
 	{
-		delete gpL.takeFirst();
+		PageItem* item = gpL.takeFirst();
+		if (item->asTextFrame())
+			item->dropLinks();
+		delete item;
 	}
 	delete gItem;
+
+	return true;
 }
 
 void setWidgetBoldFont(QWidget* w, bool wantBold)
