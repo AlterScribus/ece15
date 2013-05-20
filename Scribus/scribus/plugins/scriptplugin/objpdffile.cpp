@@ -456,7 +456,7 @@ static int PDFfile_init(PDFfile *self, PyObject * /*args*/, PyObject * /*kwds*/)
 	self->lpival = lpival;
 // set owner's password
 	PyObject *owner = NULL;
-	owner = PyString_FromString(ScCore->primaryMainWindow()->m_Doc->pdfOptions().PassOwner.toAscii());
+	owner = PyString_FromString(ScCore->primaryMainWindow()->m_Doc->pdfOptions().PassOwner.toStdString().c_str());
 	if (owner){
 		Py_DECREF(self->owner);
 		self->owner = owner;
@@ -466,7 +466,7 @@ static int PDFfile_init(PDFfile *self, PyObject * /*args*/, PyObject * /*kwds*/)
 	}
 // set user'a password
 	PyObject *user = NULL;
-	user = PyString_FromString(ScCore->primaryMainWindow()->m_Doc->pdfOptions().PassUser.toAscii());
+	user = PyString_FromString(ScCore->primaryMainWindow()->m_Doc->pdfOptions().PassUser.toStdString().c_str());
 	if (user){
 		Py_DECREF(self->user);
 		self->user = user;

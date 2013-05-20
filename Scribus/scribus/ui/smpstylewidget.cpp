@@ -363,7 +363,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		minGlyphExtSpin->setParentValue(parent->minGlyphExtension());
 		maxGlyphExtSpin->setValue(pstyle->maxGlyphExtension() * 100.0,  pstyle->isInhMaxGlyphExtension());
 		maxGlyphExtSpin->setParentValue(parent->maxGlyphExtension());
-		advSetParentButton->setShown(!(pstyle->isInhMinWordTracking() && pstyle->isInhMinGlyphExtension() && pstyle->isInhMaxGlyphExtension()));
+		advSetParentButton->setVisible(!(pstyle->isInhMinWordTracking() && pstyle->isInhMinGlyphExtension() && pstyle->isInhMaxGlyphExtension()));
 		connect(advSetParentButton, SIGNAL(clicked()), this, SLOT(slotParentAdvancedSettings()));
 
 		lineSpacing_->setValue(pstyle->lineSpacing(), pstyle->isInhLineSpacing());
@@ -405,7 +405,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		keepLinesEnd->setParentValue (parent->keepLinesEnd());
 		keepTogether->setParentValue (parent->keepTogether());
 		keepWithNext->setParentValue (parent->keepWithNext());
-		owParentButton->setShown(!(pstyle->isInhKeepLinesStart() && pstyle->isInhKeepLinesEnd() && pstyle->isInhKeepTogether() && pstyle->isInhKeepWithNext()));
+		owParentButton->setVisible(!(pstyle->isInhKeepLinesStart() && pstyle->isInhKeepLinesEnd() && pstyle->isInhKeepTogether() && pstyle->isInhKeepWithNext()));
 		connect(owParentButton, SIGNAL(clicked()), this, SLOT(slotParentWidowsOrphans()));
 		
 //Effects Gropup Box
@@ -413,7 +413,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		parentBul_ = parent->hasBullet();
 		parentNum_ = parent->hasNum();
 		//parentParEffects_ = (parentDC_ || parentBul_ || parentNum_);
-		peParentButton->setShown(!(pstyle->isInhHasDropCap() && pstyle->isInhHasBullet() && pstyle->isInhHasNum()));
+		peParentButton->setVisible(!(pstyle->isInhHasDropCap() && pstyle->isInhHasBullet() && pstyle->isInhHasNum()));
 		connect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 
 		int index = parEffectCharStyleCombo->findText(pstyle->peCharStyleName());
@@ -445,7 +445,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 
 		ClearOnApplyBox->setChecked(pstyle->clearOnApply(), pstyle->isInhClearOnApply());
 		ClearOnApplyBox->setParentValue(parent->clearOnApply());
-		coaParentButton->setShown(!pstyle->isInhClearOnApply());
+		coaParentButton->setVisible(!pstyle->isInhClearOnApply());
 		connect(coaParentButton, SIGNAL(clicked()), this, SLOT(slotParentClearOnApply()));
 		if (pstyle->isInhHasDropCap() && pstyle->isInhHasBullet() && pstyle->isInhHasNum())
 		{
