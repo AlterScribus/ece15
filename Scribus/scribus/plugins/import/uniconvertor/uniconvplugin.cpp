@@ -67,7 +67,7 @@ UniconvImportPlugin::~UniconvImportPlugin()
 void UniconvImportPlugin::languageChange()
 {
 	QString name = tr("Uniconvertor Import");
-	FileFormat* fmt = getFormatByID(FORMATID_UNICONVIMPORT);
+	FileFormat* fmt = getFormatByExt("cdt");
 	fmt->trName = name;
 	fmt->filter = name + " (" +  FormatsManager::instance()->extensionListForFormat( FormatsManager::UNICONV, 0)+")";
 }
@@ -100,13 +100,9 @@ void UniconvImportPlugin::registerFormats()
 	QString name = tr("Uniconvertor Import");
 	FileFormat fmt(this);
 	fmt.trName = name;
-	fmt.formatId = FORMATID_UNICONVIMPORT;
-	fmt.filter = name + " (" + 
-		FormatsManager::instance()->extensionListForFormat(
-		FormatsManager::UNICONV, 0)+")"; // QFileDialog filter
-	fmt.nameMatch = QRegExp("\\.("+
-		FormatsManager::instance()->extensionListForFormat(
-		FormatsManager::UNICONV, 1)+")$", Qt::CaseInsensitive);
+	fmt.formatId = 0;
+	fmt.filter = name + " (" +  FormatsManager::instance()->extensionListForFormat( FormatsManager::UNICONV, 0)+")"; // QFileDialog filter
+	fmt.fileExtensions = QStringList() << "cdt" << "ccx" << "cmx" <<"aff" << "sk" << "sk1" << "plt" << "dxf" << "dst" << "pes" << "exp" << "pcs";
 	fmt.load = true;
 	fmt.save = false;
 	//TODO: fmt.mimeTypes = QStringList(""); // MIME types
@@ -139,12 +135,10 @@ bool UniconvImportPlugin::import(QString fileName, int flags)
 
 	//Get a temporary filename ending in .svg (sadly
 	//uniconvertor has no other way of specifying the output format
-	QTemporaryFile *tempFile = 
-		new QTemporaryFile(QDir::tempPath() + "/scribus_uniconv_XXXXXX");
+	QTemporaryFile *tempFile = new QTemporaryFile(QDir::tempPath() + "/scribus_uniconv_XXXXXX.svg");
 	tempFile->open();
-	QString tempFileName = tempFile->fileName() + ".svg";
+	QString tempFileName = tempFile->fileName();
 	tempFile->close();
-	delete tempFile;
 
 	//prepare arguments for uniconvertor call
 	QStringList arguments;
@@ -164,6 +158,7 @@ bool UniconvImportPlugin::import(QString fileName, int flags)
 			"File->Preferences->External Tools may be incorrect or the "
 			"software has been uninstalled since preferences "
 			"were set. (%1)").arg(uniconv.errorString()));
+		delete tempFile;
 		return false;
 	}
 	if (!uniconv.waitForFinished(120000)) {
@@ -171,6 +166,7 @@ bool UniconvImportPlugin::import(QString fileName, int flags)
 		QMessageBox::warning(mw, CommonStrings::trWarning,
 			tr("Uniconvertor did not exit correctly: %1").arg(
 			uniconv.errorString()).arg(QString(uniconv.readAll())));
+		delete tempFile;
 		return false;
 	}
 	if (uniconv.exitCode()) {
@@ -178,16 +174,18 @@ bool UniconvImportPlugin::import(QString fileName, int flags)
 		QMessageBox::warning(mw, CommonStrings::trWarning,
 			tr("Uniconvertor failed to convert the file: %1").arg(
 				QString(uniconv.readAll())));
+		delete tempFile;
 		return false;
 	}
 	
 	//Import SVG
-	const FileFormat *fmt = LoadSavePlugin::getFormatById(FORMATID_SVGIMPORT);
+	const FileFormat *fmt = LoadSavePlugin::getFormatByExt("svg");
 	if (!fmt) {
 		QMessageBox::warning(mw, CommonStrings::trWarning, tr("The SVG Import plugin could not be found"), 1, 0, 0);
+		delete tempFile;
 		return false;
 	}
-	qDebug() << "Loading file!";
 	fmt->loadFile(tempFileName, flags);
+	delete tempFile;
 	return true;
 }

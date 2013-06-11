@@ -2145,22 +2145,20 @@ ScribusDoc *ScribusMainWindow::doFileNew(double width, double height, double top
 void ScribusMainWindow::newFileFromTemplate()
 {
 	nftdialog* nftdia = new nftdialog(this, ScCore->getGuiLanguage());
-	if (nftdia->exec())
+	if (nftdia->exec() && nftdia->isTemplateSelected())
 	{
-		if (nftdia->nftGui->currentDocumentTemplate)
+		qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
+		nfttemplate* currentTemplate = nftdia->currentTemplate();
+		if (loadDoc(QDir::cleanPath(currentTemplate->file)))
 		{
-			qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
-			if (loadDoc(QDir::cleanPath(nftdia->nftGui->currentDocumentTemplate->file)))
-			{
-				m_Doc->hasName = false;
-				UndoManager::instance()->renameStack(nftdia->nftGui->currentDocumentTemplate->name);
-				m_Doc->DocName = nftdia->nftGui->currentDocumentTemplate->name;
-				updateActiveWindowCaption(QObject::tr("Document Template: ") + nftdia->nftGui->currentDocumentTemplate->name);
-				QDir::setCurrent(PrefsManager::instance()->documentDir());
-				removeRecent(QDir::cleanPath(nftdia->nftGui->currentDocumentTemplate->file));
-			}
-			qApp->restoreOverrideCursor();
+			m_Doc->hasName = false;
+			UndoManager::instance()->renameStack(currentTemplate->name);
+			m_Doc->DocName = currentTemplate->name;
+			updateActiveWindowCaption(QObject::tr("Document Template: ") + currentTemplate->name);
+			QDir::setCurrent(PrefsManager::instance()->documentDir());
+			removeRecent(QDir::cleanPath(currentTemplate->file));
 		}
+		qApp->restoreOverrideCursor();
 	}
 	delete nftdia;
 }
@@ -3584,13 +3582,13 @@ void ScribusMainWindow::doPasteRecent(QString data)
 		QFileInfo fi(data);
 		QString formatD(FormatsManager::instance()->extensionListForFormat(FormatsManager::RASTORIMAGES, 1));
 		QStringList rasterFiles = formatD.split("|");
-		QStringList vectorFiles = LoadSavePlugin::getExtensionsForPreview(FORMATID_ODGIMPORT);
+		QStringList vectorFiles = LoadSavePlugin::getExtensionsForPreview(FORMATID_FIRSTUSER);
 		if (vectorFiles.contains(fi.suffix().toLower()))
 		{
 			FileLoader *fileLoader = new FileLoader(data);
 			int testResult = fileLoader->testFile();
 			delete fileLoader;
-			if ((testResult != -1) && (testResult >= FORMATID_ODGIMPORT))
+			if ((testResult != -1) && (testResult >= FORMATID_FIRSTUSER))
 			{
 				const FileFormat * fmt = LoadSavePlugin::getFormatById(testResult);
 				if( fmt )
@@ -3669,7 +3667,7 @@ void ScribusMainWindow::importVectorFile()
 	QString fileName = "";
 	QStringList formats;
 	QString allFormats = tr("All Supported Formats")+" (";
-	int fmtCode = FORMATID_ODGIMPORT;
+	int fmtCode = FORMATID_FIRSTUSER;
 	const FileFormat *fmt = LoadSavePlugin::getFormatById(fmtCode);
 	while (fmt != 0)
 	{
@@ -3721,7 +3719,7 @@ void ScribusMainWindow::importVectorFile()
 			FileLoader *fileLoader = new FileLoader(fileName);
 			int testResult = fileLoader->testFile();
 			delete fileLoader;
-			if ((testResult != -1) && (testResult >= FORMATID_ODGIMPORT))
+			if ((testResult != -1) && (testResult >= FORMATID_FIRSTUSER))
 			{
 				const FileFormat * fmt = LoadSavePlugin::getFormatById(testResult);
 				if( fmt )
@@ -10222,7 +10220,7 @@ void ScribusMainWindow::dragEnterEvent ( QDragEnterEvent* e)
 				FileLoader *fileLoader = new FileLoader(url.path());
 				int testResult = fileLoader->testFile();
 				delete fileLoader;
-				if ((testResult != -1) && (testResult >= FORMATID_ODGIMPORT))
+				if ((testResult != -1) && (testResult >= FORMATID_FIRSTUSER))
 				{
 					accepted = true;
 					break;
@@ -10290,7 +10288,7 @@ void ScribusMainWindow::dropEvent ( QDropEvent * e)
 				FileLoader *fileLoader = new FileLoader(url.path());
 				int testResult = fileLoader->testFile();
 				delete fileLoader;
-				if ((testResult != -1) && (testResult >= FORMATID_ODGIMPORT))
+				if ((testResult != -1) && (testResult >= FORMATID_FIRSTUSER))
 				{
 					QFileInfo fi(url.path());
 					if ( fi.exists() )

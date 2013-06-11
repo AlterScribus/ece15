@@ -1815,7 +1815,7 @@ void CanvasMode_Normal::importToPage()
 	QString fileName;
 	QString allFormats = tr("All Supported Formats")+" (";
 	QStringList formats;
-	int fmtCode = FORMATID_ODGIMPORT;
+	int fmtCode = FORMATID_FIRSTUSER;
 	const FileFormat *fmt = LoadSavePlugin::getFormatById(fmtCode);
 	while (fmt != 0)
 	{
@@ -1865,7 +1865,7 @@ void CanvasMode_Normal::importToPage()
 			FileLoader *fileLoader = new FileLoader(fileName);
 			int testResult = fileLoader->testFile();
 			delete fileLoader;
-			if ((testResult != -1) && (testResult >= FORMATID_ODGIMPORT))
+			if ((testResult != -1) && (testResult >= FORMATID_FIRSTUSER))
 			{
 				const FileFormat * fmt = LoadSavePlugin::getFormatById(testResult);
 				if( fmt )
