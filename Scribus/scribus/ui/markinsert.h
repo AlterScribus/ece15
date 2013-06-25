@@ -27,10 +27,10 @@ public:
 	virtual NotesStyle* values() { return NULL; }
 	virtual void values(QString&, int&, int&, int&) {}
 
-	virtual void setValues(const QString&) {}
-	virtual void setValues(const QString&, const QString&) {}
-	virtual void setValues(const QString&, const PageItem*) {}
-	virtual void setValues(const QString&, const Mark*) {}
+	virtual void setValues(const QString) {}
+	virtual void setValues(const QString, const QString) {}
+	virtual void setValues(const QString, const PageItem*) {}
+	virtual void setValues(const QString, const Mark*) {}
 	virtual void setValues(const NotesStyle*) {}
 	virtual void setValues(const QString, int, int, int) {}
 
