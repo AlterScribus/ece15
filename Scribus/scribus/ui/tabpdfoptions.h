@@ -36,17 +36,17 @@ class ScrSpinBox;
 class SCRIBUS_API TabPDFOptions : public QTabWidget
 {
 	Q_OBJECT
-
+	
 public:
 	TabPDFOptions(  QWidget* parent, PDFOptions & Optionen,
-	                const SCFonts &AllFonts,
-	                const ProfilesL & PDFXProfiles,
-	                const QMap<QString, int> & DocFonts,
-	                const QList<PDFPresentationData> & Eff,
-	                int unitIndex, double PageH, double PageB,
-	                ScribusDoc *mdoc = 0, bool exporting = false);
+					const SCFonts &AllFonts,
+					const ProfilesL & PDFXProfiles,
+					const QMap<QString, int> & DocFonts,
+					const QList<PDFPresentationData> & Eff,
+					int unitIndex, double PageH, double PageB,
+					ScribusDoc *mdoc = 0, bool exporting = false);
 	~TabPDFOptions() {};
-
+	
 	void restoreDefaults(PDFOptions & Optionen,
 						 const SCFonts &AllFonts,
 						 const ProfilesL & PDFXProfiles,
@@ -54,9 +54,9 @@ public:
 						 const QList<PDFPresentationData> & Eff,
 						 int unitIndex, double PageH, double PageB,
 						 ScribusDoc *mdoc, bool exporting);
-
+	
 	void unitChange(QString unit, int docUnitIndex, double invUnitConversion);
-
+	
 	// GUI member pointers
 	// Remember to initialize these in the initializer list of the ctor when
 	// you add new ones. Add them in the same order here and in the initalizer
@@ -110,11 +110,11 @@ public:
 	QRadioButton* useThumbnails;
 	QSpinBox* ValC;  // == PicRes
 	// End GUI member pointers
-
+	
 signals:
 	void noInfo();
 	void hasInfo();
-
+	
 public slots:
 	void doDocBleeds();
 	void ToggleEncr();
@@ -147,17 +147,17 @@ public slots:
 	void SelLPIcol(int);
 	void enableCMS(bool enable);
 	void checkInfo();
-    void ImpositionStyle(int i);
-    void ImpositionSheetSizeI(int i);
-    void ImpositionSheetSizeD(double d);
+	void ImpositionStyle(int i);
+	void ImpositionSheetSizeI(int i);
+	void ImpositionSheetSizeD(double d);
 	void ImpositionSheetSides(int i);
 	void ImpositionNXNY(int i);
-
+	
 protected slots:
 	void createPageNumberRange();
 	void handleCompressionMethod(int ind);
 	void currentTabChanged(int);
-
+	
 protected:
 	// PDFExportDialog should really privately inherit from us, but it can't
 	// since it needs to be a dialog not a tab widget. Allow it access to
@@ -170,7 +170,7 @@ protected:
 	QString SelLPIcolor;
 	QList<QString> FontsToEmbed;
 	QList<QString> FontsToOutline;
-
+	
 	// PDFExportDialog needs access to these GUI members
 	// but they don't need to be exposed to the rest of Scribus.
 	QComboBox* actionCombo;
@@ -190,13 +190,13 @@ protected:
 	QComboBox* LPIfunc;
 	QLineEdit* PageNr;
 	QSpinBox* PageTime;
-
+	
 private:
 	// Private GUI member pointers, should not be used outside the class its
 	// self.  Please ry to keep members here genuinely private, ie don't use
 	// them even from friends. If you need to access it from a friend like
 	// PDFExportDialog please move it to the protected section.
-
+	
 	QLabel* actionLabel;
 	QListWidget* AvailFlist;
 	QGroupBox* BleedGroup;
@@ -308,7 +308,7 @@ private:
 	QLabel* textLPI2;
 	QLabel* textLPI3;
 	QLabel* TextSec1;
-    QLabel* TextSec2;
+	QLabel* TextSec2;
 	QPushButton* pageNrButton;
 	QPushButton* ToEmbed;
 	QPushButton* ToOutline;
@@ -329,28 +329,29 @@ private:
 	QComboBox * SheetSizeComboBox;
 	QComboBox * SheetRotationComboBox;
 	QComboBox * ImpDoubleSidedComboBox;
-    QLabel    * ImpNXLabel;
-    QSpinBox  * ImpNXSpinBox;
-    QLabel    * ImpNYLabel;
-    QSpinBox  * ImpNYSpinBox;
-    ScrSpinBox* ImpSheetWidth;
-    ScrSpinBox* ImpSheetHeight;
-    QLabel    * ImpSheetWidthLabel;
-    QLabel    * ImpSheetHeightLabel;
-
-    // Non-GUI protected members
+	QLabel    * ImpNXLabel;
+	QSpinBox  * ImpNXSpinBox;
+	QLabel    * ImpNYLabel;
+	QSpinBox  * ImpNYSpinBox;
+	ScrSpinBox* ImpSheetWidth;
+	ScrSpinBox* ImpSheetHeight;
+	QLabel    * ImpSheetWidthLabel;
+	QLabel    * ImpSheetHeightLabel;
+	
+	// Non-GUI protected members
 	QString unit;
 	int precision;
 	double unitRatio;
 	bool pdfExport;
-	ScribusDoc* const doc;
+	ScribusDoc* const m_Doc;
 	const SCFonts & AllFonts;
 	PDFOptions & Opts;
 	double pageH;
 	double pageB;
+	
 	bool cms;
 	QMap<QString, QString> AnnotationFonts;
-
-  void updateImpositionTab();
+	
+	void updateImpositionTab();
 };
 #endif

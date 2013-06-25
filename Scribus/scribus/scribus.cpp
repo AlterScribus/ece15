@@ -8513,7 +8513,7 @@ void ScribusMainWindow::doSaveAsPDF()
 		m_Doc->pdfOptions().SubsetList = tmpEm;
 	}
 	MarginStruct optBleeds(m_Doc->pdfOptions().bleeds);
-	PDFExportDialog dia(this, m_Doc->DocName, ReallyUsed, view, m_Doc->pdfOptions(), m_Doc->pdfOptions().PresentVals, ScCore->PDFXProfiles, prefsManager->appPrefs.fontPrefs.AvailFonts, m_Doc->unitRatio(), ScCore->PrinterProfiles);
+	PDFExportDialog dia(this, m_Doc->DocName, ReallyUsed, view, m_Doc->pdfOptions(), m_Doc->pdfOptions().PresentVals, ScCore->PDFXProfiles, prefsManager->appPrefs.fontPrefs.AvailFonts, ScCore->PrinterProfiles);
 	if (dia.exec())
 	{
 		qApp->setOverrideCursor(QCursor(Qt::WaitCursor));

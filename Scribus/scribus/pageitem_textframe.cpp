@@ -2989,7 +2989,9 @@ void PageItem_TextFrame::layout()
 					}
 					else
 					{
-						MaxChars = a;
+						MaxChars = a; // Always a+1???
+						if (hl->ch == SpecialChars::COLBREAK)
+							++MaxChars;
 						goto NoRoom;
 					}
 				}

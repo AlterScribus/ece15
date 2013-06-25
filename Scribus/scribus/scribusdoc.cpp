@@ -6295,7 +6295,7 @@ void ScribusDoc::reformPages(bool moveObjects)
 	if (!isLoading())
 	{
 		undoManager->setUndoEnabled(false);
-		uint docItemsCount=Items->count();
+		uint docItemsCount = Items->count();
 		for (uint ite = 0; ite < docItemsCount; ++ite)
 		{
 			PageItem *item = Items->at(ite);
@@ -6306,22 +6306,32 @@ void ScribusDoc::reformPages(bool moveObjects)
 				else
 					item->OwnPage = OnPage(item);
 			}
+			else if (moveObjects)
+			{
+				oldPg = pageTable[item->OwnPage];
+				item->moveBy(-oldPg.oldXO + Pages->at(oldPg.newPg)->xOffset(), -oldPg.oldYO + Pages->at(oldPg.newPg)->yOffset());
+				item->OwnPage = static_cast<int>(oldPg.newPg);
+				if (item->isGroup())
+				{
+					QList<PageItem*> groupItems = item->groupItemList;
+					while (groupItems.count() > 0)
+					{
+						PageItem* groupItem = groupItems.takeAt(0);
+						if (groupItem->isGroup())
+							groupItems += groupItem->groupItemList;
+						if (groupItem->OwnPage < 0)
+							continue;
+						oldPg = pageTable[groupItem->OwnPage];
+						groupItem->OwnPage = static_cast<int>(oldPg.newPg);
+					}
+				}
+			}
 			else
 			{
-				if (moveObjects)
-				{
-					oldPg = pageTable[item->OwnPage];
-					ScPage * page = Pages->at(oldPg.newPg);
-					item->moveBy(-oldPg.oldXO + page->xOffset(), -oldPg.oldYO + page->yOffset());
-					item->OwnPage = static_cast<int>(oldPg.newPg);
-				}
+				if (item->isGroup())
+					GroupOnPage(item);
 				else
-				{
-					if (item->isGroup())
-						GroupOnPage(item);
-					else
-						item->OwnPage = OnPage(item);
-				}
+					item->OwnPage = OnPage(item);
 			}
 			item->setRedrawBounding();
 		}
@@ -14692,12 +14702,12 @@ void ScribusDoc::AdjustItemSize(PageItem *currItem, bool includeGroup, bool move
 			currItem->moveImageInFrame(-tp2.x()/currItem->imageXScale(), 0);
 		if (!currItem->imageFlippedV())
 			currItem->moveImageInFrame(0, -tp2.y()/currItem->imageYScale());
-		FPoint tp(clipRect.right(), clipRect.bottom());
+		FPoint tp(clipRect.width(), clipRect.height());
 		if (currItem->imageFlippedH())
 			currItem->moveImageInFrame((currItem->width() - tp.x())/currItem->imageXScale(), 0);
 		if (currItem->imageFlippedV())
 			currItem->moveImageInFrame(0, (currItem->height() - tp.y())/currItem->imageYScale());
-		SizeItem(tp.x(), tp.y(), currItem, true, false);
+		SizeItem(clipRect.width(), clipRect.height(), currItem, true, false, false);
 		currItem->PoLine = Clip.copy();
 		if ((currItem->isGroup() || currItem->isSymbol()) && includeGroup)
 		{
@@ -17311,9 +17321,11 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 							numS->m_counters[l] = numS->m_nums[l].start -1;
 
 				int pos = item->firstInFrame();
+				int last = item->lastInFrame();
+				if (pos > last) continue;
+
 				if ((pos != 0) && (item->itemText.text(pos-1) != SpecialChars::PARSEP))
 					pos = item->itemText.nextParagraph(pos);
-				int last = item->lastInFrame();
 				int len = item->itemText.length();
 				while (pos <= last)
 				{

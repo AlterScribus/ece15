@@ -278,7 +278,7 @@ TabPDFOptions::TabPDFOptions(   QWidget* parent, PDFOptions & Optionen,
 	precision(unitGetPrecisionFromIndex(unitIndex)),
 	unitRatio(unitGetRatioFromIndex(unitIndex)),
 	pdfExport(exporting),
-	doc(mdoc),
+	m_Doc(mdoc),
 	AllFonts(AllFonts),
 	Opts(Optionen),
 	pageH(PageH),
@@ -360,7 +360,7 @@ TabPDFOptions::TabPDFOptions(   QWidget* parent, PDFOptions & Optionen,
 	PDFVersionCombo->addItem("PDF 1.3 (Acrobat 4)");
 	PDFVersionCombo->addItem("PDF 1.4 (Acrobat 5)");
 	PDFVersionCombo->addItem("PDF 1.5 (Acrobat 6)");
-	cms = doc ? (ScCore->haveCMS() && doc->HasCMS) : false;
+	cms = m_Doc ? (ScCore->haveCMS() && m_Doc->HasCMS) : false;
 	if (cms && (!PDFXProfiles.isEmpty()))
 	{
 		PDFVersionCombo->addItem("PDF/X-1a");
@@ -440,7 +440,7 @@ TabPDFOptions::TabPDFOptions(   QWidget* parent, PDFOptions & Optionen,
 	CBoxLayout->addWidget( ValC, 2, 1, Qt::AlignLeft );
 	tabLayout->addWidget( CBox );
 	addTab(tabGeneral, tr( "&General" ));
-	if (doc != 0 && exporting)
+	if (m_Doc != 0 && exporting)
 	{
 		tabFonts = new QWidget( this );
 		tabLayout_3 = new QVBoxLayout( tabFonts );
@@ -768,7 +768,7 @@ TabPDFOptions::TabPDFOptions(   QWidget* parent, PDFOptions & Optionen,
 	tabColorLayout->addWidget( LPIgroup );
 	SelLPIcolor = LPIcolor->currentText();
 	
-	if (doc==0)
+	if (m_Doc==0)
 	{
 		UseLPI->hide();
 		LPIgroup->hide();
@@ -1033,9 +1033,9 @@ TabPDFOptions::TabPDFOptions(   QWidget* parent, PDFOptions & Optionen,
 
 	addTab( tabImposition, tr( "Imposition" ) );
 
-  restoreDefaults(Optionen, AllFonts, PDFXProfiles, DocFonts, Eff, unitIndex, PageH, PageB, doc, pdfExport);
+  restoreDefaults(Optionen, AllFonts, PDFXProfiles, DocFonts, Eff, unitIndex, PageH, PageB, m_Doc, pdfExport);
 
-	if (doc != 0 && exporting)
+	if (m_Doc != 0 && exporting)
 	{
 		connect(EmbedFonts, SIGNAL(clicked()), this, SLOT(EmbedAll()));
 		connect(AvailFlist, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(SelAFont(QListWidgetItem*)));
@@ -1234,7 +1234,7 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 //	Build a list of all Fonts used in Annotations;
 		PageItem *pgit;
 		QList<PageItem*> allItems;
-		for (QHash<int, PageItem*>::iterator it = doc->FrameItems.begin(); it != doc->FrameItems.end(); ++it)
+		for (QHash<int, PageItem*>::iterator it = m_Doc->FrameItems.begin(); it != m_Doc->FrameItems.end(); ++it)
 		{
 			PageItem *currItem = it.value();
 			if (currItem->isGroup())
@@ -1254,9 +1254,9 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 			}
 			allItems.clear();
 		}
-		for (int a = 0; a < doc->MasterItems.count(); ++a)
+		for (int a = 0; a < m_Doc->MasterItems.count(); ++a)
 		{
-			PageItem *currItem = doc->MasterItems.at(a);
+			PageItem *currItem = m_Doc->MasterItems.at(a);
 			if (currItem->isGroup())
 				allItems = currItem->getItemList();
 			else
@@ -1274,9 +1274,9 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 			}
 			allItems.clear();
 		}
-		for (int a = 0; a < doc->DocItems.count(); ++a)
+		for (int a = 0; a < m_Doc->DocItems.count(); ++a)
 		{
-			PageItem *currItem = doc->DocItems.at(a);
+			PageItem *currItem = m_Doc->DocItems.at(a);
 			if (currItem->isGroup())
 				allItems = currItem->getItemList();
 			else
@@ -1356,7 +1356,7 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 		struct PDFPresentationData ef;
 		if (EffVal.count() != 0)
 		{
-			for (int pg2 = 0; pg2 < doc->Pages->count(); ++pg2)
+			for (int pg2 = 0; pg2 < m_Doc->Pages->count(); ++pg2)
 			{
 				Pages->addItem( tr("Page")+" "+tmp.setNum(pg2+1));
 				if (EffVal.count()-1 < pg2)
@@ -1373,7 +1373,7 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 		}
 		else
 		{
-			for (int pg = 0; pg < doc->Pages->count(); ++pg)
+			for (int pg = 0; pg < m_Doc->Pages->count(); ++pg)
 			{
 				Pages->addItem( tr("Page")+" "+tmp.setNum(pg+1));
 				ef.pageEffectDuration = 1;
@@ -1402,9 +1402,9 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 		QMap<QString,QString>::Iterator itja;
 		actionCombo->clear();
 		actionCombo->addItem( tr("No Script"));
-		for (itja = doc->JavaScripts.begin(); itja != doc->JavaScripts.end(); ++itja)
+		for (itja = m_Doc->JavaScripts.begin(); itja != m_Doc->JavaScripts.end(); ++itja)
 			actionCombo->addItem(itja.key());
-		if (doc->JavaScripts.contains(Opts.openAction))
+		if (m_Doc->JavaScripts.contains(Opts.openAction))
 			setCurrentComboItem(actionCombo, Opts.openAction);
 		if (Opts.PageLayout == PDFOptions::SinglePage)
 			singlePage->setChecked(true);
@@ -1611,6 +1611,24 @@ void TabPDFOptions::restoreDefaults(PDFOptions & Optionen,
 		}
 		
 	}
+	impStyle->setCurrentIndex(Opts.imposerOptions.style);
+	ImpNXSpinBox->setValue(Opts.imposerOptions.nX);
+	ImpNYSpinBox->setValue(Opts.imposerOptions.nY);
+	SheetSizeComboBox->setCurrentIndex(SheetSizeComboBox->count()-1);
+	AutoSheetSizeCombo->setCurrentIndex(AutoSheetSizeCombo->count()-1);
+	SheetRotationComboBox->setCurrentIndex(0);
+	if ((Opts.imposerOptions.sheetWidth <= 0) || (Opts.imposerOptions.sheetHeight <= 0)) {
+		/* If the sheet size was not set before, we do it here */
+		Opts.imposerOptions.sheetWidth  = ImpNXSpinBox->value() * pts2value(pageB,ImpSheetWidth->getUnit());
+		Opts.imposerOptions.sheetHeight = ImpNYSpinBox->value() * pts2value(pageB,ImpSheetHeight->getUnit());
+		AutoSheetSizeCombo->setCurrentIndex(0);
+	}
+	/* Safety catch to check whether the scalingFactor was set correctly */
+	if (Opts.imposerOptions.scalingFactor <= 0.25) {
+		Opts.imposerOptions.scalingFactor = 1.0;
+		std::cerr << "TabPDFOptions: Imposition scaling factor was not set correctly, setting to default of 1.0. Please report." <<std::endl; 
+	}
+	updateImpositionTab();
 }
 
 void TabPDFOptions::handleCompressionMethod(int ind)
@@ -1626,10 +1644,10 @@ void TabPDFOptions::doDocBleeds()
         Opts.bleeds.Bottom = BleedBottom->value() / unitRatio;
 		Opts.bleeds.Right = BleedRight->value() / unitRatio;
 		Opts.bleeds.Left = BleedLeft->value() / unitRatio;
-		BleedTop->setValue(doc->bleeds()->Top*unitRatio);
-		BleedBottom->setValue(doc->bleeds()->Bottom*unitRatio);
-		BleedRight->setValue(doc->bleeds()->Right*unitRatio);
-		BleedLeft->setValue(doc->bleeds()->Left*unitRatio);
+		BleedTop->setValue(m_Doc->bleeds()->Top*unitRatio);
+		BleedBottom->setValue(m_Doc->bleeds()->Bottom*unitRatio);
+		BleedRight->setValue(m_Doc->bleeds()->Right*unitRatio);
+		BleedLeft->setValue(m_Doc->bleeds()->Left*unitRatio);
 		BleedTop->setEnabled(false);
 		BleedBottom->setEnabled(false);
 		BleedRight->setEnabled(false);
@@ -1690,7 +1708,7 @@ void TabPDFOptions::EnablePDFX(int a)
 	useLayers->setEnabled((a == 2) || (a == 5));
 	if (useLayers2)
 		useLayers2->setEnabled((a == 2) || (a == 5));
-	if (doc != 0 && pdfExport)
+	if (m_Doc != 0 && pdfExport)
 	{
 		int currentEff = EffectType->currentIndex();
 		disconnect(EffectType, SIGNAL(activated(int)), this, SLOT(SetEffOpts(int)));
@@ -1717,7 +1735,7 @@ void TabPDFOptions::EnablePDFX(int a)
 				currentEff = 0;
 				EffectType->setCurrentIndex(0);
 				SetEffOpts(0);
-				for (int pg = 0; pg < doc->Pages->count(); ++pg)
+				for (int pg = 0; pg < m_Doc->Pages->count(); ++pg)
 				{
 					if (EffVal[pg].effectType > 6)
 						EffVal[pg].effectType = 0;
@@ -1736,7 +1754,7 @@ void TabPDFOptions::EnablePDFX(int a)
 		EmbedProfs->setEnabled(true);
 		EmbedProfs2->setEnabled(true);
 		emit hasInfo();
-		if (doc != 0 && pdfExport)
+		if (m_Doc != 0 && pdfExport)
 		{
 			CheckBox10->setEnabled(true);
 			EmbedFonts->setEnabled(true);
@@ -1765,7 +1783,7 @@ void TabPDFOptions::EnablePDFX(int a)
 		EmbedProfs2->setChecked(true);
 		EmbedProfs2->setEnabled(false);
 	}
-	if (doc != 0 && pdfExport)
+	if (m_Doc != 0 && pdfExport)
 	{
 //		EmbedFonts->setChecked(true);
 		EmbedAll();
@@ -1847,8 +1865,8 @@ void TabPDFOptions::EnableLPI(int a)
 		QString tp = Opts.SolidProf;
 		if (!ScCore->InputProfiles.contains(tp))
 		{
-			if (doc != 0)
-				tp = doc->cmsSettings().DefaultSolidColorRGBProfile;
+			if (m_Doc != 0)
+				tp = m_Doc->cmsSettings().DefaultSolidColorRGBProfile;
 			else
 				tp = PrefsManager::instance()->appPrefs.colorPrefs.DCMSset.DefaultSolidColorRGBProfile;
 		}
@@ -1869,8 +1887,8 @@ void TabPDFOptions::EnableLPI(int a)
 		QString tp1 = Opts.ImageProf;
 		if (!ScCore->InputProfiles.contains(tp1))
 		{
-			if (doc != 0)
-				tp1 = doc->cmsSettings().DefaultSolidColorRGBProfile;
+			if (m_Doc != 0)
+				tp1 = m_Doc->cmsSettings().DefaultSolidColorRGBProfile;
 			else
 				tp1 = PrefsManager::instance()->appPrefs.colorPrefs.DCMSset.DefaultSolidColorRGBProfile;
 		}
@@ -1899,7 +1917,7 @@ void TabPDFOptions::EnableLPI(int a)
 			ProfsGroup->hide();
 		}
 		useSpot->show();
-		if (doc!=0)
+		if (m_Doc!=0)
 		{
 			UseLPI->show();
 			if (UseLPI->isChecked())
@@ -1918,7 +1936,7 @@ void TabPDFOptions::EnableLPI(int a)
 
 void TabPDFOptions::EnableLPI2()
 {
-	if (doc!=0)
+	if (m_Doc!=0)
 	{
 		if (UseLPI->isChecked())
 			LPIgroup->show();
@@ -1950,7 +1968,7 @@ void TabPDFOptions::SelRange(bool e)
 
 void TabPDFOptions::EffectOnAll()
 {
-	for (int pg = 0; pg < doc->Pages->count(); ++pg)
+	for (int pg = 0; pg < m_Doc->Pages->count(); ++pg)
 	{
 		EffVal[pg].pageViewDuration = PageTime->value();
 		EffVal[pg].pageEffectDuration = EffectTime->value();
@@ -2085,9 +2103,9 @@ void TabPDFOptions::PagePr()
 	Pages->clear();
 	if (PagePrev->isChecked())
 	{
-		for (int pg = 0; pg < doc->Pages->count(); ++pg)
+		for (int pg = 0; pg < m_Doc->Pages->count(); ++pg)
 		{
-			pm=QPixmap::fromImage(doc->view()->PageToPixmap(pg, 70));
+			pm=QPixmap::fromImage(m_Doc->view()->PageToPixmap(pg, 70));
 			pgMaxX = qMax(pgMaxX, pm.width());
 			pgMaxY = qMax(pgMaxY, pm.height());
 			new QListWidgetItem( pm, tr("Page")+" "+tmp.setNum(pg+1), Pages);
@@ -2096,7 +2114,7 @@ void TabPDFOptions::PagePr()
 	}
 	else
 	{
-		for (int pg = 0; pg < doc->Pages->count(); ++pg)
+		for (int pg = 0; pg < m_Doc->Pages->count(); ++pg)
 		{
 			new QListWidgetItem( tr("Page")+" "+tmp.setNum(pg+1), Pages);
 		}
@@ -2387,9 +2405,9 @@ void TabPDFOptions::unitChange(QString unit, int docUnitIndex, double invUnitCon
 
 void TabPDFOptions::createPageNumberRange( )
 {
-	if (doc!=0)
+	if (m_Doc!=0)
 	{
-		CreateRange cr(PageNr->text(), doc->DocPages.count(), this);
+		CreateRange cr(PageNr->text(), m_Doc->DocPages.count(), this);
 		if (cr.exec())
 		{
 			CreateRangeData crData;
