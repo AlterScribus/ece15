@@ -8622,11 +8622,14 @@ bool PDFLibCore::PDF_Annotation(PageItem *ite, uint PNr)
 	QString cc;
 	QFileInfo fiBase(Spool.fileName());
 	QString baseDir = fiBase.absolutePath();
-	if (!((ite->itemText.length() == 1) && (ite->itemText.text(0, 1) == QChar(13))))
+	if ((ite->itemText.length() > 0) && !((ite->itemText.length() == 1) && (ite->itemText.text(0, 1) == QChar(13))))
 	{
 		// #6823 EncStringUTF16() perform the string encoding by its own
 		// via EncodeUTF16() so bmUtf16 must not encoded before
-		for (uint d = ite->firstInFrame(); d <= static_cast<uint>(ite->lastInFrame()); ++d)
+		//if ite is text frame get text only visible in it
+		uint start = (ite->isTextFrame() && !ite->invalid) ? static_cast<uint>(ite->firstInFrame()) : 0;
+		uint end = (ite->isTextFrame() && !ite->invalid) ? static_cast<uint>(ite->lastInFrame()) : static_cast<uint>(ite->itemText.length());
+		for (uint d = start; d < end; ++d)
 		{
 			cc = ite->itemText.text(d, 1);
 			bmUtf16 += (cc == QChar(13) ? QChar(10) : cc);
