@@ -3308,6 +3308,10 @@ bool Scribus150Format::readNotesStyles(ScribusDoc* doc, ScXmlStreamReader& reade
 			name = attrs.valueAsString("NotesStyle");
 			if (!name.isEmpty())
 				NS.setNotesParStyle(name);
+			name = attrs.valueAsString("LineStyle");
+			if (!name.isEmpty())
+				NS.setTopLineStyle(name);
+			NS.setTopLineWidth(attrs.valueAsDouble("LineWidth"));
 
 			m_Doc->newNotesStyle(NS);
 		}

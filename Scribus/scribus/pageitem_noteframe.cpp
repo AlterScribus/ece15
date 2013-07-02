@@ -1,4 +1,5 @@
 #include <QMessageBox>
+#include "pageitem_line.h"
 #include "pageitem_noteframe.h"
 #include "pageitem_textframe.h"
 #include "pageitem.h"
@@ -6,6 +7,7 @@
 #include "scribusdoc.h"
 #include "undomanager.h"
 #include "util_text.h"
+#include "util_math.h"
 
 #include <cmath>
 
@@ -14,6 +16,7 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, doub
 {
 	m_nstyle = nStyle;
 	m_masterFrame = NULL;
+	m_topLine = NULL;
 	itemText.clear();
 
 	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
@@ -66,12 +69,14 @@ PageItem_NoteFrame::PageItem_NoteFrame(ScribusDoc *doc, double x, double y, doub
 	textFlowModeVal = TextFlowUsesFrameShape;
 	deleteIt = false;
 	l_notes.empty();
+	m_topLine = NULL;
 }
 
 PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle) : PageItem_TextFrame(inFrame->doc(),inFrame->xPos(), inFrame->yPos(),inFrame->width(), inFrame->height(),inFrame->lineWidth(), inFrame->fillColor(), inFrame->lineColor())
 {
 	m_nstyle = nStyle;
 	m_masterFrame = inFrame;
+	m_topLine = NULL;
 
 	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
 	AutoName = false;
@@ -129,6 +134,15 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *
 		m_SizeLocked = false;
 	deleteIt = false;
 	l_notes.empty();
+}
+
+PageItem_NoteFrame::~PageItem_NoteFrame()
+{
+	if (m_topLine != NULL)
+	{
+		m_topLine->unWeld();
+		m_Doc->DocItems.removeOne(m_topLine);
+	}
 }
 
 void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
@@ -190,6 +204,7 @@ void PageItem_NoteFrame::layout()
 	//while layouting notes frames undo should be disabled
 	UndoManager::instance()->setUndoEnabled(false);
 
+	updateTopLine();
 	if (m_nstyle->isAutoNotesWidth() && (m_width != m_masterFrame->width()))
 	{
 		oldWidth = m_width = m_masterFrame->width();
@@ -270,6 +285,29 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 	if (itemText.length() > 0)
 		itemText.insertChars(itemText.length(), SpecialChars::PARSEP);
 	itemText.insert(itemText.length(), story);
+}
+
+void PageItem_NoteFrame::updateTopLine()
+{
+	UndoManager::instance()->setUndoEnabled(false);
+	if (m_topLine != NULL)
+	{
+		m_topLine->unWeld();
+		m_Doc->DocItems.removeOne(m_topLine);
+	}
+	if (!isequiv(m_nstyle->topLineWidth(),0.0))
+	{
+		m_topLine = new PageItem_Line(m_Doc, xPos(), yPos(), width() * (notesStyle()->topLineWidth()), 0, m_Doc->itemToolPrefs().lineWidth, CommonStrings::None, m_Doc->itemToolPrefs().lineColor);
+		m_topLine->m_NoteFrameTopLine = this;
+		m_topLine->setLocked(true);
+		m_topLine->weldTo(this);
+		if (notesStyle()->topLineStyle() != "" && notesStyle()->topLineStyle() != tr("No Style"))
+		{
+			m_topLine->setCustomLineStyle(notesStyle()->topLineStyle());
+			m_topLine->update();
+		}
+	}
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)

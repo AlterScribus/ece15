@@ -365,18 +365,18 @@ void PropertiesPalette_Line::updateLineStyles()
 	updateLineStyles(m_doc);
 }
 
-void PropertiesPalette_Line::updateLineStyles(ScribusDoc *dd)
+void PropertiesPalette_Line::updateLineStyles(ScribusDoc * scDoc)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;
 	
 	lineStyles->blockSignals(true);
 	lineStyles->clear();
-	if (dd != 0)
+	if (scDoc != 0)
 	{
 		QHash<QString,multiLine>::Iterator it;
-		for (it = dd->MLineStyles.begin(); it != dd->MLineStyles.end(); ++it)
-			lineStyles->addItem( new LineFormatItem(dd, it.value(), it.key()) );
+		for (it = scDoc->MLineStyles.begin(); it != scDoc->MLineStyles.end(); ++it)
+			lineStyles->addItem( new LineFormatItem(scDoc, it.value(), it.key()) );
 		lineStyles->sortItems();
 		lineStyles->insertItem( 0, tr("No Style"));
 		if (lineStyles->currentItem())

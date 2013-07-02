@@ -14,7 +14,7 @@ private:
 	PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle);
-	~PageItem_NoteFrame() { }
+	~PageItem_NoteFrame();
 public:
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }
@@ -56,10 +56,13 @@ public:
 private:
 	QList<TextNote*> l_notes;
 	NotesStyle* m_nstyle;
-	PageItem_TextFrame *m_masterFrame;
+	PageItem_TextFrame* m_masterFrame;
+	PageItem_Line* m_topLine;
 
 	//insert note at end of text in noteframe
 	void insertNote(TextNote* note);
+	//create top line object
+	void updateTopLine();
 
 //not used???
 	//find position of note marker in text
