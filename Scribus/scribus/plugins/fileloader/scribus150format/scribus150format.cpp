@@ -1798,7 +1798,15 @@ bool Scribus150Format::loadFile(const QString & fileName, const FileFormat & /* 
 	
 	if (m_Doc->Layers.count() == 0)
 		m_Doc->Layers.newLayer( QObject::tr("Background") );
-	
+	if (!EffVal.isEmpty())
+	{
+		for (int pdoE = 0; pdoE < EffVal.count(); ++pdoE)
+		{
+			if (pdoE < m_Doc->Pages->count())
+				m_Doc->Pages->at(pdoE)->PresentVals = EffVal[pdoE];
+		}
+	}
+
 	if (groupStackP.count() > 0)
 	{
 		while (groupStackP.count() > 0)
@@ -3169,7 +3177,7 @@ bool Scribus150Format::readPDFOptions(ScribusDoc* doc, ScXmlStreamReader& reader
 			ef.Dm = attrs.valueAsInt("Dm");
 			ef.M  = attrs.valueAsInt("M");
 			ef.Di = attrs.valueAsInt("Di");
-			doc->pdfOptions().PresentVals.append(ef);
+			EffVal.append(ef);
 		}
 	}
 	return !reader.hasError();
@@ -3633,6 +3641,14 @@ bool Scribus150Format::readPage(ScribusDoc* doc, ScXmlStreamReader& reader)
 	
 	newPage->guides.addHorizontals(newPage->guides.getAutoHorizontals(newPage), GuideManagerCore::Auto);
 	newPage->guides.addVerticals(newPage->guides.getAutoVerticals(newPage), GuideManagerCore::Auto);
+	struct PDFPresentationData ef;
+	ef.pageEffectDuration =  attrs.valueAsInt("pageEffectDuration", 1);
+	ef.pageViewDuration =  attrs.valueAsInt("pageViewDuration", 1);
+	ef.effectType = attrs.valueAsInt("effectType", 0);
+	ef.Dm = attrs.valueAsInt("Dm", 0);
+	ef.M  = attrs.valueAsInt("M", 0);
+	ef.Di = attrs.valueAsInt("Di", 0);
+	newPage->PresentVals = ef;
 	return true;
 }
 
@@ -3689,6 +3705,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 			FrameItems.append(m_Doc->Items->takeAt(m_Doc->Items->indexOf(newItem)));
 		else
 			doc->FrameItems.insert(newItem->inlineCharID, doc->Items->takeAt(doc->Items->indexOf(newItem)));
+		newItem->LayerID = doc->firstLayerID();
 	}
 	
 	info.item     = newItem;
@@ -5985,6 +6002,7 @@ bool Scribus150Format::loadPage(const QString & fileName, int pageNumber, bool M
 						FrameItems.append(m_Doc->Items->takeAt(m_Doc->Items->indexOf(newItem)));
 					else
 						m_Doc->FrameItems.insert(newItem->inlineCharID, m_Doc->Items->takeAt(m_Doc->Items->indexOf(newItem)));
+					newItem->LayerID = m_Doc->firstLayerID();
 				}
 				if (groupStack.count() > 0)
 				{

@@ -1233,7 +1233,7 @@ bool Scribus12Format::loadFile(const QString & fileName, const FileFormat & /* f
     					ef.Dm = pdfF.attribute("Dm").toInt();
     					ef.M = pdfF.attribute("M").toInt();
 		    			ef.Di = pdfF.attribute("Di").toInt();
-						m_Doc->pdfOptions().PresentVals.append(ef);
+						EffVal.append(ef);
 					}
 					PFO = PFO.nextSibling();
 				}
@@ -1247,6 +1247,14 @@ bool Scribus12Format::loadFile(const QString & fileName, const FileFormat & /* f
 	//m_Doc->Items = m_Doc->DocItems;
 	m_Doc->setMasterPageMode(false);
 	m_View->reformPages();
+	if (!EffVal.isEmpty())
+	{
+		for (int pdoE = 0; pdoE < EffVal.count(); ++pdoE)
+		{
+			if (pdoE < m_Doc->Pages->count())
+				m_Doc->Pages->at(pdoE)->PresentVals = EffVal[pdoE];
+		}
+	}
 
 	handleOldLayerBehavior(m_Doc);
 	if (m_Doc->layerCount() == 0)
@@ -1439,6 +1447,10 @@ void Scribus12Format::GetItemProps(QDomElement *obj, struct CopyPasteBuffer *OB,
 			OB->GrStartY = ScCLocale::toDoubleC(obj->attribute("GRSTARTY"), 0.0);
 			OB->GrEndX = ScCLocale::toDoubleC(obj->attribute("GRENDX"), 0.0);
 			OB->GrEndY = ScCLocale::toDoubleC(obj->attribute("GRENDY"), 0.0);
+			OB->GrFocalX = OB->GrStartX;
+			OB->GrFocalY = OB->GrStartY;
+			OB->GrScale  = 1.0;
+			OB->GrSkew  = 0.0;
 			OB->GrColor = obj->attribute("GRCOLOR","");
 			if (OB->GrColor.isEmpty())
 				OB->GrColor = "Black";

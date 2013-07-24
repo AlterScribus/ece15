@@ -4064,10 +4064,16 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		if (docProfileDir.exists())
 			ScCore->getCMSProfilesDir(fi.absolutePath()+"/profiles", false, false);
 
-		QDir docFontDir(fi.absolutePath() + "/fonts");
 		prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/", FName);
+		QDir docFontDir(fi.absolutePath() + "/fonts");
 		if (docFontDir.exists())
 			prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/fonts", FName);
+		QDir docFontDir2(fi.absolutePath() + "/Fonts");
+		if (docFontDir2.exists())
+			prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/Fonts", FName);
+		QDir docFontDir3(fi.absolutePath() + "/Document fonts");
+		if (docFontDir3.exists())
+			prefsManager->appPrefs.fontPrefs.AvailFonts.AddScalableFonts(fi.absolutePath()+"/Document fonts", FName);
 		prefsManager->appPrefs.fontPrefs.AvailFonts.updateFontMap();
 
 		m_Doc=new ScribusDoc();
@@ -4119,7 +4125,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 				newActWin(ActWinOld->getSubWin());
 			return false;
 		}
-		inlinePalette->setDoc(m_Doc);
 		symbolPalette->setDoc(m_Doc);
 		outlinePalette->setDoc(m_Doc);
 		fileLoader->informReplacementFonts();
@@ -4325,6 +4330,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		/*qDebug("Time elapsed: %d ms", t.elapsed());*/
 		m_Doc->RePos = false;
 		m_Doc->setModified(false);
+		inlinePalette->setDoc(m_Doc);
 		updateRecent(FName);
 		mainWindowStatusLabel->setText( tr("Ready"));
 		ret = true;
@@ -8513,7 +8519,7 @@ void ScribusMainWindow::doSaveAsPDF()
 		m_Doc->pdfOptions().SubsetList = tmpEm;
 	}
 	MarginStruct optBleeds(m_Doc->pdfOptions().bleeds);
-	PDFExportDialog dia(this, m_Doc->DocName, ReallyUsed, view, m_Doc->pdfOptions(), m_Doc->pdfOptions().PresentVals, ScCore->PDFXProfiles, prefsManager->appPrefs.fontPrefs.AvailFonts, ScCore->PrinterProfiles);
+	PDFExportDialog dia(this, m_Doc->DocName, ReallyUsed, view, m_Doc->pdfOptions(), ScCore->PDFXProfiles, prefsManager->appPrefs.fontPrefs.AvailFonts, ScCore->PrinterProfiles);
 	if (dia.exec())
 	{
 		qApp->setOverrideCursor(QCursor(Qt::WaitCursor));

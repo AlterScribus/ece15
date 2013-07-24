@@ -1145,7 +1145,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/plugins/textvalidator/prefs_textvalidator.h \
     scribus/plugins/textvalidator/tvconfig.h \
     scribus/ui/markparastyletext.h \
-    scribus/ui/searchreplacedialog.h
+    scribus/ui/searchreplacedialog.h \
+    scribus/pdfoptionsio.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \

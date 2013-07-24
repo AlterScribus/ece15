@@ -42,7 +42,6 @@ public:
 					const SCFonts &AllFonts,
 					const ProfilesL & PDFXProfiles,
 					const QMap<QString, int> & DocFonts,
-					const QList<PDFPresentationData> & Eff,
 					int unitIndex, double PageH, double PageB,
 					ScribusDoc *mdoc = 0, bool exporting = false);
 	~TabPDFOptions() {};
@@ -51,9 +50,10 @@ public:
 						 const SCFonts &AllFonts,
 						 const ProfilesL & PDFXProfiles,
 						 const QMap<QString, int> & DocFonts,
-						 const QList<PDFPresentationData> & Eff,
 						 int unitIndex, double PageH, double PageB,
 						 ScribusDoc *mdoc, bool exporting);
+
+	void storeValues(PDFOptions& options);
 	
 	void unitChange(QString unit, int docUnitIndex, double invUnitConversion);
 	

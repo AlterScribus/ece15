@@ -697,7 +697,7 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 						ef.Dm = pdfF.attribute("Dm").toInt();
 						ef.M = pdfF.attribute("M").toInt();
 						ef.Di = pdfF.attribute("Di").toInt();
-						m_Doc->pdfOptions().PresentVals.append(ef);
+						EffVal.append(ef);
 					}
 					PFO = PFO.nextSibling();
 				}
@@ -942,6 +942,7 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 				if (pg.tagName()=="FRAMEOBJECT")
 				{
 					FrameItems.append(m_Doc->Items->takeAt(m_Doc->Items->indexOf(Neu)));
+					Neu->LayerID = m_Doc->firstLayerID();
 				}
 				if (Neu->isTableItem)
 				{
@@ -1074,6 +1075,14 @@ bool Scribus13Format::loadFile(const QString & fileName, const FileFormat & /* f
 		layerToSetActive = nl->ID;
 	}
 	m_Doc->setActiveLayer(layerToSetActive);
+	if (!EffVal.isEmpty())
+	{
+		for (int pdoE = 0; pdoE < EffVal.count(); ++pdoE)
+		{
+			if (pdoE < m_Doc->Pages->count())
+				m_Doc->Pages->at(pdoE)->PresentVals = EffVal[pdoE];
+		}
+	}
 	
 	// reestablish textframe links
 	if (itemNext.count() != 0)
@@ -1939,6 +1948,10 @@ PageItem* Scribus13Format::PasteItem(QDomElement *obj, ScribusDoc *doc, const QS
 		currItem->GrStartY = ScCLocale::toDoubleC(obj->attribute("GRSTARTY"), 0.0);
 		currItem->GrEndX = ScCLocale::toDoubleC(obj->attribute("GRENDX"), currItem->width());
 		currItem->GrEndY = ScCLocale::toDoubleC(obj->attribute("GRENDY"), 0.0);
+		currItem->GrFocalX = currItem->GrStartX;
+		currItem->GrFocalY = currItem->GrStartY;
+		currItem->GrScale  = 1.0;
+		currItem->GrSkew  = 0.0;
 		GrColor = obj->attribute("GRCOLOR","");
 		if (!GrColor.isEmpty())
 		{
@@ -2329,6 +2342,7 @@ bool Scribus13Format::loadPage(const QString & fileName, int pageNumber, bool Mp
 					if (pg.tagName()=="FRAMEOBJECT")
 					{
 						FrameItems.append(m_Doc->Items->takeAt(m_Doc->Items->indexOf(Neu)));
+						Neu->LayerID = m_Doc->firstLayerID();
 					}
 				}
 				counter++;

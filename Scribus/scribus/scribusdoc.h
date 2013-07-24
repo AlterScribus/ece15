@@ -521,6 +521,8 @@ public:
 	 * @param list QStringList to insert the layer names into
 	 */
 	void orderedLayerList(QStringList* list);
+
+	int firstLayerID();
 	//Items
 	bool deleteTaggedItems();
 

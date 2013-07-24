@@ -319,7 +319,7 @@ public: // Start public functions
 	//>> ********* Functions for user interaction with the item **********
 
 
-	int level(); ///< Get item level relative to its parent doc or group
+	int level() const; ///< Get item level relative to its parent doc or group
 	void saxx(SaxHandler& handler, const Xml_string& elemtag) const {}
 	void saxx(SaxHandler& handler) const {}
 
@@ -1770,5 +1770,7 @@ public:
 };
 
 Q_DECLARE_METATYPE(PageItem*)
+
+bool compareItemLevel(const PageItem* item1, const PageItem* item2);
 
 #endif
