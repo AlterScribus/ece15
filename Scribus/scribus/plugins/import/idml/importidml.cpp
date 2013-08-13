@@ -486,6 +486,8 @@ bool IdmlPlug::convert(QString fn)
 	def_TextColumnCount = 1;
 	def_TextColumnGutter = 0;
 	def_TextColumnFixedWidth = 0;
+	def_LeftLineEnd = "None";
+	def_RightLineEnd = "None";
 	frameLinks.clear();
 	frameTargets.clear();
 	importedColors.clear();
@@ -968,6 +970,8 @@ void IdmlPlug::parseObjectStyle(const QDomElement& styleElem)
 	nstyle.TextColumnCount = def_TextColumnCount;
 	nstyle.TextColumnGutter = def_TextColumnGutter;
 	nstyle.TextFlow = def_TextFlow;
+	nstyle.LeftLineEnd = def_LeftLineEnd;
+	nstyle.RightLineEnd = def_RightLineEnd;
 	for(QDomNode itp = styleElem.firstChild(); !itp.isNull(); itp = itp.nextSibling() )
 	{
 		QDomElement itpr = itp.toElement();
@@ -1103,6 +1107,10 @@ void IdmlPlug::parseObjectStyle(const QDomElement& styleElem)
 		nstyle.gradientStrokeLength = styleElem.attribute("GradientStrokeLength").toDouble();
 	if (styleElem.hasAttribute("GradientStrokeAngle"))
 		nstyle.gradientStrokeAngle = styleElem.attribute("GradientStrokeAngle").toDouble();
+	if (styleElem.hasAttribute("RightLineEnd"))
+		nstyle.RightLineEnd = styleElem.attribute("RightLineEnd");
+	if (styleElem.hasAttribute("LeftLineEnd"))
+		nstyle.LeftLineEnd = styleElem.attribute("LeftLineEnd");
 	QString itemName = styleElem.attribute("Self");
 	ObjectStyles.insert(itemName, nstyle);
 }
@@ -1403,6 +1411,10 @@ void IdmlPlug::parsePreferencesXMLNode(const QDomElement& prNode)
 			else
 				def_fillTint = 100;
 			def_lineWidth = e.attribute("StrokeWeight", "0").toDouble();
+			if (e.hasAttribute("RightLineEnd"))
+				def_RightLineEnd = e.attribute("RightLineEnd");
+			if (e.hasAttribute("LeftLineEnd"))
+				def_LeftLineEnd = e.attribute("LeftLineEnd");
 		}
 		if (e.tagName() == "TextWrapPreference")
 		{
@@ -1532,6 +1544,27 @@ void IdmlPlug::parseSpreadXMLNode(const QDomElement& spNode)
 					baseX = m_Doc->currentPage()->xOffset();
 					baseY = m_Doc->currentPage()->yOffset() + m_Doc->currentPage()->height() / 2.0;
 					firstPage = false;
+					if ((importerFlags & LoadSavePlugin::lfCreateDoc) && spe.hasAttribute("AppliedMaster"))
+					{
+						QString mSpr = spe.attribute("AppliedMaster");
+						if (masterSpreads.contains(mSpr))
+						{
+							QString mp = CommonStrings::trMasterPageNormal;
+							if (facingPages)
+							{
+								if ((pagecount % 2 == 0) && (masterSpreads[mSpr].count() > 0))
+									mp = mSpr + "_" + masterSpreads[mSpr][0];
+								if ((pagecount % 2 == 1) && (masterSpreads[mSpr].count() > 1))
+									mp = mSpr + "_" + masterSpreads[mSpr][1];
+							}
+							else
+							{
+								if ((masterSpreads[mSpr].count() > 0))
+									mp = mSpr + "_" + masterSpreads[mSpr][0];
+							}
+							m_Doc->applyMasterPage(mp, m_Doc->currentPageNumber());
+						}
+					}
 				}
 			}
 			if ((facingPages) && (pagecount % 2 == 0))
@@ -1558,48 +1591,59 @@ void IdmlPlug::parseSpreadXMLNode(const QDomElement& spNode)
 				}
 			}
 		}
-/*		else if (e.tagName() == "MasterSpread")
+		else if (e.tagName() == "MasterSpread")
 		{
 			m_Doc->setMasterPageMode(true);
+			QString pageNam = e.attribute("Self");
+			QStringList pages;
+			ScPage *oldCur = m_Doc->currentPage();
 			for(QDomNode sp = e.firstChild(); !sp.isNull(); sp = sp.nextSibling() )
 			{
 				QDomElement spe = sp.toElement();
 				if (spe.tagName() == "Page")
 				{
-					QString pageNam = spe.attribute("Name") + "_" + spe.attribute("Self");
-					m_Doc->addMasterPage(mpagecount, pageNam);
-					m_Doc->currentPage()->MPageNam = "";
+					QString itemTrans = spe.attribute("ItemTransform");
+					ScTextStream list(&itemTrans, QIODevice::ReadOnly);
+					double a, b, c, d, e1, f;
+					list >> a >> b >> c >> d >> e1 >> f;
+					/* Adding the values directly */
+					QTransform transformation(a, b, c, d, e1, f);
+					ScPage *addedPage = m_Doc->addMasterPage(mpagecount, pageNam + "_" + spe.attribute("Self"));
+					m_Doc->setCurrentPage(addedPage);
+					pages.append(spe.attribute("Self"));
+					addedPage->MPageNam = "";
 					m_Doc->view()->addPage(mpagecount, true);
-					mpagecount++;
-					baseX = m_Doc->currentPage()->xOffset();
-					baseY = m_Doc->currentPage()->yOffset() + m_Doc->currentPage()->height() / 2.0;
-				}
-			}
-			if ((facingPages) && (mpagecount % 2 == 0))
-			{
-				baseX = m_Doc->currentPage()->xOffset() + m_Doc->currentPage()->width();
-				baseY = m_Doc->currentPage()->yOffset() + m_Doc->currentPage()->height() / 2.0;
-			}
-			if (!facingPages)
-			{
-				baseX = m_Doc->currentPage()->xOffset() + m_Doc->currentPage()->width() / 2.0;
-				baseY = m_Doc->currentPage()->yOffset() + m_Doc->currentPage()->height() / 2.0;
-			}
-			for(QDomNode sp = e.firstChild(); !sp.isNull(); sp = sp.nextSibling() )
-			{
-				QDomElement spe = sp.toElement();
-				if ((spe.tagName() == "Rectangle") || (spe.tagName() == "Oval") || (spe.tagName() == "GraphicLine") || (spe.tagName() == "Polygon") || (spe.tagName() == "TextFrame") || (spe.tagName() == "Group") || (spe.tagName() == "Button"))
-				{
-					QList<PageItem*> el = parseItemXML(spe);
-					for (int ec = 0; ec < el.count(); ++ec)
+					baseX = addedPage->xOffset();
+					baseY = addedPage->yOffset() + addedPage->height() / 2.0;
+					if (!facingPages)
+						baseX = addedPage->xOffset() + addedPage->width() / 2.0;
+					else
+						baseX = addedPage->xOffset() - transformation.dx();
+					for(QDomNode spp = e.firstChild(); !spp.isNull(); spp = spp.nextSibling() )
 					{
-						m_Doc->Items->append(el.at(ec));
-						Elements.append(el.at(ec));
+						QDomElement spe = spp.toElement();
+						if ((spe.tagName() == "Rectangle") || (spe.tagName() == "Oval") || (spe.tagName() == "GraphicLine") || (spe.tagName() == "Polygon") || (spe.tagName() == "TextFrame") || (spe.tagName() == "Group") || (spe.tagName() == "Button"))
+						{
+							QList<PageItem*> el = parseItemXML(spe);
+							for (int ec = 0; ec < el.count(); ++ec)
+							{
+								PageItem* ite = el.at(ec);
+								int pgi = m_Doc->OnPage(ite);
+								if (pgi != -1)
+								{
+									m_Doc->Items->append(ite);
+									Elements.append(ite);
+								}
+							}
+						}
 					}
+					mpagecount++;
 				}
 			}
+			masterSpreads.insert(pageNam, pages);
+			m_Doc->setCurrentPage(oldCur);
 			m_Doc->setMasterPageMode(false);
-		} */
+		}
 	}
 	return;
 }
@@ -1643,6 +1687,8 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 	int TextColumnCount = def_TextColumnCount;
 	double TextColumnGutter = def_TextColumnGutter;
 	double TextColumnFixedWidth = def_TextColumnFixedWidth;
+	QString LeftLineEnd = def_LeftLineEnd;
+	QString RightLineEnd = def_RightLineEnd;
 	QString imageFit = "None";
 	PageItem::TextFlowMode textFlow = def_TextFlow;
 	if (itElem.hasAttribute("AppliedObjectStyle"))
@@ -1709,6 +1755,8 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 			TextColumnGutter = nstyle.TextColumnGutter;
 			TextColumnFixedWidth = nstyle.TextColumnFixedWidth;
 			textFlow = nstyle.TextFlow;
+			LeftLineEnd = nstyle.LeftLineEnd;
+			RightLineEnd = nstyle.RightLineEnd;
 		}
 	}
 	if (itElem.hasAttribute("FillColor"))
@@ -1771,6 +1819,10 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 	}
 	if (strokeShade < 0)
 		strokeShade = 100;
+	if (itElem.hasAttribute("RightLineEnd"))
+		RightLineEnd = itElem.attribute("RightLineEnd");
+	if (itElem.hasAttribute("LeftLineEnd"))
+		LeftLineEnd = itElem.attribute("LeftLineEnd");
 	QString forLayer = itElem.attribute("ItemLayer");
 	if (layerTranslate.contains(forLayer))
 		forLayer = layerTranslate[forLayer];
@@ -2187,6 +2239,59 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 				}
 				item->OldB2 = item->width();
 				item->OldH2 = item->height();
+				if (item->isPolyLine())
+				{
+					if (LeftLineEnd != "None")
+					{
+						if (LeftLineEnd == "SimpleArrowHead")
+							item->setStartArrowIndex(2);
+						else if (LeftLineEnd == "SimpleWideArrowHead")
+							item->setStartArrowIndex(2);
+						else if (LeftLineEnd == "TriangleArrowHead")
+							item->setStartArrowIndex(8);
+						else if (LeftLineEnd == "TriangleWideArrowHead")
+							item->setStartArrowIndex(8);
+						else if (LeftLineEnd == "BarbedArrowHead")
+							item->setStartArrowIndex(23);
+						else if (LeftLineEnd == "CurvedArrowHead")
+							item->setStartArrowIndex(26);
+						else if (LeftLineEnd == "CircleArrowHead")
+							item->setStartArrowIndex(17);
+						else if (LeftLineEnd == "CircleSolidArrowHead")
+							item->setStartArrowIndex(17);
+						else if (LeftLineEnd == "Square-ArrowHead")
+							item->setStartArrowIndex(5);
+						else if (LeftLineEnd == "SquareSolid-ArrowHead")
+							item->setStartArrowIndex(5);
+						else if (LeftLineEnd == "BarArrowHead")
+							item->setStartArrowIndex(35);
+					}
+					if (RightLineEnd != "None")
+					{
+						if (RightLineEnd == "SimpleArrowHead")
+							item->setEndArrowIndex(2);
+						else if (RightLineEnd == "SimpleWideArrowHead")
+							item->setEndArrowIndex(2);
+						else if (RightLineEnd == "TriangleArrowHead")
+							item->setEndArrowIndex(8);
+						else if (RightLineEnd == "TriangleWideArrowHead")
+							item->setEndArrowIndex(8);
+						else if (RightLineEnd == "BarbedArrowHead")
+							item->setEndArrowIndex(23);
+						else if (RightLineEnd == "CurvedArrowHead")
+							item->setEndArrowIndex(26);
+						else if (RightLineEnd == "CircleArrowHead")
+							item->setEndArrowIndex(17);
+						else if (RightLineEnd == "CircleSolidArrowHead")
+							item->setEndArrowIndex(17);
+						else if (RightLineEnd == "Square-ArrowHead")
+							item->setEndArrowIndex(7);
+						else if (RightLineEnd == "SquareSolid-ArrowHead")
+							item->setEndArrowIndex(7);
+						else if (RightLineEnd == "BarArrowHead")
+							item->setEndArrowIndex(35);
+					}
+				}
 				item->updateClip();
 				item->setItemName(itemName);
 				if (importerFlags & LoadSavePlugin::lfCreateDoc)
@@ -2375,6 +2480,59 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 			item->setRotation(-rot, true);
 			item->OldB2 = item->width();
 			item->OldH2 = item->height();
+			if (item->isPolyLine())
+			{
+				if (LeftLineEnd != "None")
+				{
+					if (LeftLineEnd == "SimpleArrowHead")
+						item->setStartArrowIndex(2);
+					else if (LeftLineEnd == "SimpleWideArrowHead")
+						item->setStartArrowIndex(2);
+					else if (LeftLineEnd == "TriangleArrowHead")
+						item->setStartArrowIndex(8);
+					else if (LeftLineEnd == "TriangleWideArrowHead")
+						item->setStartArrowIndex(8);
+					else if (LeftLineEnd == "BarbedArrowHead")
+						item->setStartArrowIndex(23);
+					else if (LeftLineEnd == "CurvedArrowHead")
+						item->setStartArrowIndex(26);
+					else if (LeftLineEnd == "CircleArrowHead")
+						item->setStartArrowIndex(17);
+					else if (LeftLineEnd == "CircleSolidArrowHead")
+						item->setStartArrowIndex(17);
+					else if (LeftLineEnd == "Square-ArrowHead")
+						item->setStartArrowIndex(5);
+					else if (LeftLineEnd == "SquareSolid-ArrowHead")
+						item->setStartArrowIndex(5);
+					else if (LeftLineEnd == "BarArrowHead")
+						item->setStartArrowIndex(35);
+				}
+				if (RightLineEnd != "None")
+				{
+					if (RightLineEnd == "SimpleArrowHead")
+						item->setEndArrowIndex(2);
+					else if (RightLineEnd == "SimpleWideArrowHead")
+						item->setEndArrowIndex(2);
+					else if (RightLineEnd == "TriangleArrowHead")
+						item->setEndArrowIndex(8);
+					else if (RightLineEnd == "TriangleWideArrowHead")
+						item->setEndArrowIndex(8);
+					else if (RightLineEnd == "BarbedArrowHead")
+						item->setEndArrowIndex(23);
+					else if (RightLineEnd == "CurvedArrowHead")
+						item->setEndArrowIndex(26);
+					else if (RightLineEnd == "CircleArrowHead")
+						item->setEndArrowIndex(17);
+					else if (RightLineEnd == "CircleSolidArrowHead")
+						item->setEndArrowIndex(17);
+					else if (RightLineEnd == "Square-ArrowHead")
+						item->setEndArrowIndex(7);
+					else if (RightLineEnd == "SquareSolid-ArrowHead")
+						item->setEndArrowIndex(7);
+					else if (RightLineEnd == "BarArrowHead")
+						item->setEndArrowIndex(35);
+				}
+			}
 			item->updateClip();
 			item->setItemName(itemName);
 			item->OwnPage = m_Doc->OnPage(item);
@@ -2594,6 +2752,7 @@ void IdmlPlug::parseParagraphStyleRange(QDomElement &ste, PageItem* item)
 	}
 	ParagraphStyle newStyle;
 	newStyle.setParent(pStyle);
+	newStyle.setLineSpacingMode(ParagraphStyle::AutomaticLineSpacing);
 	// Apply possible override of paragraph style
 	readParagraphStyleAttributes(newStyle, ste);
 	ParagraphStyle ttx = m_Doc->paragraphStyle(pStyle);
@@ -2836,6 +2995,7 @@ void IdmlPlug::parseCharacterStyleRange(QDomElement &stt, PageItem* item, QStrin
 		item->itemText.insertChars(posC, data);
 		item->itemText.applyStyle(posC, newStyle);
 		item->itemText.applyCharStyle(posC, data.length(), nstyle);
+		posC = item->itemText.length();
 	}
 }
 
@@ -3058,6 +3218,10 @@ void IdmlPlug::resolveObjectStyle(ObjectStyle &nstyle, QString baseStyleName)
 			nstyle.TextColumnFixedWidth = style.TextColumnFixedWidth;
 		if (style.TextFlow != def_TextFlow)
 			nstyle.TextFlow = style.TextFlow;
+		if (style.LeftLineEnd != def_LeftLineEnd)
+			nstyle.LeftLineEnd = style.LeftLineEnd;
+		if (style.RightLineEnd != def_RightLineEnd)
+			nstyle.RightLineEnd = style.RightLineEnd;
 	}
 }
 

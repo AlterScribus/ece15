@@ -91,6 +91,8 @@ private:
 		double TextColumnGutter;
 		double TextColumnFixedWidth;
 		PageItem::TextFlowMode TextFlow;
+		QString LeftLineEnd;
+		QString RightLineEnd;
 	};
 	QString getNodeValue(QDomNode &baseNode, QString path);
 	bool convert(QString fn);
@@ -148,10 +150,13 @@ private:
 	QMap<QString, QStringList> styleParents;
 	QMap<QString, QString> charStyleTranslate;
 	QMap<QString, QMap<QString, QString> > fontTranslateMap;
+	QMap<QString, QStringList> masterSpreads;
 	QString def_fillColor;
 	QString def_fillGradient;
 	QString def_strokeColor;
 	QString def_strokeGradient;
+	QString def_LeftLineEnd;
+	QString def_RightLineEnd;
 	int def_Blendmode;
 	int def_fillBlendmode;
 	int def_strokeBlendmode;

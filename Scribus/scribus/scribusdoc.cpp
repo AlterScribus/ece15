@@ -18774,7 +18774,7 @@ bool ScribusDoc::validateNSet(NotesStyle NS, QString newName)
 
 	if (!errStr.isEmpty() && ScCore->usingGUI())
 	{
-		QMessageBox::warning(this->scMW(), QObject::tr("Unaceptable settings for note style"), "<qt>"+ errStr +"</qt>", QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
+		QMessageBox::warning(this->scMW(), QObject::tr("Unacceptable settings for note style"), "<qt>"+ errStr +"</qt>", QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
 		return false;
 	}
 	return true;
