@@ -23,7 +23,7 @@ ATTRDEF(int, opticalMargins, OpticalMargins, 0)
 ATTRDEF(int, hyphenationMode, HyphenationMode, 0)  //default value is ParagraphStyle::HyphModeNotSet
 ATTRDEF(int, maxHyphens, MaxHyphens, -1)
 ATTRDEF(double, minWordTracking, MinWordTracking, 1.0)
-ATTRDEF(double, maxWordTracking, MaxWordTracking, 2.0)
+ATTRDEF(double, maxWordTracking, MaxWordTracking, 1.2)
 ATTRDEF(double, minGlyphExtension, MinGlyphExtension, 1.0)
 ATTRDEF(double, maxGlyphExtension, MaxGlyphExtension, 1.0)
 ATTRDEF(double, maxTracking, MaxTracking, 0.0)

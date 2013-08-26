@@ -20,9 +20,9 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Debug-cairo|Win32"
-			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus\plugins"
-			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
+			Name="Debug|Win32"
+			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-$(ConfigurationName)-$(PlatformName)-vc9\scribus\plugins"
+			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs\$(ConfigurationName)-$(PlatformName)-vc9\$(TargetName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\Scribus-build-props.vsprops"
 			CharacterSet="1"
@@ -58,7 +58,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\..\..\scribus;&quot;$(QT4_DIR)\include\QtCore&quot;;&quot;$(QT4_DIR)\include\QtGui&quot;;&quot;$(QT4_DIR)\include\QtXml&quot;;&quot;$(QT4_DIR)\include&quot;;&quot;$(QT4_DIR)\src\3rdparty\zlib&quot;;&quot;$(LCMS_DIR)\include&quot;;&quot;$(CAIRO_DIR)\include&quot;;&quot;$(FREETYPE_DIR)\include&quot;;&quot;$(LIBJPEG_DIR)\include&quot;;&quot;$(LIBTIFF_DIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;;HAVE_CAIRO;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
+				PreprocessorDefinitions="WIN32;_DEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -115,9 +115,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release-cairo|Win32"
-			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-vc9-$(ConfigurationName)\scribus\plugins"
-			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs-vc9\$(ConfigurationName)\$(TargetName)"
+			Name="Release|Win32"
+			OutputDirectory="..\..\..\..\Scribus-builds\Scribus-$(ConfigurationName)-$(PlatformName)-vc9\scribus\plugins"
+			IntermediateDirectory="..\..\..\..\Scribus-builds\Build-objs\$(ConfigurationName)-$(PlatformName)-vc9\$(TargetName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\Scribus-build-props.vsprops"
 			CharacterSet="1"
@@ -155,7 +155,7 @@
 				InlineFunctionExpansion="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="..;..\..\..\scribus;&quot;$(QT4_DIR)\include\QtCore&quot;;&quot;$(QT4_DIR)\include\QtGui&quot;;&quot;$(QT4_DIR)\include\QtXml&quot;;&quot;$(QT4_DIR)\include&quot;;&quot;$(QT4_DIR)\src\3rdparty\zlib&quot;;&quot;$(LCMS_DIR)\include&quot;;&quot;$(CAIRO_DIR)\include&quot;;&quot;$(FREETYPE_DIR)\include&quot;;&quot;$(LIBJPEG_DIR)\include&quot;;&quot;$(LIBTIFF_DIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;;HAVE_CAIRO;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
+				PreprocessorDefinitions="WIN32;NDEBUG;_USE_MATH_DEFINES;_USRDLL;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;COMPILE_PLUGIN_AS_DLL;AVOID_WIN32_FILEIO"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -242,14 +242,14 @@
 				RelativePath="..\..\..\scribus\plugins\fileloader\scribus13format\scribus13format.h"
 				>
 				<FileConfiguration
-					Name="Debug-cairo|Win32"
+					Name="Debug|Win32"
 					>
 					<Tool
 						Name="moc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release-cairo|Win32"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="moc"
@@ -260,14 +260,14 @@
 				RelativePath="..\..\..\scribus\plugins\fileloader\scribus13format\scribus13formatimpl.h"
 				>
 				<FileConfiguration
-					Name="Debug-cairo|Win32"
+					Name="Debug|Win32"
 					>
 					<Tool
 						Name="moc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release-cairo|Win32"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="moc"

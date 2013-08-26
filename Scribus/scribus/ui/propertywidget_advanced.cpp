@@ -78,7 +78,7 @@ void PropertyWidget_Advanced::setDoc(ScribusDoc *d)
 	maxTrackingSpinBox->setValues( -300, 300, 2, 0);
 	minWordTrackingSpinBox->setValues(1, 2000, 2, 100);
 	normWordTrackingSpinBox->setValues(1, 2000, 2, 100);
-	maxWordTrackingSpinBox->setValues(1, 10000, 2, 200);
+	maxWordTrackingSpinBox->setValues(1, 10000, 2, 120);
 	minGlyphExtSpinBox->setValues(90, 100, 2, 100);
 	maxGlyphExtSpinBox->setValues(100, 120, 2, 100);
 
