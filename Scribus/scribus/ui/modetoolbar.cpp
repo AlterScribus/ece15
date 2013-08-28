@@ -114,16 +114,16 @@ ModeToolBar::ModeToolBar(ScribusMainWindow* parent) : ScToolBar( tr("Tools"), "T
 
 void ModeToolBar::newCalValues()
 {
-	m_ScMW->m_Doc->itemToolPrefs().calligrapicPenAngle = Angle->value();
-	m_ScMW->m_Doc->itemToolPrefs().calligrapicPenWidth = PWidth->value();
+	m_ScMW->doc->itemToolPrefs().calligrapicPenAngle = Angle->value();
+	m_ScMW->doc->itemToolPrefs().calligrapicPenWidth = PWidth->value();
 }
 
 void ModeToolBar::GetPolyProps()
 {
-	PolygonProps* dia = new PolygonProps(m_ScMW, m_ScMW->m_Doc->itemToolPrefs().polyCorners, m_ScMW->m_Doc->itemToolPrefs().polyFactor, m_ScMW->m_Doc->itemToolPrefs().polyUseFactor, m_ScMW->m_Doc->itemToolPrefs().polyRotation, m_ScMW->m_Doc->itemToolPrefs().polyCurvature, m_ScMW->m_Doc->itemToolPrefs().polyInnerRot, m_ScMW->m_Doc->itemToolPrefs().polyOuterCurvature);
+	PolygonProps* dia = new PolygonProps(m_ScMW, m_ScMW->doc->itemToolPrefs().polyCorners, m_ScMW->doc->itemToolPrefs().polyFactor, m_ScMW->doc->itemToolPrefs().polyUseFactor, m_ScMW->doc->itemToolPrefs().polyRotation, m_ScMW->doc->itemToolPrefs().polyCurvature, m_ScMW->doc->itemToolPrefs().polyInnerRot, m_ScMW->doc->itemToolPrefs().polyOuterCurvature);
 	if (dia->exec())
 	{
-		dia->getValues(&m_ScMW->m_Doc->itemToolPrefs().polyCorners, &m_ScMW->m_Doc->itemToolPrefs().polyFactor, &m_ScMW->m_Doc->itemToolPrefs().polyUseFactor, &m_ScMW->m_Doc->itemToolPrefs().polyRotation, &m_ScMW->m_Doc->itemToolPrefs().polyCurvature, &m_ScMW->m_Doc->itemToolPrefs().polyInnerRot, &m_ScMW->m_Doc->itemToolPrefs().polyOuterCurvature);
+		dia->getValues(&m_ScMW->doc->itemToolPrefs().polyCorners, &m_ScMW->doc->itemToolPrefs().polyFactor, &m_ScMW->doc->itemToolPrefs().polyUseFactor, &m_ScMW->doc->itemToolPrefs().polyRotation, &m_ScMW->doc->itemToolPrefs().polyCurvature, &m_ScMW->doc->itemToolPrefs().polyInnerRot, &m_ScMW->doc->itemToolPrefs().polyOuterCurvature);
 		m_ScMW->scrActions["toolsInsertPolygon"]->trigger();
 	}
 	delete dia;

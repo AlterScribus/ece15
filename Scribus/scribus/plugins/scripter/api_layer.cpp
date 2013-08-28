@@ -114,7 +114,7 @@ void LayerAPI::setBlendMode(int value)
 
 bool LayerAPI::isActive()
 {
-	if (ScCore->primaryMainWindow()->m_Doc->activeLayerName() == innerLayer->Name)
+	if (ScCore->primaryMainWindow()->doc->activeLayerName() == innerLayer->Name)
 		return true;
 	return false;
 }
@@ -123,9 +123,9 @@ void LayerAPI::setActive(bool value)
 {
 	if (value)
 	{
-		bool found = ScCore->primaryMainWindow()->m_Doc->setActiveLayer(innerLayer->Name);
+		bool found = ScCore->primaryMainWindow()->doc->setActiveLayer(innerLayer->Name);
 		if (found)
-			ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->m_Doc->activeLayer());
+			ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->doc->activeLayer());
 	}
 }
 
@@ -137,9 +137,9 @@ void LayerAPI::setActive(bool value)
 QList< QVariant > LayerAPI::items()
 {
 	QList<QVariant> l;
-	for (int i = 0; i<ScCore->primaryMainWindow()->m_Doc->Items->count(); ++i)
+	for (int i = 0; i<ScCore->primaryMainWindow()->doc->Items->count(); ++i)
 	{
-		PageItem *item = ScCore->primaryMainWindow()->m_Doc->Items->at(i);
+		PageItem *item = ScCore->primaryMainWindow()->doc->Items->at(i);
 		if (item->LayerID == this->getID())
 		{
 			if (item->asTextFrame())

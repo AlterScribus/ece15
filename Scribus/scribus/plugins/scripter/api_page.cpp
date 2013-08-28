@@ -43,7 +43,7 @@ PageAPI::~PageAPI()
  */
 void PageAPI::remove()
 {
-	if (ScCore->primaryMainWindow()->m_Doc->Pages->count() > 1)
+	if (ScCore->primaryMainWindow()->doc->Pages->count() > 1)
 		ScCore->primaryMainWindow()->deletePage2(number());
 	else
 		RAISE("No pages left to remove");
@@ -58,7 +58,7 @@ void PageAPI::remove()
  */
 int PageAPI::position()
 {
-	return ScCore->primaryMainWindow()->m_Doc->locationOfPage(number());
+	return ScCore->primaryMainWindow()->doc->locationOfPage(number());
 }
 
 /**
@@ -68,7 +68,7 @@ int PageAPI::position()
  */
 int PageAPI::number()
 {
-	return ScCore->primaryMainWindow()->m_Doc->currentPageNumber() + 1;
+	return ScCore->primaryMainWindow()->doc->currentPageNumber() + 1;
 }
 
 
@@ -81,11 +81,11 @@ QList<QVariant> PageAPI::items()
 {
 	QList<QVariant> l;
 	int num = number() - 1;
-	for (int i = 0; i<ScCore->primaryMainWindow()->m_Doc->Items->count(); ++i)
+	for (int i = 0; i<ScCore->primaryMainWindow()->doc->Items->count(); ++i)
 	{
-		if (num == ScCore->primaryMainWindow()->m_Doc->Items->at(i)->OwnPage)
+		if (num == ScCore->primaryMainWindow()->doc->Items->at(i)->OwnPage)
 		{
-			PageItem *item = ScCore->primaryMainWindow()->m_Doc->Items->at(i);
+			PageItem *item = ScCore->primaryMainWindow()->doc->Items->at(i);
 			/**
 			 * Checking whether it is a textframe. If yes, we are trying to cast
 			 * it onto TextWrapper class, which can effectively perform all
@@ -116,7 +116,7 @@ QList<QVariant> PageAPI::selection()
 {
 	QList<QVariant> l;
 	int num = number() - 1;
-	Selection *sel = ScCore->primaryMainWindow()->m_Doc->m_Selection;
+	Selection *sel = ScCore->primaryMainWindow()->doc->m_Selection;
 	for (int i=0; i < sel->count(); i++)
 	{
 		PageItem *item = sel->itemAt(i);
@@ -141,7 +141,7 @@ QList<QVariant> PageAPI::selection()
 /// in system units.
 double PageAPI::pageXtoDocX(double x)
 {
-	return x + ScCore->primaryMainWindow()->m_Doc->currentPage()->xOffset();
+	return x + ScCore->primaryMainWindow()->doc->currentPage()->xOffset();
 }
 
 
@@ -152,7 +152,7 @@ double PageAPI::pageXtoDocX(double x)
 /// origin on the top left of the current page.
 double PageAPI::pageYtoDocY(double y)
 {
-	return y + ScCore->primaryMainWindow()->m_Doc->currentPage()->yOffset();
+	return y + ScCore->primaryMainWindow()->doc->currentPage()->yOffset();
 }
 
 PageItem *PageAPI::newItem(const PageItem::ItemType itemType,
@@ -161,12 +161,12 @@ PageItem *PageAPI::newItem(const PageItem::ItemType itemType,
                           const double height, const double w,
                           const QString& fill, const QString& outline)
 {
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(
 	            itemType, frameType,
 	            pageXtoDocX(x), pageYtoDocY(y),
 	            width, height,
 	            w, fill, outline, true);
-	return ScCore->primaryMainWindow()->m_Doc->Items->at(i);
+	return ScCore->primaryMainWindow()->doc->Items->at(i);
 }
 
 
@@ -183,9 +183,9 @@ QObject *PageAPI::newRectangle(double x, double y, double width, double height)
 {
 	PageItem *item = newItem(
 	           PageItem::Polygon, PageItem::Rectangle, x, y, width, height,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor);
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor,
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor);
 	return new ItemAPI(item);
 }
 
@@ -203,9 +203,9 @@ QObject *PageAPI::newEllipse(double x, double y, double width, double height)
 {
 	PageItem *item = newItem(
 	           PageItem::Polygon, PageItem::Ellipse, x, y, width, height,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor);
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor,
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor);
 	return new ItemAPI(item);
 }
 
@@ -226,7 +226,7 @@ QObject *PageAPI::newImage(double x, double y, double width, double height)
 	           1,
 	           // @xxx: ale
 	           // ScCore->primaryMainWindow()->doc->toolSettings.dBrushPict,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().imageFillColor,
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().imageFillColor,
 	           CommonStrings::None);
 	return new ImageAPI(item->asImageFrame());
 }
@@ -245,9 +245,9 @@ QObject *PageAPI::newText(double x, double y, double width, double height)
 {
 	PageItem *item = newItem(
 	           PageItem::TextFrame, PageItem::Unspecified, x, y, width, height,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
 	           CommonStrings::None,
-	           ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().textFont);
+	           ScCore->primaryMainWindow()->doc->itemToolPrefs().textFont);
 	return new TextAPI(item->asTextFrame());
 }
 
@@ -265,9 +265,9 @@ QObject *PageAPI::newLine(double x, double y, double width, double height)
 {
 	PageItem *item = (PageItem*)newItem(
 	                     PageItem::Line, PageItem::Unspecified, x, y, width, height,
-	                     ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
-	                     ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor,
-	                     ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor);
+	                     ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
+	                     ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor,
+	                     ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor);
 	item->setRotation(xy2Deg(width-x, height-y));
 	item->setWidthHeight(sqrt(pow(x-width, 2.0) + pow(y-height, 2.0)), 1.0);
 	item->Sizing = false;
@@ -285,13 +285,13 @@ void PageAPI::placeImage(const QString formatExt, const QString & filename, cons
 	{
 		fmt->loadFile(filename,
 		              LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-		if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() > 1)
+		if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
 		{
 			double x2, y2, w, h;
-			ScCore->primaryMainWindow()->m_Doc->m_Selection->getGroupRect(
+			ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(
 			    &x2, &y2, &w, &h);
 			ScCore->primaryMainWindow()->view->startGroupTransaction();
-			ScCore->primaryMainWindow()->m_Doc->moveGroup(
+			ScCore->primaryMainWindow()->doc->moveGroup(
 			    pageXtoDocX(x) - x2, pageYtoDocY(y) - y2);
 			ScCore->primaryMainWindow()->view->endGroupTransaction();
 			ScCore->primaryMainWindow()->propertiesPalette->updateColorList();
@@ -380,5 +380,5 @@ void PageAPI::savePageAsEPS(const QString &filename)
  */
 int PageAPI::type()
 {
-	return ScCore->primaryMainWindow()->m_Doc->locationOfPage(number());
+	return ScCore->primaryMainWindow()->doc->locationOfPage(number());
 }

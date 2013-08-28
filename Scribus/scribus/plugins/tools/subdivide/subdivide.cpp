@@ -107,7 +107,7 @@ bool SubdividePlugin::run(ScribusDoc* doc, QString)
 {
 	ScribusDoc* currDoc = doc;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->m_Doc;
+		currDoc = ScCore->primaryMainWindow()->doc;
 	double nearT = 0.5;
 	uint docSelectionCount = currDoc->m_Selection->count();
 	if (docSelectionCount != 0)

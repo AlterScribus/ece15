@@ -167,7 +167,7 @@ bool ImportPdfPlugin::import(QString fileName, int flags)
 		else
 			return false;
 	}
-	m_Doc=ScCore->primaryMainWindow()->m_Doc;
+	m_Doc=ScCore->primaryMainWindow()->doc;
 	UndoTransaction* activeTransaction = NULL;
 	bool emptyDoc = (m_Doc == NULL);
 	bool hasCurrentPage = (m_Doc && m_Doc->currentPage());

@@ -1364,8 +1364,8 @@ void ActionManager::enableActionStringList(QMap<QString, QPointer<ScrAction> > *
 					charCode==28 ||
 					charCode==29 ||
 					charCode==30 ||
-					((*mainWindow->m_Doc->AllFonts)[fontName].usable() &&
-					(*mainWindow->m_Doc->AllFonts)[fontName].canRender(charCode)) )
+					((*mainWindow->doc->AllFonts)[fontName].usable() &&
+					(*mainWindow->doc->AllFonts)[fontName].canRender(charCode)) )
 						(*actionMap)[*it]->setEnabled(true);
 				else
 					(*actionMap)[*it]->setEnabled(false);
@@ -1384,7 +1384,7 @@ void ActionManager::setPDFActions(ScribusView *currView)
 {
 	if (currView==NULL)
 		return;
-	PageItem* currItem = mainWindow->m_Doc->m_Selection->itemAt(0);
+	PageItem* currItem = mainWindow->doc->m_Selection->itemAt(0);
 	if (currItem==NULL)
 		return;
 

@@ -48,12 +48,12 @@ PyObject *scribus_placevec(PyObject* /* self */, PyObject* args)
 		if( fmt )
 		{
 			fmt->loadFile(fName, LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-			if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() > 1)
+			if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
 			{
 				double x2, y2, w, h;
-				ScCore->primaryMainWindow()->m_Doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+				ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
 				ScCore->primaryMainWindow()->view->startGroupTransaction();
-				ScCore->primaryMainWindow()->m_Doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+				ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 				ScCore->primaryMainWindow()->view->endGroupTransaction();
 				ScCore->primaryMainWindow()->requestUpdate(reqColorsUpdate | reqLineStylesUpdate | reqTextStylesUpdate);
 			}

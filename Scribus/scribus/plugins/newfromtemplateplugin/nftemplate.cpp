@@ -111,9 +111,9 @@ void MenuNFT::RunNFTPlug(ScribusDoc* /*doc*/)
 		qApp->changeOverrideCursor(QCursor(Qt::WaitCursor));
 		if (mw->loadDoc(QDir::cleanPath(nftdia->currentDocumentTemplate->file)))
 		{
-			mw->m_Doc->hasName = false;
+			mw->doc->hasName = false;
 			UndoManager::instance()->renameStack(nftdia->currentDocumentTemplate->name);
-			mw->m_Doc->DocName = nftdia->currentDocumentTemplate->name;
+			mw->doc->DocName = nftdia->currentDocumentTemplate->name;
 			mw->updateActiveWindowCaption(QObject::tr("Document Template: ") + nftdia->currentDocumentTemplate->name);
 			QDir::setCurrent(PrefsManager::instance()->documentDir());
 			mw->removeRecent(QDir::cleanPath(nftdia->currentDocumentTemplate->file));

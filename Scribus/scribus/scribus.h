@@ -199,7 +199,7 @@ public:
 	/** \brief doc represents your actual document and is created only once. It keeps
 	 * information such as filename and does the serialization of your files.
 	 */
-	ScribusDoc *m_Doc;
+	ScribusDoc *doc;
 private:
 	/** \brief private doc for managing default patterns. */
 	ScribusDoc* tmp_doc;

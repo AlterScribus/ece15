@@ -79,9 +79,9 @@ void ImageAPI::setGrayscale()
     ef.effectCode = ScImage::EF_GRAYSCALE;
 
     item->effectsInUse.append(ef);
-    item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->m_Doc->PageColors, false);
+    item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->doc->PageColors, false);
 
-    ScCore->primaryMainWindow()->m_Doc->updatePic();
+    ScCore->primaryMainWindow()->doc->updatePic();
 }
 
 void ImageAPI::load(QString filename)
@@ -95,7 +95,7 @@ void ImageAPI::load(QString filename)
 		RAISE("Target is not an image frame.");
 		return;
 	}
-	ScCore->primaryMainWindow()->m_Doc->loadPict(filename, item);
+	ScCore->primaryMainWindow()->doc->loadPict(filename, item);
 }
 
 void ImageAPI::scale(double x, double y)
@@ -110,20 +110,20 @@ void ImageAPI::scale(double x, double y)
 		return;
 	}
 
-    Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+    Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
     ScCore->primaryMainWindow()->view->Deselect();
     ScCore->primaryMainWindow()->view->SelectItem(item);
 
-    ScCore->primaryMainWindow()->m_Doc->itemSelection_SetImageScale(x, y);
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+    ScCore->primaryMainWindow()->doc->itemSelection_SetImageScale(x, y);
+	ScCore->primaryMainWindow()->doc->updatePic();
 
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 }
 
 void ImageAPI::offset(double x, double y)
@@ -139,10 +139,10 @@ void ImageAPI::offset(double x, double y)
 	}
 
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
@@ -152,13 +152,13 @@ void ImageAPI::offset(double x, double y)
 	// offset
 	double newOffsetX = x / ((item->imageXScale() != 0.0) ? item->imageXScale() : 1);
 	double newOffsetY = y / ((item->imageYScale() != 0.0) ? item->imageYScale() : 1);
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetImageOffset(newOffsetX, newOffsetY);    //CB why when this is done above?
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->itemSelection_SetImageOffset(newOffsetX, newOffsetY);    //CB why when this is done above?
+	ScCore->primaryMainWindow()->doc->updatePic();
 
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 }
 
 void ImageAPI::setBrightness(double n)
@@ -179,9 +179,9 @@ void ImageAPI::setBrightness(double n)
 	fp << n;
 
 	item->effectsInUse.append(ef);
-	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->m_Doc->PageColors, false);
+	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->doc->PageColors, false);
 
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->updatePic();
 }
 
 void ImageAPI::scaleToFrame(bool scaletoframe, bool Proportional)

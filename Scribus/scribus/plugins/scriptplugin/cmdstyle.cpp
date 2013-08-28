@@ -80,12 +80,12 @@ PyObject *scribus_createparagraphstyle(PyObject* /* self */, PyObject* args, PyO
 
 	StyleSet<ParagraphStyle> TmpStyleSet;
 	TmpStyleSet.create(TmpParagraphStyle);
-	ScCore->primaryMainWindow()->m_Doc->redefineStyles(TmpStyleSet, false);
+	ScCore->primaryMainWindow()->doc->redefineStyles(TmpStyleSet, false);
 	// PV - refresh the Style Manager window.
 	// I thought that this can work but it doesn't:
 	// ScCore->primaryMainWindow()->styleMgr()->reloadStyleView();
 	// So the brute force setDoc is called...
-	ScCore->primaryMainWindow()->styleMgr()->setDoc(ScCore->primaryMainWindow()->m_Doc);
+	ScCore->primaryMainWindow()->styleMgr()->setDoc(ScCore->primaryMainWindow()->doc);
 
 	Py_RETURN_NONE;
 }
@@ -136,7 +136,7 @@ PyObject *scribus_createcharstyle(PyObject* /* self */, PyObject* args, PyObject
 
 	CharStyle TmpCharStyle;
 	TmpCharStyle.setName(Name);
-	TmpCharStyle.setFont((*ScCore->primaryMainWindow()->m_Doc->AllFonts)[QString(Font)]);
+	TmpCharStyle.setFont((*ScCore->primaryMainWindow()->doc->AllFonts)[QString(Font)]);
 	TmpCharStyle.setFontSize(FontSize * 10);
 	TmpCharStyle.setFeatures(FeaturesList);
 	TmpCharStyle.setFillColor(QString(FillColor));
@@ -158,12 +158,12 @@ PyObject *scribus_createcharstyle(PyObject* /* self */, PyObject* args, PyObject
 
 	StyleSet<CharStyle> TmpStyleSet;
 	TmpStyleSet.create(TmpCharStyle);
-	ScCore->primaryMainWindow()->m_Doc->redefineCharStyles(TmpStyleSet, false);
+	ScCore->primaryMainWindow()->doc->redefineCharStyles(TmpStyleSet, false);
 	// PV - refresh the Style Manager window.
 	// I thought that this can work but it doesn't:
 	// ScCore->primaryMainWindow()->styleMgr()->reloadStyleView();
 	// So the brute force setDoc is called...
-	ScCore->primaryMainWindow()->styleMgr()->setDoc(ScCore->primaryMainWindow()->m_Doc);
+	ScCore->primaryMainWindow()->styleMgr()->setDoc(ScCore->primaryMainWindow()->doc);
 
 	Py_RETURN_NONE;
 }

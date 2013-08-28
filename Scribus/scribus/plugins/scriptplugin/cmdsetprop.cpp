@@ -357,7 +357,7 @@ PyObject *scribus_setcornerrad(PyObject* /* self */, PyObject* args)
 	// apply rounding
 	currItem->setCornerRadius(w);
 	currItem->SetFrameRound();
-	ScCore->primaryMainWindow()->m_Doc->setRedrawBounding(currItem);
+	ScCore->primaryMainWindow()->doc->setRedrawBounding(currItem);
 	ScCore->primaryMainWindow()->view->SetFrameRounded();
 	Py_RETURN_NONE;
 }
@@ -373,7 +373,7 @@ PyObject *scribus_setmultiline(PyObject* /* self */, PyObject* args)
 	PageItem *currItem = GetUniqueItem(QString::fromUtf8(Name));
 	if (currItem == NULL)
 		return NULL;
-	if (!ScCore->primaryMainWindow()->m_Doc->MLineStyles.contains(QString::fromUtf8(Style)))
+	if (!ScCore->primaryMainWindow()->doc->MLineStyles.contains(QString::fromUtf8(Style)))
 	{
 		PyErr_SetString(NotFoundError, QObject::tr("Line style not found.","python error").toLocal8Bit().constData());
 		return NULL;

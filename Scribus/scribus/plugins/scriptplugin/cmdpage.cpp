@@ -17,7 +17,7 @@ PyObject *scribus_actualpage(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->m_Doc->currentPageNumber() + 1));
+	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->doc->currentPageNumber() + 1));
 }
 
 PyObject *scribus_redraw(PyObject* /* self */)
@@ -39,12 +39,12 @@ PyObject *scribus_pageposition(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	e--;
-	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count())-1))
+	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count())-1))
 	{
 		PyErr_SetString(PyExc_IndexError, QObject::tr("Page number out of range.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->m_Doc->locationOfPage(e)));
+	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->doc->locationOfPage(e)));
 }
 
 PyObject *scribus_savepageeps(PyObject* /* self */, PyObject* args)
@@ -78,7 +78,7 @@ PyObject *scribus_deletepage(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	e--;
-	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count())-1))
+	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count())-1))
 	{
 		PyErr_SetString(PyExc_IndexError, QObject::tr("Page number out of range.","python error").toLocal8Bit().constData());
 		return NULL;
@@ -97,7 +97,7 @@ PyObject *scribus_gotopage(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	e--;
-	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count())-1))
+	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count())-1))
 	{
 		PyErr_SetString(PyExc_IndexError, QObject::tr("Page number out of range.","python error").toLocal8Bit().constData());
 		return NULL;
@@ -118,10 +118,10 @@ PyObject *scribus_newpage(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 
-	int loc = (e > -1) ? e : ScCore->primaryMainWindow()->m_Doc->Pages->count();
-	if (ScCore->primaryMainWindow()->m_Doc->pageSets()[ScCore->primaryMainWindow()->m_Doc->pagePositioning()].Columns != 1)
+	int loc = (e > -1) ? e : ScCore->primaryMainWindow()->doc->Pages->count();
+	if (ScCore->primaryMainWindow()->doc->pageSets()[ScCore->primaryMainWindow()->doc->pagePositioning()].Columns != 1)
 	{
-		switch (ScCore->primaryMainWindow()->m_Doc->locationOfPage(loc))
+		switch (ScCore->primaryMainWindow()->doc->locationOfPage(loc))
 		{
 			case LeftPage:
 				qName = CommonStrings::trMasterPageNormalLeft;
@@ -137,7 +137,7 @@ PyObject *scribus_newpage(PyObject* /* self */, PyObject* args)
 	if (QString(name).length() != 0)
 		qName = QString::fromUtf8(name);
 
-	if (!ScCore->primaryMainWindow()->m_Doc->MasterNames.contains(qName))
+	if (!ScCore->primaryMainWindow()->doc->MasterNames.contains(qName))
 	{
 		PyErr_SetString(PyExc_IndexError, QObject::tr("Given master page name does not match any existing.","python error").toLocal8Bit().constData());
 		return NULL;
@@ -163,7 +163,7 @@ PyObject *scribus_pagecount(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->m_Doc->Pages->count()));
+	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->doc->Pages->count()));
 }
 
 PyObject *scribus_pagedimension(PyObject* /* self */)
@@ -173,8 +173,8 @@ PyObject *scribus_pagedimension(PyObject* /* self */)
 	PyObject *t;
 	t = Py_BuildValue(
 			"(dd)",
-			PointToValue(ScCore->primaryMainWindow()->m_Doc->pageWidth()), // it's just view scale... * ScCore->primaryMainWindow()->doc->Scale),
-			PointToValue(ScCore->primaryMainWindow()->m_Doc->pageHeight())  // * ScCore->primaryMainWindow()->doc->Scale)
+			PointToValue(ScCore->primaryMainWindow()->doc->pageWidth()), // it's just view scale... * ScCore->primaryMainWindow()->doc->Scale),
+			PointToValue(ScCore->primaryMainWindow()->doc->pageHeight())  // * ScCore->primaryMainWindow()->doc->Scale)
 		);
 	return t;
 }
@@ -187,7 +187,7 @@ PyObject *scribus_pagensize(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	e--;
-	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count())-1))
+	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count())-1))
 	{
 		PyErr_SetString(PyExc_IndexError, QObject::tr("Page number out of range.","python error").toLocal8Bit().constData());
 		return NULL;
@@ -195,8 +195,8 @@ PyObject *scribus_pagensize(PyObject* /* self */, PyObject* args)
 	PyObject *t;
 	t = Py_BuildValue(
 			"(dd)",
-			PointToValue(ScCore->primaryMainWindow()->m_Doc->Pages->at(e)->width()),
-			PointToValue(ScCore->primaryMainWindow()->m_Doc->Pages->at(e)->height())
+			PointToValue(ScCore->primaryMainWindow()->doc->Pages->at(e)->width()),
+			PointToValue(ScCore->primaryMainWindow()->doc->Pages->at(e)->height())
 		);
 	return t;
 }
@@ -209,16 +209,16 @@ PyObject *scribus_pagenmargins(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	e--;
-	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count())-1))
+	if ((e < 0) || (e > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count())-1))
 	{
 		PyErr_SetString(PyExc_IndexError, QObject::tr("Page number out of range.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
 	PyObject *margins = NULL;
-	margins = Py_BuildValue("ffff", PointToValue(ScCore->primaryMainWindow()->m_Doc->Pages->at(e)->Margins.Top),
-									PointToValue(ScCore->primaryMainWindow()->m_Doc->Pages->at(e)->Margins.Left),
-									PointToValue(ScCore->primaryMainWindow()->m_Doc->Pages->at(e)->Margins.Right),
-									PointToValue(ScCore->primaryMainWindow()->m_Doc->Pages->at(e)->Margins.Bottom));
+	margins = Py_BuildValue("ffff", PointToValue(ScCore->primaryMainWindow()->doc->Pages->at(e)->Margins.Top),
+									PointToValue(ScCore->primaryMainWindow()->doc->Pages->at(e)->Margins.Left),
+									PointToValue(ScCore->primaryMainWindow()->doc->Pages->at(e)->Margins.Right),
+									PointToValue(ScCore->primaryMainWindow()->doc->Pages->at(e)->Margins.Bottom));
 	return margins;
 }
 
@@ -226,26 +226,26 @@ PyObject *scribus_getpageitems(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	if (ScCore->primaryMainWindow()->m_Doc->Items->count() == 0)
+	if (ScCore->primaryMainWindow()->doc->Items->count() == 0)
 		return Py_BuildValue((char*)"[]");
 	uint counter = 0;
-	int pageNr = ScCore->primaryMainWindow()->m_Doc->currentPageNumber();
-	for (int lam2 = 0; lam2 < ScCore->primaryMainWindow()->m_Doc->Items->count(); ++lam2)
+	int pageNr = ScCore->primaryMainWindow()->doc->currentPageNumber();
+	for (int lam2 = 0; lam2 < ScCore->primaryMainWindow()->doc->Items->count(); ++lam2)
 	{
-		if (pageNr == ScCore->primaryMainWindow()->m_Doc->Items->at(lam2)->OwnPage)
+		if (pageNr == ScCore->primaryMainWindow()->doc->Items->at(lam2)->OwnPage)
 			counter++;
 	}
 	PyObject *l = PyList_New(counter);
 	PyObject *row;
 	counter = 0;
-	for (int i = 0; i<ScCore->primaryMainWindow()->m_Doc->Items->count(); ++i)
+	for (int i = 0; i<ScCore->primaryMainWindow()->doc->Items->count(); ++i)
 	{
-		if (pageNr == ScCore->primaryMainWindow()->m_Doc->Items->at(i)->OwnPage)
+		if (pageNr == ScCore->primaryMainWindow()->doc->Items->at(i)->OwnPage)
 		{
 			row = Py_BuildValue((char*)"(sii)",
-			                    ScCore->primaryMainWindow()->m_Doc->Items->at(i)->itemName().toUtf8().constData(),
-			                    ScCore->primaryMainWindow()->m_Doc->Items->at(i)->itemType(),
-								ScCore->primaryMainWindow()->m_Doc->Items->at(i)->uniqueNr
+			                    ScCore->primaryMainWindow()->doc->Items->at(i)->itemName().toUtf8().constData(),
+			                    ScCore->primaryMainWindow()->doc->Items->at(i)->itemType(),
+								ScCore->primaryMainWindow()->doc->Items->at(i)->uniqueNr
 			                   );
 			PyList_SetItem(l, counter, row);
 			counter++;
@@ -258,7 +258,7 @@ PyObject *scribus_getHguides(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	Guides g = ScCore->primaryMainWindow()->m_Doc->currentPage()->guides.horizontals(GuideManagerCore::Standard);
+	Guides g = ScCore->primaryMainWindow()->doc->currentPage()->guides.horizontals(GuideManagerCore::Standard);
 	int n = g.count();//ScCore->primaryMainWindow()->doc->currentPage->YGuides.count();
 	if (n == 0)
 		return Py_BuildValue((char*)"[]");
@@ -290,7 +290,7 @@ PyObject *scribus_setHguides(PyObject* /* self */, PyObject* args)
 	int i, n;
 	n = PyList_Size(l);
 	double guide;
-	ScCore->primaryMainWindow()->m_Doc->currentPage()->guides.clearHorizontals(GuideManagerCore::Standard);
+	ScCore->primaryMainWindow()->doc->currentPage()->guides.clearHorizontals(GuideManagerCore::Standard);
 	for (i=0; i<n; i++)
 	{
 		if (!PyArg_Parse(PyList_GetItem(l, i), "d", &guide))
@@ -298,7 +298,7 @@ PyObject *scribus_setHguides(PyObject* /* self */, PyObject* args)
 			PyErr_SetString(PyExc_TypeError, QObject::tr("argument contains non-numeric values: must be list of float values.","python error").toLocal8Bit().constData());
 			return NULL;
 		}
-		ScCore->primaryMainWindow()->m_Doc->currentPage()->guides.addHorizontal(ValueToPoint(guide), GuideManagerCore::Standard);
+		ScCore->primaryMainWindow()->doc->currentPage()->guides.addHorizontal(ValueToPoint(guide), GuideManagerCore::Standard);
 	}
  	Py_INCREF(Py_None);
  	return Py_None;
@@ -309,7 +309,7 @@ PyObject *scribus_getVguides(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	Guides g = ScCore->primaryMainWindow()->m_Doc->currentPage()->guides.verticals(GuideManagerCore::Standard);
+	Guides g = ScCore->primaryMainWindow()->doc->currentPage()->guides.verticals(GuideManagerCore::Standard);
 	int n = g.count();//ScCore->primaryMainWindow()->doc->currentPage->XGuides.count();
 	if (n == 0)
 		return Py_BuildValue((char*)"[]");
@@ -341,7 +341,7 @@ PyObject *scribus_setVguides(PyObject* /* self */, PyObject* args)
 	int i, n;
 	n = PyList_Size(l);
 	double guide;
-	ScCore->primaryMainWindow()->m_Doc->currentPage()->guides.clearVerticals(GuideManagerCore::Standard);
+	ScCore->primaryMainWindow()->doc->currentPage()->guides.clearVerticals(GuideManagerCore::Standard);
 	for (i=0; i<n; i++)
 	{
 		if (!PyArg_Parse(PyList_GetItem(l, i), "d", &guide))
@@ -349,7 +349,7 @@ PyObject *scribus_setVguides(PyObject* /* self */, PyObject* args)
 			PyErr_SetString(PyExc_TypeError, QObject::tr("argument contains no-numeric values: must be list of float values.","python error").toLocal8Bit().constData());
 			return NULL;
 		}
-		ScCore->primaryMainWindow()->m_Doc->currentPage()->guides.addVertical(ValueToPoint(guide), GuideManagerCore::Standard);
+		ScCore->primaryMainWindow()->doc->currentPage()->guides.addVertical(ValueToPoint(guide), GuideManagerCore::Standard);
 	}
 // 	Py_INCREF(Py_None);
 // 	return Py_None;
@@ -361,10 +361,10 @@ PyObject *scribus_getpagemargins(PyObject* /* self */)
 	PyObject *margins = NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	margins = Py_BuildValue("ffff", PointToValue(ScCore->primaryMainWindow()->m_Doc->margins()->Top),
-									PointToValue(ScCore->primaryMainWindow()->m_Doc->margins()->Left),
-									PointToValue(ScCore->primaryMainWindow()->m_Doc->margins()->Right),
-									PointToValue(ScCore->primaryMainWindow()->m_Doc->margins()->Bottom));
+	margins = Py_BuildValue("ffff", PointToValue(ScCore->primaryMainWindow()->doc->margins()->Top),
+									PointToValue(ScCore->primaryMainWindow()->doc->margins()->Left),
+									PointToValue(ScCore->primaryMainWindow()->doc->margins()->Right),
+									PointToValue(ScCore->primaryMainWindow()->doc->margins()->Bottom));
 	return margins;
 }
 
@@ -383,14 +383,14 @@ void import_addpages(int total, int pos) {
 		int locreal = pos + i;
 		int loc = pos + i + 1;
 
-		if (loc > ScCore->primaryMainWindow()->m_Doc->Pages->count())
-			loc = ScCore->primaryMainWindow()->m_Doc->Pages->count();
+		if (loc > ScCore->primaryMainWindow()->doc->Pages->count())
+			loc = ScCore->primaryMainWindow()->doc->Pages->count();
 
 		QString qName(CommonStrings::trMasterPageNormal);
 
-		if (ScCore->primaryMainWindow()->m_Doc->pageSets()[ScCore->primaryMainWindow()->m_Doc->pagePositioning()].Columns != 1) {
-			ScCore->primaryMainWindow()->m_Doc->locationOfPage(loc);
-			switch (ScCore->primaryMainWindow()->m_Doc->locationOfPage(loc))
+		if (ScCore->primaryMainWindow()->doc->pageSets()[ScCore->primaryMainWindow()->doc->pagePositioning()].Columns != 1) {
+			ScCore->primaryMainWindow()->doc->locationOfPage(loc);
+			switch (ScCore->primaryMainWindow()->doc->locationOfPage(loc))
 			{
 				case LeftPage:
 					qName = CommonStrings::trMasterPageNormalLeft;
@@ -456,7 +456,7 @@ PyObject *scribus_importpage(PyObject* /* self */, PyObject* args)
 	int startPage=0, nrToImport=pageNs.size();
 	bool doIt = true;
 
-	if (ScCore->primaryMainWindow()->m_Doc->masterPageMode())
+	if (ScCore->primaryMainWindow()->doc->masterPageMode())
 	{
 		if (nrToImport > 1)
 			ScCore->primaryMainWindow()->loadPage(fromDoc, pageNs[0] - 1, false);
@@ -469,17 +469,17 @@ PyObject *scribus_importpage(PyObject* /* self */, PyObject* args)
 		else if (importWhere == 1) //After page
 			startPage = importWherePage + 1;
 		else //at end
-			startPage = ScCore->primaryMainWindow()->m_Doc->DocPages.count();// + 1;
+			startPage = ScCore->primaryMainWindow()->doc->DocPages.count();// + 1;
 
 		import_addpages(nrToImport, startPage);
 	}
 	else
 	{
-		startPage = ScCore->primaryMainWindow()->m_Doc->currentPage()->pageNr() + 1;
-		if (nrToImport > (ScCore->primaryMainWindow()->m_Doc->DocPages.count() - ScCore->primaryMainWindow()->m_Doc->currentPage()->pageNr()))
+		startPage = ScCore->primaryMainWindow()->doc->currentPage()->pageNr() + 1;
+		if (nrToImport > (ScCore->primaryMainWindow()->doc->DocPages.count() - ScCore->primaryMainWindow()->doc->currentPage()->pageNr()))
 		{
-			int tmp=nrToImport - (ScCore->primaryMainWindow()->m_Doc->DocPages.count() - ScCore->primaryMainWindow()->m_Doc->currentPage()->pageNr());
-			import_addpages(tmp, ScCore->primaryMainWindow()->m_Doc->DocPages.count());
+			int tmp=nrToImport - (ScCore->primaryMainWindow()->doc->DocPages.count() - ScCore->primaryMainWindow()->doc->currentPage()->pageNr());
+			import_addpages(tmp, ScCore->primaryMainWindow()->doc->DocPages.count());
 		}
 	}
 

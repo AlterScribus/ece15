@@ -27,19 +27,19 @@ PyObject *scribus_newrect(PyObject* /* self */, PyObject* args)
 //		PyErr_SetString(NameExistsError, QObject::tr("An object with the requested name already exists.","python error"));
 //		return NULL;
 //	}
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::Polygon, PageItem::Rectangle,
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::Polygon, PageItem::Rectangle,
 								pageUnitXToDocX(x), pageUnitYToDocY(y),
 								ValueToPoint(w), ValueToPoint(h),
-								ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
-								ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor, true);
+								ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
+								ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor, true);
 //	ScCore->primaryMainWindow()->doc->setRedrawBounding(ScCore->primaryMainWindow()->doc->Items->at(i));
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(i)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(i)->setItemName(objName);
 	}
-	return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Items->at(i)->itemName().toUtf8());
+	return PyString_FromString(ScCore->primaryMainWindow()->doc->Items->at(i)->itemName().toUtf8());
 }
 
 
@@ -51,22 +51,22 @@ PyObject *scribus_newellipse(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::Polygon, PageItem::Ellipse,
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::Polygon, PageItem::Ellipse,
 										pageUnitXToDocX(x),
 										pageUnitYToDocY(y),
 										ValueToPoint(w),
 										ValueToPoint(h),
-										ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
-										ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor,
-										ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor,
+										ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
+										ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor,
+										ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor,
 										true);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(i)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(i)->setItemName(objName);
 	}
-	return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Items->at(i)->itemName().toUtf8());
+	return PyString_FromString(ScCore->primaryMainWindow()->doc->Items->at(i)->itemName().toUtf8());
 }
 
 
@@ -78,20 +78,20 @@ PyObject *scribus_newimage(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::ImageFrame, PageItem::Unspecified,
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::ImageFrame, PageItem::Unspecified,
 									pageUnitXToDocX(x),
 									pageUnitYToDocY(y),
 									ValueToPoint(w),
 									ValueToPoint(h),
-									1, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().imageFillColor,
-									ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().imageStrokeColor, true);
+									1, ScCore->primaryMainWindow()->doc->itemToolPrefs().imageFillColor,
+									ScCore->primaryMainWindow()->doc->itemToolPrefs().imageStrokeColor, true);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(i)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(i)->setItemName(objName);
 	}
-	return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Items->at(i)->itemName().toUtf8());
+	return PyString_FromString(ScCore->primaryMainWindow()->doc->Items->at(i)->itemName().toUtf8());
 }
 
 
@@ -103,20 +103,20 @@ PyObject *scribus_newtext(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::TextFrame, PageItem::Unspecified,
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::TextFrame, PageItem::Unspecified,
 								pageUnitXToDocX(x),
 								pageUnitYToDocY(y),
 								ValueToPoint(w),
 								ValueToPoint(h),
-								ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth, CommonStrings::None,
-								ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().textColor, true);
+								ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth, CommonStrings::None,
+								ScCore->primaryMainWindow()->doc->itemToolPrefs().textColor, true);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(i)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(i)->setItemName(objName);
 	}
-	return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Items->at(i)->itemName().toUtf8());
+	return PyString_FromString(ScCore->primaryMainWindow()->doc->Items->at(i)->itemName().toUtf8());
 }
 
 PyObject *scribus_newtable(PyObject* /* self */, PyObject* args)
@@ -133,7 +133,7 @@ PyObject *scribus_newtable(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(PyExc_ValueError, QObject::tr("Both numRows and numColumns must be greater than 0.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::Table, PageItem::Unspecified,
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::Table, PageItem::Unspecified,
 								pageUnitXToDocX(x),
 								pageUnitYToDocY(y),
 								ValueToPoint(w),
@@ -142,7 +142,7 @@ PyObject *scribus_newtable(PyObject* /* self */, PyObject* args)
 								CommonStrings::None,  // Unused.
 								CommonStrings::None,  // Unused.
 								true);
-	PageItem_Table *table = ScCore->primaryMainWindow()->m_Doc->Items->at(i)->asTable();
+	PageItem_Table *table = ScCore->primaryMainWindow()->doc->Items->at(i)->asTable();
 	table->insertRows(0, numRows - 1);
 	table->insertColumns(0, numColumns - 1);
 	table->adjustTableToFrame();
@@ -151,7 +151,7 @@ PyObject *scribus_newtable(PyObject* /* self */, PyObject* args)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(i)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(i)->setItemName(objName);
 	}
 	return PyString_FromString(table->itemName().toUtf8());
 }
@@ -175,12 +175,12 @@ PyObject *scribus_newline(PyObject* /* self */, PyObject* args)
 //									"python error"));
 //		return NULL;
 //	}
-	int i = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::Line, PageItem::Unspecified,
+	int i = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::Line, PageItem::Unspecified,
 							   x, y, w, h,
-							   ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth,
-							   ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor,
-							   ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor, true);
-	PageItem *it = ScCore->primaryMainWindow()->m_Doc->Items->at(i);
+							   ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth,
+							   ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor,
+							   ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor, true);
+	PageItem *it = ScCore->primaryMainWindow()->doc->Items->at(i);
 	it->setRotation(xy2Deg(w-x, h-y));
 	it->setWidthHeight(sqrt(pow(x-w, 2.0) + pow(y-h, 2.0)), 1.0);
 	it->Sizing = false;
@@ -211,7 +211,7 @@ PyObject *scribus_newline(PyObject* /* self */, PyObject* args)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(i)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(i)->setItemName(objName);
 	}
 	return PyString_FromString(it->itemName().toUtf8());
 }
@@ -248,8 +248,8 @@ PyObject *scribus_polyline(PyObject* /* self */, PyObject* args)
 	i++;
 	y = pageUnitYToDocY(static_cast<double>(PyFloat_AsDouble(PyList_GetItem(il, i))));
 	i++;
-	int ic = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::PolyLine, PageItem::Unspecified, x, y, 1, 1,	ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor, true);
-	PageItem *it = ScCore->primaryMainWindow()->m_Doc->Items->at(ic);
+	int ic = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::PolyLine, PageItem::Unspecified, x, y, 1, 1,	ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor, true);
+	PageItem *it = ScCore->primaryMainWindow()->doc->Items->at(ic);
 	it->PoLine.resize(2);
 	it->PoLine.setPoint(0, 0, 0);
 	it->PoLine.setPoint(1, 0, 0);
@@ -275,20 +275,20 @@ PyObject *scribus_polyline(PyObject* /* self */, PyObject* args)
 	if (np2.x() < 0)
 	{
 		it->PoLine.translate(-np2.x(), 0);
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(np2.x(), 0, it);
+		ScCore->primaryMainWindow()->doc->MoveItem(np2.x(), 0, it);
 	}
 	if (np2.y() < 0)
 	{
 		it->PoLine.translate(0, -np2.y());
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(0, np2.y(), it);
+		ScCore->primaryMainWindow()->doc->MoveItem(0, np2.y(), it);
 	}
-	ScCore->primaryMainWindow()->m_Doc->SizeItem(it->PoLine.WidthHeight().x(), it->PoLine.WidthHeight().y(), it, false, false, false);
-	ScCore->primaryMainWindow()->m_Doc->AdjustItemSize(it);
+	ScCore->primaryMainWindow()->doc->SizeItem(it->PoLine.WidthHeight().x(), it->PoLine.WidthHeight().y(), it, false, false, false);
+	ScCore->primaryMainWindow()->doc->AdjustItemSize(it);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(ic)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(ic)->setItemName(objName);
 	}
 	return PyString_FromString(it->itemName().toUtf8());
 }
@@ -325,8 +325,8 @@ PyObject *scribus_polygon(PyObject* /* self */, PyObject* args)
 	i++;
 	y = pageUnitYToDocY(static_cast<double>(PyFloat_AsDouble(PyList_GetItem(il, i))));
 	i++;
-	int ic = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::Polygon, PageItem::Unspecified, x, y, 1, 1,	ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor, true);
-	PageItem *it = ScCore->primaryMainWindow()->m_Doc->Items->at(ic);
+	int ic = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::Polygon, PageItem::Unspecified, x, y, 1, 1,	ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor, true);
+	PageItem *it = ScCore->primaryMainWindow()->doc->Items->at(ic);
 	it->PoLine.resize(2);
 	it->PoLine.setPoint(0, 0, 0);
 	it->PoLine.setPoint(1, 0, 0);
@@ -357,20 +357,20 @@ PyObject *scribus_polygon(PyObject* /* self */, PyObject* args)
 	if (np2.x() < 0)
 	{
 		it->PoLine.translate(-np2.x(), 0);
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(np2.x(), 0, it);
+		ScCore->primaryMainWindow()->doc->MoveItem(np2.x(), 0, it);
 	}
 	if (np2.y() < 0)
 	{
 		it->PoLine.translate(0, -np2.y());
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(0, np2.y(), it);
+		ScCore->primaryMainWindow()->doc->MoveItem(0, np2.y(), it);
 	}
-	ScCore->primaryMainWindow()->m_Doc->SizeItem(it->PoLine.WidthHeight().x(), it->PoLine.WidthHeight().y(), it, false, false, false);
-	ScCore->primaryMainWindow()->m_Doc->AdjustItemSize(it);
+	ScCore->primaryMainWindow()->doc->SizeItem(it->PoLine.WidthHeight().x(), it->PoLine.WidthHeight().y(), it, false, false, false);
+	ScCore->primaryMainWindow()->doc->AdjustItemSize(it);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(ic)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(ic)->setItemName(objName);
 	}
 	return PyString_FromString(it->itemName().toUtf8());
 }
@@ -415,8 +415,8 @@ PyObject *scribus_bezierline(PyObject* /* self */, PyObject* args)
 	ky2 = pageUnitYToDocY(static_cast<double>(PyFloat_AsDouble(PyList_GetItem(il, i))));
 	i++;
 	//int ic = ScCore->primaryMainWindow()->view->PaintPolyLine(x, y, 1, 1,	ScCore->primaryMainWindow()->doc->toolSettings.dWidth, ScCore->primaryMainWindow()->doc->toolSettings.dBrush, ScCore->primaryMainWindow()->doc->toolSettings.dPen);
-	int ic = ScCore->primaryMainWindow()->m_Doc->itemAdd(PageItem::PolyLine, PageItem::Unspecified, x, y, 1, 1,	ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineWidth, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->m_Doc->itemToolPrefs().shapeLineColor, true);
-	PageItem *it = ScCore->primaryMainWindow()->m_Doc->Items->at(ic);
+	int ic = ScCore->primaryMainWindow()->doc->itemAdd(PageItem::PolyLine, PageItem::Unspecified, x, y, 1, 1,	ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineWidth, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeFillColor, ScCore->primaryMainWindow()->doc->itemToolPrefs().shapeLineColor, true);
+	PageItem *it = ScCore->primaryMainWindow()->doc->Items->at(ic);
 	it->PoLine.resize(2);
 	it->PoLine.setPoint(0, 0, 0);
 	it->PoLine.setPoint(1, kx-x, ky-y);
@@ -448,20 +448,20 @@ PyObject *scribus_bezierline(PyObject* /* self */, PyObject* args)
 	if (np2.x() < 0)
 	{
 		it->PoLine.translate(-np2.x(), 0);
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(np2.x(), 0, it);
+		ScCore->primaryMainWindow()->doc->MoveItem(np2.x(), 0, it);
 	}
 	if (np2.y() < 0)
 	{
 		it->PoLine.translate(0, -np2.y());
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(0, np2.y(), it);
+		ScCore->primaryMainWindow()->doc->MoveItem(0, np2.y(), it);
 	}
-	ScCore->primaryMainWindow()->m_Doc->SizeItem(it->PoLine.WidthHeight().x(), it->PoLine.WidthHeight().y(), it, false, false, false);
-	ScCore->primaryMainWindow()->m_Doc->AdjustItemSize(it);
+	ScCore->primaryMainWindow()->doc->SizeItem(it->PoLine.WidthHeight().x(), it->PoLine.WidthHeight().y(), it, false, false, false);
+	ScCore->primaryMainWindow()->doc->AdjustItemSize(it);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
 		if (!ItemExists(objName))
-			ScCore->primaryMainWindow()->m_Doc->Items->at(ic)->setItemName(objName);
+			ScCore->primaryMainWindow()->doc->Items->at(ic)->setItemName(objName);
 	}
 	return PyString_FromString(it->itemName().toUtf8());
 }
@@ -493,11 +493,11 @@ PyObject *scribus_pathtext(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(NotFoundError, QObject::tr("Object not found.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(ii);
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(ii);
 	ScCore->primaryMainWindow()->view->ToPathText();
-	ScCore->primaryMainWindow()->m_Doc->MoveItem(pageUnitXToDocX(x) - i->xPos(), pageUnitYToDocY(y) - i->yPos(), i);
+	ScCore->primaryMainWindow()->doc->MoveItem(pageUnitXToDocX(x) - i->xPos(), pageUnitYToDocY(y) - i->yPos(), i);
 	if (Name != EMPTY_STRING)
 	{
 		QString objName = QString::fromUtf8(Name);
@@ -520,9 +520,9 @@ PyObject *scribus_deleteobj(PyObject* /* self */, PyObject* args)
 	PageItem *i = GetUniqueItem(QString::fromUtf8(Name));
 	if (i == NULL)
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_DeleteItem();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
+	ScCore->primaryMainWindow()->doc->itemSelection_DeleteItem();
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -603,10 +603,10 @@ PyObject *scribus_setstyle(PyObject* /* self */, PyObject* args)
 		bool found = false;
 		uint styleid = 0;
 		// We start at zero here because it's OK to match an internal name
-		int docParagraphStylesCount=ScCore->primaryMainWindow()->m_Doc->paragraphStyles().count();
+		int docParagraphStylesCount=ScCore->primaryMainWindow()->doc->paragraphStyles().count();
 		for (int i=0; i < docParagraphStylesCount; ++i)
 		{
-			if (ScCore->primaryMainWindow()->m_Doc->paragraphStyles()[i].name() == QString::fromUtf8(style)) {
+			if (ScCore->primaryMainWindow()->doc->paragraphStyles()[i].name() == QString::fromUtf8(style)) {
 				found = true;
 				styleid = i;
 				break;
@@ -618,24 +618,24 @@ PyObject *scribus_setstyle(PyObject* /* self */, PyObject* args)
 			return NULL;
 		}
 		// for current item only
-		if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() == 0 || name != EMPTY_STRING)
+		if (ScCore->primaryMainWindow()->doc->m_Selection->count() == 0 || name != EMPTY_STRING)
 		{
 			// quick hack to always apply on the right frame - pv
 			ScCore->primaryMainWindow()->view->Deselect(true);
 			//CB I dont think we need to draw here. Its faster if we dont.
 			ScCore->primaryMainWindow()->view->SelectItem(item, false);
 			// Now apply the style.
-			int mode = ScCore->primaryMainWindow()->m_Doc->appMode;
-			ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
+			int mode = ScCore->primaryMainWindow()->doc->appMode;
+			ScCore->primaryMainWindow()->doc->appMode = modeEdit;
 			ScCore->primaryMainWindow()->setNewParStyle(QString::fromUtf8(style));
-			ScCore->primaryMainWindow()->m_Doc->appMode = mode;
+			ScCore->primaryMainWindow()->doc->appMode = mode;
 		}
 		else // for multiple selection
 		{
-			int mode = ScCore->primaryMainWindow()->m_Doc->appMode;
-			ScCore->primaryMainWindow()->m_Doc->appMode = modeNormal;
-			ScCore->primaryMainWindow()->m_Doc->itemSelection_ApplyParagraphStyle(ScCore->primaryMainWindow()->m_Doc->paragraphStyles()[styleid]);
-			ScCore->primaryMainWindow()->m_Doc->appMode = mode;
+			int mode = ScCore->primaryMainWindow()->doc->appMode;
+			ScCore->primaryMainWindow()->doc->appMode = modeNormal;
+			ScCore->primaryMainWindow()->doc->itemSelection_ApplyParagraphStyle(ScCore->primaryMainWindow()->doc->paragraphStyles()[styleid]);
+			ScCore->primaryMainWindow()->doc->appMode = mode;
 		}
 	}
 	else
@@ -658,9 +658,9 @@ PyObject *scribus_getstylenames(PyObject* /* self */)
 	if(!checkHaveDocument())
 		return NULL;
 	styleList = PyList_New(0);
-	for (int i=0; i < ScCore->primaryMainWindow()->m_Doc->paragraphStyles().count(); ++i)
+	for (int i=0; i < ScCore->primaryMainWindow()->doc->paragraphStyles().count(); ++i)
 	{
-		if (PyList_Append(styleList, PyString_FromString(ScCore->primaryMainWindow()->m_Doc->paragraphStyles()[i].name().toUtf8())))
+		if (PyList_Append(styleList, PyString_FromString(ScCore->primaryMainWindow()->doc->paragraphStyles()[i].name().toUtf8())))
 		{
 			// An exception will have already been set by PyList_Append apparently.
 			return NULL;
@@ -681,8 +681,8 @@ PyObject *scribus_duplicateobject(PyObject * /* self */, PyObject *args)
 	// Is there a special name given? Yes -> add this to selection
 	PageItem *i = GetUniqueItem(QString::fromUtf8(name));
 	if (i != NULL) {
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+		ScCore->primaryMainWindow()->doc->m_Selection->clear();
+		ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	}
 	else
 		return NULL;

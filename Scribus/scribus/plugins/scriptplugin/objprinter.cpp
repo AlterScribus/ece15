@@ -162,9 +162,9 @@ static int Printer_init(Printer *self, PyObject * /*args*/, PyObject * /*kwds*/)
 		self->printer = printer;
 	}
 // set defaul name of file to print into
-	QString tf(ScCore->primaryMainWindow()->m_Doc->pdfOptions().fileName);
+	QString tf(ScCore->primaryMainWindow()->doc->pdfOptions().fileName);
 	if (tf.isEmpty()) {
-		QFileInfo fi = QFileInfo(ScCore->primaryMainWindow()->m_Doc->DocName);
+		QFileInfo fi = QFileInfo(ScCore->primaryMainWindow()->doc->DocName);
 		tf = fi.path()+"/"+fi.baseName()+".pdf";
 	}
 	PyObject *file = NULL;
@@ -190,7 +190,7 @@ static int Printer_init(Printer *self, PyObject * /*args*/, PyObject * /*kwds*/)
 	if (ScCore->primaryMainWindow()->HaveDoc)
 		// which one should I use ???
 		// new = ScCore->primaryMainWindow()->view->Pages.count()
-		num = ScCore->primaryMainWindow()->m_Doc->Pages->count();
+		num = ScCore->primaryMainWindow()->doc->Pages->count();
 	pages = PyList_New(num);
 	if (pages){
 		Py_DECREF(self->pages);
@@ -349,7 +349,7 @@ static int Printer_setpages(Printer *self, PyObject *value, void * /*closure*/)
 			PyErr_SetString(PyExc_TypeError, "'pages' attribute must be list containing only integers.");
 			return -1;
 		}
-		if (PyInt_AsLong(tmp) > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count()) || PyInt_AsLong(tmp) < 1) {
+		if (PyInt_AsLong(tmp) > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count()) || PyInt_AsLong(tmp) < 1) {
 			PyErr_SetString(PyExc_ValueError, "'pages' value out of range.");
 			return -1;
 		}
@@ -441,7 +441,7 @@ static PyObject *Printer_print(Printer *self)
 	printcomm = QString(PyString_AsString(self->cmd));
 	QMap<QString, QMap<uint, FPointArray> > ReallyUsed;
 	ReallyUsed.clear();
-	ScCore->primaryMainWindow()->m_Doc->getUsedFonts(ReallyUsed);
+	ScCore->primaryMainWindow()->doc->getUsedFonts(ReallyUsed);
 	PrefsManager *prefsManager=PrefsManager::instance();
 
 #if defined(_WIN32)
@@ -460,7 +460,7 @@ static PyObject *Printer_print(Printer *self)
 	}
 #endif
 
-	PSLib *dd = new PSLib(options, true, prefsManager->appPrefs.fontPrefs.AvailFonts, ReallyUsed, ScCore->primaryMainWindow()->m_Doc->PageColors, false, true);
+	PSLib *dd = new PSLib(options, true, prefsManager->appPrefs.fontPrefs.AvailFonts, ReallyUsed, ScCore->primaryMainWindow()->doc->PageColors, false, true);
 	if (dd != NULL)
 	{
 		if (!fil)
@@ -471,15 +471,15 @@ static PyObject *Printer_print(Printer *self)
 		{
 			options.setDevParam = false;
 			options.doClip = false;
-			dd->CreatePS(ScCore->primaryMainWindow()->m_Doc, options);
+			dd->CreatePS(ScCore->primaryMainWindow()->doc, options);
 			if (options.prnEngine == PostScript1 || options.prnEngine == PostScript2)
 			{
 				if (ScCore->haveGS())
 				{
 					QString tmp;
 					QStringList opts;
-					opts.append( QString("-dDEVICEWIDTHPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->m_Doc->pageWidth())) );
-					opts.append( QString("-dDEVICEHEIGHTPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->m_Doc->pageHeight())) );
+					opts.append( QString("-dDEVICEWIDTHPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->doc->pageWidth())) );
+					opts.append( QString("-dDEVICEHEIGHTPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->doc->pageHeight())) );
 					convertPS2PS(fna, fna+".tmp", opts, options.prnEngine);
 					moveFile( fna + ".tmp", fna );
 				}

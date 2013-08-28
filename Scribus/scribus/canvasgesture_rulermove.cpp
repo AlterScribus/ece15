@@ -168,7 +168,7 @@ void RulerGesture::movePoint(QMouseEvent* m, bool mouseRelease)
 			m_canvas->displayCorrectedXYHUD(m->globalPos(), mousePointDoc.x(), mousePointDoc.y());
 			break;
 		case HORIZONTAL:
-			if (!m_ScMW->m_Doc->guidesPrefs().guidesShown)
+			if (!m_ScMW->doc->guidesPrefs().guidesShown)
 				break;
 			m_canvas->update(0, m_xy.y()-2, m_canvas->width(), 4);
 			m_canvas->update(0, newMousePoint.y()-2, m_canvas->width(), 4);
@@ -224,7 +224,7 @@ void RulerGesture::movePoint(QMouseEvent* m, bool mouseRelease)
 			m_canvas->displayCorrectedSingleHUD(m->globalPos(), mousePointDoc.y(), false);
 			break;
 		case VERTICAL:
-			if (!m_ScMW->m_Doc->guidesPrefs().guidesShown)
+			if (!m_ScMW->doc->guidesPrefs().guidesShown)
 				break;
 			m_canvas->update(m_xy.x()-2, 0, 4, m_canvas->height());
 			m_canvas->update(newMousePoint.x()-2, 0, 4, m_canvas->height());
@@ -290,7 +290,7 @@ void RulerGesture::mouseMoveEvent(QMouseEvent* m)
 	if (m_view->moveTimerElapsed())
 	{
 		movePoint(m, false);
-		if (m_ScMW->m_Doc->guidesPrefs().guidesShown)
+		if (m_ScMW->doc->guidesPrefs().guidesShown)
 			emit guideInfo(m_mode, m_currentGuide);
 	}
 }
@@ -306,14 +306,14 @@ void RulerGesture::mouseReleaseEvent(QMouseEvent* m)
 			m_view->setNewRulerOrigin(m);
 		else
 		{
-			if (m_ScMW->m_Doc->guidesPrefs().guidesShown)
+			if (m_ScMW->doc->guidesPrefs().guidesShown)
 				m_ScMW->guidePalette->setupPage();
 		}
 	}
 	m_haveGuide = false;
 	m_canvas->repaint();
 	m_view->stopGesture();
-	if (m_ScMW->m_Doc->guidesPrefs().guidesShown)
+	if (m_ScMW->doc->guidesPrefs().guidesShown)
 		emit guideInfo(m_mode, m_currentGuide);
 }
 
@@ -327,7 +327,7 @@ void RulerGesture::mousePressEvent(QMouseEvent* m)
 	{
 		m_xy = m->globalPos() - (m_canvas->mapToParent(QPoint(0, 0)) + m_canvas->parentWidget()->mapToGlobal(QPoint(0, 0)));
 	}
-	if (m_ScMW->m_Doc->guidesPrefs().guidesShown)
+	if (m_ScMW->doc->guidesPrefs().guidesShown)
 		emit guideInfo(m_mode, m_currentGuide);
 }
 

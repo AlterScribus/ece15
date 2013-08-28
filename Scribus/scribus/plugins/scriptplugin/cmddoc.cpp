@@ -70,7 +70,7 @@ PyObject *scribus_newdocument(PyObject* /* self */, PyObject* args)
 								0, 1, false,
 								pagesType, unit, firstPageOrder,
 								orientation, firstPageNr, "Custom", true, numPages);
-	ScCore->primaryMainWindow()->m_Doc->setPageSetFirstPage(pagesType, firstPageOrder);
+	ScCore->primaryMainWindow()->doc->setPageSetFirstPage(pagesType, firstPageOrder);
 
 	return PyInt_FromLong(static_cast<long>(ret));
 }
@@ -118,10 +118,10 @@ PyObject *scribus_setmargins(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	MarginStruct margins(ValueToPoint(tpr), ValueToPoint(lr), ValueToPoint(btr), ValueToPoint(rr));
-	ScCore->primaryMainWindow()->m_Doc->resetPage(ScCore->primaryMainWindow()->m_Doc->pagePositioning(), &margins);
+	ScCore->primaryMainWindow()->doc->resetPage(ScCore->primaryMainWindow()->doc->pagePositioning(), &margins);
 	ScCore->primaryMainWindow()->view->reformPages();
-	ScCore->primaryMainWindow()->m_Doc->setModified(true);
-	ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->m_Doc->currentPageNumber());
+	ScCore->primaryMainWindow()->doc->setModified(true);
+	ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->doc->currentPageNumber());
 	ScCore->primaryMainWindow()->view->DrawNew();
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -135,10 +135,10 @@ PyObject *scribus_setbaseline(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->guidesPrefs().valueBaselineGrid = ValueToPoint(grid);
-	ScCore->primaryMainWindow()->m_Doc->guidesPrefs().offsetBaselineGrid = ValueToPoint(offset);
+	ScCore->primaryMainWindow()->doc->guidesPrefs().valueBaselineGrid = ValueToPoint(grid);
+	ScCore->primaryMainWindow()->doc->guidesPrefs().offsetBaselineGrid = ValueToPoint(offset);
 	//ScCore->primaryMainWindow()->view->reformPages();
-	ScCore->primaryMainWindow()->m_Doc->setModified(true);
+	ScCore->primaryMainWindow()->doc->setModified(true);
 	//ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->doc->currentPageNumber());
 	ScCore->primaryMainWindow()->view->DrawNew();
 //	Py_INCREF(Py_None);
@@ -151,7 +151,7 @@ PyObject *scribus_closedoc(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->setModified(false);
+	ScCore->primaryMainWindow()->doc->setModified(false);
 	bool ret = ScCore->primaryMainWindow()->slotFileClose();
 	qApp->processEvents();
 	return PyInt_FromLong(static_cast<long>(ret));
@@ -193,11 +193,11 @@ PyObject *scribus_getdocname(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	if (! ScCore->primaryMainWindow()->m_Doc->hasName)
+	if (! ScCore->primaryMainWindow()->doc->hasName)
 	{
 		return PyString_FromString("");
 	}
-	return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->DocName.toUtf8());
+	return PyString_FromString(ScCore->primaryMainWindow()->doc->DocName.toUtf8());
 }
 
 PyObject *scribus_savedocas(PyObject* /* self */, PyObject* args)
@@ -230,9 +230,9 @@ PyObject *scribus_setinfo(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->documentInfo().setAuthor(QString::fromUtf8(Author));
-	ScCore->primaryMainWindow()->m_Doc->documentInfo().setTitle(QString::fromUtf8(Title));
-	ScCore->primaryMainWindow()->m_Doc->documentInfo().setComments(QString::fromUtf8(Desc));
+	ScCore->primaryMainWindow()->doc->documentInfo().setAuthor(QString::fromUtf8(Author));
+	ScCore->primaryMainWindow()->doc->documentInfo().setTitle(QString::fromUtf8(Title));
+	ScCore->primaryMainWindow()->doc->documentInfo().setComments(QString::fromUtf8(Desc));
 	ScCore->primaryMainWindow()->slotDocCh();
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -261,7 +261,7 @@ PyObject *scribus_getunit(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->m_Doc->unitIndex()));
+	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->doc->unitIndex()));
 }
 
 PyObject *scribus_loadstylesfromfile(PyObject* /* self */, PyObject *args)
@@ -271,7 +271,7 @@ PyObject *scribus_loadstylesfromfile(PyObject* /* self */, PyObject *args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->loadStylesFromFile(QString::fromUtf8(fileName));
+	ScCore->primaryMainWindow()->doc->loadStylesFromFile(QString::fromUtf8(fileName));
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -284,10 +284,10 @@ PyObject *scribus_setdoctype(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	if (ScCore->primaryMainWindow()->m_Doc->pagePositioning() == fp)
-		ScCore->primaryMainWindow()->m_Doc->setPageSetFirstPage(ScCore->primaryMainWindow()->m_Doc->pagePositioning(), fsl);
+	if (ScCore->primaryMainWindow()->doc->pagePositioning() == fp)
+		ScCore->primaryMainWindow()->doc->setPageSetFirstPage(ScCore->primaryMainWindow()->doc->pagePositioning(), fsl);
 	ScCore->primaryMainWindow()->view->reformPages();
-	ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->m_Doc->currentPageNumber()); // is this needed?
+	ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->doc->currentPageNumber()); // is this needed?
 	ScCore->primaryMainWindow()->view->DrawNew();   // is this needed?
 	//CB TODO ScCore->primaryMainWindow()->pagePalette->RebuildPage(); // is this needed?
 	ScCore->primaryMainWindow()->slotDocCh();
@@ -310,9 +310,9 @@ PyObject *scribus_masterpagenames(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	PyObject* names = PyList_New(ScCore->primaryMainWindow()->m_Doc->MasterPages.count());
-	QMap<QString,int>::const_iterator it(ScCore->primaryMainWindow()->m_Doc->MasterNames.constBegin());
-	QMap<QString,int>::const_iterator itEnd(ScCore->primaryMainWindow()->m_Doc->MasterNames.constEnd());
+	PyObject* names = PyList_New(ScCore->primaryMainWindow()->doc->MasterPages.count());
+	QMap<QString,int>::const_iterator it(ScCore->primaryMainWindow()->doc->MasterNames.constBegin());
+	QMap<QString,int>::const_iterator itEnd(ScCore->primaryMainWindow()->doc->MasterNames.constEnd());
 	int n = 0;
 	for ( ; it != itEnd; ++it )
 	{
@@ -329,7 +329,7 @@ PyObject *scribus_editmasterpage(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	const QString masterPageName(name);
-	const QMap<QString,int>& masterNames(ScCore->primaryMainWindow()->m_Doc->MasterNames);
+	const QMap<QString,int>& masterNames(ScCore->primaryMainWindow()->doc->MasterNames);
 	const QMap<QString,int>::const_iterator it(masterNames.find(masterPageName));
 	if ( it == masterNames.constEnd() )
 	{
@@ -350,12 +350,12 @@ PyObject* scribus_createmasterpage(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	const QString masterPageName(name);
-	if (ScCore->primaryMainWindow()->m_Doc->MasterNames.contains(masterPageName))
+	if (ScCore->primaryMainWindow()->doc->MasterNames.contains(masterPageName))
 	{
 		PyErr_SetString(PyExc_ValueError, "Master page already exists");
 		return NULL;
 	}
-	ScCore->primaryMainWindow()->m_Doc->addMasterPage(ScCore->primaryMainWindow()->m_Doc->MasterPages.count(), masterPageName);
+	ScCore->primaryMainWindow()->doc->addMasterPage(ScCore->primaryMainWindow()->doc->MasterPages.count(), masterPageName);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -369,7 +369,7 @@ PyObject* scribus_deletemasterpage(PyObject* /* self */, PyObject* args)
 	if(!checkHaveDocument())
 		return NULL;
 	const QString masterPageName(name);
-	if (!ScCore->primaryMainWindow()->m_Doc->MasterNames.contains(masterPageName))
+	if (!ScCore->primaryMainWindow()->doc->MasterNames.contains(masterPageName))
 	{
 		PyErr_SetString(PyExc_ValueError, "Master page does not exist");
 		return NULL;
@@ -379,10 +379,10 @@ PyObject* scribus_deletemasterpage(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(PyExc_ValueError, "Can not delete the Normal master page");
 		return NULL;
 	}
-	bool oldMode = ScCore->primaryMainWindow()->m_Doc->masterPageMode();
-	ScCore->primaryMainWindow()->m_Doc->setMasterPageMode(true);
-	ScCore->primaryMainWindow()->deletePage2(ScCore->primaryMainWindow()->m_Doc->MasterNames[masterPageName]);
-	ScCore->primaryMainWindow()->m_Doc->setMasterPageMode(oldMode);
+	bool oldMode = ScCore->primaryMainWindow()->doc->masterPageMode();
+	ScCore->primaryMainWindow()->doc->setMasterPageMode(true);
+	ScCore->primaryMainWindow()->deletePage2(ScCore->primaryMainWindow()->doc->MasterNames[masterPageName]);
+	ScCore->primaryMainWindow()->doc->setMasterPageMode(oldMode);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;

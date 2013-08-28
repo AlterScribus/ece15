@@ -36,13 +36,13 @@ void TextAPI::setFont(QString name)
 {
 	if (PrefsManager::instance()->appPrefs.fontPrefs.AvailFonts.contains(name))
 	{
-		int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+		int Apm = ScCore->primaryMainWindow()->doc->appMode;
+		ScCore->primaryMainWindow()->doc->m_Selection->clear();
+		ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 		if (item->HasSel)
-			ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
+			ScCore->primaryMainWindow()->doc->appMode = modeEdit;
 		ScCore->primaryMainWindow()->SetNewFont(name);
-		ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = Apm;
 		ScCore->primaryMainWindow()->view->Deselect();
 	}
 	else
@@ -69,13 +69,13 @@ double TextAPI::fontSize()
 
 void TextAPI::setFontSize(double size)
 {
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 	if (item->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetFontSize(qRound(size * 10.0));
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetFontSize(qRound(size * 10.0));
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 }
 
@@ -130,23 +130,23 @@ double TextAPI::lineSpacing()
 
 void TextAPI::setLineSpacing(double value)
 {
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 	if (item->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetLineSpacing(value);
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetLineSpacing(value);
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 }
 
 QList<QVariant> TextAPI::distances()
 {
 	QList<QVariant> l;
-	l.append(pts2value(item->textToFrameDistLeft(), ScCore->primaryMainWindow()->m_Doc->unitIndex()));
-	l.append(pts2value(item->textToFrameDistRight(), ScCore->primaryMainWindow()->m_Doc->unitIndex()));
-	l.append(pts2value(item->textToFrameDistTop(), ScCore->primaryMainWindow()->m_Doc->unitIndex()));
-	l.append(pts2value(item->textToFrameDistBottom(), ScCore->primaryMainWindow()->m_Doc->unitIndex()));
+	l.append(pts2value(item->textToFrameDistLeft(), ScCore->primaryMainWindow()->doc->unitIndex()));
+	l.append(pts2value(item->textToFrameDistRight(), ScCore->primaryMainWindow()->doc->unitIndex()));
+	l.append(pts2value(item->textToFrameDistTop(), ScCore->primaryMainWindow()->doc->unitIndex()));
+	l.append(pts2value(item->textToFrameDistBottom(), ScCore->primaryMainWindow()->doc->unitIndex()));
 	return l;
 }
 
@@ -163,7 +163,7 @@ void TextAPI::insertText(QString text, int position)
 		position = item->itemText.length();
 	item->itemText.insertChars(position, text);
 	item->Dirty = true;
-	if (ScCore->primaryMainWindow()->m_Doc->DoDrawing)
+	if (ScCore->primaryMainWindow()->doc->DoDrawing)
 	{
 		// FIXME adapt to Qt-4 painting style
 		item->Dirty = false;
@@ -180,13 +180,13 @@ void TextAPI::setLineSpacingMode(int mode)
 		RAISE("Line space mode invalid, must be 0, 1 or 2");
 	}
 
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 	if (item->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetLineSpacingMode(mode);
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetLineSpacingMode(mode);
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 }
 
@@ -210,13 +210,13 @@ void TextAPI::setTextAlignment(int alignment)
 	{
 		RAISE("Alignment out of range. Should be between 0 and 4");
 	}
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 	if (item->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
 	ScCore->primaryMainWindow()->setNewAlignment(alignment);
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 }
 
@@ -263,13 +263,13 @@ void TextAPI::setTextScalingV(double value)
 		RAISE("Character scaling out of bounds, must be >= 10");
 	}
 
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 	if (item->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetScaleV(qRound(value * 10));
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetScaleV(qRound(value * 10));
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 
 }
@@ -283,13 +283,13 @@ void TextAPI::setTextScalingH(double value)
 		RAISE("Character scaling out of bounds, must be >= 10");
 	}
 
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(item);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(item);
 	if (item->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetScaleH(qRound(value * 10));
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetScaleH(qRound(value * 10));
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 
 }
@@ -463,7 +463,7 @@ bool TextAPI::hyphenate()
 {
 	if (!checkHaveDocument())
 		RAISE("No document open");
-	ScCore->primaryMainWindow()->m_Doc->docHyphenator->slotHyphenate(item);
+	ScCore->primaryMainWindow()->doc->docHyphenator->slotHyphenate(item);
 	return true;
 }
 
@@ -471,7 +471,7 @@ bool TextAPI::dehyphenate()
 {
 	if (!checkHaveDocument())
 		RAISE("No document open");
-	ScCore->primaryMainWindow()->m_Doc->docHyphenator->slotDeHyphenate(item);
+	ScCore->primaryMainWindow()->doc->docHyphenator->slotDeHyphenate(item);
 	return false;
 }
 

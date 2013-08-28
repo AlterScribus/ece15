@@ -171,20 +171,20 @@ void ScripterCore::FinishScriptRun()
 	ScribusMainWindow* ScMW=ScCore->primaryMainWindow();
 	if (ScMW->HaveDoc)
 	{
-		ScMW->propertiesPalette->setDoc(ScMW->m_Doc);
-		ScMW->marksManager->setDoc(ScMW->m_Doc);
-		ScMW->nsEditor->setDoc(ScMW->m_Doc);
-		ScMW->layerPalette->setDoc(ScMW->m_Doc);
-		ScMW->outlinePalette->setDoc(ScMW->m_Doc);
+		ScMW->propertiesPalette->setDoc(ScMW->doc);
+		ScMW->marksManager->setDoc(ScMW->doc);
+		ScMW->nsEditor->setDoc(ScMW->doc);
+		ScMW->layerPalette->setDoc(ScMW->doc);
+		ScMW->outlinePalette->setDoc(ScMW->doc);
 		ScMW->outlinePalette->BuildTree();
 		ScMW->pagePalette->setView(ScMW->view);
 		ScMW->pagePalette->Rebuild();
-		ScMW->m_Doc->RePos = true;
-		ScMW->m_Doc->RePos = false;
-		if (ScMW->m_Doc->m_Selection->count() != 0)
+		ScMW->doc->RePos = true;
+		ScMW->doc->RePos = false;
+		if (ScMW->doc->m_Selection->count() != 0)
 		{
-			ScMW->m_Doc->m_Selection->itemAt(0)->emitAllToGUI();
-			ScMW->HaveNewSel(ScMW->m_Doc->m_Selection->itemAt(0)->itemType());
+			ScMW->doc->m_Selection->itemAt(0)->emitAllToGUI();
+			ScMW->HaveNewSel(ScMW->doc->m_Selection->itemAt(0)->itemType());
 		}
 		else
 			ScMW->HaveNewSel(-1);

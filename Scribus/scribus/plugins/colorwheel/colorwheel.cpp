@@ -83,7 +83,7 @@ bool ColorWheelPlugin::run(ScribusDoc* doc, QString target)
 	Q_ASSERT(target.isNull());
 	ScribusDoc* currDoc=doc;
 	if (currDoc==0)
-		currDoc=ScCore->primaryMainWindow()->m_Doc;
+		currDoc=ScCore->primaryMainWindow()->doc;
 	if (currDoc==0)
 		return false;
 	CWDialog *dlg = new CWDialog(currDoc->scMW(), currDoc, "dlg", true);

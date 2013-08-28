@@ -34,10 +34,10 @@ PrinterAPI::PrinterAPI() : QObject(COLLECTOR)
 
 
 
-	QString tf(ScCore->primaryMainWindow()->m_Doc->pdfOptions().fileName);
+	QString tf(ScCore->primaryMainWindow()->doc->pdfOptions().fileName);
 	if (tf.isEmpty())
 	{
-		QFileInfo fi = QFileInfo(ScCore->primaryMainWindow()->m_Doc->DocName);
+		QFileInfo fi = QFileInfo(ScCore->primaryMainWindow()->doc->DocName);
 		tf = fi.path()+"/"+fi.baseName()+".pdf";
 	}
 	file = tf;
@@ -45,7 +45,7 @@ PrinterAPI::PrinterAPI() : QObject(COLLECTOR)
 
 	int num = 0;
 	if (ScCore->primaryMainWindow()->HaveDoc)
-		num = ScCore->primaryMainWindow()->m_Doc->Pages->count();
+		num = ScCore->primaryMainWindow()->doc->Pages->count();
 
 	for (int i = 0; i<num; i++)
 	{
@@ -110,7 +110,7 @@ void PrinterAPI::doPrint()
 	printcomm = cmd;
 	QMap<QString, QMap<uint, FPointArray> > ReallyUsed;
 	ReallyUsed.clear();
-	ScCore->primaryMainWindow()->m_Doc->getUsedFonts(ReallyUsed);
+	ScCore->primaryMainWindow()->doc->getUsedFonts(ReallyUsed);
 	PrefsManager *prefsManager=PrefsManager::instance();
 
 #if defined(_WIN32)
@@ -128,7 +128,7 @@ void PrinterAPI::doPrint()
 	}
 #endif
 
-	PSLib *dd = new PSLib(options, true, prefsManager->appPrefs.fontPrefs.AvailFonts, ReallyUsed, ScCore->primaryMainWindow()->m_Doc->PageColors, false, true);
+	PSLib *dd = new PSLib(options, true, prefsManager->appPrefs.fontPrefs.AvailFonts, ReallyUsed, ScCore->primaryMainWindow()->doc->PageColors, false, true);
 	if (dd != NULL)
 	{
 		if (!fil)
@@ -139,15 +139,15 @@ void PrinterAPI::doPrint()
 		{
 			options.setDevParam = false;
 			options.doClip = false;
-			dd->CreatePS(ScCore->primaryMainWindow()->m_Doc, options);
+			dd->CreatePS(ScCore->primaryMainWindow()->doc, options);
 			if (options.prnEngine == PostScript1 || options.prnEngine == PostScript2)
 			{
 				if (ScCore->haveGS())
 				{
 					QString tmp;
 					QStringList opts;
-					opts.append( QString("-dDEVICEWIDTHPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->m_Doc->pageWidth())) );
-					opts.append( QString("-dDEVICEHEIGHTPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->m_Doc->pageHeight())) );
+					opts.append( QString("-dDEVICEWIDTHPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->doc->pageWidth())) );
+					opts.append( QString("-dDEVICEHEIGHTPOINTS=%1").arg(tmp.setNum(ScCore->primaryMainWindow()->doc->pageHeight())) );
 					convertPS2PS(fna, fna+".tmp", opts, options.prnEngine);
 					moveFile( fna + ".tmp", fna );
 				}
@@ -240,7 +240,7 @@ void PrinterAPI::setPages(QList<QVariant> list)
 	this->pages.clear();
 	for(int i=0; i<list.count(); ++i)
 	{
-		if(list[i].toInt() > ScCore->primaryMainWindow()->m_Doc->Pages->count())
+		if(list[i].toInt() > ScCore->primaryMainWindow()->doc->Pages->count())
 		{
 			qDebug()<<"trying to raise an exception";
 			RAISE("pages value out of range.");

@@ -679,8 +679,8 @@ struct LineControl {
 		double maxX = colRight - morespace;
 		if (legacy) maxX -= lineCorr;
 
-		long StartX = static_cast<long>(floor(qMax(line.x, qMin(maxX,breakXPos-maxShrink-1)) -1));
-		long xPos  = static_cast<long>(ceil(maxX));
+		int StartX = static_cast<int>(floor(qMax(line.x, qMin(maxX,breakXPos-maxShrink-1)) -1));
+		int xPos  = static_cast<int>(ceil(maxX));
 
 		QPoint  pt12 (xPos, yAsc);
 		QPoint  pt22 (xPos, yDesc-1);
@@ -693,7 +693,7 @@ struct LineControl {
 		// check if something gets in the way
 		QRegion lineI = shape.intersected (p.boundingRect());
 		// if the intersection only has 1 rectangle, then nothing gets in the way
-		StartX = static_cast<long>(ceil(StartX + morespace));
+		StartX += static_cast<int>(ceil(morespace));
 		if (lineI.rectCount() == 1)
 		{
 			QRect cRect (QPoint(StartX, yAsc), QPoint(StartX, yDesc -1));
@@ -742,17 +742,16 @@ struct LineControl {
 			result = qMax(result, (obj->height() + obj->lineWidth()) * (fcStyle.scaleV() / 1000.0));
 		else
 			result = fcStyle.font().realCharAscent(firstChar, fcStyle.fontSize() / 10.0);
-		QChar ch = QChar();
-		double asce = 0.0;
 		for (int zc = 0; zc < itemsInLine; ++zc)
 		{
-			ch = itemText.text(line.firstItem + zc);
+			QChar ch = itemText.text(line.firstItem + zc);
 			if ((ch == SpecialChars::PAGENUMBER) || (ch == SpecialChars::PAGECOUNT))
 				ch = '8'; // should have highest ascender even in oldstyle
 			const CharStyle& cStyle(itemText.charStyle(line.firstItem + zc));
 			if ((ch == SpecialChars::TAB) || (ch == QChar(10))
 				|| SpecialChars::isBreak (ch, true) || (ch == SpecialChars::NBHYPHEN) || (ch.isSpace()))
 				continue;
+			double asce;
 			PageItem *obj = itemText.object (line.firstItem + zc);
 			if (obj)
 				asce = obj->height() + obj->lineWidth() * (cStyle.scaleV() / 1000.0);
@@ -828,12 +827,11 @@ struct LineControl {
 	void updateHeightMetrics(const StoryText& itemText)
 	{
 		double asce, desc;
-		QChar ch = QChar();
 		line.ascent  = 0;
 		line.descent = 0;
 		for (int zc = 0; zc < itemsInLine; ++zc)
 		{
-			ch = itemText.text(line.firstItem+zc);
+			QChar ch = itemText.text(line.firstItem+zc);
 			if ((ch == SpecialChars::TAB) || (ch == QChar(10))
 				|| SpecialChars::isBreak (ch, true) || (ch == SpecialChars::NBHYPHEN) || (ch.isSpace()))
 				continue;
@@ -3128,8 +3126,8 @@ NoRoom:
 	}
 	if (itemText.length() == 0)
 	{
-			itemText.blockSignals(false);
-			return;
+		itemText.blockSignals(false);
+		return;
 	}
 	if (NextBox != NULL) 
 	{

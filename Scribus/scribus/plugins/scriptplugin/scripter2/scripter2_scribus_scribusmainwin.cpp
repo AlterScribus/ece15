@@ -19,7 +19,7 @@ void export_ScribusMainWindow()
 			"ScribusMainWindow",
 			"The app's main window, which also provides much of its core functionality",
 			no_init)
-		.add_property("doc", make_getter(&ScribusMainWindow::m_Doc, return_internal_reference<>()))
+		.add_property("doc", make_getter(&ScribusMainWindow::doc, return_internal_reference<>()))
 		.add_property("view", make_getter(&ScribusMainWindow::view, return_internal_reference<>()))
 		.add_property("ActWin", make_getter(&ScribusMainWindow::ActWin, return_internal_reference<>()));
 

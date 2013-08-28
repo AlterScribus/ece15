@@ -88,12 +88,12 @@ void WindowAPI::update()
  */
 void WindowAPI::setRedraw(bool flag)
 {
-    ScCore->primaryMainWindow()->m_Doc->DoDrawing = flag;
+    ScCore->primaryMainWindow()->doc->DoDrawing = flag;
 }
 
 
 
 bool WindowAPI::redraw()
 {
-    return ScCore->primaryMainWindow()->m_Doc->DoDrawing;
+    return ScCore->primaryMainWindow()->doc->DoDrawing;
 }

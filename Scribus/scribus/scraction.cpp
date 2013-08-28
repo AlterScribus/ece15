@@ -195,7 +195,7 @@ void ScrAction::triggeredToTriggeredData()
 	if (_actionType==ScrAction::Layer)
 		emit triggeredData(layerID);
 	if (_actionType==ScrAction::ActionDLL)
-		emit triggeredData(((ScribusMainWindow*)parent())->m_Doc);
+		emit triggeredData(((ScribusMainWindow*)parent())->doc);
 }
 
 void ScrAction::toggledToToggledData(bool ison)

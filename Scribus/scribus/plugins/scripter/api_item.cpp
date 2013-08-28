@@ -293,30 +293,30 @@ void ItemAPI::move(double dx, double dy)
 	if (item==NULL)
 		return;
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
 	// there is one.
 	ScCore->primaryMainWindow()->view->SelectItem(item);
 	// Move the item, or items
-	if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() > 1)
+	if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
 	{
 		ScCore->primaryMainWindow()->view->startGroupTransaction(Um::Move, "", Um::IMove);
-		ScCore->primaryMainWindow()->m_Doc->moveGroup(ValueToPoint(dx), ValueToPoint(dy));
+		ScCore->primaryMainWindow()->doc->moveGroup(ValueToPoint(dx), ValueToPoint(dy));
 		ScCore->primaryMainWindow()->view->endGroupTransaction();
 	}
 	else
 	{
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(ValueToPoint(dx), ValueToPoint(dy), item);
+		ScCore->primaryMainWindow()->doc->MoveItem(ValueToPoint(dx), ValueToPoint(dy), item);
 	}
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 
 }
 
@@ -327,7 +327,7 @@ void ItemAPI::moveAbs(double x, double y)
 	if (item == NULL)
 		return;
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
 	// Clear the selection
@@ -336,20 +336,20 @@ void ItemAPI::moveAbs(double x, double y)
 	// there is one.
 	ScCore->primaryMainWindow()->view->SelectItem(item);
 	// Move the item, or items
-	if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() > 1)
+	if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
 	{
 		ScCore->primaryMainWindow()->view->startGroupTransaction(Um::Move, "", Um::IMove);
 		double x2, y2, w, h;
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
-		ScCore->primaryMainWindow()->m_Doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+		ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+		ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 		ScCore->primaryMainWindow()->view->endGroupTransaction();
 	}
 	else
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(pageUnitXToDocX(x) - item->xPos(), pageUnitYToDocY(y) - item->yPos(), item);
+		ScCore->primaryMainWindow()->doc->MoveItem(pageUnitXToDocX(x) - item->xPos(), pageUnitYToDocY(y) - item->yPos(), item);
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 }
 
 void ItemAPI::resize(double width, double height)
@@ -358,7 +358,7 @@ void ItemAPI::resize(double width, double height)
 		return;
 	if (item == NULL)
 		return;
-	ScCore->primaryMainWindow()->m_Doc->SizeItem(ValueToPoint(width), ValueToPoint(height), item);
+	ScCore->primaryMainWindow()->doc->SizeItem(ValueToPoint(width), ValueToPoint(height), item);
 }
 
 void ItemAPI::rotate(double rot)
@@ -367,7 +367,7 @@ void ItemAPI::rotate(double rot)
 		return;
 	if (item == NULL)
 		return;
-	ScCore->primaryMainWindow()->m_Doc->RotateItem(item->rotation() - rot, item);
+	ScCore->primaryMainWindow()->doc->RotateItem(item->rotation() - rot, item);
 
 }
 void ItemAPI::rotateAbs(double rot)
@@ -376,7 +376,7 @@ void ItemAPI::rotateAbs(double rot)
 		return;
 	if (item == NULL)
 		return;
-	ScCore->primaryMainWindow()->m_Doc->RotateItem(rot * -1.0, item);
+	ScCore->primaryMainWindow()->doc->RotateItem(rot * -1.0, item);
 }
 
 

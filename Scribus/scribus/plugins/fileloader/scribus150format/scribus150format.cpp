@@ -85,8 +85,8 @@ const ScActionPlugin::AboutData* Scribus150Format::getAboutData() const
 	AboutData* about = new AboutData;
 	Q_CHECK_PTR(about);
 	about->authors = QString::fromUtf8(
-				"Franz Schmid <franz@scribus.info>, "
-				"The Scribus Team");
+			"Franz Schmid <franz@scribus.info>, "
+			"The Scribus Team");
 	about->shortDescription = tr("Scribus 1.5.0+ File Format Support");
 	about->description = tr("Allows Scribus to read Scribus 1.5.0 and higher formatted files.");
 	// about->version
@@ -3468,7 +3468,7 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 		{
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			
-			QString label = QString();
+			QString label = "";
 			if (attrs.hasAttribute("label"))
 				label = attrs.valueAsString("label");
 
@@ -3636,13 +3636,13 @@ bool Scribus150Format::readPage(ScribusDoc* doc, ScXmlStreamReader& reader)
 	newPage->guides.setHorizontalAutoRefer( attrs.valueAsInt("AGhorizontalAutoRefer", 0) );
 	newPage->guides.setVerticalAutoRefer  ( attrs.valueAsInt("AGverticalAutoRefer", 0) );
 	GuideManagerIO::readVerticalGuides(attrs.valueAsString("VerticalGuides"),
-									   newPage,
-									   GuideManagerCore::Standard,
-									   attrs.hasAttribute("NumVGuides"));
+			newPage,
+			GuideManagerCore::Standard,
+			attrs.hasAttribute("NumVGuides"));
 	GuideManagerIO::readHorizontalGuides(attrs.valueAsString("HorizontalGuides"),
-										 newPage,
-										 GuideManagerCore::Standard,
-										 attrs.hasAttribute("NumHGuides"));
+			newPage,
+			GuideManagerCore::Standard,
+			attrs.hasAttribute("NumHGuides"));
 	GuideManagerIO::readSelection(attrs.valueAsString("AGSelection"), newPage);
 	
 	newPage->guides.addHorizontals(newPage->guides.getAutoHorizontals(newPage), GuideManagerCore::Auto);

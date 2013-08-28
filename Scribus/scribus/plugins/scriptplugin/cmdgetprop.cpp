@@ -281,7 +281,7 @@ PyObject *scribus_getallobj(PyObject* /* self */, PyObject* args)
 	int typ = -1;
 	uint counter = 0;
 	uint counter2 = 0;
-	uint pageNr = ScCore->primaryMainWindow()->m_Doc->currentPageNumber();
+	uint pageNr = ScCore->primaryMainWindow()->doc->currentPageNumber();
 	if (!PyArg_ParseTuple(args, "|i", &typ))
 		return NULL;
 	if(!checkHaveDocument())
@@ -289,37 +289,37 @@ PyObject *scribus_getallobj(PyObject* /* self */, PyObject* args)
 	// have doc already
 	if (typ != -1)
 	{
-		for (int lam2 = 0; lam2 < ScCore->primaryMainWindow()->m_Doc->Items->count(); ++lam2)
+		for (int lam2 = 0; lam2 < ScCore->primaryMainWindow()->doc->Items->count(); ++lam2)
 		{
-			if ((ScCore->primaryMainWindow()->m_Doc->Items->at(lam2)->itemType() == typ) && (pageNr == static_cast<uint>(ScCore->primaryMainWindow()->m_Doc->Items->at(lam2)->OwnPage)))
+			if ((ScCore->primaryMainWindow()->doc->Items->at(lam2)->itemType() == typ) && (pageNr == static_cast<uint>(ScCore->primaryMainWindow()->doc->Items->at(lam2)->OwnPage)))
 				counter++;
 		}
 	}
 	else
 	{
-		for (int lam2 = 0; lam2 < ScCore->primaryMainWindow()->m_Doc->Items->count(); ++lam2)
+		for (int lam2 = 0; lam2 < ScCore->primaryMainWindow()->doc->Items->count(); ++lam2)
 		{
-			if (pageNr == static_cast<uint>(ScCore->primaryMainWindow()->m_Doc->Items->at(lam2)->OwnPage))
+			if (pageNr == static_cast<uint>(ScCore->primaryMainWindow()->doc->Items->at(lam2)->OwnPage))
 				counter++;
 		}
 	}
 
 	l = PyList_New(counter);
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Items->count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Items->count(); ++lam)
 	{
-		if  (pageNr == static_cast<uint>(ScCore->primaryMainWindow()->m_Doc->Items->at(lam)->OwnPage))
+		if  (pageNr == static_cast<uint>(ScCore->primaryMainWindow()->doc->Items->at(lam)->OwnPage))
 		{
 			if (typ != -1)
 			{
-				if (ScCore->primaryMainWindow()->m_Doc->Items->at(lam)->itemType() == typ)
+				if (ScCore->primaryMainWindow()->doc->Items->at(lam)->itemType() == typ)
 				{
-					PyList_SetItem(l, counter2, PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Items->at(lam)->itemName().toUtf8()));
+					PyList_SetItem(l, counter2, PyString_FromString(ScCore->primaryMainWindow()->doc->Items->at(lam)->itemName().toUtf8()));
 					counter2++;
 				}
 			}
 			else
 			{
-				PyList_SetItem(l, counter2, PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Items->at(lam)->itemName().toUtf8()));
+				PyList_SetItem(l, counter2, PyString_FromString(ScCore->primaryMainWindow()->doc->Items->at(lam)->itemName().toUtf8()));
 				counter2++;
 			}
 		}

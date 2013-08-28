@@ -129,7 +129,7 @@ bool ImportXarPlugin::import(QString fileName, int flags)
 		else
 			return true;
 	}
-	m_Doc=ScCore->primaryMainWindow()->m_Doc;
+	m_Doc=ScCore->primaryMainWindow()->doc;
 	UndoTransaction* activeTransaction = NULL;
 	bool emptyDoc = (m_Doc == NULL);
 	bool hasCurrentPage = (m_Doc && m_Doc->currentPage());
@@ -163,7 +163,7 @@ QImage ImportXarPlugin::readThumbnail(const QString& fileName)
 	if( fileName.isEmpty() )
 		return QImage();
 	UndoManager::instance()->setUndoEnabled(false);
-	m_Doc = ScCore->primaryMainWindow()->m_Doc;
+	m_Doc = ScCore->primaryMainWindow()->doc;
 	XarPlug *dia = new XarPlug(m_Doc, lfCreateThumbnail);
 	Q_CHECK_PTR(dia);
 	QImage ret = dia->readThumbnail(fileName);

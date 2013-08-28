@@ -8,9 +8,9 @@ Mark2Item::Mark2Item(QWidget *parent) : MarkInsert(parent)
 	ScribusMainWindow* scmw = (ScribusMainWindow*) parent;
 	QStringList itemsList;
 
-	for (int i = 0; i < scmw->m_Doc->Items->count(); i++)
+	for (int i = 0; i < scmw->doc->Items->count(); i++)
 	{
-		PageItem* item = scmw->m_Doc->Items->at(i);
+		PageItem* item = scmw->doc->Items->at(i);
 		if (item->isAutoNoteFrame())
 			continue; //omit notes frames automaticaly created and removed
 		itemsList.append(item->itemName());
@@ -25,7 +25,7 @@ void Mark2Item::values(QString &label, PageItem* &ptr)
 	if (itemName != "")
 	{
 		ScribusMainWindow* scmw = (ScribusMainWindow*) parent();
-		ptr = scmw->m_Doc->getItemFromName(itemName);
+		ptr = scmw->doc->getItemFromName(itemName);
 		label = labelEdit->text();
 	}
 }

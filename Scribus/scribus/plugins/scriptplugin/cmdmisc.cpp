@@ -25,7 +25,7 @@ PyObject *scribus_setredraw(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->DoDrawing = static_cast<bool>(e);
+	ScCore->primaryMainWindow()->doc->DoDrawing = static_cast<bool>(e);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -153,9 +153,9 @@ PyObject *scribus_getlayers(PyObject* /* self */)
 	if(!checkHaveDocument())
 		return NULL;
 	PyObject *l;
-	l = PyList_New(ScCore->primaryMainWindow()->m_Doc->Layers.count());
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
-		PyList_SetItem(l, lam, PyString_FromString(ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name.toUtf8()));
+	l = PyList_New(ScCore->primaryMainWindow()->doc->Layers.count());
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
+		PyList_SetItem(l, lam, PyString_FromString(ScCore->primaryMainWindow()->doc->Layers[lam].Name.toUtf8()));
 	return l;
 }
 
@@ -171,9 +171,9 @@ PyObject *scribus_setactlayer(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(PyExc_ValueError, QObject::tr("Cannot have an empty layer name.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	bool found = ScCore->primaryMainWindow()->m_Doc->setActiveLayer(QString::fromUtf8(Name));
+	bool found = ScCore->primaryMainWindow()->doc->setActiveLayer(QString::fromUtf8(Name));
 	if (found)
-		ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->m_Doc->activeLayer());
+		ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->doc->activeLayer());
 	else
 	{
 		PyErr_SetString(NotFoundError, QObject::tr("Layer not found.","python error").toLocal8Bit().constData());
@@ -188,7 +188,7 @@ PyObject *scribus_getactlayer(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->activeLayerName().toUtf8());
+	return PyString_FromString(ScCore->primaryMainWindow()->doc->activeLayerName().toUtf8());
 }
 
 PyObject *scribus_senttolayer(PyObject* /* self */, PyObject* args)
@@ -207,7 +207,7 @@ PyObject *scribus_senttolayer(PyObject* /* self */, PyObject* args)
 	PageItem *item = GetUniqueItem(QString::fromUtf8(Name));
 	if (item == NULL)
 		return NULL;
-	ScribusDoc* currentDoc   = ScCore->primaryMainWindow()->m_Doc;
+	ScribusDoc* currentDoc   = ScCore->primaryMainWindow()->doc;
 	ScribusView* currentView = ScCore->primaryMainWindow()->view;
 	const ScLayer *scLayer = currentDoc->Layers.layerByName( QString::fromUtf8(Layer) );
 	if (!scLayer)
@@ -249,11 +249,11 @@ PyObject *scribus_layervisible(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].isViewable = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].isViewable = vis;
 			found = true;
 			break;
 		}
@@ -282,11 +282,11 @@ PyObject *scribus_layerprint(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].isPrintable = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].isPrintable = vis;
 			found = true;
 			break;
 		}
@@ -315,11 +315,11 @@ PyObject *scribus_layerlock(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].isEditable = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].isEditable = vis;
 			found = true;
 			break;
 		}
@@ -348,11 +348,11 @@ PyObject *scribus_layeroutline(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].outlineMode = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].outlineMode = vis;
 			found = true;
 			break;
 		}
@@ -381,11 +381,11 @@ PyObject *scribus_layerflow(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].flowControl = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].flowControl = vis;
 			found = true;
 			break;
 		}
@@ -414,11 +414,11 @@ PyObject *scribus_layerblend(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].blendMode = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].blendMode = vis;
 			found = true;
 			break;
 		}
@@ -447,11 +447,11 @@ PyObject *scribus_layertrans(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScCore->primaryMainWindow()->m_Doc->Layers[lam].transparency = vis;
+			ScCore->primaryMainWindow()->doc->Layers[lam].transparency = vis;
 			found = true;
 			break;
 		}
@@ -480,11 +480,11 @@ PyObject *scribus_glayervisib(PyObject* /* self */, PyObject* args)
 	}
 	int i = 0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Layers[lam].isViewable);
+			i = static_cast<int>(ScCore->primaryMainWindow()->doc->Layers[lam].isViewable);
 			found = true;
 			break;
 		}
@@ -511,11 +511,11 @@ PyObject *scribus_glayerprint(PyObject* /* self */, PyObject* args)
 	}
 	int i = 0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Layers[lam].isPrintable);
+			i = static_cast<int>(ScCore->primaryMainWindow()->doc->Layers[lam].isPrintable);
 			found = true;
 			break;
 		}
@@ -542,11 +542,11 @@ PyObject *scribus_glayerlock(PyObject* /* self */, PyObject* args)
 	}
 	int i = 0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Layers[lam].isEditable);
+			i = static_cast<int>(ScCore->primaryMainWindow()->doc->Layers[lam].isEditable);
 			found = true;
 			break;
 		}
@@ -573,11 +573,11 @@ PyObject *scribus_glayeroutline(PyObject* /* self */, PyObject* args)
 	}
 	int i = 0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Layers[lam].outlineMode);
+			i = static_cast<int>(ScCore->primaryMainWindow()->doc->Layers[lam].outlineMode);
 			found = true;
 			break;
 		}
@@ -604,11 +604,11 @@ PyObject *scribus_glayerflow(PyObject* /* self */, PyObject* args)
 	}
 	int i = 0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Layers[lam].flowControl);
+			i = static_cast<int>(ScCore->primaryMainWindow()->doc->Layers[lam].flowControl);
 			found = true;
 			break;
 		}
@@ -635,11 +635,11 @@ PyObject *scribus_glayerblend(PyObject* /* self */, PyObject* args)
 	}
 	int i = 0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = ScCore->primaryMainWindow()->m_Doc->Layers[lam].blendMode;
+			i = ScCore->primaryMainWindow()->doc->Layers[lam].blendMode;
 			found = true;
 			break;
 		}
@@ -666,11 +666,11 @@ PyObject *scribus_glayertrans(PyObject* /* self */, PyObject* args)
 	}
 	double i = 1.0;
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); lam++)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); lam++)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			i = ScCore->primaryMainWindow()->m_Doc->Layers[lam].transparency;
+			i = ScCore->primaryMainWindow()->doc->Layers[lam].transparency;
 			found = true;
 			break;
 		}
@@ -696,17 +696,17 @@ PyObject *scribus_removelayer(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(PyExc_ValueError, QObject::tr("Cannot have an empty layer name.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	if (ScCore->primaryMainWindow()->m_Doc->Layers.count() == 1)
+	if (ScCore->primaryMainWindow()->doc->Layers.count() == 1)
 	{
 		PyErr_SetString(ScribusException, QObject::tr("Cannot remove the last layer.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == QString::fromUtf8(Name))
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == QString::fromUtf8(Name))
 		{
-			ScLayer it2 = ScCore->primaryMainWindow()->m_Doc->Layers.at(lam);
+			ScLayer it2 = ScCore->primaryMainWindow()->doc->Layers.at(lam);
 			int num2 = it2.ID;
 			if (!num2)
 			{
@@ -714,9 +714,9 @@ PyObject *scribus_removelayer(PyObject* /* self */, PyObject* args)
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
-			ScCore->primaryMainWindow()->m_Doc->removeLayer(num2);
-			ScCore->primaryMainWindow()->m_Doc->Layers.removeLayerByID(num2);
-			ScCore->primaryMainWindow()->m_Doc->setActiveLayer(0);
+			ScCore->primaryMainWindow()->doc->removeLayer(num2);
+			ScCore->primaryMainWindow()->doc->Layers.removeLayerByID(num2);
+			ScCore->primaryMainWindow()->doc->setActiveLayer(0);
 			ScCore->primaryMainWindow()->changeLayer(0);
 			found = true;
 			break;
@@ -744,8 +744,8 @@ PyObject *scribus_createlayer(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(PyExc_ValueError, QObject::tr("Cannot create layer without a name.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	ScCore->primaryMainWindow()->m_Doc->addLayer(QString::fromUtf8(Name), true);
-	ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->m_Doc->activeLayer());
+	ScCore->primaryMainWindow()->doc->addLayer(QString::fromUtf8(Name), true);
+	ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->doc->activeLayer());
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -765,14 +765,14 @@ PyObject *scribus_getlanguage(PyObject* /* self */)
 /*! 04.01.2007 : Joachim Neu : Moves item selection to front. */
 PyObject *scribus_moveselectiontofront(PyObject*)
 {
-	ScCore->primaryMainWindow()->m_Doc->bringItemSelectionToFront();
+	ScCore->primaryMainWindow()->doc->bringItemSelectionToFront();
 	Py_RETURN_NONE;
 }
 
 /*! 04.01.2007 : Joachim Neu : Moves item selection to back. */
 PyObject *scribus_moveselectiontoback(PyObject*)
 {
-	ScCore->primaryMainWindow()->m_Doc->sendItemSelectionToBack();
+	ScCore->primaryMainWindow()->doc->sendItemSelectionToBack();
 	Py_RETURN_NONE;
 }
 

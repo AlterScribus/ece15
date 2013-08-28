@@ -49,8 +49,8 @@ void ColorAPI::replace(QString replace)
 	{
 		RAISE("Cannot replace a color with an empty name.");
 	}
-	if (ScCore->primaryMainWindow()->m_Doc->PageColors.contains(colorName) 
-		&& (ScCore->primaryMainWindow()->m_Doc->PageColors.contains(replace) 
+	if (ScCore->primaryMainWindow()->doc->PageColors.contains(colorName) 
+		&& (ScCore->primaryMainWindow()->doc->PageColors.contains(replace) 
 			|| (replace == CommonStrings::None)))
 		ReplaceColor(colorName, replace);
 	else
@@ -63,11 +63,11 @@ void ColorAPI::remove(QString replace)
 {
 	if (ScCore->primaryMainWindow()->HaveDoc)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->PageColors.contains(colorName) 
-			&& (ScCore->primaryMainWindow()->m_Doc->PageColors.contains(replace) 
+		if (ScCore->primaryMainWindow()->doc->PageColors.contains(colorName) 
+			&& (ScCore->primaryMainWindow()->doc->PageColors.contains(replace) 
 				|| (replace == CommonStrings::None)))
 		{
-			ScCore->primaryMainWindow()->m_Doc->PageColors.remove(colorName);
+			ScCore->primaryMainWindow()->doc->PageColors.remove(colorName);
 			ReplaceColor(colorName, replace);
 		}
 		else
@@ -93,11 +93,11 @@ void ColorAPI::changeCMYK(int c, int m, int y, int k)
 {
     if(ScCore->primaryMainWindow()->HaveDoc)
     {
-        if(!ScCore->primaryMainWindow()->m_Doc->PageColors.contains(colorName))
+        if(!ScCore->primaryMainWindow()->doc->PageColors.contains(colorName))
         {
             RAISE("Color not found in document");
         }
-        ScCore->primaryMainWindow()->m_Doc->PageColors[colorName].setColor(c, m, y, k);
+        ScCore->primaryMainWindow()->doc->PageColors[colorName].setColor(c, m, y, k);
     }
     else
     {
@@ -114,11 +114,11 @@ void ColorAPI::changeRGB(int r, int g, int b)
 {
 	if(ScCore->primaryMainWindow()->HaveDoc)
 	{
-		if(!ScCore->primaryMainWindow()->m_Doc->PageColors.contains(colorName))
+		if(!ScCore->primaryMainWindow()->doc->PageColors.contains(colorName))
 		{
 			RAISE("Color not found in document");
 		}
-		ScCore->primaryMainWindow()->m_Doc->PageColors[colorName].setColorRGB(r, g, b);
+		ScCore->primaryMainWindow()->doc->PageColors[colorName].setColorRGB(r, g, b);
 	}
 	else 
 	{

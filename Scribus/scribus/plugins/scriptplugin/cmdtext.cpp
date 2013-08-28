@@ -301,7 +301,7 @@ PyObject *scribus_inserttext(PyObject* /* self */, PyObject* args)
 		pos = it->itemText.length();
 	it->itemText.insertChars(pos, Daten);
 	it->Dirty = true;
-	if (ScCore->primaryMainWindow()->m_Doc->DoDrawing)
+	if (ScCore->primaryMainWindow()->doc->DoDrawing)
 	{
 // FIXME adapt to Qt-4 painting style
 		it->Dirty = false;
@@ -339,7 +339,7 @@ PyObject *scribus_inserthtmltext(PyObject* /* self */, PyObject* args)
 
 	QString fileName = QString::fromUtf8(file);
 
-    gtGetText gt(ScCore->primaryMainWindow()->m_Doc);
+    gtGetText gt(ScCore->primaryMainWindow()->doc);
     gt.launchImporter(-1, fileName, false, true, false, QString("utf-8"), false, it);
 
     // FIXME: PyMem_Free() - are any needed??
@@ -367,13 +367,13 @@ PyObject *scribus_setalign(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(WrongFrameTypeError, QObject::tr("Cannot set text alignment on a non-text frame.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	if (i->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
 	ScCore->primaryMainWindow()->setNewAlignment(alignment);
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -402,13 +402,13 @@ PyObject *scribus_setfontsize(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(WrongFrameTypeError, QObject::tr("Cannot set font size on a non-text frame.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	if (i->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetFontSize(qRound(size * 10.0));
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetFontSize(qRound(size * 10.0));
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -433,13 +433,13 @@ PyObject *scribus_setfont(PyObject* /* self */, PyObject* args)
 	}
 	if (PrefsManager::instance()->appPrefs.fontPrefs.AvailFonts.contains(QString::fromUtf8(Font)))
 	{
-		int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+		int Apm = ScCore->primaryMainWindow()->doc->appMode;
+		ScCore->primaryMainWindow()->doc->m_Selection->clear();
+		ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 		if (i->HasSel)
-			ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
+			ScCore->primaryMainWindow()->doc->appMode = modeEdit;
 		ScCore->primaryMainWindow()->SetNewFont(QString::fromUtf8(Font));
-		ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = Apm;
 		ScCore->primaryMainWindow()->view->Deselect();
 	}
 	else
@@ -474,13 +474,13 @@ PyObject *scribus_setlinespace(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	if (i->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetLineSpacing(w);
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetLineSpacing(w);
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 		
 //	i->setLineSpacing(w);
@@ -511,13 +511,13 @@ PyObject *scribus_setlinespacemode(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	if (i->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetLineSpacingMode(w);
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetLineSpacingMode(w);
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 		
 	Py_RETURN_NONE;
@@ -776,13 +776,13 @@ PyObject *scribus_settextscalingh(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	if (i->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetScaleH(qRound(sc * 10));
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetScaleH(qRound(sc * 10));
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 		
 	Py_RETURN_NONE;
@@ -811,13 +811,13 @@ PyObject *scribus_settextscalingv(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 	
-	int Apm = ScCore->primaryMainWindow()->m_Doc->appMode;
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
+	int Apm = ScCore->primaryMainWindow()->doc->appMode;
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
 	if (i->HasSel)
-		ScCore->primaryMainWindow()->m_Doc->appMode = modeEdit;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetScaleV(qRound(sc * 10));
-	ScCore->primaryMainWindow()->m_Doc->appMode = Apm;
+		ScCore->primaryMainWindow()->doc->appMode = modeEdit;
+	ScCore->primaryMainWindow()->doc->itemSelection_SetScaleV(qRound(sc * 10));
+	ScCore->primaryMainWindow()->doc->appMode = Apm;
 	ScCore->primaryMainWindow()->view->Deselect();
 		
 	Py_RETURN_NONE;
@@ -1062,7 +1062,7 @@ PyObject *scribus_hyphenatetext(PyObject*, PyObject* args)
 		PyErr_SetString(WrongFrameTypeError, QObject::tr("Can only hyphenate text frame", "python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	ScCore->primaryMainWindow()->m_Doc->docHyphenator->slotHyphenate(i);
+	ScCore->primaryMainWindow()->doc->docHyphenator->slotHyphenate(i);
 	return PyBool_FromLong(1);
 }
 
@@ -1085,7 +1085,7 @@ PyObject *scribus_dehyphenatetext(PyObject*, PyObject* args)
 		PyErr_SetString(WrongFrameTypeError, QObject::tr("Can only dehyphenate text frame", "python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	ScCore->primaryMainWindow()->m_Doc->docHyphenator->slotDeHyphenate(i);
+	ScCore->primaryMainWindow()->doc->docHyphenator->slotDeHyphenate(i);
 	return PyBool_FromLong(1);
 }
 

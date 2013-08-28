@@ -30,7 +30,7 @@ PyObject *scribus_loadimage(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(WrongFrameTypeError, QObject::tr("Target is not an image frame.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	ScCore->primaryMainWindow()->m_Doc->loadPict(QString::fromUtf8(Image), item);
+	ScCore->primaryMainWindow()->doc->loadPict(QString::fromUtf8(Image), item);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -54,10 +54,10 @@ PyObject *scribus_scaleimage(PyObject* /* self */, PyObject* args)
 	}
 
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
@@ -65,13 +65,13 @@ PyObject *scribus_scaleimage(PyObject* /* self */, PyObject* args)
 	ScCore->primaryMainWindow()->view->SelectItem(item);
 
 	// scale
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetImageScale(x, y); //CB why when this is done above?
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->itemSelection_SetImageScale(x, y); //CB why when this is done above?
+	ScCore->primaryMainWindow()->doc->updatePic();
 
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -96,10 +96,10 @@ PyObject *scribus_setimagescale(PyObject* /* self */, PyObject* args)
 	}
 
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
@@ -109,13 +109,13 @@ PyObject *scribus_setimagescale(PyObject* /* self */, PyObject* args)
 	// scale
 	double newScaleX = x / item->pixm.imgInfo.xres * 72.0;
 	double newScaleY = y / item->pixm.imgInfo.yres * 72.0;
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetImageScale(newScaleX, newScaleY); //CB why when this is done above?
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->itemSelection_SetImageScale(newScaleX, newScaleY); //CB why when this is done above?
+	ScCore->primaryMainWindow()->doc->updatePic();
 
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -139,10 +139,10 @@ PyObject *scribus_setimageoffset(PyObject* /* self */, PyObject* args)
 	}
 
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
@@ -152,13 +152,13 @@ PyObject *scribus_setimageoffset(PyObject* /* self */, PyObject* args)
 	// offset
 	double newOffsetX = x / ((item->imageXScale() != 0.0) ? item->imageXScale() : 1);
 	double newOffsetY = y / ((item->imageYScale() != 0.0) ? item->imageYScale() : 1);
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_SetImageOffset(newOffsetX, newOffsetY); //CB why when this is done above?
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->itemSelection_SetImageOffset(newOffsetX, newOffsetY); //CB why when this is done above?
+	ScCore->primaryMainWindow()->doc->updatePic();
 
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 
 //	Py_INCREF(Py_None);
 //	return Py_None;
@@ -188,9 +188,9 @@ PyObject *scribus_setimagebrightness(PyObject* /* self */, PyObject* args)
 	fp << n;
 
 	item->effectsInUse.append(ef);
-	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->m_Doc->PageColors, false);
+	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->doc->PageColors, false);
 	
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->updatePic();
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -216,9 +216,9 @@ PyObject *scribus_setimagegrayscale(PyObject* /* self */, PyObject* args)
 	ef.effectCode = ScImage::EF_GRAYSCALE;
 
 	item->effectsInUse.append(ef);
-	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->m_Doc->PageColors, false);
+	item->pixm.applyEffect(item->effectsInUse, ScCore->primaryMainWindow()->doc->PageColors, false);
 	
-	ScCore->primaryMainWindow()->m_Doc->updatePic();
+	ScCore->primaryMainWindow()->doc->updatePic();
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -236,29 +236,29 @@ PyObject *scribus_moveobjrel(PyObject* /* self */, PyObject* args)
 	if (item==NULL)
 		return NULL;
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
 	// there is one.
 	ScCore->primaryMainWindow()->view->SelectItem(item);
 	// Move the item, or items
-	if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() > 1)
+	if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
 	{
 		ScCore->primaryMainWindow()->view->startGroupTransaction(Um::Move, "", Um::IMove);
-		ScCore->primaryMainWindow()->m_Doc->moveGroup(ValueToPoint(x), ValueToPoint(y));
+		ScCore->primaryMainWindow()->doc->moveGroup(ValueToPoint(x), ValueToPoint(y));
 		ScCore->primaryMainWindow()->view->endGroupTransaction();
 	}
 	else {
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(ValueToPoint(x), ValueToPoint(y), item);
+		ScCore->primaryMainWindow()->doc->MoveItem(ValueToPoint(x), ValueToPoint(y), item);
 		}
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 	Py_RETURN_NONE;
 }
 
@@ -274,7 +274,7 @@ PyObject *scribus_moveobjabs(PyObject* /* self */, PyObject* args)
 	if (item == NULL)
 		return NULL;
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
 	// Clear the selection
@@ -283,20 +283,20 @@ PyObject *scribus_moveobjabs(PyObject* /* self */, PyObject* args)
 	// there is one.
 	ScCore->primaryMainWindow()->view->SelectItem(item);
 	// Move the item, or items
-	if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() > 1)
+	if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
 	{
 		ScCore->primaryMainWindow()->view->startGroupTransaction(Um::Move, "", Um::IMove);
 		double x2, y2, w, h;
-		ScCore->primaryMainWindow()->m_Doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
-		ScCore->primaryMainWindow()->m_Doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+		ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+		ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 		ScCore->primaryMainWindow()->view->endGroupTransaction();
 	}
 	else
-		ScCore->primaryMainWindow()->m_Doc->MoveItem(pageUnitXToDocX(x) - item->xPos(), pageUnitYToDocY(y) - item->yPos(), item);
+		ScCore->primaryMainWindow()->doc->MoveItem(pageUnitXToDocX(x) - item->xPos(), pageUnitYToDocY(y) - item->yPos(), item);
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 
 	Py_RETURN_NONE;
 }
@@ -312,7 +312,7 @@ PyObject *scribus_rotobjrel(PyObject* /* self */, PyObject* args)
 	PageItem *item = GetUniqueItem(QString::fromUtf8(Name));
 	if (item == NULL)
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->RotateItem(item->rotation() - x, item);
+	ScCore->primaryMainWindow()->doc->RotateItem(item->rotation() - x, item);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -329,7 +329,7 @@ PyObject *scribus_rotobjabs(PyObject* /* self */, PyObject* args)
 	PageItem *item = GetUniqueItem(QString::fromUtf8(Name));
 	if (item == NULL)
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->RotateItem(x * -1.0, item);
+	ScCore->primaryMainWindow()->doc->RotateItem(x * -1.0, item);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -346,7 +346,7 @@ PyObject *scribus_sizeobjabs(PyObject* /* self */, PyObject* args)
 	PageItem *item = GetUniqueItem(QString::fromUtf8(Name));
 	if (item == NULL)
 		return NULL;
-	ScCore->primaryMainWindow()->m_Doc->SizeItem(ValueToPoint(x), ValueToPoint(y), item);
+	ScCore->primaryMainWindow()->doc->SizeItem(ValueToPoint(x), ValueToPoint(y), item);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;
@@ -360,7 +360,7 @@ PyObject *scribus_groupobj(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if (!checkHaveDocument())
 		return NULL;
-	if (il == 0 && ScCore->primaryMainWindow()->m_Doc->m_Selection->count() < 2)
+	if (il == 0 && ScCore->primaryMainWindow()->doc->m_Selection->count() < 2)
 	{
 		PyErr_SetString(PyExc_TypeError, QObject::tr("Need selection or argument list of items to group", "python error").toLocal8Bit().constData());
 		return NULL;
@@ -390,7 +390,7 @@ PyObject *scribus_groupobj(PyObject* /* self */, PyObject* args)
 		finalSelection=tempSelection;
 	}
 	else
-		finalSelection=ScCore->primaryMainWindow()->m_Doc->m_Selection;
+		finalSelection=ScCore->primaryMainWindow()->doc->m_Selection;
 	if (finalSelection->count() < 2)
 	{
 		// We can't very well group only one item
@@ -400,7 +400,7 @@ PyObject *scribus_groupobj(PyObject* /* self */, PyObject* args)
 		return NULL;
 	}
 
-	const PageItem* group = ScCore->primaryMainWindow()->m_Doc->itemSelection_GroupObjects(false, false, finalSelection);
+	const PageItem* group = ScCore->primaryMainWindow()->doc->itemSelection_GroupObjects(false, false, finalSelection);
 	finalSelection=0;
 	delete tempSelection;
 	
@@ -446,7 +446,7 @@ PyObject *scribus_scalegroup(PyObject* /* self */, PyObject* args)
 //	int h = ScCore->primaryMainWindow()->view->frameResizeHandle;
 //	ScCore->primaryMainWindow()->view->frameResizeHandle = 1;
 	ScCore->primaryMainWindow()->view->startGroupTransaction(Um::Resize, "", Um::IResize);
-	ScCore->primaryMainWindow()->m_Doc->scaleGroup(sc, sc);
+	ScCore->primaryMainWindow()->doc->scaleGroup(sc, sc);
 	ScCore->primaryMainWindow()->view->endGroupTransaction();
 //	ScCore->primaryMainWindow()->view->frameResizeHandle = h;
 //	Py_INCREF(Py_None);
@@ -461,8 +461,8 @@ PyObject *scribus_getselobjnam(PyObject* /* self */, PyObject* args)
 		return NULL;
 	if(!checkHaveDocument())
 		return NULL;
-	if ((i < static_cast<int>(ScCore->primaryMainWindow()->m_Doc->m_Selection->count())) && (i > -1))
-		return PyString_FromString(ScCore->primaryMainWindow()->m_Doc->m_Selection->itemAt(i)->itemName().toUtf8());
+	if ((i < static_cast<int>(ScCore->primaryMainWindow()->doc->m_Selection->count())) && (i > -1))
+		return PyString_FromString(ScCore->primaryMainWindow()->doc->m_Selection->itemAt(i)->itemName().toUtf8());
 	else
 		// FIXME: Should probably return None if no selection?
 		return PyString_FromString("");
@@ -472,7 +472,7 @@ PyObject *scribus_selcount(PyObject* /* self */)
 {
 	if(!checkHaveDocument())
 		return NULL;
-	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->m_Doc->m_Selection->count()));
+	return PyInt_FromLong(static_cast<long>(ScCore->primaryMainWindow()->doc->m_Selection->count()));
 }
 
 PyObject *scribus_selectobj(PyObject* /* self */, PyObject* args)
@@ -585,10 +585,10 @@ PyObject *scribus_flipobject(PyObject* /* self */, PyObject* args)
 		return NULL;
 	
 	// Grab the old selection - but use it only where is there any
-	Selection tempSelection(*ScCore->primaryMainWindow()->m_Doc->m_Selection);
+	Selection tempSelection(*ScCore->primaryMainWindow()->doc->m_Selection);
 	bool hadOrigSelection = (tempSelection.count() != 0);
 
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
 	// Clear the selection
 	ScCore->primaryMainWindow()->view->Deselect();
 	// Select the item, which will also select its group if
@@ -597,15 +597,15 @@ PyObject *scribus_flipobject(PyObject* /* self */, PyObject* args)
 
 	// flip
 	if (h == 1) {
-		ScCore->primaryMainWindow()->m_Doc->itemSelection_FlipH();
+		ScCore->primaryMainWindow()->doc->itemSelection_FlipH();
 		}
 	if (v == 1) {
-		ScCore->primaryMainWindow()->m_Doc->itemSelection_FlipV();
+		ScCore->primaryMainWindow()->doc->itemSelection_FlipV();
 		}
 	// Now restore the selection.
 	ScCore->primaryMainWindow()->view->Deselect();
 	if (hadOrigSelection)
-		*ScCore->primaryMainWindow()->m_Doc->m_Selection=tempSelection;
+		*ScCore->primaryMainWindow()->doc->m_Selection=tempSelection;
 
 //	Py_INCREF(Py_None);
 //	return Py_None;

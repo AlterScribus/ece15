@@ -17,26 +17,26 @@ ScribusDoc* doc;
 /// Convert a value in points to a value in the current document units
 double PointToValue(double Val)
 {
-	return pts2value(Val, ScCore->primaryMainWindow()->m_Doc->unitIndex());
+	return pts2value(Val, ScCore->primaryMainWindow()->doc->unitIndex());
 }
 
 /// Convert a value in the current document units to a value in points
 double ValueToPoint(double Val)
 {
-	return value2pts(Val, ScCore->primaryMainWindow()->m_Doc->unitIndex());
+	return value2pts(Val, ScCore->primaryMainWindow()->doc->unitIndex());
 }
 
 /// Convert an X co-ordinate part in page units to a document co-ordinate
 /// in system units.
 double pageUnitXToDocX(double pageUnitX)
 {
-	return ValueToPoint(pageUnitX) + ScCore->primaryMainWindow()->m_Doc->currentPage()->xOffset();
+	return ValueToPoint(pageUnitX) + ScCore->primaryMainWindow()->doc->currentPage()->xOffset();
 }
 
 // Convert doc units to page units
 double docUnitXToPageX(double pageUnitX)
 {
-	return PointToValue(pageUnitX - ScCore->primaryMainWindow()->m_Doc->currentPage()->xOffset());
+	return PointToValue(pageUnitX - ScCore->primaryMainWindow()->doc->currentPage()->xOffset());
 }
 
 /// Convert a Y co-ordinate part in page units to a document co-ordinate
@@ -45,21 +45,21 @@ double docUnitXToPageX(double pageUnitX)
 /// origin on the top left of the current page.
 double pageUnitYToDocY(double pageUnitY)
 {
-	return ValueToPoint(pageUnitY) + ScCore->primaryMainWindow()->m_Doc->currentPage()->yOffset();
+	return ValueToPoint(pageUnitY) + ScCore->primaryMainWindow()->doc->currentPage()->yOffset();
 }
 
 double docUnitYToPageY(double pageUnitY)
 {
-	return PointToValue(pageUnitY - ScCore->primaryMainWindow()->m_Doc->currentPage()->yOffset());
+	return PointToValue(pageUnitY - ScCore->primaryMainWindow()->doc->currentPage()->yOffset());
 }
 
 int GetItem(QString Name)
 {
 	if (!Name.isEmpty())
 	{
-		for (int a = 0; a < ScCore->primaryMainWindow()->m_Doc->Items->count(); a++)
+		for (int a = 0; a < ScCore->primaryMainWindow()->doc->Items->count(); a++)
 		{
-			if (ScCore->primaryMainWindow()->m_Doc->Items->at(a)->itemName() == Name)
+			if (ScCore->primaryMainWindow()->doc->Items->at(a)->itemName() == Name)
 				return static_cast<int>(a);
 		}
 	}
@@ -69,9 +69,9 @@ int GetItem(QString Name)
 void ReplaceColor(QString col, QString rep)
 {
 	QColor tmpc;
-	for (int c = 0; c < ScCore->primaryMainWindow()->m_Doc->Items->count(); c++)
+	for (int c = 0; c < ScCore->primaryMainWindow()->doc->Items->count(); c++)
 	{
-		PageItem *ite = ScCore->primaryMainWindow()->m_Doc->Items->at(c);
+		PageItem *ite = ScCore->primaryMainWindow()->doc->Items->at(c);
 		if ((ite->itemType() == PageItem::TextFrame) && (ite->prevInChain() == NULL))
 		{
 			for (int d = 0; d < ite->itemText.length(); d++)
@@ -98,9 +98,9 @@ void ReplaceColor(QString col, QString rep)
 			}
 		}
 	}
-	for (int c = 0; c < ScCore->primaryMainWindow()->m_Doc->MasterItems.count(); c++)
+	for (int c = 0; c < ScCore->primaryMainWindow()->doc->MasterItems.count(); c++)
 	{
-		PageItem *ite = ScCore->primaryMainWindow()->m_Doc->MasterItems.at(c);
+		PageItem *ite = ScCore->primaryMainWindow()->doc->MasterItems.at(c);
 		if (ite->itemType() == PageItem::TextFrame)
 		{
 			for (int d = 0; d < ite->itemText.length(); d++)
@@ -133,8 +133,8 @@ void ReplaceColor(QString col, QString rep)
 PageItem* GetUniqueItem(QString name)
 {
 	if (name.length()==0)
-		if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() != 0)
-			return ScCore->primaryMainWindow()->m_Doc->m_Selection->itemAt(0);
+		if (ScCore->primaryMainWindow()->doc->m_Selection->count() != 0)
+			return ScCore->primaryMainWindow()->doc->m_Selection->itemAt(0);
 		else
 		{
 			RAISE("Cannot use empty string for object name when there is no selection");
@@ -151,10 +151,10 @@ PageItem* getPageItemByName(QString name)
 		RAISE("Cannot accept empty name for pageitem");
 		return NULL;
 	}
-	for (int j = 0; j<ScCore->primaryMainWindow()->m_Doc->Items->count(); j++)
+	for (int j = 0; j<ScCore->primaryMainWindow()->doc->Items->count(); j++)
 	{
-		if (name==ScCore->primaryMainWindow()->m_Doc->Items->at(j)->itemName())
-			return ScCore->primaryMainWindow()->m_Doc->Items->at(j);
+		if (name==ScCore->primaryMainWindow()->doc->Items->at(j)->itemName())
+			return ScCore->primaryMainWindow()->doc->Items->at(j);
 	} // for items
 	RAISE("Object not found");
 	return NULL;
@@ -170,9 +170,9 @@ bool ItemExists(QString name)
 {
 	if (name.length() == 0)
 		return false;
-	for (int j = 0; j<ScCore->primaryMainWindow()->m_Doc->Items->count(); j++)
+	for (int j = 0; j<ScCore->primaryMainWindow()->doc->Items->count(); j++)
 	{
-		if (name==ScCore->primaryMainWindow()->m_Doc->Items->at(j)->itemName())
+		if (name==ScCore->primaryMainWindow()->doc->Items->at(j)->itemName())
 			return true;
 	} // for items
 	return false;
@@ -204,7 +204,7 @@ QStringList getSelectedItemsByName()
 		names.append(it.current()->itemName());
 	return names;
 	*/
-	return ScCore->primaryMainWindow()->m_Doc->m_Selection->getSelectedItemsByName();
+	return ScCore->primaryMainWindow()->doc->m_Selection->getSelectedItemsByName();
 }
 
 bool setSelectedItemsByName(QStringList& itemNames)
@@ -215,9 +215,9 @@ bool setSelectedItemsByName(QStringList& itemNames)
 	{
 		// Search for the named item
 		PageItem* item = 0;
-		for (int j = 0; j < ScCore->primaryMainWindow()->m_Doc->Items->count(); j++)
-			if (*it == ScCore->primaryMainWindow()->m_Doc->Items->at(j)->itemName())
-				item = ScCore->primaryMainWindow()->m_Doc->Items->at(j);
+		for (int j = 0; j < ScCore->primaryMainWindow()->doc->Items->count(); j++)
+			if (*it == ScCore->primaryMainWindow()->doc->Items->at(j)->itemName())
+				item = ScCore->primaryMainWindow()->doc->Items->at(j);
 		if (!item)
 			return false;
 		// and select it

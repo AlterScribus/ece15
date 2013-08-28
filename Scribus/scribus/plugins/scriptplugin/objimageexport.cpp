@@ -147,10 +147,10 @@ static PyObject *ImageExport_save(ImageExport *self)
 	* portrait and user defined sizes.
 	*/
 	double pixmapSize;
-	(ScCore->primaryMainWindow()->m_Doc->pageHeight() > ScCore->primaryMainWindow()->m_Doc->pageWidth())
-			? pixmapSize = ScCore->primaryMainWindow()->m_Doc->pageHeight()
-			: pixmapSize = ScCore->primaryMainWindow()->m_Doc->pageWidth();
-	QImage im = ScCore->primaryMainWindow()->view->PageToPixmap(ScCore->primaryMainWindow()->m_Doc->currentPage()->pageNr(), qRound(pixmapSize * self->scale * (self->dpi / 72.0) / 100.0), false);
+	(ScCore->primaryMainWindow()->doc->pageHeight() > ScCore->primaryMainWindow()->doc->pageWidth())
+			? pixmapSize = ScCore->primaryMainWindow()->doc->pageHeight()
+			: pixmapSize = ScCore->primaryMainWindow()->doc->pageWidth();
+	QImage im = ScCore->primaryMainWindow()->view->PageToPixmap(ScCore->primaryMainWindow()->doc->currentPage()->pageNr(), qRound(pixmapSize * self->scale * (self->dpi / 72.0) / 100.0), false);
 	int dpi = qRound(100.0 / 2.54 * self->dpi);
 	im.setDotsPerMeterY(dpi);
 	im.setDotsPerMeterX(dpi);
@@ -178,10 +178,10 @@ static PyObject *ImageExport_saveAs(ImageExport *self, PyObject *args)
 	* portrait and user defined sizes.
 	*/
 	double pixmapSize;
-	(ScCore->primaryMainWindow()->m_Doc->pageHeight() > ScCore->primaryMainWindow()->m_Doc->pageWidth())
-			? pixmapSize = ScCore->primaryMainWindow()->m_Doc->pageHeight()
-			: pixmapSize = ScCore->primaryMainWindow()->m_Doc->pageWidth();
-	QImage im = ScCore->primaryMainWindow()->view->PageToPixmap(ScCore->primaryMainWindow()->m_Doc->currentPage()->pageNr(), qRound(pixmapSize * self->scale * (self->dpi / 72.0) / 100.0), false);
+	(ScCore->primaryMainWindow()->doc->pageHeight() > ScCore->primaryMainWindow()->doc->pageWidth())
+			? pixmapSize = ScCore->primaryMainWindow()->doc->pageHeight()
+			: pixmapSize = ScCore->primaryMainWindow()->doc->pageWidth();
+	QImage im = ScCore->primaryMainWindow()->view->PageToPixmap(ScCore->primaryMainWindow()->doc->currentPage()->pageNr(), qRound(pixmapSize * self->scale * (self->dpi / 72.0) / 100.0), false);
 	int dpi = qRound(100.0 / 2.54 * self->dpi);
 	im.setDotsPerMeterY(dpi);
 	im.setDotsPerMeterX(dpi);

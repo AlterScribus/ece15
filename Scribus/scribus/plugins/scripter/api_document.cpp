@@ -38,11 +38,11 @@ DocumentAPI::~DocumentAPI()
 QString DocumentAPI::getName()
 {
 	if (!check()) return NULL;
-	if (! ScCore->primaryMainWindow()->m_Doc->hasName)
+	if (! ScCore->primaryMainWindow()->doc->hasName)
 	{
 		return QString("");
 	}
-	return ScCore->primaryMainWindow()->m_Doc->DocName;
+	return ScCore->primaryMainWindow()->doc->DocName;
 }
 
 
@@ -85,13 +85,13 @@ bool DocumentAPI::check()
 void DocumentAPI::setModified(bool flag)
 {
 	if (!check()) return;
-	ScCore->primaryMainWindow()->m_Doc->setModified(flag);
+	ScCore->primaryMainWindow()->doc->setModified(flag);
 }
 
 bool DocumentAPI::modified()
 {
 	if (!check()) return NULL;
-	return ScCore->primaryMainWindow()->m_Doc->isModified();
+	return ScCore->primaryMainWindow()->doc->isModified();
 }
 
 /**
@@ -106,13 +106,13 @@ bool DocumentAPI::modified()
 void DocumentAPI::setUnit(int value)
 {
 	if (!check()) return;
-	ScCore->primaryMainWindow()->m_Doc->setUnitIndex(value);
+	ScCore->primaryMainWindow()->doc->setUnitIndex(value);
 }
 
 int DocumentAPI::unit()
 {
 	if (!check()) return NULL;
-	return ScCore->primaryMainWindow()->m_Doc->unitIndex();
+	return ScCore->primaryMainWindow()->doc->unitIndex();
 }
 
 /**
@@ -166,7 +166,7 @@ bool DocumentAPI::saveAs(QString name)
  */
 int DocumentAPI::pageCount()
 {
-	return ScCore->primaryMainWindow()->m_Doc->Pages->count();
+	return ScCore->primaryMainWindow()->doc->Pages->count();
 }
 
 
@@ -178,7 +178,7 @@ int DocumentAPI::pageCount()
  */
 QObject *DocumentAPI::activePage()
 {
-	return new PageAPI(ScCore->primaryMainWindow()->m_Doc->currentPage());
+	return new PageAPI(ScCore->primaryMainWindow()->doc->currentPage());
 }
 
 
@@ -189,11 +189,11 @@ QObject *DocumentAPI::activePage()
  */
 QObject *DocumentAPI::activeItem()
 {
-	if (ScCore->primaryMainWindow()->m_Doc->m_Selection->count() == 0)
+	if (ScCore->primaryMainWindow()->doc->m_Selection->count() == 0)
 		return NULL;
 	else
 	{
-		PageItem* item = ScCore->primaryMainWindow()->m_Doc->m_Selection->itemAt(0);
+		PageItem* item = ScCore->primaryMainWindow()->doc->m_Selection->itemAt(0);
 		if(item->asTextFrame())
 		{
 			TextAPI *textItem = new TextAPI(item->asTextFrame());
@@ -216,7 +216,7 @@ int DocumentAPI::selectionCount()
 {
 	if(!check())
 		RAISE("No document open.");
-	return ScCore->primaryMainWindow()->m_Doc->m_Selection->count();
+	return ScCore->primaryMainWindow()->doc->m_Selection->count();
 }
 
 
@@ -228,7 +228,7 @@ int DocumentAPI::selectionCount()
 QList<QVariant> DocumentAPI::selection()
 {
 	QList<QVariant> l;
-	Selection *sel = ScCore->primaryMainWindow()->m_Doc->m_Selection;
+	Selection *sel = ScCore->primaryMainWindow()->doc->m_Selection;
 	for (int i=0; i < sel->count(); i++)
 	{
 		/**
@@ -277,9 +277,9 @@ QObject *DocumentAPI::dimensions()
 QList<QVariant> DocumentAPI::items()
 {
 	QList<QVariant> l;
-	for (int i = 0; i<ScCore->primaryMainWindow()->m_Doc->Items->count(); ++i)
+	for (int i = 0; i<ScCore->primaryMainWindow()->doc->Items->count(); ++i)
 	{
-		PageItem *item = ScCore->primaryMainWindow()->m_Doc->Items->at(i);
+		PageItem *item = ScCore->primaryMainWindow()->doc->Items->at(i);
 		if (item->asTextFrame())
 		{
 			TextAPI *textItem = new TextAPI(item->asTextFrame());
@@ -308,9 +308,9 @@ void DocumentAPI::setInformation(QString author, QString title, QString desc)
 {
 	if (!check())
 		return;
-	ScCore->primaryMainWindow()->m_Doc->documentInfo().setAuthor(author);
-	ScCore->primaryMainWindow()->m_Doc->documentInfo().setTitle(title);
-	ScCore->primaryMainWindow()->m_Doc->documentInfo().setComments(desc);
+	ScCore->primaryMainWindow()->doc->documentInfo().setAuthor(author);
+	ScCore->primaryMainWindow()->doc->documentInfo().setTitle(title);
+	ScCore->primaryMainWindow()->doc->documentInfo().setComments(desc);
 	ScCore->primaryMainWindow()->slotDocCh();
 }
 
@@ -318,9 +318,9 @@ void DocumentAPI::setInformation(QString author, QString title, QString desc)
 QList<QVariant> DocumentAPI::layers()
 {
 	QList<QVariant> l;
-	for (int i = 0; i<ScCore->primaryMainWindow()->m_Doc->Layers.count() ; ++i)
+	for (int i = 0; i<ScCore->primaryMainWindow()->doc->Layers.count() ; ++i)
 	{
-		ScLayer *L = &(ScCore->primaryMainWindow()->m_Doc->Layers[i]);
+		ScLayer *L = &(ScCore->primaryMainWindow()->doc->Layers[i]);
 		LayerAPI *layer = new LayerAPI(L);
 		l.append(qVariantFromValue((QObject *)(layer)));
 	}
@@ -329,30 +329,30 @@ QList<QVariant> DocumentAPI::layers()
 
 QObject *DocumentAPI::newLayer(QString name)
 {
-	LayerAPI *l = new LayerAPI(ScCore->primaryMainWindow()->m_Doc->Layers.newLayer(name));
+	LayerAPI *l = new LayerAPI(ScCore->primaryMainWindow()->doc->Layers.newLayer(name));
 	return (QObject *)(l);
 }
 
 void DocumentAPI::removeLayer(QString name)
 {
-	if (ScCore->primaryMainWindow()->m_Doc->Layers.count() == 1)
+	if (ScCore->primaryMainWindow()->doc->Layers.count() == 1)
 	{
 		RAISE("Cannot remove the last layer.");
 	}
 	bool found = false;
-	for (int lam=0; lam < ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++lam)
+	for (int lam=0; lam < ScCore->primaryMainWindow()->doc->Layers.count(); ++lam)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[lam].Name == name)
+		if (ScCore->primaryMainWindow()->doc->Layers[lam].Name == name)
 		{
-			ScLayer it2 = ScCore->primaryMainWindow()->m_Doc->Layers.at(lam);
+			ScLayer it2 = ScCore->primaryMainWindow()->doc->Layers.at(lam);
 			int num2 = it2.ID;
 			if (!num2)
 			{
 				return;
 			}
-			ScCore->primaryMainWindow()->m_Doc->removeLayer(num2);
-			ScCore->primaryMainWindow()->m_Doc->Layers.removeLayerByID(num2);
-			ScCore->primaryMainWindow()->m_Doc->setActiveLayer(0);
+			ScCore->primaryMainWindow()->doc->removeLayer(num2);
+			ScCore->primaryMainWindow()->doc->Layers.removeLayerByID(num2);
+			ScCore->primaryMainWindow()->doc->setActiveLayer(0);
 			ScCore->primaryMainWindow()->changeLayer(0);
 			found = true;
 			break;
@@ -366,11 +366,11 @@ void DocumentAPI::removeLayer(QString name)
 
 QObject *DocumentAPI::getActiveLayer()
 {
-	for (int i = 0; i<ScCore->primaryMainWindow()->m_Doc->Layers.count(); ++i)
+	for (int i = 0; i<ScCore->primaryMainWindow()->doc->Layers.count(); ++i)
 	{
-		if (ScCore->primaryMainWindow()->m_Doc->Layers[i].Name == ScCore->primaryMainWindow()->m_Doc->activeLayerName())
+		if (ScCore->primaryMainWindow()->doc->Layers[i].Name == ScCore->primaryMainWindow()->doc->activeLayerName())
 		{
-			ScLayer *L = &(ScCore->primaryMainWindow()->m_Doc->Layers[i]);
+			ScLayer *L = &(ScCore->primaryMainWindow()->doc->Layers[i]);
 			return new LayerAPI(L);
 		}
 	}
@@ -379,14 +379,14 @@ QObject *DocumentAPI::getActiveLayer()
 
 QString DocumentAPI::getActiveLayerName()
 {
-	return ScCore->primaryMainWindow()->m_Doc->activeLayerName();
+	return ScCore->primaryMainWindow()->doc->activeLayerName();
 }
 
 void DocumentAPI::setActiveLayer(QString name)
 {
-	bool found = ScCore->primaryMainWindow()->m_Doc->setActiveLayer(name);
+	bool found = ScCore->primaryMainWindow()->doc->setActiveLayer(name);
 	if (found)
-		ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->m_Doc->activeLayer());
+		ScCore->primaryMainWindow()->changeLayer(ScCore->primaryMainWindow()->doc->activeLayer());
 	else
 		RAISE("Layer not found.");
 }
@@ -400,7 +400,7 @@ QList<QVariant> DocumentAPI::colors()
 {
 	QList<QVariant> l;
 
-	ColorList names = ScCore->primaryMainWindow()->m_Doc->PageColors;
+	ColorList names = ScCore->primaryMainWindow()->doc->PageColors;
 	ColorList::Iterator it;
 	for (it = names.begin(); it != names.end(); ++it)
 	{
@@ -413,7 +413,7 @@ QList<QVariant> DocumentAPI::colors()
 
 QObject *DocumentAPI::getColor(QString name)
 {
-	return new ColorAPI(&(ScCore->primaryMainWindow()->m_Doc->PageColors[name]), name);
+	return new ColorAPI(&(ScCore->primaryMainWindow()->doc->PageColors[name]), name);
 }
 
 QObject *DocumentAPI::newColorCMYK(QString name, int c, int m, int y, int k)
@@ -422,13 +422,13 @@ QObject *DocumentAPI::newColorCMYK(QString name, int c, int m, int y, int k)
 	{
 		RAISE("Cannot create a color with an empty name");
 	}
-	if (ScCore->primaryMainWindow()->m_Doc->PageColors.contains(name))
+	if (ScCore->primaryMainWindow()->doc->PageColors.contains(name))
 	{
-		ScCore->primaryMainWindow()->m_Doc->PageColors.insert(name, ScColor(c, m, y, k));
+		ScCore->primaryMainWindow()->doc->PageColors.insert(name, ScColor(c, m, y, k));
 	}
 	else
 	{
-		ScCore->primaryMainWindow()->m_Doc->PageColors[name].setColor(c, m, y, k);
+		ScCore->primaryMainWindow()->doc->PageColors[name].setColor(c, m, y, k);
 	}
 	return getColor(name);
 }
@@ -439,13 +439,13 @@ QObject *DocumentAPI::newColorRGB(QString name, int r, int g, int b)
 	{
 		RAISE("Cannot create a color with an empty name");
 	}
-	if (ScCore->primaryMainWindow()->m_Doc->PageColors.contains(name))
+	if (ScCore->primaryMainWindow()->doc->PageColors.contains(name))
 	{
-		ScCore->primaryMainWindow()->m_Doc->PageColors.insert(name, ScColor(r, g, b));
+		ScCore->primaryMainWindow()->doc->PageColors.insert(name, ScColor(r, g, b));
 	}
 	else
 	{
-		ScCore->primaryMainWindow()->m_Doc->PageColors[name].setColorRGB(r, g, b);
+		ScCore->primaryMainWindow()->doc->PageColors[name].setColorRGB(r, g, b);
 	}
 	return getColor(name);
 }
@@ -465,8 +465,8 @@ bool DocumentAPI::exportAsImages(QString dirName, QString type, double scale, do
 {
 	std::vector<int> pageNs;
 	ImageExport *ie = new ImageExport(dirName, type, scale, quality, dpi, overwrite);
-	parsePagesString("*", &pageNs, ScCore->primaryMainWindow()->m_Doc->DocPages.count());
-	bool result = ie->exportInterval(ScCore->primaryMainWindow()->m_Doc, pageNs);
+	parsePagesString("*", &pageNs, ScCore->primaryMainWindow()->doc->DocPages.count());
+	bool result = ie->exportInterval(ScCore->primaryMainWindow()->doc, pageNs);
 	return result;
 }
 
@@ -480,8 +480,8 @@ QList<QVariant> DocumentAPI::masterPages()
 	QList<QVariant> names;
 	if (!check())
 		return names;
-	QMap<QString,int>::const_iterator it(ScCore->primaryMainWindow()->m_Doc->MasterNames.constBegin());
-	QMap<QString,int>::const_iterator itEnd(ScCore->primaryMainWindow()->m_Doc->MasterNames.constEnd());
+	QMap<QString,int>::const_iterator it(ScCore->primaryMainWindow()->doc->MasterNames.constBegin());
+	QMap<QString,int>::const_iterator itEnd(ScCore->primaryMainWindow()->doc->MasterNames.constEnd());
 	for (; it != itEnd; ++it)
 	{
 		names.append(it.key());
@@ -495,12 +495,12 @@ QList<QVariant> DocumentAPI::masterPages()
 void DocumentAPI::createMasterPage(QString name)
 {
 	if (!check()) return;
-	if (ScCore->primaryMainWindow()->m_Doc->MasterNames.contains(name))
+	if (ScCore->primaryMainWindow()->doc->MasterNames.contains(name))
 	{
 		RAISE("Master page already exists");
 		return;
 	}
-	ScCore->primaryMainWindow()->m_Doc->addMasterPage(ScCore->primaryMainWindow()->m_Doc->MasterPages.count(), name);
+	ScCore->primaryMainWindow()->doc->addMasterPage(ScCore->primaryMainWindow()->doc->MasterPages.count(), name);
 }
 
 /**
@@ -510,7 +510,7 @@ void DocumentAPI::deleteMasterPage(QString name)
 {
 	if (!check()) return;
 
-	if (!ScCore->primaryMainWindow()->m_Doc->MasterNames.contains(name))
+	if (!ScCore->primaryMainWindow()->doc->MasterNames.contains(name))
 	{
 		RAISE("Master page does not exist");
 		return;
@@ -520,10 +520,10 @@ void DocumentAPI::deleteMasterPage(QString name)
 		RAISE("Can not delete the Normal master page");
 		return;
 	}
-	bool oldMode = ScCore->primaryMainWindow()->m_Doc->masterPageMode();
-	ScCore->primaryMainWindow()->m_Doc->setMasterPageMode(true);
-	ScCore->primaryMainWindow()->deletePage2(ScCore->primaryMainWindow()->m_Doc->MasterNames[name]);
-	ScCore->primaryMainWindow()->m_Doc->setMasterPageMode(oldMode);
+	bool oldMode = ScCore->primaryMainWindow()->doc->masterPageMode();
+	ScCore->primaryMainWindow()->doc->setMasterPageMode(true);
+	ScCore->primaryMainWindow()->deletePage2(ScCore->primaryMainWindow()->doc->MasterNames[name]);
+	ScCore->primaryMainWindow()->doc->setMasterPageMode(oldMode);
 }
 
 void DocumentAPI::closeMasterPage(QString name)
@@ -537,7 +537,7 @@ void DocumentAPI::editMasterPage(QString name)
 {
 	if (!check())
 		return;
-	const QMap<QString,int>& masterNames(ScCore->primaryMainWindow()->m_Doc->MasterNames);
+	const QMap<QString,int>& masterNames(ScCore->primaryMainWindow()->doc->MasterNames);
 	const QMap<QString,int>::const_iterator it(masterNames.find(name));
 	if (it == masterNames.constEnd())
 	{
@@ -552,7 +552,7 @@ QList< QVariant > DocumentAPI::pages()
 	QList<QVariant> pages;
 	if (!check())
 		return pages;
-	QList<ScPage*> *allPages = ScCore->primaryMainWindow()->m_Doc->Pages;
+	QList<ScPage*> *allPages = ScCore->primaryMainWindow()->doc->Pages;
 	for(int i=0; i< allPages->count(); i++) {
 	  pages.append(qVariantFromValue((QObject *)(new PageAPI(allPages->at(i)))));
 	}
@@ -565,7 +565,7 @@ void DocumentAPI::setActivePage(int pageNumber)
 	if(!check())
 	    return;
 	pageNumber--;
-	if ((pageNumber < 0) || (pageNumber > static_cast<int>(ScCore->primaryMainWindow()->m_Doc->Pages->count())-1))
+	if ((pageNumber < 0) || (pageNumber > static_cast<int>(ScCore->primaryMainWindow()->doc->Pages->count())-1))
 	{
 		RAISE("Page number out of range.");
 		return;
@@ -578,7 +578,7 @@ void DocumentAPI::loadStylesFromFile(QString name)
 {
 	if (!check())
 		return;
-	ScCore->primaryMainWindow()->m_Doc->loadStylesFromFile(name);
+	ScCore->primaryMainWindow()->doc->loadStylesFromFile(name);
 }
 
 QObject* DocumentAPI::selectItem(QString name)
@@ -609,9 +609,9 @@ void DocumentAPI::deleteItem(QString name)
 		RAISE("Unable to find the item.");
 		return;
 	}
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->clear();
-	ScCore->primaryMainWindow()->m_Doc->m_Selection->addItem(i);
-	ScCore->primaryMainWindow()->m_Doc->itemSelection_DeleteItem();
+	ScCore->primaryMainWindow()->doc->m_Selection->clear();
+	ScCore->primaryMainWindow()->doc->m_Selection->addItem(i);
+	ScCore->primaryMainWindow()->doc->itemSelection_DeleteItem();
 }
 
 bool DocumentAPI::itemExists(QString name)
@@ -635,9 +635,9 @@ QList< QVariant > DocumentAPI::styles()
 	QList<QVariant> styleList;
 	if (!check())
 		RAISE("No active document.");
-	for (int i=0; i < ScCore->primaryMainWindow()->m_Doc->paragraphStyles().count(); ++i)
+	for (int i=0; i < ScCore->primaryMainWindow()->doc->paragraphStyles().count(); ++i)
 	{
-		styleList.append(ScCore->primaryMainWindow()->m_Doc->paragraphStyles()[i].name());
+		styleList.append(ScCore->primaryMainWindow()->doc->paragraphStyles()[i].name());
 	}
 	return styleList;
 }
@@ -654,7 +654,7 @@ QString DocumentAPI::groupItems(QList< QVariant > list)
 	QString name;
 	if (!check())
 		RAISE("No document open");
-	if (list.isEmpty() && ScCore->primaryMainWindow()->m_Doc->m_Selection->count() < 2)
+	if (list.isEmpty() && ScCore->primaryMainWindow()->doc->m_Selection->count() < 2)
 	{
 		RAISE("Need selection or argument list of items to group");
 	}
@@ -683,7 +683,7 @@ QString DocumentAPI::groupItems(QList< QVariant > list)
 		finalSelection=tempSelection;
 	}
 	else
-		finalSelection=ScCore->primaryMainWindow()->m_Doc->m_Selection;
+		finalSelection=ScCore->primaryMainWindow()->doc->m_Selection;
 	if (finalSelection->count() < 2)
 	{
 		// We can't very well group only one item
@@ -693,7 +693,7 @@ QString DocumentAPI::groupItems(QList< QVariant > list)
 		return NULL;
 	}
 
-	const PageItem* group = ScCore->primaryMainWindow()->m_Doc->itemSelection_GroupObjects(false, false, finalSelection);
+	const PageItem* group = ScCore->primaryMainWindow()->doc->itemSelection_GroupObjects(false, false, finalSelection);
 	finalSelection=0;
 	delete tempSelection;
 
@@ -729,7 +729,7 @@ void DocumentAPI::scaleGroup(double factor, QString name)
 //	int h = ScCore->primaryMainWindow()->view->frameResizeHandle;
 //	ScCore->primaryMainWindow()->view->frameResizeHandle = 1;
 	ScCore->primaryMainWindow()->view->startGroupTransaction(Um::Resize, "", Um::IResize);
-	ScCore->primaryMainWindow()->m_Doc->scaleGroup(factor, factor);
+	ScCore->primaryMainWindow()->doc->scaleGroup(factor, factor);
 	ScCore->primaryMainWindow()->view->endGroupTransaction();
 }
 
@@ -745,7 +745,7 @@ Dimensions::Dimensions(QObject *parent) : QObject(COLLECTOR)
  */
 double Dimensions::width()
 {
-	return ScCore->primaryMainWindow()->m_Doc->pageWidth();
+	return ScCore->primaryMainWindow()->doc->pageWidth();
 }
 
 /**
@@ -755,7 +755,7 @@ double Dimensions::width()
  */
 double Dimensions::height()
 {
-	return ScCore->primaryMainWindow()->m_Doc->pageHeight();
+	return ScCore->primaryMainWindow()->doc->pageHeight();
 }
 
 /**
@@ -780,7 +780,7 @@ Margins::Margins(QObject *parent) : QObject(COLLECTOR)
  */
 double Margins::top()
 {
-	return ScCore->primaryMainWindow()->m_Doc->margins()->Top;
+	return ScCore->primaryMainWindow()->doc->margins()->Top;
 }
 
 
@@ -792,7 +792,7 @@ double Margins::top()
  */
 double Margins::left()
 {
-	return ScCore->primaryMainWindow()->m_Doc->margins()->Left;
+	return ScCore->primaryMainWindow()->doc->margins()->Left;
 }
 
 
@@ -804,7 +804,7 @@ double Margins::left()
  */
 double Margins::right()
 {
-	return ScCore->primaryMainWindow()->m_Doc->margins()->Right;
+	return ScCore->primaryMainWindow()->doc->margins()->Right;
 }
 
 
@@ -816,7 +816,7 @@ double Margins::right()
  */
 double Margins::bottom()
 {
-	return ScCore->primaryMainWindow()->m_Doc->margins()->Bottom;
+	return ScCore->primaryMainWindow()->doc->margins()->Bottom;
 }
 
 
@@ -831,10 +831,10 @@ double Margins::bottom()
 void Margins::set(double lr, double tpr, double btr, double rr)
 {
 	MarginStruct margins(tpr, lr, btr, rr);
-	ScCore->primaryMainWindow()->m_Doc->resetPage(ScCore->primaryMainWindow()->m_Doc->pagePositioning(), &margins);
+	ScCore->primaryMainWindow()->doc->resetPage(ScCore->primaryMainWindow()->doc->pagePositioning(), &margins);
 	ScCore->primaryMainWindow()->view->reformPages();
-	ScCore->primaryMainWindow()->m_Doc->setModified(true);
-	ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->m_Doc->currentPageNumber());
+	ScCore->primaryMainWindow()->doc->setModified(true);
+	ScCore->primaryMainWindow()->view->GotoPage(ScCore->primaryMainWindow()->doc->currentPageNumber());
 	ScCore->primaryMainWindow()->view->DrawNew();
 }
 
