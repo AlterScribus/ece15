@@ -4683,6 +4683,11 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		m_Doc->scMW()->setTBvals(this);
 		break;
 	case Qt::Key_Delete:
+		if (itemText.length() == 0)
+		{
+			keyRepeat = false;
+			return;
+		}
 		if (itemText.cursorPosition() == itemText.length())
 		{
 			if (itemText.lengthOfSelection() > 0)
@@ -4701,11 +4706,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					update();
 //				view->RefreshItem(this);
 			}
-			keyRepeat = false;
-			return;
-		}
-		if (itemText.length() == 0)
-		{
 			keyRepeat = false;
 			return;
 		}
@@ -4967,6 +4967,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	}
 	int start = itemText.startOfSelection();
 	int stop = itemText.endOfSelection();
+	//if whole paragraph is selected then delete PARSEP too
+	if ((stop < itemText.length()) && (itemText.text(stop) == SpecialChars::PARSEP) && (start == 0 || itemText.text(start-1)==SpecialChars::PARSEP))
+		++stop;
 	int marksNum = 0;
 	if(UndoManager::undoEnabled()) {
 		int lastPos = start;

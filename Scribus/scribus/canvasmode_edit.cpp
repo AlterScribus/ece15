@@ -307,8 +307,6 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 					start = currItem->itemText.findParagraphStart(oldCp);
 					stop = currItem->itemText.findParagraphEnd(oldCp);
 				}
-				if (stop < currItem->itemText.length() -1)
-					++stop;
 				currItem->itemText.deselectAll();
 				currItem->itemText.extendSelection(start, stop);
 				currItem->itemText.setCursorPosition(stop);
