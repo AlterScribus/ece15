@@ -519,7 +519,7 @@ void ScribusDoc::init()
 	} //else hyphenationMode is NoHyphenation
 	pstyle.setMaxHyphens(hyphConsecutiveLines());
 	pstyle.setMaxTracking(0);
-	pstyle.setMaxWordTracking(200);
+	pstyle.setMaxWordTracking(120);
 	
 	CharStyle cstyle;
 	cstyle.setDefaultStyle(true);

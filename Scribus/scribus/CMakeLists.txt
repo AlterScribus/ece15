@@ -625,6 +625,7 @@ SET(SCRIBUS_SOURCES
   pdflib.cpp
   pdflib_core.cpp
   pdfoptions.cpp
+  pdfoptionsio.cpp
   pluginmanager.cpp
   prefscontext.cpp
   prefsfile.cpp
