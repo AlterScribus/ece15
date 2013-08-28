@@ -1,22 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-<<<<<<< HEAD
-    <ProjectConfiguration Include="Debug-cairo|Win32">
-      <Configuration>Debug-cairo</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug-cairo|x64">
-      <Configuration>Debug-cairo</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release-cairo|Win32">
-      <Configuration>Release-cairo</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release-cairo|x64">
-      <Configuration>Release-cairo</Configuration>
-=======
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -31,7 +15,6 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -42,40 +25,24 @@
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'" Label="Configuration">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'" Label="Configuration">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'" Label="Configuration">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'" Label="Configuration">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -84,21 +51,6 @@
   <ImportGroup Label="ExtensionSettings">
     <Import Project="..\Scribus-build-rules.props" />
   </ImportGroup>
-<<<<<<< HEAD
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Scribus-build-props.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Scribus-build-props.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Scribus-build-props.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'" Label="PropertySheets">
-=======
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Scribus-build-props.props" />
@@ -112,7 +64,6 @@
     <Import Project="..\Scribus-build-props.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Scribus-build-props.props" />
   </ImportGroup>
@@ -120,62 +71,38 @@
   <PropertyGroup>
     <_ProjectFileVersion>11.0.60610.1</_ProjectFileVersion>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <OutDir>..\..\..\..\Scribus-builds\Scribus-$(Configuration)-$(Platform)-$(PlatformToolset)\scribus\</OutDir>
     <IntDir>..\..\..\..\Scribus-builds\Build-objs\$(Configuration)-$(Platform)-$(PlatformToolset)\$(TargetName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Scribus</TargetName>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <OutDir>..\..\..\..\Scribus-builds\Scribus-$(Configuration)-$(Platform)-$(PlatformToolset)\scribus\</OutDir>
     <IntDir>..\..\..\..\Scribus-builds\Build-objs\$(Configuration)-$(Platform)-$(PlatformToolset)\$(TargetName)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Scribus</TargetName>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <OutDir>..\..\..\..\Scribus-builds\Scribus-$(Configuration)-$(Platform)-$(PlatformToolset)\scribus\</OutDir>
     <IntDir>..\..\..\..\Scribus-builds\Build-objs\$(Configuration)-$(Platform)-$(PlatformToolset)\$(TargetName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Scribus</TargetName>
   </PropertyGroup>
-<<<<<<< HEAD
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <OutDir>..\..\..\..\Scribus-builds\Scribus-$(Configuration)-$(Platform)-$(PlatformToolset)\scribus\</OutDir>
     <IntDir>..\..\..\..\Scribus-builds\Build-objs\$(Configuration)-$(Platform)-$(PlatformToolset)\$(TargetName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Scribus</TargetName>
   </PropertyGroup>
-<<<<<<< HEAD
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-=======
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ClCompile>
       <AdditionalOptions>/MP2 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\..\vc11;..\..\..\scribus;..\..\..\scribus\colormgmt;..\..\..\scribus\fonts;..\..\..\scribus\text;..\..\..\scribus\styles;..\..\..\scribus\simpletreemodel;..\..\..\scribus\ui;$(QT5_DIR)\include\QtCore;$(QT5_DIR)\include\QtGui;$(QT5_DIR)\include\QtNetwork;$(QT5_DIR)\include\QtPrintSupport;$(QT5_DIR)\include\QtWebKit;$(QT5_DIR)\include\QtWebKitWidgets;$(QT5_DIR)\include\QtWidgets;$(QT5_DIR)\include\QtXml;$(QT5_DIR)\include;$(CAIRO_DIR)\include;$(LCMS_DIR)\include;$(FREETYPE_DIR)\include;$(LIBJPEG_DIR)\include;$(LIBTIFF_DIR)\include;$(PODOFO_DIR)\include;$(ZLIB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-<<<<<<< HEAD
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_USE_MATH_DEFINES;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-=======
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_USE_MATH_DEFINES;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -203,22 +130,14 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-<<<<<<< HEAD
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-=======
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ClCompile>
       <AdditionalOptions>/MP2 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\..\vc11;..\..\..\scribus;..\..\..\scribus\colormgmt;..\..\..\scribus\fonts;..\..\..\scribus\text;..\..\..\scribus\styles;..\..\..\scribus\simpletreemodel;..\..\..\scribus\ui;$(QT5_DIR)\include\QtCore;$(QT5_DIR)\include\QtGui;$(QT5_DIR)\include\QtNetwork;$(QT5_DIR)\include\QtPrintSupport;$(QT5_DIR)\include\QtWebKit;$(QT5_DIR)\include\QtWebKitWidgets;$(QT5_DIR)\include\QtWidgets;$(QT5_DIR)\include\QtXml;$(QT5_DIR)\include;$(CAIRO_DIR)\include;$(LCMS_DIR)\include;$(FREETYPE_DIR)\include;$(LIBJPEG_DIR)\include;$(LIBTIFF_DIR)\include;$(PODOFO_DIR)\include;$(ZLIB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-<<<<<<< HEAD
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_USE_MATH_DEFINES;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-=======
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_USE_MATH_DEFINES;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -247,22 +166,14 @@
       <ImportLibrary>$(OutDir)scribus-api.lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
-<<<<<<< HEAD
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-=======
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ClCompile>
       <AdditionalOptions>/MP2 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>..\..\vc11;..\..\..\scribus;..\..\..\scribus\colormgmt;..\..\..\scribus\fonts;..\..\..\scribus\text;..\..\..\scribus\styles;..\..\..\scribus\simpletreemodel;..\..\..\scribus\ui;$(QT5_DIR)\include\QtCore;$(QT5_DIR)\include\QtGui;$(QT5_DIR)\include\QtNetwork;$(QT5_DIR)\include\QtPrintSupport;$(QT5_DIR)\include\QtWebKit;$(QT5_DIR)\include\QtWebKitWidgets;$(QT5_DIR)\include\QtWidgets;$(QT5_DIR)\include\QtXml;$(QT5_DIR)\include;$(CAIRO_DIR)\include;$(LCMS_DIR)\include;$(FREETYPE_DIR)\include;$(LIBJPEG_DIR)\include;$(LIBTIFF_DIR)\include;$(PODOFO_DIR)\include;$(ZLIB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-<<<<<<< HEAD
-      <PreprocessorDefinitions>WIN32;NDEBUG;_USE_MATH_DEFINES;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-=======
       <PreprocessorDefinitions>WIN32;NDEBUG;_USE_MATH_DEFINES;_WINDOWS;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -291,22 +202,14 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-<<<<<<< HEAD
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     <ClCompile>
       <AdditionalOptions>/MP2 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>..\..\vc11;..\..\..\scribus;..\..\..\scribus\colormgmt;..\..\..\scribus\fonts;..\..\..\scribus\text;..\..\..\scribus\styles;..\..\..\scribus\simpletreemodel;..\..\..\scribus\ui;$(QT5_DIR)\include\QtCore;$(QT5_DIR)\include\QtGui;$(QT5_DIR)\include\QtNetwork;$(QT5_DIR)\include\QtPrintSupport;$(QT5_DIR)\include\QtWebKit;$(QT5_DIR)\include\QtWebKitWidgets;$(QT5_DIR)\include\QtWidgets;$(QT5_DIR)\include\QtXml;$(QT5_DIR)\include;$(CAIRO_DIR)\include;$(LCMS_DIR)\include;$(FREETYPE_DIR)\include;$(LIBJPEG_DIR)\include;$(LIBTIFF_DIR)\include;$(PODOFO_DIR)\include;$(ZLIB_DIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-<<<<<<< HEAD
-      <PreprocessorDefinitions>WIN32;NDEBUG;_USE_MATH_DEFINES;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CAIRO;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-=======
       <PreprocessorDefinitions>WIN32;NDEBUG;_USE_MATH_DEFINES;_WINDOWS;QT_EDITION=QT_EDITION_DESKTOP;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;USE_QT5;HAVE_CONFIG_H;AVOID_WIN32_FILEIO;COMPILE_SCRIBUS_MAIN_APP;DOCDIR="doc/";ICONDIR="icons/";SAMPLESDIR="samples/";SCRIPTSDIR="scripts/";SHAREDIR="share/";TEMPLATEDIR="templates/";LIBDIR="libs/";PLUGINDIR="plugins";%(PreprocessorDefinitions)</PreprocessorDefinitions>
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -1119,31 +1022,6 @@
     <ClCompile Include="..\..\..\scribus\ui\helpbrowser.cpp" />
     <ClCompile Include="..\..\..\scribus\ui\helpnavigation.cpp" />
     <ClCompile Include="..\..\..\scribus\hnjalloc.c">
-<<<<<<< HEAD
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1167,37 +1045,11 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\ui\hruler.cpp" />
     <ClCompile Include="..\..\..\scribus\ui\hyask.cpp" />
     <ClCompile Include="..\..\..\scribus\hyphen.c">
-<<<<<<< HEAD
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1221,7 +1073,6 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\hyphenator.cpp" />
@@ -1233,31 +1084,6 @@
     <ClCompile Include="..\..\..\scribus\ui\inserttablerowsdialog.cpp" />
     <ClCompile Include="..\..\..\scribus\ui\inspage.cpp" />
     <ClCompile Include="..\..\..\scribus\ioapi.c">
-<<<<<<< HEAD
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1281,7 +1107,6 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\ui\javadocs.cpp" />
@@ -1431,31 +1256,6 @@
     <ClCompile Include="..\..\..\scribus\ui\query.cpp" />
     <ClCompile Include="..\..\..\scribus\rawimage.cpp" />
     <ClCompile Include="..\..\..\scribus\rc4.c">
-<<<<<<< HEAD
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1479,7 +1279,6 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\ui\replacecolors.cpp" />
@@ -1554,17 +1353,10 @@
     <ClCompile Include="..\..\..\scribus\scribuscore.cpp" />
     <ClCompile Include="..\..\..\scribus\scribusdoc.cpp" />
     <ClCompile Include="scribuspch.cpp">
-<<<<<<< HEAD
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">Create</PrecompiledHeader>
-=======
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\scribusview.cpp" />
     <ClCompile Include="..\..\..\scribus\scribuswin.cpp" />
@@ -1655,31 +1447,6 @@
     <ClCompile Include="..\..\..\scribus\ui\unicodesearch.cpp" />
     <ClCompile Include="..\..\..\scribus\units.cpp" />
     <ClCompile Include="..\..\..\scribus\unzip.c">
-<<<<<<< HEAD
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug-cairo|x64'">
-      </ForcedIncludeFiles>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-      </PrecompiledHeaderFile>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|Win32'">
-      </ForcedIncludeFiles>
-      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release-cairo|x64'">
-=======
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1703,7 +1470,6 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </ForcedIncludeFiles>
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
->>>>>>> 339ba14fa96c8b78669ac9f29a161bff34f64876
       </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\updatemanager.cpp" />

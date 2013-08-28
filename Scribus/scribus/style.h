@@ -45,9 +45,9 @@ protected:
 public:
 //	static const short NOVALUE = -16000;
 
-    Style(): m_isDefaultStyle(false), m_name(""), m_context(NULL), m_contextversion(-1), m_parent(""), m_shortcut("") {}
+	Style(): m_isDefaultStyle(false), m_name(""), m_context(NULL), m_contextversion(-1), m_parent(""), m_shortcut("") {}
 
-    Style(StyleContext* b, QString n): m_isDefaultStyle(false), m_name(n), m_context(b), m_contextversion(-1), m_parent(""), m_shortcut("") {}
+	Style(StyleContext* b, QString n): m_isDefaultStyle(false), m_name(n), m_context(b), m_contextversion(-1), m_parent(""), m_shortcut("") {}
 	
 	Style& operator=(const Style& o) 
 	{ //assert(typeinfo() == o.typeinfo()); 
@@ -61,7 +61,7 @@ public:
 	}
 	
 	Style(const Style& o) : SaxIO(), m_isDefaultStyle(o.m_isDefaultStyle),m_name(o.m_name), 
-        m_context(o.m_context), m_contextversion(o.m_contextversion), m_parent(o.m_parent), m_shortcut(o.m_shortcut) {}
+		m_context(o.m_context), m_contextversion(o.m_contextversion), m_parent(o.m_parent), m_shortcut(o.m_shortcut) {}
 	
 	virtual ~Style()                 {}
 
