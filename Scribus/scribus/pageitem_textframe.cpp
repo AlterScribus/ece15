@@ -6263,8 +6263,8 @@ void PageItem_TextFrame::setTextFrameHeight()
 		if (nextInChain() == NULL)
 		{
 			//expand frame to page bottom
-			double maxHeiht = m_Doc->currentPage()->height() + m_Doc->currentPage()->yOffset();
-			while (frameOverflows() && m_height < maxHeiht)
+			double maxHeight = m_Doc->currentPage()->height() + m_Doc->currentPage()->yOffset();
+			while (frameOverflows() && m_height < maxHeight)
 				increaseHeightAndUpdate(stepValue);
 		}
 		else
