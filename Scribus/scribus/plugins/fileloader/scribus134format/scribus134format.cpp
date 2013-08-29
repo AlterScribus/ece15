@@ -2708,7 +2708,10 @@ PageItem* Scribus134Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 	if (attrs.hasAttribute("TXTSTYLE"))
 		pstyle.charStyle().setFeatures(static_cast<StyleFlag>(attrs.valueAsInt("TXTSTYLE")).featureList());
 	if (attrs.hasAttribute("TXTKERN"))
+	{
 		pstyle.charStyle().setTracking(qRound(attrs.valueAsDouble("TXTKERN", 0.0) * 10));
+		pstyle.setMaxTracking(pstyle.charStyle().tracking());
+	}
 	if (attrs.hasAttribute("wordTrack"))
 		pstyle.charStyle().setWordTracking(attrs.valueAsDouble("wordTrack"));
 	if (attrs.hasAttribute("MinWordTrack"))

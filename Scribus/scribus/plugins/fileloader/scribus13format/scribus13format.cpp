@@ -1699,7 +1699,10 @@ PageItem* Scribus13Format::PasteItem(QDomElement *obj, ScribusDoc *doc, const QS
 		pstyle.charStyle().setTracking(qRound(ev / iv * 10000.0));
 	}
 	else 
+	{
 		pstyle.charStyle().setTracking(qRound(ScCLocale::toDoubleC(obj->attribute("TXTKERN"), 0.0) * 10));
+		pstyle.setMaxTracking(pstyle.charStyle().tracking());
+	}
 	pstyle.charStyle().setFeatures(static_cast<StyleFlag>(obj->attribute("TXTSTYLE", "0").toInt()).featureList());
 	tmp = "";
 	QList<ParagraphStyle::TabRecord> tbValues;

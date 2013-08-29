@@ -2684,19 +2684,31 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	else
 		newStyle.setMaxHyphens(m_Doc->hyphConsecutiveLines());
 	
+	static const QString MaxTracking("maxTracking");
+	if (attrs.hasAttribute(MaxTracking))
+		newStyle.setMaxTracking(qRound(attrs.valueAsDouble(MaxTracking)) * 10.0);
+	else
+	{
+		if (lastStyle)
+			newStyle.setMaxTracking(lastStyle->tracking());
+		else
+			newStyle.setMaxTracking(newStyle.charStyle().tracking());
+	}
+	
 	static const QString MinWordTrack("MinWordTrack");
 	if (attrs.hasAttribute(MinWordTrack))
 		newStyle.setMinWordTracking(attrs.valueAsDouble(MinWordTrack));
 	
+	static const QString NormWordTrack("NormWordTrack");
+	if (attrs.hasAttribute(NormWordTrack))
+	{
+		newStyle.charStyle().setWordTracking(attrs.valueAsDouble(NormWordTrack));
+		newStyle.setMaxWordTracking(newStyle.charStyle().wordTracking());
+	}
+	
 	static const QString MaxWordTrack("MaxWordTrack");
 	if (attrs.hasAttribute(MaxWordTrack))
 		newStyle.setMaxWordTracking(attrs.valueAsDouble(MaxWordTrack));
-	else
-		newStyle.setMaxWordTracking(qRound(2 * newStyle.charStyle().wordTracking()));
-	
-	static const QString NormWordTrack("NormWordTrack");
-	if (attrs.hasAttribute(NormWordTrack))
-		newStyle.charStyle().setWordTracking(attrs.valueAsDouble(NormWordTrack));
 	
 	static const QString MinGlyphShrink("MinGlyphShrink");
 	if (attrs.hasAttribute(MinGlyphShrink))
@@ -2727,17 +2739,6 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 		newStyle.setKeepTogether(attrs.valueAsInt(KeepTogether));
 	
 	readCharacterStyleAttrs( doc, attrs, newStyle.charStyle());
-	
-	static const QString MaxTracking("maxTracking");
-	if (attrs.hasAttribute(MaxTracking))
-		newStyle.setMaxTracking(qRound(attrs.valueAsDouble(MaxTracking)) * 10.0);
-	else
-	{
-		if (lastStyle)
-			newStyle.setMaxTracking(lastStyle->tracking());
-		else
-			newStyle.setMaxTracking(newStyle.charStyle().tracking());
-	}
 	
 	//	newStyle.tabValues().clear();
 	QList<ParagraphStyle::TabRecord> tbs;
@@ -4772,13 +4773,14 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 	if (attrs.hasAttribute("maxTracking"))
 		pstyle.setMaxTracking(qRound(attrs.valueAsDouble("maxTracking", 0.0) * 10));
 	if (attrs.hasAttribute("wordTrack"))
+	{
 		pstyle.charStyle().setWordTracking(attrs.valueAsDouble("wordTrack"));
-	if (attrs.hasAttribute("MinWordTrack"))
-		pstyle.setMinWordTracking(attrs.valueAsDouble("MinWordTrack"));
+		pstyle.setMaxWordTracking(pstyle.charStyle().wordTracking());
+	}
 	if (attrs.hasAttribute("MaxWordTrack"))
 		pstyle.setMaxWordTracking(attrs.valueAsDouble("MaxWordTrack"));
-	else
-		pstyle.setMaxWordTracking(qRound(2 * pstyle.charStyle().wordTracking()));
+	if (attrs.hasAttribute("MinWordTrack"))
+		pstyle.setMinWordTracking(attrs.valueAsDouble("MinWordTrack"));
 	if (attrs.hasAttribute("MinGlyphShrink"))
 		pstyle.setMinGlyphExtension(attrs.valueAsDouble("MinGlyphShrink"));
 	if (attrs.hasAttribute("MaxGlyphExtend"))
