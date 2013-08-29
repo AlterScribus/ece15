@@ -28,7 +28,7 @@ class QRegion;
 /*! \brief Compare double values by pre-multiplying by 10000 and converting to long if possible.
 If premultiplication does not allow to store result in a long value, perform a standard comparison.
 */
-bool SCRIBUS_API isEqual(double a, double b);
+bool SCRIBUS_API compareDouble(double a, double b);
 uint SCRIBUS_API getDouble(const QByteArray in, bool raw);
 FPoint   SCRIBUS_API getMaxClipF(FPointArray* Clip);
 FPoint   SCRIBUS_API getMinClipF(FPointArray* Clip);
@@ -97,6 +97,6 @@ template <typename T>
 inline bool isequiv(const T& v1, const T& v2) { return v1 == v2; }
 
 template <> 
-inline bool isequiv<double>(const double& v1, const double& v2) { return isEqual(v1, v2); }
+inline bool isequiv<double>(const double& v1, const double& v2) { return compareDouble(v1, v2); }
 
 #endif

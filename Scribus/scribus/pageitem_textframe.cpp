@@ -1664,7 +1664,7 @@ void PageItem_TextFrame::layout()
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
 			CharStyle charStyle = ((hl->ch != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
-			growKerning = !isEqual(style.maxTracking(), charStyle.tracking());
+			growKerning = !compareDouble(style.maxTracking(), charStyle.tracking());
 			chstr = ExpandToken(a);
 			int chstrLen = chstr.length();
 			if (chstr.isEmpty())
@@ -9182,7 +9182,7 @@ void PageItem_TextFrame::layout3()
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
 			CharStyle charStyle = ((hl->ch != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
-			growKerning = !isEqual(style.maxTracking(), charStyle.tracking());
+			growKerning = !compareDouble(style.maxTracking(), charStyle.tracking());
 			chstr = ExpandToken(a);
 			int chstrLen = chstr.length();
 			if (chstr.isEmpty())

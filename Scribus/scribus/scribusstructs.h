@@ -36,7 +36,7 @@ for which a new license (GPL+exception) is in place.
 #include "vgradient.h"
 #include "colormgmt/sccolormgmtstructs.h"
 
-extern bool SCRIBUS_API isEqual(double, double);
+extern bool SCRIBUS_API compareDouble(double, double);
 
 typedef struct
 {
@@ -136,7 +136,7 @@ struct SingleLine
 	void setShade(int value)        { Shade = value; }
 	bool operator==(const SingleLine& other) const
 	{
-		if (!isEqual(Width, other.Width) )
+		if (!compareDouble(Width, other.Width) )
 			return false;
 		if ((Dash != other.Dash)  || (LineEnd != other.LineEnd) || (LineJoin != other.LineJoin) ||
 			(Color != other.Color)|| (Shade != other.Shade))

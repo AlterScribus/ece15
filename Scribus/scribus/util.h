@@ -51,7 +51,7 @@ const int LAST_SPACE = 4;
 /*! \brief Compare double values by pre-multiplying by 10000 and converting to long if possible.
 If premultiplication does not allow to store result in a long value, perform a standard comparison.
 */
-bool SCRIBUS_API isEqual(double a, double b);
+bool SCRIBUS_API compareDouble(double a, double b);
 
 /*! \brief Returns a sorted list of QStrings - sorted by locale specific rules!
 Uses compareQStrings() as rule. There is STL used!

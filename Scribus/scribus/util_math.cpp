@@ -466,7 +466,7 @@ FPoint getMinClipF(FPointArray* Clip)
 }
 
 
-bool isEqual(double a, double b)
+bool compareDouble(double a, double b)
 {
 	if(a > -21473 && b > -21473 && a < 21474 && b < 21474)
 	{

@@ -729,7 +729,7 @@ void SMPStyleWidget::showLineSpacing(QList<ParagraphStyle*> &pstyles)
 	double tmpLS = -1.0;
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (tmpLS > 0 && !isEqual(pstyles[i]->lineSpacing(), tmpLS))
+		if (tmpLS > 0 && !compareDouble(pstyles[i]->lineSpacing(), tmpLS))
 		{
 			tmpLS = -1.0;
 			break;
@@ -752,7 +752,7 @@ void SMPStyleWidget::showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	double tmpA = -1.2;
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (tmpA > -1.0 && !isEqual(pstyles[i]->gapBefore(), tmpA))
+		if (tmpA > -1.0 && !compareDouble(pstyles[i]->gapBefore(), tmpA))
 		{
 			tmpA = -1.2;
 			break;
@@ -768,7 +768,7 @@ void SMPStyleWidget::showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	tmpA = -1.2;
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (tmpA > -1.0 && !isEqual(pstyles[i]->gapAfter(), tmpA))
+		if (tmpA > -1.0 && !compareDouble(pstyles[i]->gapAfter(), tmpA))
 		{
 			tmpA = -1.2;
 			break;
@@ -1024,7 +1024,7 @@ void SMPStyleWidget::showMinSpace(QList< ParagraphStyle * > & pstyles)
 	double ms(pstyles[0]->minWordTracking());
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (!isEqual(ms, pstyles[i]->minWordTracking()))
+		if (!compareDouble(ms, pstyles[i]->minWordTracking()))
 		{
 			ms = 100.0;
 			break;
@@ -1044,7 +1044,7 @@ void SMPStyleWidget::showMinGlyphExt(QList< ParagraphStyle * > & pstyles)
 	double mge(pstyles[0]->minGlyphExtension());
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (!isEqual(mge, pstyles[i]->minGlyphExtension()))
+		if (!compareDouble(mge, pstyles[i]->minGlyphExtension()))
 		{
 			mge = 100.0;
 			break;
@@ -1064,7 +1064,7 @@ void SMPStyleWidget::showMaxGlyphExt(QList< ParagraphStyle * > & pstyles)
 	double mge(pstyles[0]->maxGlyphExtension());
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (!isEqual(mge, pstyles[i]->maxGlyphExtension()))
+		if (!compareDouble(mge, pstyles[i]->maxGlyphExtension()))
 		{
 			mge = 100.0;
 			break;
@@ -1091,7 +1091,7 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	double l = -4000.0;
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (l > -3800.0 && !isEqual(pstyles[i]->leftMargin(), l))
+		if (l > -3800.0 && !compareDouble(pstyles[i]->leftMargin(), l))
 		{
 			l = -4000.0;
 			break;
@@ -1109,7 +1109,7 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	l = -4000.0;
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (l > -3800.0 && !isEqual(pstyles[i]->firstIndent(), l))
+		if (l > -3800.0 && !compareDouble(pstyles[i]->firstIndent(), l))
 		{
 			l = -4000.0;
 			break;
@@ -1127,7 +1127,7 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	l = -4000.0;
 	for (int i = 0; i < pstyles.count(); ++i)
 	{
-		if (l > -3800.0 && !isEqual(pstyles[i]->rightMargin(), l))
+		if (l > -3800.0 && !compareDouble(pstyles[i]->rightMargin(), l))
 		{
 			l = -4000.0;
 			break;
