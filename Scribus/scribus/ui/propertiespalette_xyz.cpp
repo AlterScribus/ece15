@@ -156,11 +156,11 @@ void PropertiesPalette_XYZ::setDoc(ScribusDoc *d)
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_doc  = d;
 	m_item = NULL;
@@ -188,17 +188,17 @@ void PropertiesPalette_XYZ::setDoc(ScribusDoc *d)
 
 	updateSpinBoxConstants();
 
-	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertiesPalette_XYZ::unsetDoc()
 {
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_haveDoc  = false;
 	m_haveItem = false;
@@ -298,17 +298,7 @@ void PropertiesPalette_XYZ::setCurrentItem(PageItem *i)
 
 	connect(nameEdit, SIGNAL(Leaved()), this, SLOT(handleNewName()));
 
-//CB replaces old emits from PageItem::emitAllToGUI()
-	disconnect(xposSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewX()));
-	disconnect(yposSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewY()));
-	disconnect(widthSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewW()));
-	disconnect(heightSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewH()));
-	disconnect(doLock, SIGNAL(clicked()), this, SLOT(handleLock()));
-	disconnect(noPrint, SIGNAL(clicked()), this, SLOT(handlePrint()));
-	disconnect(noResize, SIGNAL(clicked()), this, SLOT(handleLockSize()));
-	disconnect(flipH, SIGNAL(clicked()), this, SLOT(handleFlipH()));
-	disconnect(flipV, SIGNAL(clicked()), this, SLOT(handleFlipV()));
-	disconnect(rotationSpin, SIGNAL(valueChanged(double)), this, SLOT(handleRotation()));
+	blockSignalsWithChildrens(this,true);
 
 	double selX = m_item->xPos();
 	double selY = m_item->yPos();
@@ -332,17 +322,7 @@ void PropertiesPalette_XYZ::setCurrentItem(PageItem *i)
 		rr = 360 - rr;
 	rotationSpin->setValue(fabs(rr));
 
-//CB TODO reconnect PP signals from here
-	connect(xposSpin    , SIGNAL(valueChanged(double)), this, SLOT(handleNewX()));
-	connect(yposSpin    , SIGNAL(valueChanged(double)), this, SLOT(handleNewY()));
-	connect(widthSpin   , SIGNAL(valueChanged(double)), this, SLOT(handleNewW()));
-	connect(heightSpin  , SIGNAL(valueChanged(double)), this, SLOT(handleNewH()));
-	connect(doLock  , SIGNAL(clicked()), this, SLOT(handleLock()));
-	connect(noPrint , SIGNAL(clicked()), this, SLOT(handlePrint()));
-	connect(noResize, SIGNAL(clicked()), this, SLOT(handleLockSize()));
-	connect(flipH   , SIGNAL(clicked()), this, SLOT(handleFlipH()));
-	connect(flipV   , SIGNAL(clicked()), this, SLOT(handleFlipV()));
-	connect(rotationSpin, SIGNAL(valueChanged(double)), this, SLOT(handleRotation()));
+	blockSignalsWithChildrens(this,false);
 
 	bool setter = false;
 	xposSpin->setEnabled(!setter);
@@ -542,7 +522,7 @@ void PropertiesPalette_XYZ::handleSelectionChanged()
 		setCurrentItem(currItem);
 	}
 	updateGeometry();
-	repaint();
+	//repaint();
 }
 
 void PropertiesPalette_XYZ::unitChange()
@@ -638,6 +618,8 @@ void PropertiesPalette_XYZ::displayWH(double x, double y)
 	m_haveItem = false;
 	QTransform ma;
 	QPoint dp;
+	disconnect(widthSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewW()));
+	disconnect(heightSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewH()));
 	if ((m_lineMode) && (m_item->asLine()))
 	{
 		ma.translate(static_cast<double>(xposSpin->value()) / m_unitRatio, static_cast<double>(yposSpin->value()) / m_unitRatio);
@@ -652,6 +634,8 @@ void PropertiesPalette_XYZ::displayWH(double x, double y)
 		widthSpin->setValue(x*m_unitRatio);
 		heightSpin->setValue(y*m_unitRatio);
 	}
+	connect(widthSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewW()));
+	connect(heightSpin, SIGNAL(valueChanged(double)), this, SLOT(handleNewH()));
 	m_haveItem = tmp;
 }
 
@@ -664,7 +648,11 @@ void PropertiesPalette_XYZ::displayRotation(double r)
 	if (r > 0)
 		rr = 360 - rr;
 	m_haveItem = false;
+
+	disconnect(rotationSpin, SIGNAL(valueChanged(double)), this, SLOT(handleRotation()));
 	rotationSpin->setValue(fabs(rr));
+	connect(rotationSpin, SIGNAL(valueChanged(double)), this, SLOT(handleRotation()));
+
 	m_haveItem = tmp;
 }
 

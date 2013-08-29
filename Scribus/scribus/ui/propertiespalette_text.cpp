@@ -179,11 +179,11 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_doc  = d;
 	m_item = NULL;
@@ -211,19 +211,19 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 	paraStyleCombo->setDoc(m_doc);
 	charStyleCombo->setDoc(m_doc);
 
-	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	connectSignals(true);
 }
 
 void PropertiesPalette_Text::unsetDoc()
 {
 	disconnectSignals(true);
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_haveDoc  = false;
 	m_haveItem = false;
@@ -317,7 +317,7 @@ void PropertiesPalette_Text::handleSelectionChanged()
 	}
 	connectSignals(true);
 	updateGeometry();
-	repaint();
+	//repaint();
 }
 
 void PropertiesPalette_Text::handleUpdateRequest(int updateFlags)

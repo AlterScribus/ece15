@@ -407,14 +407,38 @@ void PropertiesPalette::setCurrentItem(PageItem *i)
 		SelTab(TabStack->currentIndex());
 	}
 
-	xyzPal->handleSelectionChanged();
-	shapePal->handleSelectionChanged();
-	groupPal->handleSelectionChanged();
-	imagePal->handleSelectionChanged();
-	linePal->handleSelectionChanged();
-	textPal->handleSelectionChanged();
-	tablePal->handleSelectionChanged();
-
+#pragma omp parallel sections
+	{
+#pragma omp section
+		{
+			xyzPal->handleSelectionChanged();
+		}
+ #pragma omp section
+		{
+			shapePal->handleSelectionChanged();
+		}
+#pragma omp section
+		{
+			groupPal->handleSelectionChanged();
+		}
+#pragma omp section
+		{
+			imagePal->handleSelectionChanged();
+		}
+#pragma omp section
+		{
+			linePal->handleSelectionChanged();
+		}
+#pragma omp section
+		{
+			textPal->handleSelectionChanged();
+		}
+#pragma omp section
+		{
+			tablePal->handleSelectionChanged();
+		}
+	}
+	
 	if (m_item->asOSGFrame())
 	{
 		TabStack->setItemEnabled(idXYZItem, true);
@@ -594,14 +618,11 @@ void  PropertiesPalette::handleSelectionChanged()
 	int currentTab = TabStack->currentIndex();
 	if (TabStack->isItemEnabled(currentTab) && (TabStack->currentIndex() != currentTab))
 		TabStack->setCurrentIndex(currentTab);
+	if (currItem)
+		setCurrentItem(currItem);
 	updateGeometry();
 	repaint();
 	connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
-
-	if (currItem)
-	{
-		setCurrentItem(currItem);
-	}
 }
 
 void PropertiesPalette::unitChange()

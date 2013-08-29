@@ -30,6 +30,7 @@ for which a new license (GPL+exception) is in place.
 #include <QDomElement>
 #include <QMessageBox>
 #include <QProcess>
+#include <QWidget>
 
 #include "pageitem.h"
 #include "pageitem_table.h"
@@ -1191,4 +1192,9 @@ void getUniqueName(QString &name, QStringList list, QString separator, bool prep
 	} while (list.contains(newName));
 	name = newName;
 }
-
+void blockSignalsWithChildrens(QWidget * w, bool block)
+{
+	w->blockSignals(block);
+	foreach (QWidget* obj, w->findChildren<QWidget *>())
+		blockSignalsWithChildrens(obj, block);
+}

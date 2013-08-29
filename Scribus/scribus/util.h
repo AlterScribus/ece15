@@ -174,4 +174,7 @@ void SCRIBUS_API setWidgetBoldFont(QWidget* w, bool wantBold);
  * if exist then seprator and numbers are pre/append to name while it will be unique
 */
 void SCRIBUS_API getUniqueName(QString &name, QStringList list, QString separator = "", bool prepend = false);
+
+//set blockSingnals to widget and all childs
+void SCRIBUS_API blockSignalsWithChildrens(QWidget * w, bool block);
 #endif

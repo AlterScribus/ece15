@@ -93,11 +93,11 @@ void PropertiesPalette_Shape::setDoc(ScribusDoc *d)
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_doc  = d;
 	m_item = NULL;
@@ -109,17 +109,17 @@ void PropertiesPalette_Shape::setDoc(ScribusDoc *d)
 
 	roundRect->setValues( -300, 300, 2, 0);
 
-	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertiesPalette_Shape::unsetDoc()
 {
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_haveDoc  = false;
 	m_haveItem = false;
@@ -313,7 +313,7 @@ void PropertiesPalette_Shape::handleSelectionChanged()
 	}
 	setCurrentItem(currItem);
 	updateGeometry();
-	repaint();
+	//repaint();
 }
 
 void PropertiesPalette_Shape::handleUpdateRequest(int updateFlags)
@@ -337,6 +337,7 @@ void PropertiesPalette_Shape::setCurrentItem(PageItem *item)
 
 	if (item && !m_doc)
 		setDoc(item->doc());
+	blockSignalsWithChildrens(this,true);
 
 	m_haveItem = false;
 	m_item = item;
@@ -370,6 +371,8 @@ void PropertiesPalette_Shape::setCurrentItem(PageItem *item)
 	setSizeLocked(m_item->sizeLocked());
 //	nonZero->setChecked(!m_item->fillRule);
 //	evenOdd->setChecked(m_item->fillRule);
+	blockSignalsWithChildrens(this,false);
+	
 
 	// Frame type 3 is obsolete: CR 2005-02-06
 	//if (((i->itemType() == PageItem::TextFrame) || (i->itemType() == PageItem::ImageFrame) || (i->itemType() == 3)) &&  (!i->ClipEdited))

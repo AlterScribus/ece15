@@ -135,11 +135,11 @@ void PropertiesPalette_Image::setDoc(ScribusDoc *d)
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_doc  = d;
 	m_item = NULL;
@@ -161,17 +161,17 @@ void PropertiesPalette_Image::setDoc(ScribusDoc *d)
 	imgDpiX->setValues( 1, 30000, 2, 1);
 	imgDpiY->setValues( 1, 30000, 2, 1);
 
-	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertiesPalette_Image::unsetDoc()
 {
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_haveDoc  = false;
 	m_haveItem = false;
@@ -416,7 +416,7 @@ void PropertiesPalette_Image::handleSelectionChanged()
 		setCurrentItem(currItem);
 	}
 	updateGeometry();
-	repaint();
+	//repaint();
 }
 
 void PropertiesPalette_Image::handleUpdateRequest(int updateFlags)
@@ -441,10 +441,10 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 
 	m_haveItem = false;
 	m_item = item;
-
+	blockSignalsWithChildrens(this,true);
 	if (m_item->asImageFrame())
 	{
-		imagePageNumber->blockSignals(true);
+
 		if(m_item->PictureIsAvailable)
 		{
 			imagePageNumber->setMaximum(m_item->pixm.imgInfo.numberOfPages);
@@ -456,14 +456,8 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 
 		compressionMethod->setCurrentIndex(m_item->OverrideCompressionMethod ? m_item->CompressionMethodIndex + 1 : 0);
 		compressionQuality->setCurrentIndex(m_item->OverrideCompressionQuality ? m_item->CompressionQualityIndex + 1 : 0);
-		imagePageNumber->blockSignals(false);
 
-		imageXScaleSpinBox->blockSignals(true);
-		imageYScaleSpinBox->blockSignals(true);
-		imageXOffsetSpinBox->blockSignals(true);
-		imageYOffsetSpinBox->blockSignals(true);
-		imageRotation->blockSignals(true);
-
+		
 		imgEffectsButton->setVisible(m_item->PictureIsAvailable && m_item->isRaster);
 		imgExtProperties->setVisible(m_item->PictureIsAvailable && m_item->pixm.imgInfo.valid);
 		bool setter = m_item->ScaleType;
@@ -505,11 +499,8 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 		//imageYOffsetSpinBox->setEnabled(setter);
 		//imageRotation->setEnabled(setter);
 
-		imageXScaleSpinBox->blockSignals(false);
-		imageYScaleSpinBox->blockSignals(false);
-		imageXOffsetSpinBox->blockSignals(false);
-		imageYOffsetSpinBox->blockSignals(false);
-		imageRotation->blockSignals(false);
+		foreach (QWidget* obj, findChildren<QWidget *>())
+			obj->blockSignals(false);
 	}
 	m_haveItem = true;
 
@@ -531,6 +522,7 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 	{
 		setEnabled(false);
 	}
+	blockSignalsWithChildrens(this,false);
 }
 
 void PropertiesPalette_Image::handleLocalXY()

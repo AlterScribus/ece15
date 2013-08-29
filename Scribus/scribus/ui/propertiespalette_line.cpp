@@ -124,11 +124,11 @@ void PropertiesPalette_Line::setDoc(ScribusDoc *d)
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_doc  = d;
 	m_item = NULL;
@@ -145,17 +145,17 @@ void PropertiesPalette_Line::setDoc(ScribusDoc *d)
 	startArrow->rebuildList(&m_doc->arrowStyles());
 	endArrow->rebuildList(&m_doc->arrowStyles());
 
-	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertiesPalette_Line::unsetDoc()
 {
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_haveDoc  = false;
 	m_haveItem = false;
@@ -224,7 +224,7 @@ void PropertiesPalette_Line::handleSelectionChanged()
 		setCurrentItem(currItem);
 	}
 	updateGeometry();
-	repaint();
+	//repaint();
 }
 
 void PropertiesPalette_Line::handleUpdateRequest(int updateFlags)
@@ -252,12 +252,7 @@ void PropertiesPalette_Line::setCurrentItem(PageItem *item)
 	m_haveItem = false;
 	m_item = item;
 
-	lineStyles->blockSignals(true);
-	startArrow->blockSignals(true);
-	endArrow->blockSignals(true);
-	startArrowScale->blockSignals(true);
-	endArrowScale->blockSignals(true);
-	lineMode->blockSignals(true);
+	blockSignalsWithChildrens(this,true);
 
 	if ((m_item->asLine()) || (m_item->asPolyLine()) || (m_item->asSpiral()))
 	{
@@ -317,12 +312,7 @@ void PropertiesPalette_Line::setCurrentItem(PageItem *item)
 	else
 		lineMode->setCurrentIndex(0);
 
-	lineStyles->blockSignals(false);
-	startArrow->blockSignals(false);
-	endArrow->blockSignals(false);
-	startArrowScale->blockSignals(false);
-	endArrowScale->blockSignals(false);
-	lineMode->blockSignals(false);
+	blockSignalsWithChildrens(this,false);
 
 	setter = false;
 

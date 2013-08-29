@@ -113,8 +113,10 @@ void PropertiesPalette_Table::handleSelectionChanged()
 
 	sideSelector->setSelection(TableSideSelector::All);
 
+	blockSignalsWithChildrens(this,true);
 	updateFillControls();
 	updateStyleControls();
+	blockSignalsWithChildrens(this,false);
 }
 
 void PropertiesPalette_Table::handleCellSelectionChanged()

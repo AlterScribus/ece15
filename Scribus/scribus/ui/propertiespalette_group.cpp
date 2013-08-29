@@ -137,11 +137,11 @@ void PropertiesPalette_Group::setDoc(ScribusDoc *d)
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
 
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 	
 	disconnect(this->transPalWidget, SIGNAL(NewTrans(double)), 0, 0);
 	disconnect(this->transPalWidget, SIGNAL(NewBlend(int)), 0, 0);
@@ -166,17 +166,17 @@ void PropertiesPalette_Group::setDoc(ScribusDoc *d)
 	connect(this->transPalWidget, SIGNAL(NewPattern(QString)), this, SLOT(handleGroupPatternMask(QString)));
 	connect(this->transPalWidget, SIGNAL(NewPatternProps(double, double, double, double, double, double, double, bool, bool)), this, SLOT(handleGroupPatternMaskProps(double, double, double, double, double, double, double, bool, bool)));
 
-	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertiesPalette_Group::unsetDoc()
 {
-	if (m_doc)
-	{
-		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
-	}
+//	if (m_doc)
+//	{
+//		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	}
 
 	m_haveDoc  = false;
 	m_haveItem = false;
@@ -252,7 +252,7 @@ void PropertiesPalette_Group::handleSelectionChanged()
 		setCurrentItem(currItem);
 	}
 	updateGeometry();
-	repaint();
+	//repaint();
 }
 
 void PropertiesPalette_Group::handleUpdateRequest(int updateFlags)
@@ -278,6 +278,8 @@ void PropertiesPalette_Group::setCurrentItem(PageItem *item)
 	m_haveItem = false;
 	m_item = item;
 
+	blockSignalsWithChildrens(this,true);
+	
 	bool   mirrorX, mirrorY;
 	double patternScaleX, patternScaleY, patternOffsetX, patternOffsetY, patternRotation, patternSkewX, patternSkewY;
 	m_item->patternTransform(patternScaleX, patternScaleY, patternOffsetX, patternOffsetY, patternRotation, patternSkewX, patternSkewY);
@@ -339,6 +341,7 @@ void PropertiesPalette_Group::setCurrentItem(PageItem *item)
 		textFlowUsesImageClipping->setEnabled(false);
 	}
 	displayTextFlowMode(m_item->textFlowMode());
+	blockSignalsWithChildrens(this,false);
 }
 
 void PropertiesPalette_Group::displayTextFlowMode(PageItem::TextFlowMode mode)
