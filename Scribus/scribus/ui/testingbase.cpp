@@ -25,7 +25,6 @@ void TestingBase::on_runButton_clicked()
 		clock_t totalTime = 0;
 		for (long long i = 0; i < runs; ++i)
 		{
-			m_ScMW->resetTests();
 			clock_t start = clock();
 			(m_ScMW->*func)();
 			clock_t finish = clock();

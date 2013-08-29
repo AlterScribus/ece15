@@ -11915,28 +11915,6 @@ void ScribusMainWindow::test1()
 }
 void ScribusMainWindow::test2()
 {
-	PageItem * item = doc->m_Selection->itemAt(0);
-	if (item && item->isTextFrame())
-	{
-		ParagraphStyle newStyle;
-		newStyle.setMinWordTracking(60 / 100.0);
-		item->itemText.setDefaultStyle(newStyle);
-		item->asTextFrame()->invalidateLayout(true);
-		//item = item->lastInChain();
-		item->asTextFrame()->layout3();
-	}
-}
-void ScribusMainWindow::resetTests()
-{
-	PageItem * item = doc->m_Selection->itemAt(0);
-	if (item && item->isTextFrame())
-	{
-		ParagraphStyle newStyle;
-		newStyle.setMinWordTracking(75 / 100.0);
-		item->itemText.setDefaultStyle(newStyle);
-		item->asTextFrame()->invalidateLayout(true);
-		item->asTextFrame()->layout2();
-	}
 }
 
 void ScribusMainWindow::setPreviewToolbar()

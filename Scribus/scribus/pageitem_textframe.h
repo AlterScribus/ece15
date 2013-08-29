@@ -190,10 +190,6 @@ public:
 	int getColumnSE(int col, bool start); // return start or end position for column col from QMap startendColumn field, start default value is true
 	void setTextFrameHeight();
 	QList<QPair<int, int> > warnedList;
-	void layout2();
-	void adjustParagraphEndings2();
-	bool moveLinesFromPreviousFrame2();
-	void layout3();
 	void increaseHeightAndUpdate(double addValue);
 };
 
