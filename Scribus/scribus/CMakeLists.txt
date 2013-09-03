@@ -67,12 +67,6 @@ SET(SCRIBUS_ITEMSETTERS_SRC
 	ui/pageitemrotationsetter.cpp
 )
 
-
-IF(NOT USE_QT5)
-	SET(SCRIBUS_QT4_SRC  upgradechecker.cpp)
-	SET(SCRIBUS_QT4_CLASS  upgradechecker.h)
-ENDIF(NOT USE_QT5)
-
 SET(SCRIBUS_UI_SRC
   ui/aboutplugins.ui
   ui/aligndistribute.ui
@@ -270,10 +264,12 @@ SET(SCRIBUS_MOC_CLASSES
   scribusview.h
   scribuswin.h
   selection.h
+  selectionrubberband.h
   styleitem.h
   tocgenerator.h
   undogui.h
   undomanager.h
+  upgradechecker.h
   urllauncher.h
   ui/about.h
   ui/aboutplugins.h
@@ -505,7 +501,6 @@ SET(SCRIBUS_MOC_CLASSES
   ui/weldedit.h
 ui/testingbase.h
 #  ${SCRIBUS_ITEMSETTERS_CLASS}
-  ${SCRIBUS_QT4_CLASS}
   ${SCRIBUS_OSG_CLASS}
 )
 
@@ -697,6 +692,7 @@ SET(SCRIBUS_SOURCES
   sctextstruct.cpp
   scxmlstreamreader.cpp
   selection.cpp
+  selectionrubberband.cpp
   serializer.cpp
   styleitem.cpp
   tableborder.cpp
@@ -713,6 +709,7 @@ SET(SCRIBUS_SOURCES
   units.cpp
   unzip.c
   updatemanager.cpp
+  upgradechecker.cpp
   urllauncher.cpp
   util.cpp
   util_color.cpp
@@ -962,7 +959,6 @@ SET(SCRIBUS_SOURCES
   ui/weldedit.cpp
 ui/testingbase.cpp
 #  ${SCRIBUS_ITEMSETTERS_SRC}
-  ${SCRIBUS_QT4_SRC}
   ${SCRIBUS_OSG_SRC}
   ${SCRIBUS_GMAGICK_SRC}
 )

@@ -53,6 +53,7 @@ for which a new license (GPL+exception) is in place.
 #include <QStringList>
 #include <QWheelEvent>
 #include <QWidgetAction>
+#include <QStyleOptionRubberBand>
 
 #include <cstdio>
 #include <cstdlib>
@@ -104,6 +105,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribuswin.h"
 #include "scribusXml.h"
 #include "selection.h"
+#include "selectionrubberband.h"
 #include "serializer.h"
 #include "text/nlsconfig.h"
 #include "ui/adjustcmsdialog.h"
@@ -329,10 +331,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	m_previousMode = -1;
 	redrawMode = 0;
 	redrawCount = 0;
-	redrawMarker = new QRubberBand(QRubberBand::Rectangle, this);
-#ifdef USE_QT5
-	redrawMarker->setWindowOpacity(0.5);
-#endif
+	redrawMarker = new SelectionRubberBand(QRubberBand::Rectangle, this);
 	redrawMarker->hide();
 	m_canvas->newRedrawPolygon();
 	m_canvas->resetRenderMode();
@@ -4601,4 +4600,10 @@ void ScribusView::stopAllDrags() // deprecated
 	m_canvas->m_viewMode.operItemResizing = false;
 //FIXME:av	inItemCreation = false;
 	MidButt = false;
+}
+
+void ScribusView::setRedrawMarkerShown(bool shown)
+{
+	if (shown!=redrawMarker->isVisible())
+		redrawMarker->setVisible(shown);
 }
