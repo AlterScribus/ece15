@@ -537,11 +537,7 @@ void ScribusMainWindow::initKeyboardShortcuts()
 	{
 		if ((ScrAction*)(it.value())!=NULL)
 		{
-#ifdef USE_QT5
 			QString accelerator = it.value()->shortcut().toString();
-#else
-			QString accelerator = it.value()->shortcut();
-#endif
 			prefsManager->setKeyEntry(it.key(), it.value()->cleanMenuText(), accelerator,0);
 		}
 		//else
@@ -1341,13 +1337,8 @@ bool ScribusMainWindow::eventFilter( QObject* /*o*/, QEvent *e )
 			keyMod |= Qt::ALT;
 
 		QKeySequence currKeySeq = QKeySequence(k->key() | keyMod);
-#ifdef USE_QT5
 		if (QString(currKeySeq.toString()).isNull())
 			return false;
-#else
-		if (QString(currKeySeq).isNull())
-			return false;
-#endif
 		retVal=true;
 		//Palette actions
 		if (currKeySeq == scrActions["specialToggleAllPalettes"]->shortcut())
@@ -9501,12 +9492,12 @@ QString ScribusMainWindow::CFileDialog(QString wDir, QString caption, QString fi
 		dia->setExtension(f.suffix());
 		dia->setZipExtension(f.suffix() + ".gz");
 		dia->setSelection(defNa);
-		if (docom != NULL)
+		if (docom != NULL && dia->SaveZip != NULL)
 			dia->SaveZip->setChecked(*docom);
 	}
 	if (optionFlags & fdDirectoriesOnly)
 	{
-		if (docom != NULL)
+		if (docom != NULL && dia->SaveZip != NULL)
 			dia->SaveZip->setChecked(*docom);
 		if (doFont != NULL)
 			dia->WithFonts->setChecked(*doFont);
@@ -9527,7 +9518,7 @@ QString ScribusMainWindow::CFileDialog(QString wDir, QString caption, QString fi
 		}
 		else
 		{
-			if (docom != NULL)
+			if (docom != NULL && dia->SaveZip != NULL)
 				*docom = dia->SaveZip->isChecked();
 			if (doFont != NULL)
 				*doFont = dia->WithFonts->isChecked();

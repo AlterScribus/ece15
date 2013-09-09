@@ -39,11 +39,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_icon.h"
 
-#ifdef USE_QT5
 ScDockPalette::ScDockPalette( QWidget * parent, const QString& prefsContext, Qt::WindowFlags f)
-#else
-ScDockPalette::ScDockPalette( QWidget * parent, const QString& prefsContext, Qt::WFlags f)
-#endif
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
 	: QDockWidget ( parent, f | Qt::Tool  | Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint ),
 #else
@@ -223,15 +219,6 @@ void ScDockPalette::storePosition()
 		QPoint geo = pos();
 		palettePrefs->set("left", geo.x());
 		palettePrefs->set("top", geo.y());
-/*
-#if QT_VERSION  >= 0x040300 && !defined(_WIN32)
-		QRect geo = geometry();
-#else
-		QRect geo = frameGeometry();
-#endif
-		palettePrefs->set("left", geo.left());
-		palettePrefs->set("top", geo.top());
-*/
 	}
 }
 
