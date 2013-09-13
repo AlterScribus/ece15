@@ -20,7 +20,7 @@ for which a new license (GPL+exception) is in place.
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
+#include <QApplication>
 #include <QDebug>
 #include <QList>
 #include <QMap>
@@ -6249,16 +6249,17 @@ void PageItem_TextFrame::setMaxY(long y)
 
 void PageItem_TextFrame::setTextFrameHeight()
 {
-	m_Doc->view()->updatesOn(false);
+	//m_Doc->view()->updatesOn(false);
 
+	qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
 	int oldLastInFrame = lastInFrame();
-	setHeight(double(maxY)/1000.0 + m_textDistanceMargins.Bottom);
+	setHeight(ceil(double(maxY)/1000.0 + m_textDistanceMargins.Bottom));
 	updateClip();
 	invalid = true;
 	layout();
 	if (frameOverflows())
 	{
-		double stepValue = 0.25;
+		double stepValue = 5;
 		
 		if (nextInChain() == NULL)
 		{
@@ -6272,9 +6273,14 @@ void PageItem_TextFrame::setTextFrameHeight()
 			while (oldLastInFrame != lastInFrame())
 				increaseHeightAndUpdate(stepValue);
 		}
+		setHeight(ceil(double(maxY)/1000.0 + m_textDistanceMargins.Bottom));
+		updateClip();
+		invalid = true;
+		layout();
 	}
+	qApp->restoreOverrideCursor();
 	m_Doc->changed();
-	m_Doc->view()->updatesOn(true);
+	//m_Doc->view()->updatesOn(true);
 	m_Doc->regionsChanged()->update(QRect());
 }
 
