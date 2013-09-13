@@ -1351,7 +1351,6 @@ public:
 		PageItem *item;
 	};
 	QList<OpenNodesList> OpenNodes;
-	QTimer *CurTimer;
 	QMap<int, errorCodes> docLayerErrors;
 	QMap<PageItem*, errorCodes> docItemErrors;
 	QMap<PageItem*, errorCodes> masterItemErrors;
