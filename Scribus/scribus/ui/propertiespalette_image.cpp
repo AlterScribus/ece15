@@ -506,7 +506,7 @@ void PropertiesPalette_Image::setCurrentItem(PageItem *item)
 
 	displayScaleAndOffset(m_item->imageXScale(), m_item->imageYScale(), m_item->imageXOffset(), m_item->imageYOffset());
 	double rrR = m_item->imageRotation();
-	if (m_item->imageRotation() > 0)
+	if (m_item->imageRotation() > 0.0)
 		rrR = 360 - rrR;
 	imageRotation->showValue(fabs(rrR));
 
