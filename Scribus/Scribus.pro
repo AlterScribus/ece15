@@ -3,7 +3,7 @@
 ######################################################################
 QT       += core gui sql network phonon webkit widgets
 TEMPLATE = app
-TARGET = 
+TARGET = Scribus
 DEPENDPATH += . \
               scribus \
               scribus/colormgmt \
@@ -1067,13 +1067,6 @@ HEADERS += scribus/actionmanager.h \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.h \
            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.h \
            scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.h \
-           scribus/styles/charstyle.attrdefs.cxx \
-           scribus/styles/paragraphstyle.attrdefs.cxx \
-           scribus/styles/tablestyle.attrdefs.cxx \
-           scribus/styles/cellstyle.attrdefs.cxx \
-           scribus/main_nix.cpp \
-           scribus/main_win32.cpp \
-           scribus/styles/linestyle.attrdefs.cxx \
     scribus/imposition/impositionoutputfile.h \
     scribus/imposition/impositionoptions.h \
     scribus/imposition/impositioninputfile.h \
@@ -2094,6 +2087,8 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/plugins/tools/2geomtools/meshdistortion/meshdistortiondialog.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathalongpath.cpp \
            scribus/plugins/tools/2geomtools/pathalongpath/pathdialog.cpp \
+           scribus/main_nix.cpp \
+           scribus/main_win32.cpp \
     scribus/imposition/impositionoutputfile.cpp \
     scribus/imposition/impositionoptions.cpp \
     scribus/imposition/impositioninputfile.cpp \
