@@ -8072,6 +8072,7 @@ void ScribusMainWindow::slotDocSetup()
 {
 	if (!doc)
 		return;
+	setAppMode(modeNormal);
 	struct ApplicationPrefs oldDocPrefs(doc->prefsData());
 	PreferencesDialog prefsDialog(this, oldDocPrefs, doc);
 	int prefsResult=prefsDialog.exec();
@@ -8203,6 +8204,7 @@ int ScribusMainWindow::ShowSubs()
 
 void ScribusMainWindow::doPrintPreview()
 {
+	setAppMode(modeNormal);
 	if (docCheckerPalette->isIgnoreEnabled())
 	{
 		docCheckerPalette->hide();
@@ -8379,6 +8381,8 @@ void ScribusMainWindow::SaveAsEps()
 
 void ScribusMainWindow::reallySaveAsEps()
 {
+	setAppMode(modeNormal);
+	
 	QString fna;
 	if (docCheckerPalette->isIgnoreEnabled())
 	{
@@ -8476,6 +8480,7 @@ void ScribusMainWindow::SaveAsPDF()
 
 void ScribusMainWindow::doSaveAsPDF()
 {
+	setAppMode(modeNormal);
 	if (docCheckerPalette->isIgnoreEnabled())
 	{
 		docCheckerPalette->hide();
