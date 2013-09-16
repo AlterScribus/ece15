@@ -8,16 +8,17 @@ for which a new license (GPL+exception) is in place.
 #include "selfield.h"
 
 #include <QPixmap>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QSpacerItem>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QPushButton>
-#include <QLabel>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QListWidgetItem>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLabel>
 
 #include "commonstrings.h"
 #include "scfonts.h"
+#include "scribusdoc.h"
 #include "util_icon.h"
 
 SelectFields::SelectFields(QWidget* parent, QString Felder, QString Own, ScribusDoc *Doc, int Art) : QDialog(parent)

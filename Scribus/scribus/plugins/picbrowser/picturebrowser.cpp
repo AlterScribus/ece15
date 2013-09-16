@@ -5,7 +5,7 @@ a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
 #include <QtGui>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <iostream>
 #include "picturebrowser.h"
 #include "collection.h"

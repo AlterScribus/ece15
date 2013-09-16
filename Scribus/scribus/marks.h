@@ -3,8 +3,8 @@
 
 #include "QString"
 #include "scribusapi.h"
-#include "desaxe/saxiohelper.h"
-#include "desaxe/simple_actions.h"
+//#include "desaxe/saxiohelper.h"
+//#include "desaxe/simple_actions.h"
 
 class Mark;
 class PageItem;
@@ -37,6 +37,12 @@ struct MarkData
 	
 	MarkData() : strtxt(""), itemPtr(NULL), destmarkName(""), destmarkType(MARKNoType), notePtr(NULL), itemName(""), markTyp(MARKNoType) {}
 };
+
+//searchingDirection
+const int SEARCH_BACKWARD = 0;
+const int SEARCH_FORWARD = 1;
+const int FIRST_ON_PAGE = 2;
+const int LAST_ON_PAGE = 3;
 
 class SCRIBUS_API Mark
 {
@@ -128,10 +134,5 @@ public:
 	int textLimit;
 	int range;
 };
-//searchingDirection
-const int SEARCH_BACKWARD = 0;
-const int SEARCH_FORWARD = 1;
-const int FIRST_ON_PAGE = 2;
-const int LAST_ON_PAGE = 3;
 
 #endif // MARKS_H

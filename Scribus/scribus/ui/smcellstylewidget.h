@@ -10,7 +10,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef SMCELLSTYLEWIDGET_H
 #define SMCELLSTYLEWIDGET_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #include "ui_smcellstylewidget.h"
 #include "styles/cellstyle.h"

@@ -8,7 +8,7 @@ for which a new license (GPL+exception) is in place.
 #define _SCPLUGIN_H
 
 #include <QObject>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QString>
 #include <QPixmap>
 #include <QDateTime>

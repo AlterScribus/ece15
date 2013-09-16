@@ -25,17 +25,33 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include <zlib.h>
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QCryptographicHash>
-#include <QDomElement>
-#include <QMessageBox>
+#include <QtXml/QDomElement>
+#include <QtWidgets/QMessageBox>
 #include <QProcess>
-#include <QWidget>
+#include <QtWidgets/QWidget>
+#include <QByteArray>
+#include <QColor>
+#include <QtWidgets/QComboBox>
+#include <QDataStream>
+#include <QDir>
+#include <QList>
+#include <QPainterPath>
+#include <QPair>
+#include <QPixmap>
+#include <QStack>
+#include <QString>
+#include <QStringList>
+#include <QVector>
 
+#include "numeration.h"
+#include "pagestructs.h"
 #include "pageitem.h"
 #include "pageitem_table.h"
 #include "scribus.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "scpainter.h"
 
 #include <signal.h>

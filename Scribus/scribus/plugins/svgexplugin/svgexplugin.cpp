@@ -23,11 +23,11 @@ for which a new license (GPL+exception) is in place.
 
 #include <QBuffer>
 #include <QByteArray>
-#include <QCheckBox>
+#include <QtWidgets/QCheckBox>
 #include <QDataStream>
 #include <QFile>
 #include <QList>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QScopedPointer>
 #include <QTextStream>
 
@@ -46,6 +46,8 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scpattern.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 #include "sctextstruct.h"
 #include "tableutils.h"
 #include "util.h"

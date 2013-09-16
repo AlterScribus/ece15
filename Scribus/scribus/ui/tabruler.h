@@ -7,23 +7,24 @@ for which a new license (GPL+exception) is in place.
 #ifndef TABRULER_H
 #define TABRULER_H
 
-#include <QVariant>
-#include <QWidget>
-#include <QHBoxLayout>
-#include <QPaintEvent>
-#include <QGridLayout>
-#include <QLabel>
-#include <QMouseEvent>
-#include <QEvent>
-#include <QVBoxLayout>
-
 #include "scribusapi.h"
 #include "sctextstruct.h"
 
+#include <QtWidgets/QWidget>
+
 class QComboBox;
+class QEvent;
+class QGridLayout;
+class QHBoxLayout;
+class QLabel;
+class QMouseEvent;
+class QPaintEvent;
 class QPushButton;
 class ScrSpinBox;
 class QToolButton;
+class QVBoxLayout;
+class QVariant;
+
 
 class SCRIBUS_API RulerT : public QWidget
 {
@@ -31,7 +32,7 @@ class SCRIBUS_API RulerT : public QWidget
 
 public:
 	RulerT(QWidget* parent, int ein, QList<ParagraphStyle::TabRecord> Tabs, bool ind, double wid);
-	~RulerT() {};
+	~RulerT() {}
 	void setTabs(QList<ParagraphStyle::TabRecord> Tabs, int dEin);
 	void updateTabList();
 	bool mousePressed;
@@ -90,7 +91,7 @@ public:
 	          int dEin = 1,
 	          QList<ParagraphStyle::TabRecord> Tabs = QList<ParagraphStyle::TabRecord>(),
 	          double wid = -1);
-	~Tabruler() {};
+	~Tabruler() {}
 
 	virtual void setTabs(QList<ParagraphStyle::TabRecord> Tabs, int dEin);
 

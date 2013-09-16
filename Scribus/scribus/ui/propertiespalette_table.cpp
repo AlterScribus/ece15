@@ -7,15 +7,16 @@ a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
 #include <QColor>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QWidget>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QListWidgetItem>
+#include <QtWidgets/QWidget>
 
 #include "colorcombo.h"
 #include "commonstrings.h"
 #include "pageitem_table.h"
 #include "sccolorengine.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "selection.h"
 #include "tableborder.h"
 #include "tablesideselector.h"

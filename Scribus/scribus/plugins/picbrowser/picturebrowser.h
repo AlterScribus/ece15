@@ -7,7 +7,6 @@ for which a new license (GPL+exception) is in place.
 #ifndef PICTUREBROWSER_H
 #define PICTUREBROWSER_H
 
-#include <QDirModel>
 #include "ui_picturebrowser.h"
 
 //previewicon class
@@ -30,7 +29,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem.h"
 
 //xml support for collections
-#include <QtXml>
+//#include <QtXml>
 #include <QXmlStreamReader>
 
 //scribuspaths
@@ -41,7 +40,8 @@ for which a new license (GPL+exception) is in place.
 #include "util_color.h"
 
 //open/savefile dialog
-#include <QFileDialog>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QDirModel>
 
 //settings class
 #include <prefsfile.h>

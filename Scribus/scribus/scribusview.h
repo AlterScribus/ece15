@@ -28,20 +28,20 @@ for which a new license (GPL+exception) is in place.
 
 #include <vector>
 // include files for QT
-#include <QScrollArea>
-#include <QLineEdit>
-#include <QScrollBar>
+#include <QtWidgets/QScrollArea>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QScrollBar>
 #if OPTION_USE_QTOOLBUTTON
-    #include <QToolButton>
+    #include <QtWidgets/QToolButton>
 #else
     #include <QPushButton>
 #endif
 #include <QMap>
-#include <QMenu>
-#include <QLabel>
-#include <QComboBox>
-#include <QProgressDialog>
-#include <QSpinBox>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QProgressDialog>
+#include <QtWidgets/QSpinBox>
 #include <QCursor>
 #include <QDragLeaveEvent>
 #include <QDragEnterEvent>
@@ -55,7 +55,7 @@ for which a new license (GPL+exception) is in place.
 #include <QTime>
 #include <QTimer>
 #include <QWheelEvent>
-#include <QRubberBand>
+#include <QtWidgets/QRubberBand>
 #include <QList>
 
 class QEvent;
@@ -64,9 +64,9 @@ class QMimeData;
 // application specific includes
 #include "observable.h"
 #include "scribusapi.h"
-#include "scribusdoc.h"
+#include "prefsstructs.h"
+//#include "scribusdoc.h"
 #include "ui/clockwidget.h"
-
 class Canvas;
 class CanvasMode;
 class CanvasGesture;

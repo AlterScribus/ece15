@@ -8,12 +8,11 @@ for which a new license (GPL+exception) is in place.
 #ifndef PREFS_TEXTVALIDATOR_H
 #define PREFS_TEXTVALIDATOR_H
 
-#include "scconfig.h"
 #include "pluginapi.h"
-#include "scplugin.h"
-#include <QPixmap>
 #include "ui_prefs_textvalidator.h"
 #include "ui/prefs_pane.h"
+
+class ApplicationPrefs;
 
 class PLUGIN_API  Prefs_TextValidator : public Prefs_Pane, Ui::Prefs_TextValidator
 {

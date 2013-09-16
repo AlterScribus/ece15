@@ -8,13 +8,13 @@ for which a new license (GPL+exception) is in place.
 #include <QCursor>
 #include <QDir>
 #include <QDrag>
-#include <QDomElement>
+#include <QtXml/QDomElement>
 #include <QFile>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QMimeData>
 #include <QString>
 #include <QRegExp>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #include "oodrawimp.h"
 
@@ -38,6 +38,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusXml.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "selection.h"
 #include "serializer.h"
 #include "stylestack.h"

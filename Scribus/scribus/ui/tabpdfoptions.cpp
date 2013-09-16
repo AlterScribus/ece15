@@ -15,23 +15,23 @@ for which a new license (GPL+exception) is in place.
 #include "tabpdfoptions.h"
 
 #include <QPixmap>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QSpacerItem>
-#include <QGroupBox>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QPushButton>
-#include <QToolButton>
-#include <QLineEdit>
-#include <QLabel>
-#include <QSpinBox>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QListWidgetItem>
 
 #include <QStandardItem>
-#include <QAbstractItemView>
+#include <QtWidgets/QAbstractItemView>
 
 #include "ui/createrange.h"
 #include "pdfoptions.h"
@@ -43,6 +43,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/scrspinbox.h"
 #include "util_icon.h"
 #include "scribuscore.h"
+#include "scribusview.h"
 #include "util.h"
 #include "pagesize.h"
 #include <iostream>

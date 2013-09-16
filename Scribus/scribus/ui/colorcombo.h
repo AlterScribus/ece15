@@ -16,7 +16,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef COLORCOMBO_H
 #define COLORCOMBO_H
 
-#include <QComboBox>
+#include <QtWidgets/QComboBox>
 
 /*
  *#ifdef Q_OS_MAC

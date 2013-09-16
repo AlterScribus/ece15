@@ -67,8 +67,8 @@
 #include "util_icon.h"
 #include "util_math.h"
 
-#include <QMdiArea>
-#include <QMdiSubWindow>
+#include <QtWidgets/QMdiArea>
+#include <QtWidgets/QMdiSubWindow>
 #include <QPainter>
 #include <QPointF>
 

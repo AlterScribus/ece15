@@ -7,38 +7,38 @@ for which a new license (GPL+exception) is in place.
 
 #include "propertiespalette_group.h"
 
-#include <QButtonGroup>
-#include <QCheckBox>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QCloseEvent>
-#include <QComboBox>
+#include <QtWidgets/QComboBox>
 #include <QEvent>
 #include <QFocusEvent>
-#include <QFrame>
-#include <QGridLayout>
-#include <QGroupBox>
-#include <QHBoxLayout>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QHBoxLayout>
 #include <QImage>
 #include <QKeyEvent>
-#include <QLabel>
-#include <QListView>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QListView>
 #include <QTransform>
-#include <QMenu>
-#include <QMessageBox>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
 #include <QObject>
 #include <QPixmap>
 #include <QPoint>
-#include <QPushButton>
-#include <QRadioButton>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
 #include <QRegExp>
-#include <QSpacerItem>
-#include <QSpinBox>
-#include <QStackedWidget>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QStackedWidget>
 #include <QTimer>
-#include <QToolBox>
-#include <QToolTip>
-#include <QVBoxLayout>
+#include <QtWidgets/QToolBox>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QVBoxLayout>
 #include <QValidator>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 #define _USE_MATH_DEFINES
@@ -49,6 +49,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribus.h"
 #include "scribuscore.h"
 #include "scraction.h"
+#include "scribusdoc.h"
 #include "scribusview.h"
 #include "selection.h"
 #include "units.h"

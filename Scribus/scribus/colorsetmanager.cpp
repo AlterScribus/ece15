@@ -22,7 +22,8 @@ for which a new license (GPL+exception) is in place.
 #include "plugins/formatidlist.h"
 #include "prefsfile.h"
 #include "prefsmanager.h"
-#include <QDomElement>
+#include "scribusdoc.h"
+#include <QtXml/QDomElement>
 #include <QTextStream>
 #include <QByteArray>
 #include <QDebug>

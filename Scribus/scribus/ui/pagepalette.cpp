@@ -6,11 +6,11 @@ for which a new license (GPL+exception) is in place.
 */
 
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QEvent>
 #include <QList>
 #include <QPainter>
-#include <QStackedWidget>
+#include <QtWidgets/QStackedWidget>
 
 #include "commonstrings.h"
 #include "pagelayout.h"
@@ -21,6 +21,7 @@ for which a new license (GPL+exception) is in place.
 #include "sccombobox.h"
 #include "scpage.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "scribusview.h"
 #include "util_icon.h"
 

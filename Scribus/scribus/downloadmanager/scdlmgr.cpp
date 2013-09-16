@@ -5,7 +5,6 @@
 
 #include <QString>
 #include <QStringList>
-#include <QTimer>
 
 #include <stdio.h>
 

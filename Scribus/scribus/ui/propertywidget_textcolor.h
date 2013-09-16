@@ -13,6 +13,8 @@ for which a new license (GPL+exception) is in place.
 
 class ScribusDoc;
 class ScribusMainWindow;
+class CharStyle;
+class ParagraphStyle;
 
 class PropertyWidget_TextColor : public QFrame, Ui::PropertyWidget_TextColorBase,
 	                             public PropertyWidgetBase
@@ -21,7 +23,7 @@ class PropertyWidget_TextColor : public QFrame, Ui::PropertyWidget_TextColorBase
 
 public:
 	PropertyWidget_TextColor(QWidget* parent);
-	~PropertyWidget_TextColor() {};
+	~PropertyWidget_TextColor() {}
 
 	void updateColorList();
 	void connectSignals();
@@ -44,7 +46,7 @@ public slots:
 	void handleUpdateRequest(int);
 
 	void languageChange();
-	void unitChange() {};
+	void unitChange() {}
 
 	void displayOutlineW(double x);
 	void displayShadowOffset(double x, double y);

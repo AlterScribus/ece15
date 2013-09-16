@@ -9,17 +9,17 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 
 #include <QDir>
-#include <QGridLayout>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QSpacerItem>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QTextCodec>
-#include <QTextEdit>
+#include <QtWidgets/QTextEdit>
 #include <QTextStream>
-#include <QToolTip>
+#include <QtWidgets/QToolTip>
 
 TVPrefsGui::TVPrefsGui(QWidget* parent ) : PrefsPanel(parent)
 {

@@ -27,7 +27,7 @@ for which a new license (GPL+exception) is in place.
 #define SCRPALETTE_BASE_H
 
 #include <QCloseEvent>
-#include <QDialog>
+#include <QtWidgets/QDialog>
 #include <QHideEvent>
 #include <QKeySequence>
 #include <QShowEvent>

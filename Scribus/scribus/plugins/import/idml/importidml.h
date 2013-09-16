@@ -24,8 +24,8 @@ for which a new license (GPL+exception) is in place.
 #include <QtGlobal>
 #include <QObject>
 #include <QString>
-#include <QDomDocument>
-#include <QDomElement>
+#include <QtXml/QDomDocument>
+#include <QtXml/QDomElement>
 
 class MultiProgressDialog;
 class ScribusDoc;

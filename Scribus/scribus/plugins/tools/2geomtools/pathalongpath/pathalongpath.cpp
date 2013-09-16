@@ -29,6 +29,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_group.h"
 #include "scribuscore.h"
 #include "scribusstructs.h"
+#include "scribusview.h"
 #include "util.h"
 #include "util_math.h"
 

@@ -25,15 +25,15 @@ for which a new license (GPL+exception) is in place.
 ***************************************************************************/
 #include "paintmanager.h"
 
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QDomDocument>
-#include <QMenu>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QMessageBox>
+#include <QtXml/QDomDocument>
+#include <QtWidgets/QMenu>
 #include <QCursor>
 #include <QEventLoop>
 #include <QImageReader>
 #include <QDir>
-#include <QFileDialog>
+#include <QtWidgets/QFileDialog>
 #include "cmykfw.h"
 #include "colorlistbox.h"
 #include "commonstrings.h"
@@ -55,6 +55,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpainter.h"
 #include "scpaths.h"
 #include "sctextstream.h"
+#include "scribus.h"
 #include "scribusXml.h"
 #include "undomanager.h"
 #include "util.h"

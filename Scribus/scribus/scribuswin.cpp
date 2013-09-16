@@ -23,6 +23,8 @@ for which a new license (GPL+exception) is in place.
 
 #include "scribuswin.h"
 #include "scribus.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 #include "commonstrings.h"
 #include "fileloader.h"
 #include "ui/pagepalette.h"
@@ -33,11 +35,11 @@ for which a new license (GPL+exception) is in place.
 #include "util_file.h"
 #include "util_icon.h"
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileInfo>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 ScribusWin::ScribusWin(QWidget* parent, ScribusDoc* doc) : QMainWindow(parent)
 {

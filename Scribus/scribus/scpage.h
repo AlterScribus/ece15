@@ -36,7 +36,7 @@ for which a new license (GPL+exception) is in place.
 class PageItem;
 class QString;
 class UndoManager;
-class UndoState;
+//class UndoState;
 class ScribusDoc;
 
 

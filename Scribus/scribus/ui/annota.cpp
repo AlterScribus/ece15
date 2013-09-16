@@ -13,20 +13,20 @@ for which a new license (GPL+exception) is in place.
  *                                                                         *
  ***************************************************************************/
 
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QVBoxLayout>
-#include <QSpacerItem>
-#include <QFrame>
-#include <QLabel>
-#include <QComboBox>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QLineEdit>
-#include <QPushButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QStackedWidget>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
 #include <QPixmap>
 #include <QStringList>
-#include <QCheckBox>
+#include <QtWidgets/QCheckBox>
 
 #include "scfonts.h"
 #include "annota.h"
@@ -36,6 +36,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "pageitem.h"
 #include "navigator.h"
+#include "scribusdoc.h"
 #include "scribusview.h"
 #include "util_icon.h"
 #include "util_formats.h"

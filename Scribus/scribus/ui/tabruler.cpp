@@ -5,22 +5,27 @@ a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
 #include "tabruler.h"
-#include <QVariant>
-#include <QComboBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QToolButton>
-#include <QLayout>
-#include <QToolTip>
-#include <QPainter>
-#include <QCursor>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QLayout>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QVBoxLayout>
 #include <QColor>
-#include <QApplication>
-#include <QPolygon>
-#include <QPixmap>
-#include <QMouseEvent>
+#include <QCursor>
 #include <QEvent>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QPaintEvent>
+#include <QPixmap>
+#include <QPolygon>
+#include <QVariant>
+
 #include "commonstrings.h"
 #include "units.h"
 #include "scribusstructs.h"

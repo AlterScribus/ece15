@@ -40,10 +40,10 @@ for which a new license (GPL+exception) is in place.
 #include <QFontMetrics>
 #include <QImage>
 #include <QImageReader>
-#include <QLabel>
+#include <QtWidgets/QLabel>
 #include <QList>
-#include <QMenu>
-#include <QMessageBox>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -52,8 +52,8 @@ for which a new license (GPL+exception) is in place.
 #include <QStack>
 #include <QStringList>
 #include <QWheelEvent>
-#include <QWidgetAction>
-#include <QStyleOptionRubberBand>
+#include <QtWidgets/QWidgetAction>
+#include <QtWidgets/QStyleOptionRubberBand>
 
 #include <cstdio>
 #include <cstdlib>
@@ -64,7 +64,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QUrl>
 #include <QDir>
-#include <QSizeGrip>
+#include <QtWidgets/QSizeGrip>
 
 #include "scribus.h"
 
@@ -96,6 +96,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpainter.h"
 #include "scpaths.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "scribuswin.h"
 #include "scribusXml.h"
 #include "selection.h"

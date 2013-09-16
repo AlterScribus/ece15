@@ -7,12 +7,13 @@ for which a new license (GPL+exception) is in place.
 #include "cmddialog.h"
 #include "cmdutil.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "ui/customfdialog.h"
 #include "ui/stylemanager.h"
-
-#include <QMessageBox>
+#include "styles/styleset.h"
+#include <QtWidgets/QMessageBox>
 #include <QCursor>
-#include <QInputDialog>
+#include <QtWidgets/QInputDialog>
 
 
 PyObject *scribus_newdocdia(PyObject* /* self */)

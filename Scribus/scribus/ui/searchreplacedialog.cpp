@@ -9,6 +9,8 @@
 #include "prefsmanager.h"
 #include "scpage.h"
 #include "scribus.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 #include "scrspinbox.h"
 #include "selection.h"
 #include "shadebutton.h"
@@ -19,7 +21,7 @@
 #include "util_text.h"
 #include "text/nlsconfig.h"
 
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 const int RANGE_ITEMS = 0;
 const int RANGE_STORY = 1;

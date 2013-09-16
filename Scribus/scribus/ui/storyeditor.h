@@ -24,34 +24,34 @@ for which a new license (GPL+exception) is in place.
 #ifndef STORYEDITOR_H
 #define STORYEDITOR_H
 
-#include <QTextEdit>
-#include <QAction>
-#include <QCheckBox>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QCheckBox>
 #include <QCloseEvent>
 #include <QEvent>
 #include <QFocusEvent>
 #include <QHideEvent>
 #include <QKeyEvent>
-#include <QLabel>
-#include <QLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLayout>
 #include <QList>
-#include <QMainWindow>
+#include <QtWidgets/QMainWindow>
 #include <QMap>
-#include <QMenu>
-#include <QMenuBar>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPixmap>
 #include <QPointer>
 #include <QShowEvent>
-#include <QSpinBox>
-#include <QSplitter>
-#include <QStatusBar>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QStatusBar>
 #include <QStringList>
-#include <QToolBar>
-#include <QToolButton>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QToolButton>
 #include <QVariant>
-#include <QWidgetAction>
+#include <QtWidgets/QWidgetAction>
 
 class QEvent;
 class QGridLayout;
@@ -75,6 +75,7 @@ class PrefsContext;
 class StoryEditor;
 class ColorCombo;
 class CharSelect;
+class ScribusDoc;
 
 class SCRIBUS_API SEditor : public QTextEdit
 {
@@ -82,7 +83,7 @@ class SCRIBUS_API SEditor : public QTextEdit
 
 public:
 	SEditor (QWidget* parent, ScribusDoc *docc, StoryEditor* parentSE);
-	~SEditor() {};
+	~SEditor() {}
 	void setCurrentDocument(ScribusDoc *docc);
 	void setAlign(int align);
 	void saveItemText(PageItem *currItem);

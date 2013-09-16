@@ -16,14 +16,15 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scraction.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "undomanager.h"
 #include "util_formats.h"
 
 #include "ui/customfdialog.h"
 #include "ui/scmwmenumanager.h"
 
-#include <QApplication>
-#include <QMessageBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 
 int importai_getPluginAPIVersion()
 {

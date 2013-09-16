@@ -11,6 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "styles/paragraphstyle.h"
 #include "smpstylewidget.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "units.h"
 #include "util.h"
 #include "util_icon.h"

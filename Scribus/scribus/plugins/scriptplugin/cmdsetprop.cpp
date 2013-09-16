@@ -8,6 +8,7 @@ for which a new license (GPL+exception) is in place.
 #include "cmdutil.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 
 PyObject *scribus_setgradfill(PyObject* /* self */, PyObject* args)
 {

@@ -1,18 +1,20 @@
 #ifndef NOTESSTYLES_H
 #define NOTESSTYLES_H
 
-#include <QDebug>
+//#include <QDebug>
 #include <QObject>
 #include <QString>
-#include <QList>
+//#include <QList>
 #include "numeration.h"
 #include "pagestructs.h"
-#include "scpage.h"
-#include "styles/charstyle.h"
-#include "styles/paragraphstyle.h"
-#include "text/storytext.h"
+//#include "scpage.h"
+//#include "styles/charstyle.h"
+//#include "styles/paragraphstyle.h"
+//#include "text/storytext.h"
 #include "util.h"
 
+class Mark;
+class ScPage;
 class ScribusDoc;
 class PageItem_NoteFrame;
 class PageItem_TextFrame;

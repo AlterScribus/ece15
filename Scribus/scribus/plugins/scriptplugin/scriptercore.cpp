@@ -7,10 +7,10 @@ for which a new license (GPL+exception) is in place.
 #include "scriptercore.h"
 
 #include <QGlobalStatic>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QString>
-#include <QApplication>
-#include <QMessageBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 #include <QTextCodec>
 #include <QByteArray>
 #include <QPixmap>
@@ -29,6 +29,7 @@ for which a new license (GPL+exception) is in place.
 #include "scraction.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "scpaths.h"
 #include "selection.h"
 #include "prefsfile.h"

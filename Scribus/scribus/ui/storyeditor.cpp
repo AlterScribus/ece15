@@ -21,34 +21,35 @@ for which a new license (GPL+exception) is in place.
  *																	   *
  ***************************************************************************/
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QCloseEvent>
-#include <QColorDialog>
-#include <QComboBox>
+#include <QtWidgets/QColorDialog>
+#include <QtWidgets/QComboBox>
 #include <QCursor>
-#include <QDesktopWidget>
+#include <QtWidgets/QDesktopWidget>
 #include <QEvent>
 #include <QFocusEvent>
-#include <QFontDialog>
-#include <QFrame>
-#include <QGridLayout>
-#include <QHBoxLayout>
+#include <QtWidgets/QFontDialog>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QHideEvent>
 #include <QKeyEvent>
-#include <QLabel>
+#include <QtWidgets/QLabel>
 #include <QList>
 #include <QPair>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPalette>
 #include <QPixmap>
 #include <QRegExp>
+#include <QtWidgets/QScrollBar>
 #include <QShowEvent>
 #include <QTextBlock>
 #include <QTextCodec>
 #include <QTextLayout>
-#include <QToolTip>
+#include <QtWidgets/QToolTip>
 
 #include "actionmanager.h"
 #include "alignselect.h"
@@ -68,7 +69,9 @@ for which a new license (GPL+exception) is in place.
 #include "scfonts.h"
 #include "scplugin.h"
 #include "scraction.h"
-#include "scribuscore.h"
+#include "scribus.h"
+#include "scribusview.h"
+#include "scribusdoc.h"
 #include "scrspinbox.h"
 #include "ui/searchreplacedialog.h"
 #include "serializer.h"
@@ -988,7 +991,7 @@ void SEditor::paste()
 {
 	emit SideBarUp(false);
 	bool useMimeStyledText = false;
-	int  newParaCount, lengthLastPara, advanceLen = 0;
+	int  /*newParaCount, lengthLastPara,*/ advanceLen = 0;
 	int  pos = textCursor().hasSelection() ? textCursor().selectionStart() : textCursor().position();
 	const QMimeData* mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
 	if (mimeData->hasFormat("application/x-scribus-styledtext"))
@@ -1013,8 +1016,8 @@ void SEditor::paste()
 		if (!data.isEmpty())
 		{
 			data.replace(QRegExp("\r"), "");
-			newParaCount=data.count("\n");
-			lengthLastPara=data.length()-data.lastIndexOf("\n");
+//			newParaCount=data.count("\n");
+//			lengthLastPara=data.length()-data.lastIndexOf("\n");
 			data.replace(QRegExp("\n"), SpecialChars::PARSEP);
 //			inserted=true;
 			advanceLen = data.length() /*- newParaCount*/;
@@ -1568,7 +1571,7 @@ StoryEditor::~StoryEditor()
 void StoryEditor::showEvent(QShowEvent *)
 {
 	charSelect = new CharSelect(this);
-	charSelect->userTableModel()->setCharactersAndFonts(ScCore->primaryMainWindow()->charPalette->userTableModel()->characters(), ScCore->primaryMainWindow()->charPalette->userTableModel()->fonts());
+	charSelect->userTableModel()->setCharactersAndFonts(m_doc->scMW()->charPalette->userTableModel()->characters(), m_doc->scMW()->charPalette->userTableModel()->fonts());
 	connect(charSelect, SIGNAL(insertSpecialChar()), this, SLOT(slot_insertSpecialChar()));
 	connect(charSelect, SIGNAL(insertUserSpecialChar(QChar, QString)), this, SLOT(slot_insertUserSpecialChar(QChar, QString)));
 
@@ -1581,7 +1584,7 @@ void StoryEditor::hideEvent(QHideEvent *)
 	if (charSelect)
 	{
 		if (charSelectUsed)
-			ScCore->primaryMainWindow()->charPalette->userTableModel()->setCharactersAndFonts(charSelect->userTableModel()->characters(), charSelect->userTableModel()->fonts());
+			m_doc->scMW()->charPalette->userTableModel()->setCharactersAndFonts(charSelect->userTableModel()->characters(), charSelect->userTableModel()->fonts());
 		if (charSelect->isVisible())
 			charSelect->close();
 		disconnect(charSelect, SIGNAL(insertSpecialChar()),
@@ -2770,7 +2773,7 @@ void StoryEditor::Do_leave()
 void StoryEditor::Do_saveDocument()
 {
 	m_blockUpdate = true;
-	if (ScCore->primaryMainWindow()->slotFileSave())
+	if (m_doc->scMW()->slotFileSave())
 		updateTextFrame();
 	m_blockUpdate = false;
 }
@@ -2972,7 +2975,7 @@ void StoryEditor::updateTextFrame()
 		}
 	}
 #endif
-	ScCore->primaryMainWindow()->view->DrawNew();
+	currentDocument()->view()->DrawNew();
 	m_textChanged = false;
 	seActions["fileRevert"]->setEnabled(false);
 	seActions["editUpdateFrame"]->setEnabled(false);
@@ -3367,5 +3370,5 @@ void StoryEditor::specialActionKeyEvent(const QString& /*actionName*/, int unico
 void StoryEditor::updateUnicodeActions()
 {
 	if (Editor->prevFont!=Editor->CurrFont)
-		ScCore->primaryMainWindow()->actionManager->enableUnicodeActions(&seActions, true, Editor->CurrFont);
+		m_doc->scMW()->actionManager->enableUnicodeActions(&seActions, true, Editor->CurrFont);
 }

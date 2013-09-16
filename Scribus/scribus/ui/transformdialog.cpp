@@ -30,6 +30,7 @@ for which a new license (GPL+exception) is in place.
 #include "selection.h"
 #include "units.h"
 #include "util_icon.h"
+#include "scribusdoc.h"
 
 #if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 #define _USE_MATH_DEFINES

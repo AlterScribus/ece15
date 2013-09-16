@@ -10,8 +10,9 @@ for which a new license (GPL+exception) is in place.
 #include "documentinformation.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
 /*
 newDocument(size, margins, orientation, firstPageNumber,

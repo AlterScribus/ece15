@@ -11,17 +11,17 @@ for which a new license (GPL+exception) is in place.
 #include <QCloseEvent>
 #include <QEvent>
 #include <QFocusEvent>
-#include <QHBoxLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QImage>
 #include <QKeyEvent>
-#include <QLabel>
-#include <QListView>
-#include <QMenu>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QListView>
+#include <QtWidgets/QMenu>
 #include <QObject>
 #include <QRegExp>
-#include <QToolTip>
+#include <QtWidgets/QToolTip>
 #include <QValidator>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 #define _USE_MATH_DEFINES

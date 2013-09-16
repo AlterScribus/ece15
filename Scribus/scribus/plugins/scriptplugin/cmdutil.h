@@ -9,6 +9,7 @@ for which a new license (GPL+exception) is in place.
 
 // Pulls in <Python.h> first
 #include "cmdvar.h"
+class TableBorder;
 
 double PointToValue(double Val);
 double ValueToPoint(double Val);

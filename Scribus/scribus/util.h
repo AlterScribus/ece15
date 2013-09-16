@@ -9,26 +9,13 @@ for which a new license (GPL+exception) is in place.
 
 #include <vector>
 
-#include <QByteArray>
-#include <QColor>
-#include <QComboBox>
-#include <QDataStream>
+#include "scribusapi.h"
+#include "numeration.h"
 #include <QDir>
 #include <QList>
-#include <QPainterPath>
 #include <QPair>
-#include <QPixmap>
 #include <QStack>
-#include <QString>
-#include <QStringList>
 #include <QVector>
-
-#include "numeration.h"
-#include "pagestructs.h"
-// #include "style.h"
-// #include "styles/charstyle.h"
-// #include "styles/paragraphstyle.h"
-#include "scribusapi.h"
 
 class  QDomElement;
 class  QWidget;
@@ -37,6 +24,17 @@ class  ParagraphStyle;
 class  ScribusDoc;
 class  ScribusView;
 class  ScStreamFilter;
+class  QComboBox;
+class  QByteArray;
+class QColor;
+class QComboBox;
+class QDataStream;
+class QDir;
+class QPainterPath;
+class QPixmap;
+class QString;
+class QStringList;
+
 struct CopyPasteBuffer;
 
 //text range - used by StyleViariableMark and style mode of TOC

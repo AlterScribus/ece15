@@ -7,20 +7,20 @@ for which a new license (GPL+exception) is in place.
 
 #include <QBuffer>
 #include <QEvent>
-#include <QHeaderView>
+#include <QtWidgets/QHeaderView>
 #include <QHelpEvent>
 #include <QImage>
-#include <QLabel>
-#include <QLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLayout>
 #include <QList>
-#include <QMenu>
-#include <QMessageBox>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
 #include <QResizeEvent>
-#include <QToolTip>
+#include <QtWidgets/QToolTip>
 #include <QVariant>
-#include <QWidgetAction>
+#include <QtWidgets/QWidgetAction>
 #include <QSignalMapper>
-#include <QShortcut>
+#include <QtWidgets/QShortcut>
 #include <QDebug>
 
 #include "actionmanager.h"
@@ -31,6 +31,8 @@ for which a new license (GPL+exception) is in place.
 #include "propertiespalette.h"
 #include "scpage.h"
 #include "scribus.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 #include "selection.h"
 #include "layers.h"
 #include "undomanager.h"

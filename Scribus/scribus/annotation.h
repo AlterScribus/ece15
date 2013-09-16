@@ -23,7 +23,7 @@ for which a new license (GPL+exception) is in place.
 #define ANNOTATION_H
 
 #ifdef HAVE_CONFIG_H
-#include "scconfig.h"
+	#include "scconfig.h"
 #endif
 
 #include <QString>

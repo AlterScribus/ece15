@@ -22,19 +22,21 @@ for which a new license (GPL+exception) is in place.
 #define IMPOSITION_UI_H
 
 #include "ui_impositionbase.h"
-#include <qtabwidget.h>
-#include <qgroupbox.h>
-#include <qframe.h>
-#include <qlabel.h>
-#include <qspinbox.h>
+#include <QtWidgets/qtabwidget.h>
+#include <QtWidgets/qgroupbox.h>
+#include <QtWidgets/qframe.h>
+#include <QtWidgets/qlabel.h>
+#include <QtWidgets/qspinbox.h>
 
 #include "scribusstructs.h"
-#include "scribuscore.h"
-#include "scribuswin.h"
+//#include "scribuscore.h"
+//#include "scribuswin.h"
 #include "scribusapi.h"
 
 
 class ScribusDoc;
+class ScribusView;
+class ScribusWin;
 
 class Imposition : public QDialog,Ui::ImpositionBase
 {

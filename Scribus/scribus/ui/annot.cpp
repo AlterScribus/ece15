@@ -6,26 +6,26 @@ for which a new license (GPL+exception) is in place.
 */
 #include "annot.h"
 
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QVBoxLayout>
-#include <QStackedWidget>
-#include <QGroupBox>
-#include <QTextEdit>
-#include <QLabel>
-#include <QFrame>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QCheckBox>
-#include <QPushButton>
-#include <QSpinBox>
-#include <QTabWidget>
-#include <QWidget>
-#include <QRadioButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QStackedWidget>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QRadioButton>
 #include <QList>
 #include <QStringList>
-#include <QSpacerItem>
-#include <QToolTip>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QToolTip>
 #include <QDateTime>
 #include <QPixmap>
 
@@ -45,6 +45,7 @@ for which a new license (GPL+exception) is in place.
 #include "scfonts.h"
 #include "scimage.h"
 #include "scribusstructs.h"
+#include "scribusdoc.h"
 #include "scribusview.h"
 #include "selfield.h"
 #include "ui/customfdialog.h"

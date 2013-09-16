@@ -22,16 +22,18 @@ copyright            : Scribus Team
 #ifndef PAGEITEM_OSGFRAME_H
 #define PAGEITEM_OSGFRAME_H
 
-#include <osg/Node>
-#include <osg/Matrixd>
-#include <osg/Vec3>
+#ifdef HAVE_OSG
+	#include <osg/Node>
+	#include <osg/Matrixd>
+	#include <osg/Vec3>
+#endif
 #include <QObject>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QString>
 #include <QHash>
 
 #include "scribusapi.h"
-#include "pageitem.h"
+//#include "pageitem.h"
 #include "pageitem_imageframe.h"
 
 

@@ -24,15 +24,15 @@ for which a new license (GPL+exception) is in place.
 #ifndef DASHEDITOR_H
 #define DASHEDITOR_H
 
-#include <QLabel>
-#include <QFrame>
-#include <QDoubleSpinBox>
-#include <QLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QLayout>
 #include <QList>
 #include <QPaintEvent>
 #include <QMouseEvent>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QTime>
 
 class QEvent;

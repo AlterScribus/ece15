@@ -32,6 +32,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribus.h"
 #include "scribuscore.h"
 #include "scraction.h"
+#include "scribusdoc.h"
 #include "scribusview.h"
 #include "selection.h"
 #include "spalette.h"

@@ -27,16 +27,18 @@ for which a new license (GPL+exception) is in place.
 #ifndef TRANSFORMDIALOG_H
 #define TRANSFORMDIALOG_H
 
-#include <QDialog>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QListWidgetItem>
 #include <QTransform>
-#include <QMenu>
+#include <QtWidgets/QMenu>
 #include <QString>
 #include "ui_transformdialogbase.h"
-#include "scribusdoc.h"
-#include "scribus.h"
+//#include "scribusdoc.h"
+//#include "scribus.h"
 #include "scribusapi.h"
+
+class ScribusDoc;
 
 class SCRIBUS_API TransformItem : public QListWidgetItem
 {

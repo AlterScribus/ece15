@@ -23,25 +23,25 @@ for which a new license (GPL+exception) is in place.
 
 #include "cpalette.h"
 
-#include <QAbstractItemView>
+#include <QtWidgets/QAbstractItemView>
 #include <QEvent>
 #include <QFont>
-#include <QFrame>
-#include <QGridLayout>
-#include <QGroupBox>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QListWidgetItem>
 #include <QPixmap>
 #include <QRect>
-#include <QSpacerItem>
-#include <QSpinBox>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSpinBox>
 #include <QStandardItem>
-#include <QToolButton>
-#include <QToolTip>
-#include <QVBoxLayout>
-#include <QCheckBox>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QCheckBox>
 #include <QDebug>
 
 #include "colorlistbox.h"
@@ -58,6 +58,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpainter.h"
 #include "scpattern.h"
 #include "scribus.h"
+#include "scribusview.h"
 #include "selection.h"
 #include "undomanager.h"
 #include "units.h"

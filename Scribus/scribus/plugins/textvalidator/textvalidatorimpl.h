@@ -13,8 +13,8 @@ or documentation
 #define TEXTVALIDATORIMPL_H
 
 #include <QObject>
-#include "pageitem.h"
-
+#include <QMap>
+class PageItem;
 class QString;
 class ScribusDoc;
 

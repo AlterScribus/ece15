@@ -8,11 +8,12 @@ for which a new license (GPL+exception) is in place.
 #ifndef COLORWHEELWIDGET_H
 #define COLORWHEELWIDGET_H
 
-#include <QLabel>
+#include <QtWidgets/QLabel>
 
 #include "scribusstructs.h"
-#include "sccolor.h"
+//#include "sccolor.h"
 
+class ScColor;
 class ScribusDoc;
 
 /*! \brief Mapping angle - color in the color wheel */
@@ -31,7 +32,7 @@ class ColorWheel : public QLabel
 
 	public:
 		ColorWheel(QWidget * parent, const char * name = 0);
-		~ColorWheel(){};
+		~ColorWheel(){}
 
 		//! \brief It can handle these color theory methods
 		enum MethodType {

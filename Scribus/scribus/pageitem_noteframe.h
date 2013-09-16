@@ -3,7 +3,9 @@
 
 #include "pageitem_textframe.h"
 #include "notesstyles.h"
-#include "undostate.h"
+//#include "undostate.h"
+
+class SimpleState;
 
 class SCRIBUS_API PageItem_NoteFrame : public PageItem_TextFrame
 {

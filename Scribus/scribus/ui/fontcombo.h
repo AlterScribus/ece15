@@ -24,8 +24,8 @@ for which a new license (GPL+exception) is in place.
 #ifndef FONTCOMBO_H
 #define FONTCOMBO_H
 
-#include <QWidget>
-#include <QComboBox>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QComboBox>
 #include "scribusapi.h"
 
 class QEvent;

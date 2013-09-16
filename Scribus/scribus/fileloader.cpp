@@ -4,7 +4,7 @@ to the COPYING file provided with the program. Following this notice may exist
 a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
-#include <QDomElement>
+#include <QtXml/QDomElement>
 #include <QFile>
 #include <QFileInfo>
 #include <QtAlgorithms>
@@ -12,9 +12,9 @@ for which a new license (GPL+exception) is in place.
 #include <QRegExp>
 #include <QDir>
 #include <QTextCodec>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QProgressBar>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressBar>
 
 #include <QList>
 #include <cstdlib>
@@ -34,6 +34,7 @@ for which a new license (GPL+exception) is in place.
 #include "scclocale.h"
 #include "scpage.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "scribusXml.h"
 #include "units.h"
 #include "util.h"

@@ -21,11 +21,11 @@ for which a new license (GPL+exception) is in place.
  *                                                                         *
  ***************************************************************************/
 
-#include <QAbstractItemView>
+#include <QtWidgets/QAbstractItemView>
 #include <QEvent>
 #include <QFont>
-#include <QGridLayout>
-#include <QLabel>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QLabel>
 #include <QPixmap>
 #include <QStringList>
 

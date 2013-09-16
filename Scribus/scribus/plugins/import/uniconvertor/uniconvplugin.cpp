@@ -11,7 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefsmanager.h"
 
 #include <QDebug>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QString>
 #include <QProcess>
 #include <QTemporaryFile>
@@ -28,6 +28,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "commonstrings.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "undomanager.h"
 
 int uniconvertorplugin_getPluginAPIVersion()

@@ -38,6 +38,7 @@ for which a new license (GPL+exception) is in place.
 #include <sstream>
 #include <QDebug>
 
+#include "annotation.h"
 #include "canvas.h"
 #include "cmsettings.h"
 #include "colorblind.h"
@@ -69,6 +70,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusdoc.h"
 #include "scribusstructs.h"
 #include "scribuswin.h"
+#include "scribusview.h"
 #include "sctextstream.h"
 #include "selection.h"
 #include "text/nlsconfig.h"

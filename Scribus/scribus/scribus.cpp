@@ -21,7 +21,7 @@ for which a new license (GPL+exception) is in place.
  *                                                                         *
  ***************************************************************************/
 
-#include <QAction>
+#include <QtWidgets/QAction>
 #include <QApplication>
 #include <QByteArray>
 #include <QCloseEvent>
@@ -8580,6 +8580,7 @@ void ScribusMainWindow::doSaveAsPDF()
 				if (!errorMsg.isEmpty())
 					message = QString("%1\n%2").arg(message).arg(errorMsg);
 				QMessageBox::warning(this, CommonStrings::trWarning, message, CommonStrings::tr_OK);
+				return;
 			}
 		}
 		if (doc->pdfOptions().useDocBleeds)

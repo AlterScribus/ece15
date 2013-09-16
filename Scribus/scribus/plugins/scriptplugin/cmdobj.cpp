@@ -11,6 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "pageitem_table.h"
 
 PyObject *scribus_newrect(PyObject* /* self */, PyObject* args)

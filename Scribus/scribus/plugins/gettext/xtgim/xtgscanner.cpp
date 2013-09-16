@@ -27,10 +27,12 @@ for which a new license (GPL+exception) is in place.
 #include "xtgscanner.h"
 #include "text/specialchars.h"
 #include "fonts/scface.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 #include <QString>
 #include <QList>
 #include <QDebug>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 class ScribusDoc;
 

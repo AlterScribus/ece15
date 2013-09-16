@@ -7,16 +7,17 @@ for which a new license (GPL+exception) is in place.
 #ifndef SELECTFIELDS_H
 #define SELECTFIELDS_H
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 class QHBoxLayout;
 class QVBoxLayout;
 class QListWidget;
 class QListWidgetItem;
 class QPushButton;
 class QLabel;
+class ScribusDoc;
 
 #include "scribusapi.h"
-#include "scribusview.h"
+//#include "scribusview.h"
 
 class SCRIBUS_API SelectFields : public QDialog
 {

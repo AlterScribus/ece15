@@ -11,6 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribus.h"
 #include "scpaths.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "scimgdataloader_gimp.h"
 #ifdef GMAGICK_FOUND
 #include "scimgdataloader_gmagick.h"
@@ -27,7 +28,7 @@ for which a new license (GPL+exception) is in place.
 #include "scstreamfilter_jpeg.h"
 #include "sctextstream.h"
 #include <QFile>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QList>
 #include <QByteArray>
 #include <QImageReader>

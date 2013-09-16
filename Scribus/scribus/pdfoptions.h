@@ -20,11 +20,11 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 #include "scribusstructs.h"
 #include "imposition/imposition.h"
+#include "imposition/impositionoptions.h"
 
 struct PDFPresentationData;
 struct LPIData;
 class  MarginStruct;
-
 /**
  * @brief PDF Options struture. Capable of verifying its self, but otherwise largely
  *        a dumb struct.

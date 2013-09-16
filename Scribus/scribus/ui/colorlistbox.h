@@ -7,7 +7,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef COLORLISTBOX_H
 #define COLORLISTBOX_H
 
-#include <QListWidget>
+#include <QtWidgets/QListWidget>
 #include <QColor>
 #include <QPointer>
 

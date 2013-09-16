@@ -5,8 +5,8 @@ a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
 
-#include <QHeaderView>
-#include <QMessageBox>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QMessageBox>
 
 #include "ui/cmykfw.h"
 #include "colorblind.h"
@@ -18,7 +18,9 @@ for which a new license (GPL+exception) is in place.
 #include "ui/propertiespalette.h"
 #include "sccolorengine.h"
 #include "util_color.h"
-
+#include "scribus.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 
 CWDialog::CWDialog(QWidget* parent, ScribusDoc* doc, const char* name, bool modal)
 	: QDialog (parent),

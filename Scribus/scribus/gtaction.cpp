@@ -26,7 +26,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QCursor>
 #include <QList>
-#include <QProgressBar>
+#include <QtWidgets/QProgressBar>
 #include <QStringList>
 
 #include "gtaction.h"
@@ -46,6 +46,7 @@ for which a new license (GPL+exception) is in place.
 #include "selection.h"
 #include "sccolorengine.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "undomanager.h"
 
 #include "util_icon.h"

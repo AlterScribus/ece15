@@ -15,10 +15,10 @@ for which a new license (GPL+exception) is in place.
 #ifndef _SCRIBUSXML_H
 #define _SCRIBUSXML_H
 
-#include <QDomDocument>
-#include <QDomElement>
+#include <QtXml/QDomDocument>
+#include <QtXml/QDomElement>
 #include <QList>
-#include <QProgressBar>
+#include <QtWidgets/QProgressBar>
 
 #include "scfonts.h"
 #include "scribusapi.h"

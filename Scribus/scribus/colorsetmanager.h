@@ -13,15 +13,18 @@ for which a new license (GPL+exception) is in place.
 #define COLORSETMANAGER_H
 
 #include "scribusapi.h"
-#include "sccolor.h"
-#include "scribusdoc.h"
+//#include "sccolor.h"
+//#include "scribusdoc.h"
 #include "vgradient.h"
-#include "scpattern.h"
+//#include "scpattern.h"
 #include <QMap>
 #include <QString>
 #include <QStringList>
-#include <QTreeWidget>
+#include <QtWidgets/QTreeWidget>
 
+class ColorList;
+class ScPattern;
+class ScribusDoc;
 struct ApplicationPrefs;
 
 class SCRIBUS_API ColorSetManager

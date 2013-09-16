@@ -1,6 +1,7 @@
 #include "mark2item.h"
 #include "pageitem_noteframe.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 
 Mark2Item::Mark2Item(QWidget *parent) : MarkInsert(parent)
 {

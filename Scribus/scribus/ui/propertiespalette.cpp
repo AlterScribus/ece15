@@ -9,21 +9,21 @@ for which a new license (GPL+exception) is in place.
 #include "propertiespalette.h"
 
 #include <QCloseEvent>
-#include <QComboBox>
+#include <QtWidgets/QComboBox>
 #include <QEvent>
 #include <QFocusEvent>
 #include <QKeyEvent>
 #include <QTransform>
 #include <QObject>
 #include <QPoint>
-#include <QSpacerItem>
-#include <QStackedWidget>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QStackedWidget>
 #include <QTimer>
-#include <QToolBox>
-#include <QToolTip>
-#include <QVBoxLayout>
+#include <QtWidgets/QToolBox>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QVBoxLayout>
 #include <QValidator>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 #define _USE_MATH_DEFINES

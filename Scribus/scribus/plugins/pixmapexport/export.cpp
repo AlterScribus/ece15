@@ -9,12 +9,14 @@ for which a new license (GPL+exception) is in place.
 
 #include <QCursor>
 #include <QDir>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QPixmap>
 #include <QString>
 #include <QSharedPointer>
 
 #include "scribus.h"
+#include "scribusdoc.h"
+#include "scribusview.h"
 #include "scraction.h"
 #include "ui/scmwmenumanager.h"
 #include "util.h"

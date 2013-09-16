@@ -30,7 +30,9 @@ for which a new license (GPL+exception) is in place.
 #include "pathfinderdialog.h"
 #include "selection.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "sccolorengine.h"
+#include "scribusview.h"
 #include "ui/propertiespalette.h"
 #include "undomanager.h"
 #include "undostate.h"
@@ -38,7 +40,7 @@ for which a new license (GPL+exception) is in place.
 #include "util_math.h"
 #include "util_icon.h"
 
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QPixmap>
 
 int pathfinder_getPluginAPIVersion()

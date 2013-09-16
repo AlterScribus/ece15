@@ -37,6 +37,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusXml.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "selection.h"
 #include "svgplugin.h"
 #include "ui/customfdialog.h"

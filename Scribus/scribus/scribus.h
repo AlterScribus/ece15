@@ -31,10 +31,10 @@ for which a new license (GPL+exception) is in place.
 
 // include files for QT
 
-#include <QActionGroup>
+#include <QtWidgets/QActionGroup>
 #include <QClipboard>
 #include <QKeyEvent>
-#include <QMainWindow>
+#include <QtWidgets/QMainWindow>
 #include <QMap>
 #include <QMultiHash>
 #include <QPixmap>
@@ -55,9 +55,11 @@ class QToolButton;
 
 // application specific includes
 #include "scribusapi.h"
-#include "scribusview.h"
-#include "scribusdoc.h"
+#include "scribusstructs.h"
+//#include "scribusview.h"
+//#include "scribusdoc.h"
 #include "ui/customfdialog.h"
+#include "undoobject.h"
 
 class ActionManager;
 class AlignDistributePalette;
@@ -90,12 +92,14 @@ class PrefsContext;
 class PrefsManager;
 class PropertiesPalette;
 class ScToolBar;
+class ScItemsState;
 class ScrAction;
 class ScribusDoc;
 class ScribusCore;
 class ScribusMainWindow;
 class ScribusQApp;
 class ScribusWin;
+class ScribusView;
 class SearchReplaceDialog;
 class SimpleState;
 class StoryEditor;

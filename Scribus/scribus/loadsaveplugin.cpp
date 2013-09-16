@@ -9,9 +9,10 @@ for which a new license (GPL+exception) is in place.
 #include "scribuscore.h"
 #include "scribusview.h"
 #include "plugins/formatidlist.h"
+#include "undomanager.h"
 
 #include <QList>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 QList<FileFormat> LoadSavePlugin::formats;
 

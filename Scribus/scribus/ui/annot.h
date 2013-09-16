@@ -7,7 +7,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef ANNOT_H
 #define ANNOT_H
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 class QHBoxLayout;
 class QGridLayout;
 class QVBoxLayout;
@@ -26,8 +26,8 @@ class QWidget;
 class QRadioButton;
 
 #include "scribusapi.h"
-#include "sccolor.h"
-
+//#include "sccolor.h"
+class ColorList;
 class PageItem;
 class Navigator;
 class ColorCombo;

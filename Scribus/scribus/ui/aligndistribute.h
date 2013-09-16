@@ -24,27 +24,27 @@ for which a new license (GPL+exception) is in place.
 
 #include "ui_aligndistribute.h"
 
-#include <QVariant>
-#include <QPixmap>
-#include <QDialog>
-#include <QLabel>
+//#include <QVariant>
+//#include <QPixmap>
+//#include <QtWidgets/QDialog>
+//#include <QtWidgets/QLabel>
 #include <QList>
 
 class QEvent;
 
 #include "scribusapi.h"
-#include "scribusview.h"
+#include "scribusdoc.h"
+//#include "scribusview.h"
 #include "ui/scdockpalette.h"
 
-class QSpacerItem;
-class QLabel;
-class QLineEdit;
-class QComboBox;
-class QToolButton;
-class ScrSpinBox;
+//class QSpacerItem;
+//class QLabel;
+//class QLineEdit;
+//class QComboBox;
+//class QToolButton;
+//class ScrSpinBox;
 
 class ScribusMainWindow;
-class ScribusDoc;
 class UndoManager;
 struct AlignObjs;
 

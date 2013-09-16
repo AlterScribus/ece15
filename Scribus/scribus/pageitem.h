@@ -25,12 +25,12 @@ for which a new license (GPL+exception) is in place.
 #define PAGEITEM_H
 
 #include <QObject>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QPolygon>
 #include <QStack>
 #include <QList>
 #include <QKeyEvent>
-#include <QMenu>
+#include <QtWidgets/QMenu>
 #include <QRect>
 #include <QRectF>
 #include <QVector>
@@ -39,7 +39,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 #include "annotation.h"
 #include "colormgmt/sccolormgmtstructs.h"
-#include "desaxe/saxio.h"
+//#include "desaxe/saxio.h"
 #include "observable.h"
 #include "pagestructs.h"
 #include "scimage.h"
@@ -51,7 +51,7 @@ for which a new license (GPL+exception) is in place.
 #include "vgradient.h"
 #include "mesh.h"
 #ifdef HAVE_CONFIG_H
-#include "scconfig.h"
+	#include "scconfig.h"
 #endif
 
 class QFrame;
@@ -62,7 +62,6 @@ class ScribusDoc;
 class SimpleState;
 class UndoManager;
 class UndoState;
-
 
 class PageItem_Arc;
 class PageItem_Group;
@@ -79,7 +78,7 @@ class PageItem_Spiral;
 class PageItem_Symbol;
 class PageItem_Table;
 class PageItem_TextFrame;
-
+class SaxIO;
 /**
   *@author Franz Schmid
   */

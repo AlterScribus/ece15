@@ -24,14 +24,14 @@ for which a new license (GPL+exception) is in place.
 #ifndef TPALETTE_H
 #define TPALETTE_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QPointer>
-#include <QGroupBox>
-#include <QPushButton>
-#include <QToolButton>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QToolButton>
 #include "scribusapi.h"
 #include "gradienteditor.h"
-#include "scribusdoc.h"
+//#include "scribusdoc.h"
 #include "ui/scrpalettebase.h"
 #include "ui_transparencypalette.h"
 #include "ui/gradientvectordialog.h"
@@ -43,6 +43,7 @@ class ScrSpinBox;
 class ScComboBox;
 class ScPattern;
 class LinkButton;
+class ScribusDoc;
 
 /**
   *@author Franz Schmid

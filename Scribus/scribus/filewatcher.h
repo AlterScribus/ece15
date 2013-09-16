@@ -15,8 +15,10 @@ for which a new license (GPL+exception) is in place.
 #include <QTimer>
 
 #include "scribusapi.h"
+//#include "scribusdoc.h"
 
-#include "scribusdoc.h"
+class ScribusDoc;
+
 class SCRIBUS_API FileWatcher : public QObject
 {
 	Q_OBJECT

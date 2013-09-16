@@ -13,12 +13,13 @@ for which a new license (GPL+exception) is in place.
 #include "scpaths.h"
 #include "scribusdoc.h"
 #include "scribus.h"
+#include "scribusview.h"
 #include "selection.h"
 #include "plugins/short-words/parse.h"
 #include <QObject>
-#include <QProgressBar>
+#include <QtWidgets/QProgressBar>
 #include <QString>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 // Initialize members here, if any
 TextValidatorImpl::TextValidatorImpl(ScribusDoc* doc) : QObject(0)

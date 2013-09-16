@@ -23,7 +23,7 @@ copyright            : Scribus Team
 #define PAGEITEM_LATEXFRAME_H
 
 #include <QObject>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QString>
 #include <QProcess>
 #include <QMap>

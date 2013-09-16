@@ -7,7 +7,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef ARROWCHOOSER_H
 #define ARROWCHOOSER_H
 
-#include <QComboBox>
+#include <QtWidgets/QComboBox>
 #include "scribusapi.h"
 #include <QList>
 

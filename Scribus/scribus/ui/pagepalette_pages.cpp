@@ -6,17 +6,17 @@ for which a new license (GPL+exception) is in place.
 */
 
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QBitmap>
 #include <QCursor>
 #include <QDrag>
 #include <QEvent>
-#include <QHeaderView>
-#include <QLabel>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QList>
-#include <QMenu>
+#include <QtWidgets/QMenu>
 #include <QMimeData>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 #include <QPainter>
 
 #include "commonstrings.h"
@@ -27,6 +27,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scribus.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "scribusview.h"
 #include "util_icon.h"
 

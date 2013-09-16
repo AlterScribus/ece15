@@ -12,16 +12,26 @@ for which a new license (GPL+exception) is in place.
 #include <QString>
 #include <QRegExp>
 #include <QIODevice>
-#include <QProgressBar>
+#include <QtWidgets/QProgressBar>
 #include <QStringList>
 #include <QList>
 
 class FileFormat;
 //TODO REmove includes one day
 class ScribusView;
-#include "scfonts.h"
-#include "scribusdoc.h"
-#include "undomanager.h"
+class ScribusDoc;
+class Selection;
+class SCFonts;
+class ScFace;
+class multiLine;
+class ColorList;
+class UndoManager;
+//#include "scfonts.h"
+//#include "scribusdoc.h"
+//#include "undomanager.h"
+#include "styles/styleset.h"
+#include "styles/paragraphstyle.h"
+#include "styles/charstyle.h"
 
 /*!
  * @brief Superclass for all file import/export/load/save plugins

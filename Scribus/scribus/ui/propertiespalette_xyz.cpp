@@ -7,7 +7,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "propertiespalette_xyz.h"
 
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 #if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 #define _USE_MATH_DEFINES
@@ -26,6 +26,7 @@ for which a new license (GPL+exception) is in place.
 #include "propertiespalette_utils.h"
 #include "sccombobox.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "scribuscore.h"
 #include "scraction.h"
 #include "scribusview.h"

@@ -11,12 +11,13 @@ for which a new license (GPL+exception) is in place.
 #include "loadsaveplugin.h"
 #include "scfonts.h"
 #include "scribusstructs.h"
+#include "scribusdoc.h"
 #include "styles/styleset.h"
 
 #include <QHash>
 #include <QList>
 #include <QMap>
-#include <QProgressBar>
+#include <QtWidgets/QProgressBar>
 #include <QString>
 
 class QIODevice;
@@ -24,8 +25,6 @@ class QIODevice;
 class  ColorList;
 class  multiLine;
 class  ScLayer;
-class  ScribusDoc;
-//struct ScribusDoc::BookMa;
 class  ScXmlStreamAttributes;
 class  ScXmlStreamReader;
 class  ScXmlStreamWriter;

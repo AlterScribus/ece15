@@ -4,8 +4,8 @@ to the COPYING file provided with the program. Following this notice may exist
 a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
-#include <QApplication>
-#include <QMessageBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 
 #include "commonstrings.h"
 
@@ -18,6 +18,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpaths.h"
 #include "scraction.h"
 #include "scribuscore.h"
+#include "scribusdoc.h"
 #include "undomanager.h"
 #include "util_formats.h"
 #include "util.h"

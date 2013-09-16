@@ -15,12 +15,12 @@ This program is free software - see LICENSE file in the distribution
 or documentation
 */
 
-#include <QCheckBox>
+#include <QtWidgets/QCheckBox>
 #include <QCursor>
 #include <QDir>
 #include <QFile>
-#include <QMessageBox>
-#include <QProgressBar>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressBar>
 #include <QTextCodec>
 #include <QPixmap>
 
@@ -37,6 +37,7 @@ or documentation
 #include "scpaths.h"
 #include "scribus.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "util_icon.h"
 
 int scribusshortwords_getPluginAPIVersion()

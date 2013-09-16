@@ -21,7 +21,7 @@ for which a new license (GPL+exception) is in place.
 
 #ifndef SCRIBUSAPP_H
 #define SCRIBUSAPP_H
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QString>
 
 #include "scribusapi.h"

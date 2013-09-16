@@ -21,6 +21,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "commonstrings.h"
 #include "scribus.h"
+#include "scribusview.h"
 #include "scribusXml.h"
 #include "fonts/scfontmetrics.h"
 #include "fpointarray.h"

@@ -1,12 +1,10 @@
 #ifndef IMPOSER_H
 #define IMPOSER_H
 
-#include "podofo/podofo.h"
-#include "impositionoptions.h"
-#include "impositioninputfile.h"
-#include "impositionoutputfile.h"
 #include <QString>
 
+#include "imposition/impositionoptions.h"
+#include "imposition/impositioninputfile.h"
 namespace Imposition
 	{
 		class imposer
@@ -24,5 +22,5 @@ namespace Imposition
 			void imposeFile 	(const QString & target, imposeInputFile * input, ImposerOptions * options );
 		};
 
-}; // end of namespace
+} // end of namespace
 #endif

@@ -29,10 +29,13 @@ for which a new license (GPL+exception) is in place.
 #include "colorsetmanager.h"
 #include "sccolor.h"
 #include "scribusapi.h"
-#include "scribusdoc.h"
-#include "scribus.h"
+//#include "scribusdoc.h"
+//#include "scribus.h"
 #include "vgradient.h"
 #include "scpattern.h"
+
+class ScribusDoc;
+class ScribusMainWindow;
 
 class SCRIBUS_API PaintManagerDialog : public QDialog, Ui::PaintManagerBase
 {

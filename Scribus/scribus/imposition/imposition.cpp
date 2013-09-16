@@ -12,6 +12,8 @@ for which a new license (GPL+exception) is in place.
 #include <cstdio>
 #include <stdexcept>
 #include <iomanip>
+#include "podofo/podofo.h"
+#include "impositionoutputfile.h"
 using std::cerr;
 using std::strtod;
 using std::ostringstream;

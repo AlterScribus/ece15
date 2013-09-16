@@ -16,7 +16,7 @@ This program is free software - see LICENSE file in the distribution
 or documentation
 */
 
-#include <QProgressBar>
+#include <QtWidgets/QProgressBar>
 #include <QRegExp>
 
 #include "shortwords.h"
@@ -28,6 +28,7 @@ or documentation
 #include "pageitem.h"
 #include "scribus.h"
 #include "scribusdoc.h"
+#include "scribusview.h"
 #include "scpage.h"
 #include "selection.h"
 

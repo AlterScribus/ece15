@@ -10,7 +10,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QPair>
 
-#include "undoobject.h"
+//#include "undoobject.h"
 #include "scribusapi.h"
 
 class QColor;

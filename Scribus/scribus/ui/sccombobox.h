@@ -16,7 +16,7 @@ for which a new license (GPL+exception) is in place.
 #ifndef SCCOMBOBOX_H
 #define SCCOMBOBOX_H
 
-#include <QComboBox>
+#include <QtWidgets/QComboBox>
 
 /*!
     \class ScComboBox sccombobox.h

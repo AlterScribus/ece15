@@ -15,25 +15,26 @@ for which a new license (GPL+exception) is in place.
 
 #include "layers.h"
 
-#include <QCheckBox>
-#include <QColorDialog>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QColorDialog>
 #include <QEvent>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QLabel>
-#include <QMessageBox>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMessageBox>
 #include <QPixmap>
-#include <QPushButton>
-#include <QSpacerItem>
-#include <QTableWidget>
-#include <QTableWidgetItem>
-#include <QToolButton>
-#include <QToolTip>
-#include <QVBoxLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTableWidgetItem>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QVBoxLayout>
 
 #include "sccombobox.h"
 #include "ui/scrspinbox.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "undomanager.h"
 #include "util_icon.h"
 
