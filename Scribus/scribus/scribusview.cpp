@@ -95,6 +95,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scpainter.h"
 #include "scpaths.h"
+#include "scraction.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "scribuswin.h"
@@ -2693,6 +2694,7 @@ void ScribusView::GotoPa(int Seite)
 {
 	Deselect();
 	GotoPage(Seite-1);
+	((ScrAction*) m_ScMW->scrActions["toolsSelect"])->setChecked(true);
 	setFocus();
 }
 
