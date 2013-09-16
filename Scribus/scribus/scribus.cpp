@@ -8687,6 +8687,11 @@ void ScribusMainWindow::RestoreBookMarks()
 	bookmarkPalette->BView->rebuildTree();
 }
 
+QStringList ScribusMainWindow::scrapbookNames()
+{
+	return scrapbookPalette->getOpenScrapbooksNames();
+}
+
 //CB-->Doc, stop _storing_ bookmarks in the palette
 void ScribusMainWindow::StoreBookmarks()
 {

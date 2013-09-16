@@ -1719,6 +1719,56 @@ void ActionManager::languageChange()
 	(*scrActions)["specialToggleAllPalettes"]->setTexts( tr("Toggle Palettes"));
 	(*scrActions)["specialToggleAllGuides"]->setTexts( tr("Toggle Guides"));
 	(*scrActions)["specialUnicodeSequenceBegin"]->setTexts( tr("Insert Unicode Character Begin Sequence"));
+
+
+	//Status texts for toolbar items
+	(*scrActions)["editCopy"]->setStatusTextAndShortcut( tr("Copy"));
+	(*scrActions)["editCut"]->setStatusTextAndShortcut( tr("Cut"));
+	(*scrActions)["editPaste"]->setStatusTextAndShortcut( tr("Paste"));
+	(*scrActions)["editRedoAction"]->setStatusTextAndShortcut( tr("Redo"));
+	(*scrActions)["editUndoAction"]->setStatusTextAndShortcut( tr("Undo"));
+	(*scrActions)["fileClose"]->setStatusTextAndShortcut( tr("Close the current document"));
+	(*scrActions)["fileExportAsPDF"]->setStatusTextAndShortcut( tr("Export the document to PDF"));
+	(*scrActions)["fileNew"]->setStatusTextAndShortcut( tr("Create a new document"));
+	(*scrActions)["fileOpen"]->setStatusTextAndShortcut( tr("Open an existing document"));
+	(*scrActions)["filePrint"]->setStatusTextAndShortcut( tr("Print the document"));
+	(*scrActions)["fileSave"]->setStatusTextAndShortcut( tr("Save the current document"));
+	(*scrActions)["toolsCopyProperties"]->setStatusTextAndShortcut( tr("Copy item properties"));
+	(*scrActions)["toolsEditContents"]->setStatusTextAndShortcut( tr("Edit contents of a frame"));
+	(*scrActions)["toolsEditWithStoryEditor"]->setText( tr("Edit text in the Story Editor"));
+	(*scrActions)["toolsEyeDropper"]->setStatusTextAndShortcut( tr("Eye Dropper"));
+	(*scrActions)["toolsInsertArc"]->setStatusTextAndShortcut( tr("Insert an arc"));
+	(*scrActions)["toolsInsertBezier"]->setStatusTextAndShortcut( tr("Insert a bezier curve"));
+	(*scrActions)["toolsInsertCalligraphicLine"]->setStatusTextAndShortcut( tr("Insert a calligraphic line"));
+	(*scrActions)["toolsInsertFreehandLine"]->setStatusTextAndShortcut( tr("Insert a freehand line"));
+	(*scrActions)["toolsInsertImageFrame"]->setStatusTextAndShortcut( tr("Insert an image frame"));
+	(*scrActions)["toolsInsertLine"]->setStatusTextAndShortcut( tr("Insert a line"));
+	(*scrActions)["toolsInsertPolygon"]->setStatusTextAndShortcut( tr("Insert a polygon"));
+	(*scrActions)["toolsInsertRenderFrame"]->setStatusTextAndShortcut( tr("Insert a render frame"));
+	(*scrActions)["toolsInsertShape"]->setStatusTextAndShortcut( tr("Insert a shape"));
+	(*scrActions)["toolsInsertSpiral"]->setStatusTextAndShortcut( tr("Insert a spiral"));
+	(*scrActions)["toolsInsertTable"]->setStatusTextAndShortcut( tr("Insert a table"));
+	(*scrActions)["toolsInsertTextFrame"]->setStatusTextAndShortcut( tr("Insert a text frame"));
+	(*scrActions)["toolsLinkTextFrame"]->setStatusTextAndShortcut( tr("Link text frames"));
+	(*scrActions)["toolsMeasurements"]->setStatusTextAndShortcut( tr("Measurements"));
+	(*scrActions)["toolsPDFAnnotLink"]->setStatusTextAndShortcut( tr("Insert link annotation"));
+	(*scrActions)["toolsPDFAnnotText"]->setStatusTextAndShortcut( tr("Insert text annotation"));
+	(*scrActions)["toolsPDFCheckBox"]->setStatusTextAndShortcut( tr("Insert PDF check box"));
+	(*scrActions)["toolsPDFComboBox"]->setStatusTextAndShortcut( tr("Insert PDF combo box"));
+	(*scrActions)["toolsPDFListBox"]->setStatusTextAndShortcut( tr("Insert PDF list box"));
+	(*scrActions)["toolsPDFPushButton"]->setStatusTextAndShortcut( tr("Insert PDF push button"));
+	(*scrActions)["toolsPDFRadioButton"]->setStatusTextAndShortcut( tr("Insert PDF radio button"));
+	(*scrActions)["toolsPDFTextField"]->setStatusTextAndShortcut( tr("Insert PDF text field"));
+	(*scrActions)["toolsPreflightVerifier"]->setStatusTextAndShortcut( tr("Analyse the document for issues prior to exporting to PDF"));
+	(*scrActions)["toolsRotate"]->setStatusTextAndShortcut( tr("Rotate an item"));
+	(*scrActions)["toolsSelect"]->setStatusTextAndShortcut( tr("Select an item"));
+	(*scrActions)["toolsUnlinkTextFrame"]->setStatusTextAndShortcut( tr("Unlink text frames"));
+	(*scrActions)["toolsZoom"]->setStatusTextAndShortcut( tr("Zoom in or out"));
+#ifdef HAVE_OSG
+	(*scrActions)["toolsPDFAnnot3D"]->setStatusTextAndShortcut( tr("Insert 3D annotation"));
+#endif
+
+	//////
 	languageChangeUnicodeActions(scrActions);
 	languageChangeActions();
 }
