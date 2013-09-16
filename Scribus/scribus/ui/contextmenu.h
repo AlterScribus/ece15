@@ -41,7 +41,7 @@ protected:
 	
 	Selection m_Sel;
 	QStringList m_actionList;
-	ScribusMainWindow *m_ScMW;
+	ScribusMainWindow *m_AP;
 	ScribusDoc *m_doc;
 	
 	QString pageDeletePrimaryString;

@@ -17,7 +17,6 @@ DEPENDPATH += . \
               scribus/tests \
               scribus/text \
               scribus/ui \
-              win32/vc9 \
               resources/translations/po \
               scribus/designer/smwidgets \
               scribus/plugins/barcodegenerator \
@@ -39,58 +38,6 @@ DEPENDPATH += . \
               scribus/third_party/prc \
               scribus/third_party/wpg \
               scribus/tt/simpletreemodel \
-              win32/vc9/aiimport \
-              win32/vc9/barcodegenerator \
-              win32/vc9/cgmimport \
-              win32/vc9/colorwheel \
-              win32/vc9/cvgimport \
-              win32/vc9/drwimport \
-              win32/vc9/flattenpath \
-              win32/vc9/fontpreview \
-              win32/vc9/gettext-csvim \
-              win32/vc9/gettext-docim \
-              win32/vc9/gettext-htmlim \
-              win32/vc9/gettext-odtim \
-              win32/vc9/gettext-pdbim \
-              win32/vc9/gettext-sxwim \
-              win32/vc9/gettext-textfilter \
-              win32/vc9/gettext-txtim \
-              win32/vc9/gettext-xtgim \
-              win32/vc9/hunspellcheck \
-              win32/vc9/idmlimport \
-              win32/vc9/lenseffects \
-              win32/vc9/meshdistortion \
-              win32/vc9/oodrawimport \
-              win32/vc9/pathalongpath \
-              win32/vc9/pathconnect \
-              win32/vc9/pathcut \
-              win32/vc9/pathfinder \
-              win32/vc9/pathstroker \
-              win32/vc9/pctimport \
-              win32/vc9/pdfimport \
-              win32/vc9/picturebrowser \
-              win32/vc9/pixmapexport \
-              win32/vc9/psimport \
-              win32/vc9/saveastemplate \
-              win32/vc9/scribus-main \
-              win32/vc9/scribus12format \
-              win32/vc9/scribus134format \
-              win32/vc9/scribus13format \
-              win32/vc9/scribus150format \
-              win32/vc9/scriptplugin \
-              win32/vc9/shapeimport \
-              win32/vc9/shortwords \
-              win32/vc9/smlimport \
-              win32/vc9/smoothpath \
-              win32/vc9/subdivide \
-              win32/vc9/svgexport \
-              win32/vc9/svgimport \
-              win32/vc9/transform \
-              win32/vc9/uniconvimport \
-              win32/vc9/wmfimport \
-              win32/vc9/wpgimport \
-              win32/vc9/xarimport \
-              win32/vc9/xfigimport \
               scribus/plugins/fileloader/oldscribusformat \
               scribus/plugins/fileloader/scribus12format \
               scribus/plugins/fileloader/scribus134format \
@@ -141,7 +88,6 @@ DEPENDPATH += . \
               scribus/plugins/tools/2geomtools/pathalongpath
 INCLUDEPATH += . \
                scribus \
-               win32/vc9 \
                scribus/fonts \
                scribus/colormgmt \
                scribus/desaxe \
@@ -173,7 +119,6 @@ INCLUDEPATH += . \
                scribus/plugins/short-words \
                scribus/plugins/svgexplugin \
                scribus/third_party/lib2geom \
-               win32/vc9/scribus-main \
                scribus/plugins/fileloader/oldscribusformat \
                scribus/plugins/fileloader/scribus12format \
                scribus/plugins/fileloader/scribus134format \
@@ -789,7 +734,6 @@ HEADERS += scribus/actionmanager.h \
            scribus/ui/useprintermarginsdialog.h \
            scribus/ui/vruler.h \
            scribus/ui/weldedit.h \
-           win32/vc9/win-config.h \
            scribus/designer/smwidgets/smalignselectplugin.h \
            scribus/designer/smwidgets/smcolorcomboplugin.h \
            scribus/designer/smwidgets/smfontcombohplugin.h \
@@ -1023,8 +967,6 @@ HEADERS += scribus/actionmanager.h \
            scribus/third_party/wpg/WPXStream.h \
            scribus/tt/simpletreemodel/treeitem.h \
            scribus/tt/simpletreemodel/treemodel.h \
-           win32/vc9/scribus-main/resource.h \
-           win32/vc9/scribus-main/scribuspch.h \
            scribus/plugins/fileloader/oldscribusformat/oldscribusformat.h \
            scribus/plugins/fileloader/oldscribusformat/oldscribusformatimpl.h \
            scribus/plugins/fileloader/scribus12format/scribus12format.h \
@@ -2040,58 +1982,6 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/third_party/wpg/WPGXParser.cpp \
            scribus/tt/simpletreemodel/treeitem.cpp \
            scribus/tt/simpletreemodel/treemodel.cpp \
-           win32/vc9/aiimport/aiimportdll.cpp \
-           win32/vc9/barcodegenerator/barcodegeneratordll.cpp \
-           win32/vc9/cgmimport/cgmimportdll.cpp \
-           win32/vc9/colorwheel/colorwheeldll.cpp \
-           win32/vc9/cvgimport/cvgimportdll.cpp \
-           win32/vc9/drwimport/drwimportdll.cpp \
-           win32/vc9/flattenpath/flattenpathdll.cpp \
-           win32/vc9/fontpreview/fontpreviewdll.cpp \
-           win32/vc9/gettext-csvim/gettext-csvimdll.cpp \
-           win32/vc9/gettext-docim/gettext-docimdll.cpp \
-           win32/vc9/gettext-htmlim/gettext-htmlimdll.cpp \
-           win32/vc9/gettext-odtim/gettext-odtimdll.cpp \
-           win32/vc9/gettext-pdbim/gettext-pdbimdll.cpp \
-           win32/vc9/gettext-sxwim/gettext-sxwimdll.cpp \
-           win32/vc9/gettext-textfilter/gettext-textfilterdll.cpp \
-           win32/vc9/gettext-txtim/gettext-txtimdll.cpp \
-           win32/vc9/gettext-xtgim/gettext-xtgimdll.cpp \
-           win32/vc9/hunspellcheck/hunspellcheckdll.cpp \
-           win32/vc9/idmlimport/idmlimportdll.cpp \
-           win32/vc9/lenseffects/lenseffectsdll.cpp \
-           win32/vc9/meshdistortion/meshdistortiondll.cpp \
-           win32/vc9/oodrawimport/oodrawimportdll.cpp \
-           win32/vc9/pathalongpath/pathalongpathdll.cpp \
-           win32/vc9/pathconnect/pathconnectdll.cpp \
-           win32/vc9/pathcut/pathcutdll.cpp \
-           win32/vc9/pathfinder/pathfinderdll.cpp \
-           win32/vc9/pathstroker/pathstrokerdll.cpp \
-           win32/vc9/pctimport/pctimportdll.cpp \
-           win32/vc9/pdfimport/pdfimportdll.cpp \
-           win32/vc9/picturebrowser/picturebrowserdll.cpp \
-           win32/vc9/pixmapexport/pixmapexportdll.cpp \
-           win32/vc9/psimport/psimportdll.cpp \
-           win32/vc9/saveastemplate/saveastemplatedll.cpp \
-           win32/vc9/scribus-main/scribuspch.cpp \
-           win32/vc9/scribus12format/scribus12formatdll.cpp \
-           win32/vc9/scribus134format/scribus134formatdll.cpp \
-           win32/vc9/scribus13format/scribus13formatdll.cpp \
-           win32/vc9/scribus150format/scribus150formatdll.cpp \
-           win32/vc9/scriptplugin/scriptplugindll.cpp \
-           win32/vc9/shapeimport/shapeimportdll.cpp \
-           win32/vc9/shortwords/shortwordsdll.cpp \
-           win32/vc9/smlimport/smlimportdll.cpp \
-           win32/vc9/smoothpath/smoothpathdll.cpp \
-           win32/vc9/subdivide/subdividedll.cpp \
-           win32/vc9/svgexport/svgexportdll.cpp \
-           win32/vc9/svgimport/svgimportdll.cpp \
-           win32/vc9/transform/transformdll.cpp \
-           win32/vc9/uniconvimport/uniconvimportdll.cpp \
-           win32/vc9/wmfimport/wmfimportdll.cpp \
-           win32/vc9/wpgimport/wpgimportdll.cpp \
-           win32/vc9/xarimport/xarimportdll.cpp \
-           win32/vc9/xfigimport/xfigimportdll.cpp \
            scribus/plugins/fileloader/oldscribusformat/oldscribusformat.cpp \
            scribus/plugins/fileloader/oldscribusformat/oldscribusformatimpl.cpp \
            scribus/plugins/fileloader/scribus12format/scribus12format.cpp \
