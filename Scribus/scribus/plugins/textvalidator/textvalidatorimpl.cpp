@@ -11,6 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefscontext.h"
 #include "prefsmanager.h"
 #include "scpaths.h"
+#include "scpage.h"
 #include "scribusdoc.h"
 #include "scribus.h"
 #include "scribusview.h"

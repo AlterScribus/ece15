@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "colorwheel.h"
 #include "cwdialog.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 

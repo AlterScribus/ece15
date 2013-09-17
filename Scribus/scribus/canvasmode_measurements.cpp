@@ -21,6 +21,7 @@
 
 #include "canvas.h"
 #include "ui/measurements.h"
+#include "scpage.h"
 #include "scribusdoc.h"
 #include "scribusview.h"
 #include "util_math.h"

@@ -58,6 +58,7 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_icon.h"
 #include "sccolor.h"
+#include "scpage.h"
 #include "scribusview.h"
 #include "scribusdoc.h"
 #include "scpaths.h"

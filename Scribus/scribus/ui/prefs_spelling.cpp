@@ -27,7 +27,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "scribusapp.h"
 #include "scpaths.h"
-
+#include "downloadmanager/scdlmgr.h"
 
 extern ScribusQApp* ScQApp;
 

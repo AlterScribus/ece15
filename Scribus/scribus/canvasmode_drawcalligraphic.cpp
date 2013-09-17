@@ -28,6 +28,7 @@
 #include "KarbonCurveFit.h"
 #include "ui/pageselector.h"
 #include "prefsmanager.h"
+#include "scpage.h"
 #include "scraction.h"
 #include "scribus.h"
 #include "scribusdoc.h"

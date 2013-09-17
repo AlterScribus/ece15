@@ -17,6 +17,7 @@ for which a new license (GPL+exception) is in place.
 #include "resourcecollection.h"
 #include "scconfig.h"
 #include "scpattern.h"
+#include "scpage.h"
 #include "scribusdoc.h"
 #include "scribusview.h"
 #include "hyphenator.h"

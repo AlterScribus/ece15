@@ -28,6 +28,7 @@ pageitem.cpp  -  description
 #include "fpoint.h"
 #include "notesstyles.h"
 #include "scfonts.h"
+#include "scpage.h"
 #include "scribusdoc.h"
 #include "sctext_shared.h"
 #include "selection.h"

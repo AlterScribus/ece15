@@ -8,7 +8,7 @@ for which a new license (GPL+exception) is in place.
 
 
 
-#include "scribus.h"
+//#include "scribus.h"
 #include "scribusdoc.h"
 #include "pageitem.h"
 #include <QList>
@@ -32,13 +32,13 @@ PageItem & findItemByName(QList<PageItem*> & items, const QString name)
 
 PageItem & getItem(const QString name)
 {
-	return findItemByName(ScCore->primaryMainWindow()->doc->DocItems, name);
+	return findItemByName(ScCore->primaryMWdoc()->DocItems, name);
 }
 
 list getItemNames()
 {
 	list l;
-	QList<PageItem*>& items( ScCore->primaryMainWindow()->doc->DocItems );
+	QList<PageItem*>& items( ScCore->primaryMWdoc()->DocItems );
 	for (
 		QList<PageItem*>::iterator it(items.begin()) ;
 		it != items.end() ;

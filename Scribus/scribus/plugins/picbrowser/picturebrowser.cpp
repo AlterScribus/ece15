@@ -19,6 +19,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "prefsfile.h"
 #include "prefsmanager.h"
+#include "scribus.h"
 
 //provides loadIcon()
 #include "util_icon.h"

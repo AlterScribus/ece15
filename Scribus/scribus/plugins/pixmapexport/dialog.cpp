@@ -16,6 +16,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefsmanager.h"
 #include "prefsfile.h"
 #include "prefscontext.h"
+#include "scpage.h"
 #include "ui/scrspinbox.h"
 #include "usertaskstructs.h"
 #include "util_icon.h"

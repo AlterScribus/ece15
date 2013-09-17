@@ -111,7 +111,7 @@ bool LensEffectsPlugin::run(ScribusDoc* doc, QString)
 {
 	ScribusDoc* currDoc = doc;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMWdoc();
 	if (currDoc->m_Selection->count() > 0)
 	{
 		LensDialog *dia = new LensDialog(currDoc->scMW(), currDoc);

@@ -35,6 +35,7 @@ for which a new license (GPL+exception) is in place.
 #include "sccolorengine.h"
 #include "scmimedata.h"
 #include "scraction.h"
+#include "scribus.h"
 #include "scribusXml.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"

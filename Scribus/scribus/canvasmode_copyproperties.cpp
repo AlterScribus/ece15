@@ -27,6 +27,7 @@
 #include "canvas.h"
 #include "ui/contextmenu.h"
 #include "fpoint.h"
+#include "scpage.h"
 #include "scribus.h"
 #include "scribusdoc.h"
 #include "scribusview.h"

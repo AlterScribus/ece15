@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 #include <QModelIndex>
 
 #include "ui/scrspinbox.h"
+#include "scpage.h"
 #include "scribusdoc.h"
 #include "guidesdelegate.h"
 #include "units.h"

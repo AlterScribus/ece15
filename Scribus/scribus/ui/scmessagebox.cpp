@@ -21,6 +21,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "scmessagebox.h"
 #include "scribuscore.h"
+#include "scribusapp.h"
 
 extern ScribusQApp* ScQApp;
 

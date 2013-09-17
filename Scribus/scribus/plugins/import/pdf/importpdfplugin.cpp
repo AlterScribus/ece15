@@ -17,6 +17,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scpaths.h"
 #include "scraction.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "undomanager.h"

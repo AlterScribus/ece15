@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribus12formatimpl.h"
 //#include "scribus12formatimpl.moc"
 #include "scribuscore.h"
+#include "scribus.h"
 
 #include <QString>
 #include <QMessageBox>

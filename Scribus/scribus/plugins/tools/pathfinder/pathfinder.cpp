@@ -29,6 +29,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_polygon.h"
 #include "pathfinderdialog.h"
 #include "selection.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "sccolorengine.h"
@@ -130,7 +131,7 @@ bool PathFinderPlugin::run(ScribusDoc* doc, QString)
 {
 	ScribusDoc* currDoc = doc;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMWdoc();
 	if (currDoc->m_Selection->count() <= 1)
 		return true;
 	

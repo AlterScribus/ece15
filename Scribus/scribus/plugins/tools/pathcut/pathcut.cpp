@@ -25,6 +25,7 @@ for which a new license (GPL+exception) is in place.
 ****************************************************************************/
 
 #include "pathcut.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "scribusstructs.h"
@@ -128,7 +129,7 @@ bool PathCutPlugin::run(ScribusDoc* doc, QString)
 	}
 	ScribusDoc* currDoc = doc;
 	if (currDoc == 0)
-		currDoc = ScCore->primaryMainWindow()->doc;
+		currDoc = ScCore->primaryMWdoc();
 	if (currDoc->m_Selection->count() > 1)
 	{
 		PageItem *Item1 = currDoc->m_Selection->itemAt(0);

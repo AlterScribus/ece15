@@ -46,6 +46,7 @@ for which a new license (GPL+exception) is in place.
 #include "scclocale.h"
 #include "sccolorengine.h"
 #include "scfonts.h"
+#include "scpage.h"
 #include "scribusapp.h"
 #include "scribusdoc.h"
 #include "scribus.h"

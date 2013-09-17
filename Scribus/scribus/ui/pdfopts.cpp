@@ -20,6 +20,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefsfile.h"
 #include "prefsmanager.h"
 #include "scpaths.h"
+#include "scpage.h"
 #include "scribusview.h"
 #include "ui/customfdialog.h"
 #include "ui/scrspinbox.h"

@@ -12,6 +12,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/createrange.h"
 #include "prefsstructs.h"
 
+#include "scpage.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "scribusview.h"

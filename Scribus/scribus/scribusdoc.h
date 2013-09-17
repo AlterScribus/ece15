@@ -40,7 +40,7 @@ for which a new license (GPL+exception) is in place.
 #include "gtgettext.h" //CB For the ImportSetup struct and itemadduserframe
 #include "scribusapi.h"
 #include "colormgmt/sccolormgmtengine.h"
-#include "documentinformation.h"
+//#include "documentinformation.h"
 #include "numeration.h"
 #include "marks.h"
 #include "notesstyles.h"
@@ -52,17 +52,18 @@ for which a new license (GPL+exception) is in place.
 #include "pagestructs.h"
 #include "prefsstructs.h"
 #include "scguardedptr.h"
-#include "scpage.h"
+//#include "scpage.h"
 #include "sclayer.h"
 #include "styles/styleset.h"
 #include "styles/tablestyle.h"
 #include "styles/cellstyle.h"
-#include "undoobject.h"
+//#include "undoobject.h"
 #include "undostate.h"
 #include "updatemanager.h"
 #include "usertaskstructs.h"
 
 class DocUpdater;
+class DocumentInformation;
 class FPoint;
 class UndoManager;
 // class UndoState;
@@ -74,6 +75,7 @@ class ScribusMainWindow;
 class ResourceCollection;
 class PageSize;
 class ScPattern;
+class ScPage;
 class UndoTransaction;
 class Serializer;
 class QProgressBar;

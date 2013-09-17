@@ -18,6 +18,7 @@ for which a new license (GPL+exception) is in place.
 #include "scclocale.h"
 #include "scconfig.h"
 #include "sccolorengine.h"
+#include "scpage.h"
 #include "scpattern.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"

@@ -26,6 +26,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefscontext.h"
 #include "prefsfile.h"
 #include "sccombobox.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "prefsmanager.h"

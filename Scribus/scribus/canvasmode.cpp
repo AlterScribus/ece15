@@ -50,6 +50,7 @@
 #include "prefsmanager.h"
 #include "selection.h"
 #include "sccolorengine.h"
+#include "scpage.h"
 #include "scpainter.h"
 #include "scraction.h"
 #include "scribus.h"

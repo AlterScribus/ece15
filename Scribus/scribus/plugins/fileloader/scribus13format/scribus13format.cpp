@@ -14,6 +14,8 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_group.h"
 #include "prefsmanager.h"
 #include "scconfig.h"
+#include "scpage.h"
+#include "scribus.h"
 #include "scribusdoc.h"
 #include "scribusview.h"
 #include "sctextstream.h"

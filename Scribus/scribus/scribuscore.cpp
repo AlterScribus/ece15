@@ -33,6 +33,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefsmanager.h"
 #include "scimagecachemanager.h"
 #include "scpaths.h"
+#include "scribus.h"
 #include "scribusapp.h"
 #include "scribuscore.h"
 #include "ui/splash.h"
@@ -563,6 +564,13 @@ ScribusMainWindow * ScribusCore::primaryMainWindow( )
 	if (!mw)
 		return 0;
 	return mw;
+}
+
+ScribusDoc *ScribusCore::primaryMWdoc()
+{
+	if (primaryMainWindow())
+		return primaryMainWindow()->doc;
+	return NULL;
 }
 
 void ScribusCore::recheckGS()

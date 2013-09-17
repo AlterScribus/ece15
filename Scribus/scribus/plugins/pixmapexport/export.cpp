@@ -14,6 +14,7 @@ for which a new license (GPL+exception) is in place.
 #include <QString>
 #include <QSharedPointer>
 
+#include "scpage.h"
 #include "scribus.h"
 #include "scribusdoc.h"
 #include "scribusview.h"

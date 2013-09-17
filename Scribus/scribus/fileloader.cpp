@@ -33,6 +33,7 @@ for which a new license (GPL+exception) is in place.
 #include "resourcecollection.h"
 #include "scclocale.h"
 #include "scpage.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "scribusXml.h"

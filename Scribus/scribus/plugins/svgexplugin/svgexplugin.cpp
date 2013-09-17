@@ -46,6 +46,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scpattern.h"
 #include "scribuscore.h"
+#include "scribus.h"
 #include "scribusdoc.h"
 #include "scribusview.h"
 #include "sctextstruct.h"

@@ -13,6 +13,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefscontext.h"
 #include "scribuscore.h"
 #include "scraction.h"
+#include "scribus.h"
 #include "scribusapp.h"
 
 #include <QMessageBox>

@@ -7,6 +7,7 @@ for which a new license (GPL+exception) is in place.
 #include "fontpreviewplugin.h"
 //#include "fontpreviewplugin.moc"
 #include "fontpreview.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include <QCursor>

@@ -11,6 +11,7 @@ for which a new license (GPL+exception) is in place.
 #include "satdialog.h"
 
 #include "scpaths.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "scribusview.h"

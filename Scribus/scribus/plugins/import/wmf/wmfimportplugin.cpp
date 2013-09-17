@@ -23,6 +23,7 @@ for which a new license (GPL+exception) is in place.
 #include "ui/scmwmenumanager.h"
 #include "prefsmanager.h"
 #include "pageitem.h"
+#include "scpage.h"
 #include "scraction.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"

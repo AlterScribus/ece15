@@ -14,6 +14,7 @@ for which a new license (GPL+exception) is in place.
 #include "scclocale.h"
 #include "scpage.h"
 #include "scpainter.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "pagestructs.h"

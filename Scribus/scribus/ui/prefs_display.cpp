@@ -13,6 +13,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "prefs_display.h"
 #include "prefsstructs.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "units.h"

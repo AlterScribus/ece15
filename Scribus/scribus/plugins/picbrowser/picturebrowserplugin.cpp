@@ -6,6 +6,7 @@ for which a new license (GPL+exception) is in place.
 */
 #include "picturebrowserplugin.h"
 //#include "picturebrowser.h"
+#include "scribus.h"
 
 // See scplugin.h and pluginmanager.{cpp,h} for detail on what these methods
 // do. That documentatation is not duplicated here.

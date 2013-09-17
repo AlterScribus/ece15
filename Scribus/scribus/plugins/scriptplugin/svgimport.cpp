@@ -50,12 +50,12 @@ PyObject *scribus_placevec(PyObject* /* self */, PyObject* args)
 		if( fmt )
 		{
 			fmt->loadFile(fName, LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-			if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
+			if (ScCore->primaryMWdoc()->m_Selection->count() > 1)
 			{
 				double x2, y2, w, h;
-				ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+				ScCore->primaryMWdoc()->m_Selection->getGroupRect(&x2, &y2, &w, &h);
 				ScCore->primaryMainWindow()->view->startGroupTransaction();
-				ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+				ScCore->primaryMWdoc()->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 				ScCore->primaryMainWindow()->view->endGroupTransaction();
 				ScCore->primaryMainWindow()->requestUpdate(reqColorsUpdate | reqLineStylesUpdate | reqTextStylesUpdate);
 			}
@@ -84,12 +84,12 @@ PyObject *scribus_placesvg(PyObject* /* self */, PyObject* args)
 	if( fmt )
 	{
 		fmt->loadFile(QString::fromUtf8(Image), LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-		if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
+		if (ScCore->primaryMWdoc()->m_Selection->count() > 1)
 		{
 			double x2, y2, w, h;
-			ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+			ScCore->primaryMWdoc()->m_Selection->getGroupRect(&x2, &y2, &w, &h);
 			ScCore->primaryMainWindow()->view->startGroupTransaction();
-			ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+			ScCore->primaryMWdoc()->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 			ScCore->primaryMainWindow()->view->endGroupTransaction();
 			ScCore->primaryMainWindow()->requestUpdate(reqColorsUpdate | reqLineStylesUpdate | reqTextStylesUpdate);
 		}
@@ -117,12 +117,12 @@ PyObject *scribus_placeeps(PyObject* /* self */, PyObject* args)
 	if( fmt )
 	{
 		fmt->loadFile(QString::fromUtf8(Image), LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-		if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
+		if (ScCore->primaryMWdoc()->m_Selection->count() > 1)
 		{
 			double x2, y2, w, h;
-			ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+			ScCore->primaryMWdoc()->m_Selection->getGroupRect(&x2, &y2, &w, &h);
 			ScCore->primaryMainWindow()->view->startGroupTransaction();
-			ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+			ScCore->primaryMWdoc()->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 			ScCore->primaryMainWindow()->view->endGroupTransaction();
 			ScCore->primaryMainWindow()->requestUpdate(reqColorsUpdate | reqLineStylesUpdate | reqTextStylesUpdate);
 		}
@@ -150,12 +150,12 @@ PyObject *scribus_placesxd(PyObject* /* self */, PyObject* args)
 	if( fmt )
 	{
 		fmt->loadFile(QString::fromUtf8(Image), LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-		if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
+		if (ScCore->primaryMWdoc()->m_Selection->count() > 1)
 		{
 			double x2, y2, w, h;
-			ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+			ScCore->primaryMWdoc()->m_Selection->getGroupRect(&x2, &y2, &w, &h);
 			ScCore->primaryMainWindow()->view->startGroupTransaction();
-			ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+			ScCore->primaryMWdoc()->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 			ScCore->primaryMainWindow()->view->endGroupTransaction();
 			ScCore->primaryMainWindow()->requestUpdate(reqColorsUpdate | reqLineStylesUpdate | reqTextStylesUpdate)
 		}
@@ -183,12 +183,12 @@ PyObject *scribus_placeodg(PyObject* /* self */, PyObject* args)
 	if( fmt )
 	{
 		fmt->loadFile(QString::fromUtf8(Image), LoadSavePlugin::lfUseCurrentPage|LoadSavePlugin::lfInteractive|LoadSavePlugin::lfScripted);
-		if (ScCore->primaryMainWindow()->doc->m_Selection->count() > 1)
+		if (ScCore->primaryMWdoc()->m_Selection->count() > 1)
 		{
 			double x2, y2, w, h;
-			ScCore->primaryMainWindow()->doc->m_Selection->getGroupRect(&x2, &y2, &w, &h);
+			ScCore->primaryMWdoc()->m_Selection->getGroupRect(&x2, &y2, &w, &h);
 			ScCore->primaryMainWindow()->view->startGroupTransaction();
-			ScCore->primaryMainWindow()->doc->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
+			ScCore->primaryMWdoc()->moveGroup(pageUnitXToDocX(x) - x2, pageUnitYToDocY(y) - y2);
 			ScCore->primaryMainWindow()->view->endGroupTransaction();
 			ScCore->primaryMainWindow()->requestUpdate(reqColorsUpdate | reqLineStylesUpdate | reqTextStylesUpdate)
 		}

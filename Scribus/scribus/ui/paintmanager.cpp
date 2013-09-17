@@ -52,6 +52,7 @@ for which a new license (GPL+exception) is in place.
 #include "sclimits.h"
 #include "sclistboxpixmap.h"
 #include "scclocale.h"
+#include "scpage.h"
 #include "scpainter.h"
 #include "scpaths.h"
 #include "sctextstream.h"

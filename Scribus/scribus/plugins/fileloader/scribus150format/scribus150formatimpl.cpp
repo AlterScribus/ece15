@@ -6,6 +6,7 @@ for which a new license (GPL+exception) is in place.
 */
 #include "scribus150formatimpl.h"
 //#include "scribus150formatimpl.moc"
+#include "scribus.h"
 #include "scribuscore.h"
 
 #include <QString>

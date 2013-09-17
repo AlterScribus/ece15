@@ -48,6 +48,7 @@ for which a new license (GPL+exception) is in place.
 #include "scdomelement.h"
 #include "scfonts.h"
 #include "scpaths.h"
+#include "scribus.h"
 #include "scribusapp.h"
 #include "scribuscore.h"
 #include "scribusstructs.h"

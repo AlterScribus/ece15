@@ -29,6 +29,7 @@ for which a new license (GPL+exception) is in place.
 #include "guidesmodel.h"
 #include "scinputdialog.h"
 #include "scpage.h"
+#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "scribusview.h"

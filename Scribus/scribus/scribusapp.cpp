@@ -34,6 +34,7 @@ for which a new license (GPL+exception) is in place.
 #include <QLocale>
 #include <QTextStream>
 
+#include "scribus.h"
 #include "scribusapp.h"
 #include "scribuscore.h"
 #include "scpaths.h"
@@ -42,6 +43,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefsmanager.h"
 #include "commonstrings.h"
 #include "upgradechecker.h"
+#include "downloadmanager/scdlmgr.h"
 
 #ifdef WITH_TESTS
 #include "tests/runtests.h"

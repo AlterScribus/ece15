@@ -24,8 +24,9 @@ for which a new license (GPL+exception) is in place.
 
 #include <QObject>
 #include <QList>
-#include "scribus.h"
+//#include "scribus.h"
 #include "scribusapi.h"
+#include "scribusstructs.h"
 
 #include "colormgmt/sccolormgmtengine.h"
 
@@ -33,6 +34,8 @@ class QWidget;
 class FileWatcher;
 class PluginManager;
 class ScSplashScreen;
+class ScribusCore;
+class ScribusDoc;
 class ScribusMainWindow;
 class PrefsManager;
 class UndoManager;
@@ -103,6 +106,7 @@ public:
 	
 	//Main Window members
 	ScribusMainWindow* primaryMainWindow();
+	ScribusDoc* primaryMWdoc();
 	
 	PluginManager* pluginManager;	
 	FileWatcher* fileWatcher;

@@ -6,15 +6,18 @@ for which a new license (GPL+exception) is in place.
 */
 
 #include "slaoutput.h"
+
+#include <QApplication>
+#include <QFile>
+
 #include <poppler/GlobalParams.h>
 #include <poppler/poppler-config.h>
 #include <poppler/FileSpec.h>
 #include <poppler/fofi/FoFiTrueType.h>
-#include <QApplication>
-#include <QFile>
 #include "commonstrings.h"
 #include "loadsaveplugin.h"
 #include "sccolorengine.h"
+#include "scpage.h"
 #include "util.h"
 #include "util_math.h"
 #include <tiffio.h>

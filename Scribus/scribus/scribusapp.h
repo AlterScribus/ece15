@@ -25,7 +25,8 @@ for which a new license (GPL+exception) is in place.
 #include <QString>
 
 #include "scribusapi.h"
-#include "downloadmanager/scdlmgr.h"
+
+class ScDLManager;
 class ScribusCore;
 class ScribusMainWindow;
 

@@ -9,8 +9,8 @@ for which a new license (GPL+exception) is in place.
 #include "barcodegenerator.h"
 #include "commonstrings.h"
 #include "loadsaveplugin.h"
+#include "scpage.h"
 #include "scpaths.h"
-#include "scribus.h"
 #include "scribuscore.h"
 #include "scribusdoc.h"
 #include "undomanager.h"
@@ -113,10 +113,10 @@ BarcodeGenerator::BarcodeGenerator(QWidget* parent, const char* name)
 	ui.cancelButton->setText(CommonStrings::tr_Cancel);
 	ui.resetButton->setIcon(loadIcon("u_undo16.png"));
 
-	if (ScCore->primaryMainWindow()->doc->PageColors.contains("Black"))
+	if (ScCore->primaryMWdoc()->PageColors.contains("Black"))
 	{
-		lnColor = ScCore->primaryMainWindow()->doc->PageColors["Black"];
-		txtColor = ScCore->primaryMainWindow()->doc->PageColors["Black"];
+		lnColor = ScCore->primaryMWdoc()->PageColors["Black"];
+		txtColor = ScCore->primaryMWdoc()->PageColors["Black"];
 		ui.linesLabel->setToolTip("Black");
 		ui.txtLabel->setToolTip("Black");
 	}
@@ -125,9 +125,9 @@ BarcodeGenerator::BarcodeGenerator(QWidget* parent, const char* name)
 		ui.linesLabel->setToolTip("n.a.");
 		ui.txtLabel->setToolTip("n.a.");
 	}
-	if (ScCore->primaryMainWindow()->doc->PageColors.contains("White"))
+	if (ScCore->primaryMWdoc()->PageColors.contains("White"))
 	{
-		bgColor = ScCore->primaryMainWindow()->doc->PageColors["White"];
+		bgColor = ScCore->primaryMWdoc()->PageColors["White"];
 		ui.bgLabel->setToolTip("White");
 	}
 	else
@@ -223,7 +223,7 @@ void BarcodeGenerator::paintColorSample(QLabel *l, const ScColor & c)
 
 void BarcodeGenerator::bgColorButton_pressed()
 {
-	PaintManagerDialog d(this, &ScCore->primaryMainWindow()->doc->docGradients, ScCore->primaryMainWindow()->doc->PageColors, "", &ScCore->primaryMainWindow()->doc->docPatterns, ScCore->primaryMainWindow()->doc, ScCore->primaryMainWindow());
+	PaintManagerDialog d(this, &ScCore->primaryMWdoc()->docGradients, ScCore->primaryMWdoc()->PageColors, "", &ScCore->primaryMWdoc()->docPatterns, ScCore->primaryMWdoc(), ScCore->primaryMainWindow());
 	if (!d.exec())
 		return;
 	bgColor = d.selectedColor();
@@ -234,7 +234,7 @@ void BarcodeGenerator::bgColorButton_pressed()
 
 void BarcodeGenerator::lnColorButton_pressed()
 {
-	PaintManagerDialog d(this, &ScCore->primaryMainWindow()->doc->docGradients, ScCore->primaryMainWindow()->doc->PageColors, "", &ScCore->primaryMainWindow()->doc->docPatterns, ScCore->primaryMainWindow()->doc, ScCore->primaryMainWindow());
+	PaintManagerDialog d(this, &ScCore->primaryMWdoc()->docGradients, ScCore->primaryMWdoc()->PageColors, "", &ScCore->primaryMWdoc()->docPatterns, ScCore->primaryMWdoc(), ScCore->primaryMainWindow());
 	if (!d.exec())
 		return;
 	lnColor = d.selectedColor();
@@ -245,7 +245,7 @@ void BarcodeGenerator::lnColorButton_pressed()
 
 void BarcodeGenerator::txtColorButton_pressed()
 {
-	PaintManagerDialog d(this, &ScCore->primaryMainWindow()->doc->docGradients, ScCore->primaryMainWindow()->doc->PageColors, "", &ScCore->primaryMainWindow()->doc->docPatterns, ScCore->primaryMainWindow()->doc, ScCore->primaryMainWindow());
+	PaintManagerDialog d(this, &ScCore->primaryMWdoc()->docGradients, ScCore->primaryMWdoc()->PageColors, "", &ScCore->primaryMWdoc()->docPatterns, ScCore->primaryMWdoc(), ScCore->primaryMainWindow());
 
 	if (!d.exec())
 		return;
@@ -268,7 +268,7 @@ void BarcodeGenerator::okButton_pressed()
 	{
 		tran = QSharedPointer<UndoTransaction>( new UndoTransaction(
 				UndoManager::instance()->beginTransaction(
-							ScCore->primaryMainWindow()->doc->currentPage()->getUName(),
+							ScCore->primaryMWdoc()->currentPage()->getUName(),
 							Um::IImageFrame,
 							Um::ImportBarcode,
 							ui.bcCombo->currentText() + " (" + ui.codeEdit->text() + ")",

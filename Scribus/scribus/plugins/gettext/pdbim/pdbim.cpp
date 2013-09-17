@@ -18,6 +18,7 @@ for which a new license (GPL+exception) is in place.
 #include "gtwriter.h"
 #include "gtparagraphstyle.h"
 #include "scribusstructs.h"
+#include "scribus.h"
 #include "scribuscore.h"
 
 
