@@ -9,7 +9,9 @@ for which a new license (GPL+exception) is in place.
 //Widgets supported
 #include <QComboBox>
 #include <QCheckBox>
+#include <QDebug>
 //Other includes
+#include "ui/scrspinbox.h"
 
 ScTableWidget::ScTableWidget(QWidget *parent) : QTableWidget(parent)
 {
@@ -25,45 +27,33 @@ ScTableWidget::~ScTableWidget()
 
 bool ScTableWidget::eventFilter(QObject *obj, QEvent *event)
 {
-	if (event->type() == QEvent::FocusIn && obj->isWidgetType())
-	{
-		QWidget* widget = qobject_cast<QWidget*>(obj);
-		if (widget)
-		{
-			QTableWidgetItem* item = itemAt(widget->pos());
-			if (item)
-			{
-				setCurrentItem(item);
-			}
-		}
-	}
-	//emulation of cellChanged event from QTableWidget
-	if (event->type() == QEvent::FocusOut && obj->isWidgetType())
+	if (obj->isWidgetType())
 	{
 		int r=-1, c=-1;
-		QComboBox* combobox = qobject_cast<QComboBox*>(obj);
-		if (combobox)
+		if (event->type() == QEvent::FocusIn)
 		{
-			if (widgetPositions.contains(combobox))
+			QWidget* widget = qobject_cast<QWidget*>(obj);
+			if (widget)
 			{
-				r=widgetPositions.value(combobox).first;
-				c=widgetPositions.value(combobox).second;
+				QPair<int,int> rc = getRCWidget(widget);
+				r=rc.first;
+				c=rc.second;
+				setCurrentCell(r, c);
 			}
 		}
-		else
+		//emulation of cellChanged event from QTableWidget
+		if (event->type() == QEvent::FocusOut)
+		{
+			QWidget* widget = qobject_cast<QWidget*>(obj);
+			if (widget)
 			{
-				QCheckBox* checkbox = qobject_cast<QCheckBox*>(obj);
-				if (checkbox)
-				{
-					if (widgetPositions.contains(checkbox))
-					{
-						r=widgetPositions.value(checkbox).first;
-						c=widgetPositions.value(checkbox).second;
-					}
-				}
+				QPair<int,int> rc = getRCWidget(widget);
+				r=rc.first;
+				c=rc.second;
 			}
-		if (r!=-1 && c!=-1)
-			emit cellChanged(r,c);
+			if (r!=-1 && c!=-1)
+				emit cellChanged(r,c);
+		}
 	}
 	return QTableWidget::eventFilter(obj, event);
 }
@@ -91,4 +81,27 @@ void ScTableWidget::removeCellWidget ( int row, int column )
 	}
 	if (t!=NULL)
 		widgetPositions.remove(t);
+}
+
+QPair<int, int> ScTableWidget::getRCWidget(QWidget *widget)
+{
+	int r=-1, c=-1;
+	if (widgetPositions.contains(widget))
+	{
+		r=widgetPositions.value(widget).first;
+		c=widgetPositions.value(widget).second;
+	}
+	return qMakePair(r,c);
+}
+
+void ScTableWidget::clearContents()
+{
+	widgetPositions.clear();
+	QTableWidget::clearContents();
+}
+
+void ScTableWidget::clear()
+{
+	widgetPositions.clear();
+	QTableWidget::clear();
 }

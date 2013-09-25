@@ -26,6 +26,7 @@ for which a new license (GPL+exception) is in place.
 
 #include <QWidget>
 
+#include "pagestructs.h"
 #include "scribusapi.h"
 #include "styles/paragraphstyle.h"
 
@@ -51,9 +52,9 @@ public:
 	~Hruler() {};
 private:
 	bool textEditMode;
-	double ColGap;
+	QList<double> ColGap;
 	double lineCorr;
-	int Cols;
+	QList<double> ColWidths;
 	double RExtra;
 	double Extra;
 	double Indent;

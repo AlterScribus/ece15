@@ -377,6 +377,8 @@ void ResizeGesture::doResize(bool scaleContent)
 		}
 		if (currItem->isTable())
 			currItem->asTable()->adjustTable();
+		if (currItem->isTextFrame())
+			currItem->recalculateColumns();
 		// rotation does not change
 	}
 	m_origBounds = m_bounds;

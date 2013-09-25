@@ -985,15 +985,18 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 			double leftOffset(textframe->textToFrameDistLeft());
 			for(int ci(1); ci <= textframe->columns(); ++ci)
 			{
-				double cLeft(((ci-1) * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
-				double cRight((ci * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
+//				double cLeft(((ci-1) * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
+//				double cRight((ci * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
+				double cLeft = textframe->getColumnLeft(ci);
+				double cRight = cLeft + textframe->columnWidth(ci);
 				if((cLeft <= ccPos) && (ccPos <= cRight))
 				{
 					curCol = ci;
 					break;
 				}
 			}
-			dx = (textframe->columnWidth() * (curCol - 1)) + (textframe->columnGap() * (curCol - 1))  + leftOffset;
+//			dx = (textframe->columnWidth() * (curCol - 1)) + (textframe->columnGap() * (curCol - 1))  + leftOffset;
+			dx = textframe->getColumnLeft(curCol) + leftOffset;
 			dy = bbox.y();
 
 			if ( bbox.height() <= 2 )
@@ -1014,8 +1017,10 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 			double leftOffset(textframe->textToFrameDistLeft());
 			for(int ci(1); ci <= textframe->columns(); ++ci)
 			{
-				double cLeft(((ci-1) * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
-				double cRight((ci * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
+//				double cLeft(((ci-1) * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
+//				double cRight((ci * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
+				double cLeft = textframe->getColumnLeft(ci);
+				double cRight = cLeft + textframe->columnWidth(ci);
 				if((cLeft <= ccPos) && (ccPos <= cRight))
 				{
 					curCol = ci;
@@ -1024,7 +1029,8 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 			}
 			if(textframe->columns() > curCol)
 			{
-				dx = (textframe->columnWidth() * curCol) + (textframe->columnGap() * curCol)  + leftOffset;
+//				dx = (textframe->columnWidth() * curCol) + (textframe->columnGap() * curCol)  + leftOffset;
+				dx = textframe->getColumnLeft(curCol) + leftOffset;
 				dy = textframe->textToFrameDistTop();
 				dy1 = textframe->textToFrameDistTop() + textframe->itemText.boundingBox ( textCursorPos ).height();
 			}

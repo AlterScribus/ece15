@@ -598,7 +598,7 @@ PyObject *scribus_setcolumns(PyObject* /* self */, PyObject* args)
 		PyErr_SetString(WrongFrameTypeError, QObject::tr("Cannot set number of columns on a non-text frame.","python error").toLocal8Bit().constData());
 		return NULL;
 	}
-	i->Cols = w;
+	i->setColumns(w);
 //	Py_INCREF(Py_None);
 //	return Py_None;
 	Py_RETURN_NONE;

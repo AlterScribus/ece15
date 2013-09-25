@@ -128,7 +128,7 @@ class SCRIBUS_API PageItem : public QObject, public UndoObject, public SaxIO, pu
 	Q_PROPERTY(double textToFrameDistRight READ textToFrameDistRight WRITE setTextToFrameDistRight DESIGNABLE false)
 	Q_PROPERTY(double textToFrameDistTop READ textToFrameDistTop WRITE setTextToFrameDistTop DESIGNABLE false)
 	Q_PROPERTY(double textToFrameDistBottom READ textToFrameDistBottom WRITE setTextToFrameDistBottom DESIGNABLE false)
-	Q_PROPERTY(double ColGap READ columnGap WRITE setColumnGap DESIGNABLE false)
+	Q_PROPERTY(double ColGap READ columnGap WRITE setColumnsGap DESIGNABLE false)
 	Q_PROPERTY(int Cols READ columns WRITE setColumns DESIGNABLE false)
 	Q_ENUMS(FirstLineOffsetPolicy)
 	Q_PROPERTY(FirstLineOffsetPolicy firstLineOffset READ firstLineOffset WRITE setFirstLineOffset DESIGNABLE false)
@@ -671,15 +671,31 @@ public: // Start public functions
 	double textToFrameDistTop() const { return m_textDistanceMargins.Top; }
 	double textToFrameDistBottom() const { return m_textDistanceMargins.Bottom; }
 	int columns() const { return Cols; }
+	Column getColumn(int i) { return columnsList.at(i); }
+	QList<Column> getColumns() { return columnsList; }
+	void setAutoColumns(bool setAuto = true);
+	bool isAutoColumns();
+
 	double columnGap() const { return ColGap; }
+	double columnGap(int i) const { return columnsList.at(i).gap; }
+	void setColumns(int n);
+	void setColumns(QList<Column>);
+	void setColumn(int num, Column col);
+	void setColumnWidth(int num, double w = 0.0);
+	//set gaps to equal value for all columns
+	void setColumnsGap(double);
+	//set gap for one specified column
+	void setColumnGap(int, double);
+	double getColumnLeft(int colNr);
+	double getColumnsTotalGaps();
+	void recalculateColumns();
+
 	double gridOffset() const;
 	double gridDistance() const;
 	void setTextToFrameDistLeft(double);
 	void setTextToFrameDistRight(double);
 	void setTextToFrameDistTop(double);
 	void setTextToFrameDistBottom(double);
-	void setColumns(int);
-	void setColumnGap(double);
 	void setGridOffset(double);
 	void setGridDistance(double);
 	FirstLineOffsetPolicy firstLineOffset()const;
@@ -1185,6 +1201,7 @@ public:	// Start public variables
 	int selectedMeshControlPoint;
 	bool snapToPatchGrid;
 	int Cols;
+	QList<Column> columnsList;
 	double ColGap;
 	double gridOffset_;
 	double gridValue_;

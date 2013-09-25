@@ -1957,7 +1957,17 @@ void Scribus150Format::WriteObjects(ScribusDoc *doc, ScXmlStreamWriter& docu, co
 					writeITEXTs(doc, docu, item);
 			}
 		}
-
+		//custom columns
+		if (item->isTextFrame() && !item->isAutoColumns())
+		{
+			for (int col = 0; col < item->columns(); ++col)
+			{
+				docu.writeEmptyElement("Column");
+				docu.writeAttribute("auto", item->columnsList.at(col).autoWidth);
+				docu.writeAttribute("width", item->columnsList.at(col).width);
+				docu.writeAttribute("gap", item->columnsList.at(col).gap);
+			}
+		}
 		if (item->isWelded())
 		{
 			for (int i = 0 ; i <  item->weldList.count(); i++)

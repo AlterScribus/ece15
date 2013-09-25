@@ -142,6 +142,7 @@ void TableCell::updateContent()
 
 	d->textFrame->setXYPos(contentRect.x(), contentRect.y(), true);
 	d->textFrame->setWidthHeight(contentRect.width(), contentRect.height(), true);
+	d->textFrame->recalculateColumns();
 	d->textFrame->updateClip();
 	d->textFrame->invalidateLayout(false);
 }

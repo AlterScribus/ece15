@@ -425,8 +425,8 @@ int gtAction::applyParagraphStyle(gtParagraphStyle* pstyle)
 
 void gtAction::applyFrameStyle(gtFrameStyle* fstyle)
 {
+	textFrame->setColumnsGap(fstyle->getColumnsGap());
 	textFrame->setColumns(fstyle->getColumns());
-	textFrame->setColumnGap(fstyle->getColumnsGap());
 	textFrame->setFillColor(parseColor(fstyle->getBgColor()));
 	textFrame->setFillShade(fstyle->getBgShade());
 	ParagraphStyle newTabs(textFrame->itemText.defaultStyle());

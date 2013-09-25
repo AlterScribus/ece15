@@ -278,7 +278,7 @@ void ItemAPI::setColumns(int value)
 	{
 		RAISE("Column count out of bounds, must be > 1.");
 	}
-	item->Cols = value;
+	item->setColumns(value);
 }
 
 

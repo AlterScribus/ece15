@@ -53,6 +53,7 @@ void Prefs_DocumentSections::updateTable()
 {
 	sectionsTable->setRowCount(localSections.count());
 	int row=0;
+	blockSignalsWithChildrens(this, true);
 	for(DocumentSectionMap::Iterator it = localSections.begin(); it!= localSections.end(); ++it)
 	{
 		uint i=0;
@@ -103,6 +104,7 @@ void Prefs_DocumentSections::updateTable()
 		row++;
 	}
 	deleteButton->setEnabled(localSections.count()>1);
+	blockSignalsWithChildrens(this, false);
 }
 
 void Prefs_DocumentSections::tableItemChanged( int row, int col )

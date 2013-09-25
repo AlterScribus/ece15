@@ -80,5 +80,11 @@ typedef enum
 	RightPage
 } PageLocation;
 
+struct Column {
+	bool autoWidth;
+	double width;
+	double gap;
+};
+
 
 #endif

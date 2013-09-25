@@ -304,7 +304,7 @@ QPixmap SampleItem::getSample(int width, int height)
 	previewItem->FrameType = PageItem::TextFrame;
 	previewItem->itemText.clear();
 //	previewItem->setFont(tmpStyle.charStyle().font()->scName());
-	previewItem->Cols = 1;
+	previewItem->setColumns(1);
 	text.replace(QChar(10),QChar(13)).replace(QChar(5),QChar(13));
 	previewItem->itemText.insertChars(0, text);
 	previewItem->itemText.setDefaultStyle(tmpStyle);

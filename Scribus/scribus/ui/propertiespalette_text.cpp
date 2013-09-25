@@ -19,6 +19,7 @@ for which a new license (GPL+exception) is in place.
 #include "pageitem_textframe.h"
 #include "propertiespalette_utils.h"
 #include "propertywidget_advanced.h"
+#include "propertywidget_columns.h"
 #include "propertywidget_distance.h"
 #include "propertywidget_textmargins.h"
 #include "propertywidget_pareffect.h"
@@ -86,6 +87,9 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	parEffectWidgets = new PropertyWidget_ParEffect(textTree);
 	parEffectItem = textTree->addWidget( tr("Paragraph Effects"), parEffectWidgets);
 
+	columnsWidgets = new PropertyWidget_Columns(textTree);
+	columnsItem = textTree->addWidget( tr("Columns"), columnsWidgets);
+
 	distanceWidgets = new PropertyWidget_Distance(textTree);
 	distanceItem = textTree->addWidget( tr("Columns && Frame Distances"), distanceWidgets);
 
@@ -126,6 +130,7 @@ void PropertiesPalette_Text::connectSignals(bool widgetsToo)
 		orphanBox->connectSignals();
 		parEffectWidgets->connectSignals();
 		marginsWidgets->connectSignals();
+		columnsWidgets->connectSignals();
 		distanceWidgets->connectSignals();
 		optMargins->connectSignals();
 		advancedWidgets->connectSignals();
@@ -149,6 +154,7 @@ void PropertiesPalette_Text::disconnectSignals(bool widgetsToo)
 		orphanBox->disconnectSignals();
 		parEffectWidgets->disconnectSignals();
 		marginsWidgets->disconnectSignals();
+		columnsWidgets->disconnectSignals();
 		distanceWidgets->disconnectSignals();
 		optMargins->disconnectSignals();
 		advancedWidgets->disconnectSignals();
@@ -162,6 +168,7 @@ void PropertiesPalette_Text::setMainWindow(ScribusMainWindow* mw)
 
 	advancedWidgets->setMainWindow(mw);
 	colorWidgets->setMainWindow(mw);
+	columnsWidgets->setMainWindow(mw);
 	distanceWidgets->setMainWindow(mw);
 	marginsWidgets->setMainWindow(mw);
 	parEffectWidgets->setMainWindow(mw);
@@ -200,6 +207,7 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 
 	advancedWidgets->setDoc(m_doc);
 	colorWidgets->setDoc(m_doc);
+	columnsWidgets->setDoc(m_doc);
 	distanceWidgets->setDoc(m_doc);
 	parEffectWidgets->setDoc(m_doc);
 	flopBox->setDoc(m_doc);
@@ -236,6 +244,7 @@ void PropertiesPalette_Text::unsetDoc()
 
 	advancedWidgets->setDoc(0);
 	colorWidgets->setDoc(0);
+	columnsWidgets->setDoc(0);
 	distanceWidgets->setDoc(0);
 	flopBox->setDoc(0);
 	optMargins->setDoc(0);
@@ -374,6 +383,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 	if (m_item->asPathText())
 	{
 		flopItem->setHidden(true);
+		columnsItem->setHidden(true);
 		distanceItem->setHidden(true);
 		orphanItem->setHidden(true);
 		parEffectItem->setHidden(true);
@@ -382,6 +392,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 	else if (m_item->asTextFrame() || m_item->asTable())
 	{
 		flopItem->setHidden(false);
+		columnsItem->setHidden(false);
 		distanceItem->setHidden(false);
 		orphanItem->setHidden(false);
 		parEffectItem->setHidden(false);
@@ -390,6 +401,7 @@ void PropertiesPalette_Text::setCurrentItem(PageItem *i)
 	else
 	{
 		flopItem->setHidden(false);
+		columnsItem->setHidden(false);
 		distanceItem->setHidden(false);
 		orphanItem->setHidden(false);
 		parEffectItem->setHidden(false);
@@ -428,6 +440,7 @@ void PropertiesPalette_Text::unitChange()
 	disconnectSignals(true);
 	advancedWidgets->unitChange();
 	colorWidgets->unitChange();
+	columnsWidgets->unitChange();
 	distanceWidgets->unitChange();
 	flopBox->unitChange();
 	optMargins->unitChange();
@@ -771,6 +784,7 @@ void PropertiesPalette_Text::languageChange()
 	colorWidgetsItem->setText(0, tr("Color && Effects"));
 	advancedWidgetsItem->setText(0, tr("Advanced Settings"));
 	flopItem->setText(0, tr("First Line Offset"));
+	columnsItem->setText(0, tr("Columns"));
 	distanceItem->setText(0, tr("Columns && Text Distances"));
 	optMarginsItem->setText(0, tr("Optical Margins"));
 	marginsItem->setText(0, tr("Text Margins"));
@@ -790,6 +804,7 @@ void PropertiesPalette_Text::languageChange()
 
 	advancedWidgets->languageChange();
 	colorWidgets->languageChange();
+	columnsWidgets->languageChange();
 	distanceWidgets->languageChange();
 	flopBox->languageChange();
 	optMargins->languageChange();
