@@ -1431,10 +1431,8 @@ void AIPlug::processData(QString data)
 					ite->setFillEvenOdd(fillRule);
 					ite->setFillTransparency(1.0 - Opacity);
 					ite->setLineTransparency(1.0 - Opacity);
-#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 9, 4))
 					ite->setFillBlendmode(blendMode);
 					ite->setLineBlendmode(blendMode);
-#endif
 					ite->setLineEnd(CapStyle);
 					ite->setLineJoin(JoinStyle);
 					wh = getMaxClipF(&ite->PoLine);
@@ -1539,10 +1537,8 @@ void AIPlug::processData(QString data)
 				b->setTextFlowMode(PageItem::TextFlowDisabled);
 				b->setFillTransparency(1.0 - Opacity);
 				b->setLineTransparency(1.0 - Opacity);
-	#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 9, 4))
 				b->setFillBlendmode(blendMode);
 				b->setLineBlendmode(blendMode);
-	#endif
 				b->updateClip();
 				if (patternMode)
 					PatternElements.append(b);
@@ -1632,10 +1628,8 @@ void AIPlug::processData(QString data)
 					ite->setFillEvenOdd(fillRule);
 					ite->setFillTransparency(1.0 - Opacity);
 					ite->setLineTransparency(1.0 - Opacity);
-	#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 9, 4))
 					ite->setFillBlendmode(blendMode);
 					ite->setLineBlendmode(blendMode);
-	#endif
 					if (!currentPatternName.isEmpty())
 					{
 						ite->setPattern(currentPatternName);
@@ -2070,10 +2064,8 @@ void AIPlug::processData(QString data)
 					ite->setFillEvenOdd(fillRule);
 					ite->setFillTransparency(1.0 - Opacity);
 					ite->setLineTransparency(1.0 - Opacity);
-	#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 9, 4))
 					ite->setFillBlendmode(blendMode);
 					ite->setLineBlendmode(blendMode);
-	#endif
 					ite->setLineEnd(CapStyle);
 					ite->setLineJoin(JoinStyle);
 					if (importerFlags & LoadSavePlugin::lfCreateDoc)
@@ -3038,10 +3030,8 @@ void AIPlug::processRaster(QDataStream &ts)
 	ite->setFillEvenOdd(fillRule);
 	ite->setFillTransparency(1.0 - Opacity);
 	ite->setLineTransparency(1.0 - Opacity);
-#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 9, 4))
 	ite->setFillBlendmode(blendMode);
 	ite->setLineBlendmode(blendMode);
-#endif
 	ite->setLineEnd(CapStyle);
 	ite->setLineJoin(JoinStyle);
 	uchar *p;

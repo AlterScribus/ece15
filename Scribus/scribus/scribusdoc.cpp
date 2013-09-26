@@ -265,6 +265,8 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	WinHan(0),
 	DoDrawing(true),
 	OpenNodes(),
+	CurTimer(0),
+	pageErrors(),
 	docLayerErrors(),
 	docItemErrors(),
 	masterItemErrors(),
@@ -378,6 +380,8 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	WinHan(0),
 	DoDrawing(true),
 	OpenNodes(),
+	CurTimer(0),
+	pageErrors(),
 	docLayerErrors(),
 	docItemErrors(),
 	masterItemErrors(),
@@ -17069,6 +17073,16 @@ void ScribusDoc::checkItemForFrames(PageItem *it, int fIndex)
 		it->itemText.removeChars(deleteList[a], 1);
 	}
 	it->invalid = true;
+}
+
+bool ScribusDoc::hasPreflightErrors()
+{
+	return (
+			(pageErrors.count() != 0) ||
+			(docItemErrors.count() != 0) ||
+			(masterItemErrors.count() != 0) ||
+			(docLayerErrors.count() != 0)
+			);
 }
 
 void ScribusDoc::itemResizeToMargin(PageItem* item, int direction)

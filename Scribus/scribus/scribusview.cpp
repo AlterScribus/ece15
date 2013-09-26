@@ -550,7 +550,7 @@ void ScribusView::changed(QRectF re, bool)
 	if (!Doc->isLoading() && !m_ScMW->scriptIsRunning())
 	{
 // 		qDebug() << "ScribusView-changed(): changed region:" << re;
-		m_canvas->m_viewMode.forceRedraw = true;
+		m_canvas->setForcedRedraw(true);
 		updateCanvas(re);
 	}
 }
@@ -596,7 +596,7 @@ void ScribusView::stopGesture()
 		m_canvasMode->activate(true);
 		if (PrefsManager::instance()->appPrefs.uiPrefs.stickyTools)
 		{
-			m_canvas->m_viewMode.forceRedraw = true;
+			m_canvas->setForcedRedraw(true);
 //			Doc->m_Selection->clear();
 //			emit HaveSel(-1);
 			m_canvas->resetRenderMode();
@@ -2107,7 +2107,7 @@ void ScribusView::resizeEvent ( QResizeEvent * event )
 		clockLabel->setFixedSize(15, 15);
 	}
 	endEditButton->setGeometry(m_vhRulerHW + 1, height() - m_vhRulerHW - endEditButton->minimumSizeHint().height() - 1, endEditButton->minimumSizeHint().width(), endEditButton->minimumSizeHint().height());
-	m_canvas->m_viewMode.forceRedraw = true;
+	m_canvas->setForcedRedraw(true);
 	m_canvas->resetRenderMode();
 	// Per Qt doc, not painting should be done in a resizeEvent,
 	// a paint event will be emitted right afterwards
@@ -2613,7 +2613,7 @@ void ScribusView::DrawNew()
 // 	printBacktrace(24);
 	if (m_ScMW->scriptIsRunning())
 		return;
-	m_canvas->m_viewMode.forceRedraw = true;
+	m_canvas->setForcedRedraw(true);
 	m_canvas->resetRenderMode();
 	updateContents();
 	setRulerPos(contentsX(), contentsY());
@@ -2837,8 +2837,8 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 		Doc->guidesPrefs().showControls = false;
 		Doc->guidesPrefs().framesShown = false;
 		setScale(1.0);
-		m_canvas->m_viewMode.previewMode = true;
-		m_canvas->m_viewMode.forceRedraw = true;
+		m_canvas->setPreviewMode(true);
+		m_canvas->setForcedRedraw(true);
 		pm = QImage(clipw, cliph, QImage::Format_ARGB32_Premultiplied);
 		ScPainter *painter = new ScPainter(&pm, pm.width(), pm.height(), 1.0, 0);
 		painter->clear(Doc->paperColor());
@@ -2868,8 +2868,8 @@ QImage ScribusView::MPageToPixmap(QString name, int maxGr, bool drawFrame)
 			im = pm.scaled(static_cast<int>(pm.width() / sy), static_cast<int>(pm.height() / sy), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 		delete painter;
 		painter=NULL;
-		m_canvas->m_viewMode.previewMode = false;
-		m_canvas->m_viewMode.forceRedraw = false;
+		m_canvas->setPreviewMode(false);
+		m_canvas->setForcedRedraw(false);
 		Doc->guidesPrefs().framesShown = frs;
 		Doc->guidesPrefs().showControls = ctrls;
 		Doc->guidesPrefs().showPreflight = prefl;
@@ -2908,8 +2908,8 @@ QImage ScribusView::PageToPixmap(int Nr, int maxGr, bool drawFrame)
 			Doc->guidesPrefs().showControls = false;
 			Doc->drawAsPreview = true;
 			m_canvas->setScale(sc);
-			m_canvas->m_viewMode.previewMode = true;
-			m_canvas->m_viewMode.forceRedraw = true;
+			m_canvas->setPreviewMode(true);
+			m_canvas->setForcedRedraw(true);
 			ScPage* act = Doc->currentPage();
 			bool mMode = Doc->masterPageMode();
 			Doc->setMasterPageMode(false);
@@ -3024,8 +3024,8 @@ QImage ScribusView::PageToPixmap(int Nr, int maxGr, bool drawFrame)
 			Doc->setMasterPageMode(mMode);
 			Doc->setCurrentPage(act);
 			Doc->setLoading(false);
-			m_canvas->m_viewMode.previewMode = Doc->drawAsPreview;
-			m_canvas->m_viewMode.forceRedraw = false;
+			m_canvas->setPreviewMode(Doc->drawAsPreview);
+			m_canvas->setForcedRedraw(false);
 			Doc->minCanvasCoordinate = FPoint(cx, cy);
 		}
 	}

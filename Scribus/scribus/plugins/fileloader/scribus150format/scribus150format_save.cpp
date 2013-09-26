@@ -464,6 +464,8 @@ void Scribus150Format::writeCheckerProfiles(ScXmlStreamWriter & docu)
 		docu.writeAttribute("checkDeviceColorsAndOutputIntent", static_cast<int>(itcp.value().checkDeviceColorsAndOutputIntent));
 		docu.writeAttribute("checkFontNotEmbedded", static_cast<int>(itcp.value().checkFontNotEmbedded));
 		docu.writeAttribute("checkFontIsOpenType", static_cast<int>(itcp.value().checkFontIsOpenType));
+		docu.writeAttribute("checkAppliedMasterDifferentSide", static_cast<int>(itcp.value().checkAppliedMasterDifferentSide));
+		docu.writeAttribute("checkEmptyTextFrames", static_cast<int>(itcp.value().checkEmptyTextFrames));
 	}
 }
 

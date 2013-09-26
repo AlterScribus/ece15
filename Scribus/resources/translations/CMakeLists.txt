@@ -2,7 +2,6 @@ INCLUDE_DIRECTORIES(
 "${CMAKE_SOURCE_DIR}/scribus"
 )
 
-#SET(LRELEASE_EXECUTABLE ${QT_LRELEASE_EXECUTABLE})
 SET(LRELEASE_EXECUTABLE ${Qt5_LRELEASE_EXECUTABLE})
 
 #Install our qm files, selected from *.qm in this directory

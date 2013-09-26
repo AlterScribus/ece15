@@ -1186,6 +1186,7 @@ public:
 	int addToInlineFrames(PageItem *item);
 	void removeInlineFrame(int fIndex);
 	void checkItemForFrames(PageItem *it, int fIndex);
+	bool hasPreflightErrors();
 
 protected:
 	void addSymbols();
@@ -1353,6 +1354,8 @@ public:
 		PageItem *item;
 	};
 	QList<OpenNodesList> OpenNodes;
+	QTimer *CurTimer;
+	QMap<int, errorCodes> pageErrors;
 	QMap<int, errorCodes> docLayerErrors;
 	QMap<PageItem*, errorCodes> docItemErrors;
 	QMap<PageItem*, errorCodes> masterItemErrors;

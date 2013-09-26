@@ -203,7 +203,6 @@ void CheckDocument::buildItem(QTreeWidgetItem * item,
 		case MissingGlyph:
 			item->setText(COLUMN_PROBLEM, missingGlyph);
 			item->setIcon(COLUMN_ITEM, graveError );
-// 			globalGraveError = true;
 			pageGraveError = true;
 			itemError = true;
 			break;
@@ -225,7 +224,6 @@ void CheckDocument::buildItem(QTreeWidgetItem * item,
 			{
 				item->setText(COLUMN_PROBLEM, missingImg);
 				item->setIcon(COLUMN_ITEM, graveError );
-// 				globalGraveError = true;
 				pageGraveError = true;
 			}
 			break;
@@ -252,7 +250,6 @@ void CheckDocument::buildItem(QTreeWidgetItem * item,
 		case Transparency:
 			item->setText(COLUMN_PROBLEM, transpar);
 			item->setIcon(COLUMN_ITEM, graveError );
-// 			globalGraveError = true;
 			pageGraveError = true;
 			itemError = true;
 			break;
@@ -267,12 +264,10 @@ void CheckDocument::buildItem(QTreeWidgetItem * item,
 		case ImageIsGIF:
 			item->setText(COLUMN_PROBLEM, isGIF);
 			item->setIcon(COLUMN_ITEM, onlyWarning);
-			//errorText->setToolTip( isGIFtoolTip);
 			break;
 		case WrongFontInAnnotation:
 			item->setText(COLUMN_PROBLEM, WrongFont);
 			item->setIcon(COLUMN_ITEM, graveError );
-// 			globalGraveError = true;
 			pageGraveError = true;
 			itemError = true;
 			break;
@@ -286,6 +281,11 @@ void CheckDocument::buildItem(QTreeWidgetItem * item,
 			item->setIcon(COLUMN_ITEM, graveError);
 			itemError = true;
 			break;
+		case EmptyTextFrame:
+			item->setText(COLUMN_PROBLEM, emptyTextFrame);
+			item->setIcon(COLUMN_ITEM, onlyWarning);
+			itemError = true;
+			break;
 		default:
 			break;
 	};
@@ -296,14 +296,6 @@ void CheckDocument::buildItem(QTreeWidgetItem * item,
 		item->setText(COLUMN_LAYER, layer->Name);
 		item->setData(COLUMN_LAYER, Qt::DecorationRole, layer->markerColor);
 	}
-// 	if (pageItem->asTextFrame())
-// 	{
-// 		int l = pageItem->itemText.length();
-// 		// preview of the text
-// 		item->setText(COLUMN_INFO, pageItem->itemText.text(0, l > 20 ? 20 : l));
-// 	}
-// 	else if (pageItem->asImageFrame())
-// 		item->setText(COLUMN_INFO, pageItem->externalFile());
 }
 
 void CheckDocument::buildErrorList(ScribusDoc *doc)
@@ -325,10 +317,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 	for (it = doc->checkerProfiles().begin(); it != itend ; ++it)
 		curCheckProfile->addItem(it.key());
 	setCurrentComboItem(curCheckProfile, doc->curCheckProfile());
-
-	if ((doc->docItemErrors.count() == 0)
-		 && (doc->masterItemErrors.count() == 0)
-		 && (doc->docLayerErrors.count() == 0)
+	if (!doc->hasPreflightErrors()
 	    //this flag is used by documentchecker as indicator for marks change after updating
 		&& !doc->notesChanged())
 	{
@@ -340,12 +329,10 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 	}
 	else
 	{
-// 		resultError = true;
 		bool hasError = false;
-// 		globalGraveError = false;
 		bool layoutGraveError = false;
 		itemError = false;
-// 		QTreeWidgetItem * pagep = 0;
+
 
 		// MARKS ***********************************************
 		if (doc->notesChanged())
@@ -369,7 +356,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				 docLayerErrorsIt != doc->docLayerErrors.end();
 				 ++docLayerErrorsIt)
 			{
-				QTreeWidgetItem * layer = new QTreeWidgetItem(layerItem);//, pagep );
+				QTreeWidgetItem * layer = new QTreeWidgetItem(layerItem);
 				for (layerErrorsIt = docLayerErrorsIt.value().begin();
 					 layerErrorsIt != docLayerErrorsIt.value().end(); ++layerErrorsIt)
 				{
@@ -393,17 +380,14 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 						default:
 							break;
 					}
-//					errorText->setIcon(COLUMN_ITEM, graveError );
 				}
 				layer->setText(COLUMN_ITEM,tr("Layer \"%1\"").arg(doc->layerName(docLayerErrorsIt.key())));
 				if (layoutGraveError)
 					layer->setIcon(COLUMN_ITEM, graveError );
 				else
 					layer->setIcon(COLUMN_ITEM, onlyWarning );
-				layer->setText(COLUMN_PROBLEM, tr("Issue(s): %1").arg(doc->docLayerErrors[docLayerErrorsIt.key()].count()));
+				layer->setText(COLUMN_PROBLEM, tr("Issues: %1").arg(doc->docLayerErrors[docLayerErrorsIt.key()].count()));
 				layer->setExpanded(true);
-// 				pagep = layer;
-// 				globalGraveError = true;
 			}
 			layerItem->setExpanded(true);
 		}
@@ -425,7 +409,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				page = new QTreeWidgetItem( masterPageRootItem);
 				masterPageMap.insert(page, doc->MasterPages.at(mPage));
 			}
-// 			pagep = page;
+
 			QMap<PageItem*, errorCodes>::Iterator masterItemErrorsIt;
 			for (masterItemErrorsIt = doc->masterItemErrors.begin();
 				 masterItemErrorsIt != doc->masterItemErrors.end();
@@ -489,12 +473,13 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				page->setText(COLUMN_ITEM, doc->MasterPages.at(mPage)->pageName());
 		}
 		masterPageRootItem->setExpanded(true);
-		masterPageRootItem->setText(COLUMN_PROBLEM, tr("Issue(s): %1").arg(mpErrorCount));
+		masterPageRootItem->setText(COLUMN_PROBLEM, tr("Issues: %1").arg(mpErrorCount));
 		// END of MASTER PAGES
 
 		// PAGES ********************************8
 		for (int aPage = 0; aPage < doc->DocPages.count(); ++aPage)
 		{
+			int pageErrorCount=0;
 			QString tmp;
 			hasError = false;
 			pageGraveError = false;
@@ -504,7 +489,28 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				page = new QTreeWidgetItem( reportDisplay);
 				pageMap.insert(page, doc->DocPages.at(aPage));
 			}
-// 			pagep = page;
+
+			QMap<int, errorCodes>::Iterator pageErrorsIt;
+			for (pageErrorsIt = doc->pageErrors.begin();
+				 pageErrorsIt != doc->pageErrors.end();
+				 ++pageErrorsIt)
+			{
+				if (pageErrorsIt.key() == aPage)
+				{
+					if (page==NULL)
+					{
+						page = new QTreeWidgetItem( reportDisplay);
+						pageMap.insert(page, doc->DocPages.at(aPage));
+					}
+					QTreeWidgetItem * errorText = new QTreeWidgetItem(page);
+					errorText->setText(COLUMN_PROBLEM, appliedMasterDifferentSide);
+					errorText->setIcon(COLUMN_ITEM, onlyWarning );
+					hasError=true;
+					page->setExpanded( true );
+					++pageErrorCount;
+				}
+			}
+
 			QMap<PageItem*, errorCodes>::Iterator docItemErrorsIt;
 			for (docItemErrorsIt = doc->docItemErrors.begin();
 				 docItemErrorsIt != doc->docItemErrors.end();
@@ -531,6 +537,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 						it3 = docItemErrorsIt.value().begin();
 						buildItem(object, it3.key(), docItemErrorsIt.key());
 						posMap.insert(object, it3.value());
+						++pageErrorCount;
 					}
 					else
 					{
@@ -540,6 +547,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 							buildItem(errorText, it3.key(), docItemErrorsIt.key());
 							itemMap.insert(errorText, docItemErrorsIt.key());
 							posMap.insert(object, it3.value());
+							++pageErrorCount;
 						}
 						object->setExpanded( true );
 					}
@@ -556,6 +564,7 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 				else
 					page->setIcon(COLUMN_ITEM, onlyWarning );
 				page->setExpanded( true );
+				page->setText(COLUMN_PROBLEM, tr( "Issues: %1" ).arg(pageErrorCount) );
 			}
 			else
 			{
@@ -567,13 +576,12 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		}
 		// END of PAGES
 
-		// FREE ITEMS **********************************************8888
+		// FREE ITEMS **************************************************
 		QMap<PageItem*, errorCodes>::Iterator freeItemsErrorsIt;
 		bool hasfreeItems = false;
 		for (freeItemsErrorsIt = doc->docItemErrors.begin(); freeItemsErrorsIt != doc->docItemErrors.end(); ++freeItemsErrorsIt)
 		{
 			if (doc->OnPage(freeItemsErrorsIt.key()) == -1)
-		//	if (freeItemsErrorsIt.key()->OwnPage == -1)
 			{
 				hasfreeItems = true;
 				break;
@@ -583,12 +591,10 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		{
 			bool hasError = false;
 			bool pageGraveError = false;
-			QTreeWidgetItem * freeItem = new QTreeWidgetItem( reportDisplay);//, pagep );
-// 			pagep = page;
+			QTreeWidgetItem * freeItem = new QTreeWidgetItem( reportDisplay);
 			for (freeItemsErrorsIt = doc->docItemErrors.begin(); freeItemsErrorsIt != doc->docItemErrors.end(); ++freeItemsErrorsIt)
 			{
 				if (doc->OnPage(freeItemsErrorsIt.key()) == -1)
-			//	if (freeItemsErrorsIt.key()->OwnPage == -1)
 				{
 					hasError = true;
 					QTreeWidgetItem * object = new QTreeWidgetItem(freeItem);
@@ -632,19 +638,12 @@ void CheckDocument::buildErrorList(ScribusDoc *doc)
 		}
 		// END of FREE ITEMS
 
-// 		if (globalGraveError)
-// 			documentItem->setIcon(COLUMN_ITEM, graveError );
-// 		else
-// 			documentItem->setIcon(COLUMN_ITEM, onlyWarning );
-// 		documentItem->setText(COLUMN_PROBLEM, tr( "Problems found" ) );
-// 		documentItem->setExpanded( true );
 		ignoreErrors->setText( tr("&Ignore Errors"));
 	}
 
 	reportDisplay->resizeColumnToContents(COLUMN_ITEM);
 	reportDisplay->resizeColumnToContents(COLUMN_PROBLEM);
 	reportDisplay->resizeColumnToContents(COLUMN_LAYER);
-// 	reportDisplay->resizeColumnToContents(COLUMN_INFO);
 	connect(curCheckProfile, SIGNAL(activated(const QString&)), this, SLOT(newScan(const QString&)));
 	connect(reportDisplay, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(slotSelect(QTreeWidgetItem*)));
 }
@@ -691,7 +690,9 @@ void CheckDocument::languageChange()
 	partFilledImageFrame = tr("Image dimension is smaller than its frame");
 	notCMYKOrSpot = tr("Object colorspace is not CMYK or spot");
 	fontNotEmbedded =  tr("Imported document contains non embedded fonts");
-	//isGIFtoolTip = "<qt>" + tr("GIF images are not reccomended for print. See the online docs for more info") + "</qt>";
+	//isGIFtoolTip = "<qt>" + tr("GIF images are not recommended for print. See the online docs for more info") + "</qt>";
+	appliedMasterDifferentSide = tr("Applied master page has different page destination (left, middle, right side)");
+	emptyTextFrame = tr("Empty Image Frame");
 }
 
 void CheckDocument::setIgnoreEnabled(bool state)

@@ -557,63 +557,24 @@ ENDIF(PYTHON_LIBRARY)
 #>> FreeType2
 
 #<<Render Library
-# Select our rendering library
-# As of Scribus 1.5.0, we can use cairo installed on system or cairo private branch
-# If we have a RENDER_LIB selected from a previous cmake run, then use it
-# otherwise, we should be defaulting to cairo private branch
-IF(WANT_PRIVATE_CAIRO)
+IF (WANT_PRIVATE_CAIRO)
   MESSAGE("We no longer support the private cairo library as the latest public release is more up to date, setting WANT_SYSTEM_CAIRO=1")
-  SET(WANT_SYSTEM_CAIRO 1)
-  SET(WANT_PRIVATE_CAIRO 0)
-  #MESSAGE("Using private CAIRO Library")
-  #SET(RENDER_LIB "CAIRO_PRIVATE" CACHE TYPE STRING)
-  #SET(HAVE_CAIRO 1)
-  #SET(HAVE_PRIVATE_CAIRO 1)
-  #SET( CAIRO_FOUND "YES" )
 ENDIF(WANT_PRIVATE_CAIRO)
-IF(NOT WANT_PRIVATE_CAIRO)
-  IF(RENDER_LIB)
-	MESSAGE(STATUS "Previously selected rendering system: ${RENDER_LIB}")
-	IF (RENDER_LIB STREQUAL "QTARTHUR")
-	  MESSAGE("Qt4's Arthur as renderer is not supported anymore, performing renderer detection again")
-	  SET(OLDRENDERLIBLOST TRUE)
-	ENDIF (RENDER_LIB STREQUAL "QTARTHUR")
-  ELSE(RENDER_LIB)
-	SET(WANT_SYSTEM_CAIRO 1)
-	SET(WANT_PRIVATE_CAIRO 0)
-  ENDIF(RENDER_LIB)
 
- IF (WANT_SYSTEM_CAIRO OR RENDER_LIB STREQUAL "CAIRO_SYSTEM")
-  SET(OLDRENDERLIBLOST FALSE)
-  SET(CAIRO_DIR ${CMAKE_MODULE_PATH})
-  FIND_PACKAGE(CAIRO)
-  IF(CAIRO_FOUND)
-   MESSAGE("CAIRO Library Found OK")
-   SET(RENDER_LIB "CAIRO_SYSTEM" CACHE TYPE STRING)
-  ELSE(CAIRO_FOUND)
-   SET(OLDRENDERLIBLOST TRUE)
-  ENDIF(CAIRO_FOUND)
- ENDIF (WANT_SYSTEM_CAIRO OR RENDER_LIB STREQUAL "CAIRO_SYSTEM")
+IF (RENDER_LIB)
+  IF (RENDER_LIB STREQUAL "QTARTHUR")
+    MESSAGE("Qt4's Arthur as renderer is not supported anymore, performing renderer detection again")
+  ENDIF (RENDER_LIB STREQUAL "QTARTHUR")
+ENDIF(RENDER_LIB)
 
- IF (OLDRENDERLIBLOST OR NOT RENDER_LIB OR RENDER_LIB STREQUAL "CAIRO_PRIVATE")
-  SET(RENDER_LIB "CAIRO_PRIVATE" CACHE TYPE STRING)
-  SET(HAVE_CAIRO 1)
-  SET(HAVE_PRIVATE_CAIRO 1)
-  SET(WANT_PRIVATE_CAIRO 1)
-  SET( CAIRO_FOUND "YES" )
-  MESSAGE("Cairo private branch selected for renderer")
-  IF (OLDRENDERLIBLOST)
-   MESSAGE("Old render lib could no longer be found, replaced by cairo private branch")
-  ENDIF (OLDRENDERLIBLOST)
- ENDIF (OLDRENDERLIBLOST OR NOT RENDER_LIB OR RENDER_LIB STREQUAL "CAIRO_PRIVATE")
- 
- #Cairo is required on Windows for printing system
- IF (WIN32)
-  IF (NOT HAVE_CAIRO)
-   MESSAGE(FATAL_ERROR "Cairo >= 1.5.16 is required for Windows build")  
-  ENDIF (NOT HAVE_CAIRO)
- ENDIF (WIN32)
-ENDIF(NOT WANT_PRIVATE_CAIRO)
+SET(CAIRO_DIR ${CMAKE_MODULE_PATH})
+FIND_PACKAGE(CAIRO REQUIRED)
+IF(CAIRO_FOUND)
+  MESSAGE("CAIRO Library Found OK")
+  SET(RENDER_LIB "CAIRO_SYSTEM" CACHE TYPE STRING)
+ELSE(CAIRO_FOUND)
+  MESSAGE(FATAL_ERROR "No Cairo Found")
+ENDIF(CAIRO_FOUND)
 #>>Render Library
 
 #<<CUPS
@@ -639,26 +600,14 @@ ENDIF(LIBXML2_FOUND)
 
 #<<LittleCMS
 SET(LCMS_DIR ${CMAKE_MODULE_PATH})
-  FIND_PACKAGE(LCMS)
-  IF(LCMS_FOUND)
-    SET(HAVE_LCMS1 1)
-  ENDIF(LCMS_FOUND)
-FIND_PACKAGE(LCMS2)
+FIND_PACKAGE(LCMS2 REQUIRED)
 IF(LCMS2_FOUND)
   SET(HAVE_LCMS2 1)
   SET(HAVE_CMS 1)
   SET(CMS_INC "\"lcms2.h\"")
   MESSAGE("LittleCMS-2 Library Found OK")
 ELSE(LCMS2_FOUND)
-  FIND_PACKAGE(LCMS REQUIRED)
-  IF(LCMS_FOUND)
-    SET(HAVE_CMS 1)
-    SET(HAVE_LCMS1 1)
-    SET(CMS_INC "\"lcms.h\"")
-    MESSAGE("LittleCMS Library Found OK")
-  ELSE(LCMS_FOUND)
-    MESSAGE(FATAL_ERROR "Could not find the LittleCMS Library")
-  ENDIF(LCMS_FOUND)
+   MESSAGE(FATAL_ERROR "Could not find the LittleCMS 2 Library")
 ENDIF(LCMS2_FOUND)
 #>>LittleCMS
 
@@ -794,6 +743,7 @@ INCLUDE_DIRECTORIES(
   ${FREETYPE_INCLUDE_DIR}
   ${FONTCONFIG_INCLUDE_DIR}
   ${JPEG_INCLUDE_DIR}
+  ${LCMS2_INCLUDE_DIR}
   ${LIBXML2_INCLUDE_DIR}
   ${TIFF_INCLUDE_DIR}
   ${ZLIB_INCLUDE_DIR}
@@ -807,12 +757,6 @@ INCLUDE_DIRECTORIES(
   ${CUPS_INCLUDE_DIR}
 )
 ENDIF (NOT WIN32 AND NOT HAIKU)
-
-IF (LCMS2_FOUND)
-  INCLUDE_DIRECTORIES( ${LCMS2_INCLUDE_DIR} )
-ELSE (LCMS2_FOUND)
-  INCLUDE_DIRECTORIES( ${LCMS_INCLUDE_DIR} )
-ENDIF (LCMS2_FOUND)
 
 ##############################################################################################################
 ########## Uninstall Setup                                                                          ##########

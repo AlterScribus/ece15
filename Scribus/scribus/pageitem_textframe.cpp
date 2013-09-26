@@ -2148,14 +2148,14 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing();
 				}
-				maxYAsc = (long) floor((current.yPos - addAsce) * 1000);
+				maxYAsc = (long) ceil((current.yPos - addAsce) * 1000);
 			}
 			else
-				maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
+				maxYAsc = (long) ceil((current.yPos - realAsce) * 1000);
 			//fix for glyphs with negative realAsce value
 			maxYAsc = qMax(maxYAsc, (long) 0);
-			maxYDesc = (long) ceil((current.yPos + realDesc) * 1000);
-			int maxYAsc1000 = floor(maxYAsc/1000.0);
+			maxYDesc = (long) floor((current.yPos + realDesc) * 1000);
+			int maxYAsc1000 = ceil(maxYAsc/1000.0);
 			int maxYDesc1000 = floor(maxYDesc/1000.0);
 
 			if (current.itemsInLine == 0 && !current.afterOverflow)
@@ -2226,10 +2226,10 @@ void PageItem_TextFrame::layout()
 							current.yPos++;
 						lastLineY = (double) maxYAsc / 1000.0;
 						if (current.startOfCol)
-							maxYAsc = (long) floor((current.yPos - addAsce)*1000);
+							maxYAsc = (long) ceil((current.yPos - addAsce)*1000);
 						else
-							maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
-						maxYDesc = (long) ceil((current.yPos + realDesc) * 1000);
+							maxYAsc = (long) ceil((current.yPos - realAsce) * 1000);
+						maxYDesc = (long) floor((current.yPos + realDesc) * 1000);
 						maxYAsc1000 = ceil(maxYAsc/1000.0);
 						maxYDesc1000 = floor(maxYDesc/1000.0);
 
@@ -3041,12 +3041,12 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = (long) floor((current.yPos - addAsce)*1000);
+				maxYAsc = (long) ceil((current.yPos - addAsce)*1000);
 			}
 			else
-				maxYAsc = (long) floor((current.yPos - realAsce)*1000);
+				maxYAsc = (long) ceil((current.yPos - realAsce)*1000);
 			maxYAsc = qMax(maxYAsc, (long) 0);
-			maxYDesc = (long) ceil((current.yPos + realDesc)*1000);
+			maxYDesc = (long) floor((current.yPos + realDesc)*1000);
 			int maxYAsc1000 = ceil(maxYAsc/1000.0);
 			int maxYDesc1000 = floor(maxYDesc/1000.0);
 
@@ -6279,6 +6279,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 		invalid = true;
 		layout();
 	}
+	checkTextFlowInteractions();
 	qApp->restoreOverrideCursor();
 	m_Doc->changed();
 	//m_Doc->view()->updatesOn(true);

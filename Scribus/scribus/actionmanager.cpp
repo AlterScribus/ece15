@@ -928,12 +928,15 @@ void ActionManager::initExtrasMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="extrasDoTesting";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
+	name="extrasTestQTQuick2_1";
+	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	connect( (*scrActions)["extrasManageImages"], SIGNAL(triggered()), mainWindow, SLOT(StatusPic()) );
 	connect( (*scrActions)["extrasGenerateTableOfContents"], SIGNAL(triggered()), mainWindow, SLOT(generateTableOfContents()) );
 	connect( (*scrActions)["extrasUpdateDocument"], SIGNAL(triggered()), mainWindow, SLOT(updateDocument()) );
 	connect( (*scrActions)["extrasClearDocument"], SIGNAL(triggered()), mainWindow, SLOT(clearDocument()) );
 	connect( (*scrActions)["extrasSetClearAttributes"], SIGNAL(triggered()), mainWindow, SLOT(setClearAttributes()) );
 	connect( (*scrActions)["extrasDoTesting"], SIGNAL(triggered()), mainWindow, SLOT(doTesting()) );
+	connect( (*scrActions)["extrasTestQTQuick2_1"], SIGNAL(triggered()), mainWindow, SLOT(testQTQuick2_1()) );
 }
 
 
@@ -1698,6 +1701,7 @@ void ActionManager::languageChange()
 	(*scrActions)["extrasSetClearAttributes"]->setTexts( tr("Set Clear Attributes"));
 	(*scrActions)["extrasDoTesting"]->setTexts( tr("Run Tests"));
 
+	(*scrActions)["extrasTestQTQuick2_1"]->setTexts( tr("Test Qt Quick"));
 	//Windows Menu
 	(*scrActions)["windowsCascade"]->setText( tr("&Cascade"));
 	(*scrActions)["windowsTile"]->setText( tr("&Tile"));

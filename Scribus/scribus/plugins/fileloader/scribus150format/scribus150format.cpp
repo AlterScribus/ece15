@@ -2354,6 +2354,8 @@ bool Scribus150Format::readCheckProfile(ScribusDoc* doc, ScXmlStreamAttributes& 
 	checkerSettings.checkDeviceColorsAndOutputIntent = attrs.valueAsBool("checkDeviceColorsAndOutputIntent", false);
 	checkerSettings.checkFontNotEmbedded = attrs.valueAsBool("checkFontNotEmbedded", false);
 	checkerSettings.checkFontIsOpenType  = attrs.valueAsBool("checkFontIsOpenType", false);
+	checkerSettings.checkAppliedMasterDifferentSide  = attrs.valueAsBool("checkAppliedMasterDifferentSide", true);
+	checkerSettings.checkEmptyTextFrames     = attrs.valueAsBool("checkEmptyTextFrames", true);
 	doc->set1CheckerProfile(profileName, checkerSettings);
 	return true;
 }
@@ -2688,13 +2690,6 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	static const QString MaxTracking("maxTracking");
 	if (attrs.hasAttribute(MaxTracking))
 		newStyle.setMaxTracking(qRound(attrs.valueAsDouble(MaxTracking)) * 10.0);
-	else
-	{
-		if (lastStyle)
-			newStyle.setMaxTracking(lastStyle->tracking());
-		else
-			newStyle.setMaxTracking(newStyle.charStyle().tracking());
-	}
 	
 	static const QString MinWordTrack("MinWordTrack");
 	if (attrs.hasAttribute(MinWordTrack))
@@ -2702,10 +2697,7 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	
 	static const QString NormWordTrack("NormWordTrack");
 	if (attrs.hasAttribute(NormWordTrack))
-	{
 		newStyle.charStyle().setWordTracking(attrs.valueAsDouble(NormWordTrack));
-		newStyle.setMaxWordTracking(newStyle.charStyle().wordTracking());
-	}
 	
 	static const QString MaxWordTrack("MaxWordTrack");
 	if (attrs.hasAttribute(MaxWordTrack))

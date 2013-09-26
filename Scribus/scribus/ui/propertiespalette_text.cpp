@@ -104,7 +104,7 @@ PropertiesPalette_Text::PropertiesPalette_Text( QWidget* parent) : QWidget(paren
 	
 	languageChange();
 
-	connectSignals();
+	connectSignals(true);
 
 	m_haveItem = false;
 	setEnabled(false);
@@ -176,6 +176,7 @@ void PropertiesPalette_Text::setMainWindow(ScribusMainWindow* mw)
 
 void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 {
+	blockSignalsWithChildrens(this, true);
 	disconnectSignals(true);
 	if((d == (ScribusDoc*) m_doc) || (m_ScMW && m_ScMW->scriptIsRunning()))
 		return;
@@ -215,10 +216,12 @@ void PropertiesPalette_Text::setDoc(ScribusDoc *d)
 //	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 //	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	connectSignals(true);
+	blockSignalsWithChildrens(this, false);
 }
 
 void PropertiesPalette_Text::unsetDoc()
 {
+	blockSignalsWithChildrens(this, true);
 	disconnectSignals(true);
 //	if (m_doc)
 //	{
@@ -249,6 +252,7 @@ void PropertiesPalette_Text::unsetDoc()
 
 	setEnabled(false);
 	connectSignals(true);
+	blockSignalsWithChildrens(this, false);
 }
 
 void PropertiesPalette_Text::unsetItem()
@@ -282,6 +286,7 @@ void PropertiesPalette_Text::handleSelectionChanged()
 	if (!m_haveDoc || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
 
+	blockSignalsWithChildrens(this, true);
 	disconnectSignals(true);
 	PageItem* currItem = currentItemFromSelection();
 	if (m_doc->m_Selection->count() > 1 )
@@ -317,6 +322,7 @@ void PropertiesPalette_Text::handleSelectionChanged()
 		setCurrentItem(currItem);
 	}
 	connectSignals(true);
+	blockSignalsWithChildrens(this, false);
 	updateGeometry();
 	//repaint();
 }
@@ -598,6 +604,7 @@ void PropertiesPalette_Text::updateCharStyles()
 	disconnectSignals();
 	charStyleCombo->updateFormatList();
 	parEffectWidgets->updateCharStyles();
+	connectSignals();
 }
 
 void PropertiesPalette_Text::updateParagraphStyles()
