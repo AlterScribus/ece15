@@ -366,263 +366,269 @@ void PropertiesPalette::setCurrentItem(PageItem *i)
 	if (!m_doc)
 		setDoc(i->doc());
 
-	disconnect(TabStack, SIGNAL(currentChanged(int)) , this, SLOT(SelTab(int)));
-	disconnect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
 
-	m_haveItem = false;
-	m_item = i;
-
-	tablePal->setItem(m_item);
-
-	Tpal->setCurrentItem(m_item);
-	Tpal->updateFromItem();
-
-	setTextFlowMode(m_item->textFlowMode());
-
-	connect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
-
-//CB replaces old emits from PageItem::emitAllToGUI()
-	setLocked(i->locked());
-
-	if ((m_item->isGroup()) && (!m_item->isSingleSel))
+	if (m_item != i)
 	{
-		TabStack->setItemEnabled(idXYZItem, true);
-		TabStack->setItemEnabled(idShapeItem, false);
-		TabStack->setItemEnabled(idGroupItem, true);
-		TabStack->setItemEnabled(idLineItem, false);
-		TabStack->setItemEnabled(idColorsItem, false);
-		TabStack->setItemEnabled(idTextItem, false);
-		TabStack->setItemEnabled(idImageItem, false);
-		TabStack->setItemEnabled(idTableItem, false);
+		m_haveItem = false;
+
+		disconnect(TabStack, SIGNAL(currentChanged(int)) , this, SLOT(SelTab(int)));
+		disconnect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
+
+		m_item = i;
+		
+		tablePal->setItem(m_item);
+		
+		Tpal->setCurrentItem(m_item);
+		Tpal->updateFromItem();
+		
+		setTextFlowMode(m_item->textFlowMode());
+		
+		connect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
+		
+		//CB replaces old emits from PageItem::emitAllToGUI()
+		setLocked(i->locked());
+		
+		if ((m_item->isGroup()) && (!m_item->isSingleSel))
+		{
+			TabStack->setItemEnabled(idXYZItem, true);
+			TabStack->setItemEnabled(idShapeItem, false);
+			TabStack->setItemEnabled(idGroupItem, true);
+			TabStack->setItemEnabled(idLineItem, false);
+			TabStack->setItemEnabled(idColorsItem, false);
+			TabStack->setItemEnabled(idTextItem, false);
+			TabStack->setItemEnabled(idImageItem, false);
+			TabStack->setItemEnabled(idTableItem, false);
+		}
+		else
+			TabStack->setItemEnabled(idGroupItem, false);
+		
+		m_haveItem = true;
+		
+		if (oldTabIndex != TabStack->currentIndex())
+		{
+			//Must be called only when necessary : cause focus problem
+			//in spinboxes when processing valueChanged() signals
+			SelTab(TabStack->currentIndex());
+		}
+		if (m_item->asOSGFrame())
+		{
+			TabStack->setItemEnabled(idXYZItem, true);
+			TabStack->setItemEnabled(idShapeItem, true);
+			TabStack->setItemEnabled(idGroupItem, false);
+			TabStack->setItemEnabled(idLineItem, false);
+			TabStack->setItemEnabled(idColorsItem, true);
+			TabStack->setItemEnabled(idTableItem, false);
+			TabStack->setItemEnabled(idTransparencyItem, false);
+			TabStack->setItemEnabled(idTextItem, false);
+			TabStack->setItemEnabled(idImageItem, false);
+			TabStack->setItemEnabled(idTableItem, false);
+		}
+		if (m_item->asSymbolFrame())
+		{
+			TabStack->setItemEnabled(idXYZItem, true);
+			TabStack->setItemEnabled(idShapeItem, false);
+			TabStack->setItemEnabled(idGroupItem, true);
+			TabStack->setItemEnabled(idLineItem, false);
+			TabStack->setItemEnabled(idColorsItem, false);
+			TabStack->setItemEnabled(idTextItem, false);
+			TabStack->setItemEnabled(idImageItem, false);
+			TabStack->setItemEnabled(idTransparencyItem, false);
+			TabStack->setItemEnabled(idTableItem, false);
+		}
+		connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
 	}
-	else
-		TabStack->setItemEnabled(idGroupItem, false);
-
-	m_haveItem = true;
-
-	if (oldTabIndex != TabStack->currentIndex())
-	{
-		//Must be called only when necessary : cause focus problem
-		//in spinboxes when processing valueChanged() signals
-		SelTab(TabStack->currentIndex());
-	}
-
 #pragma omp parallel sections
-	{
+		{
 #pragma omp section
-		{
-			xyzPal->handleSelectionChanged();
-		}
- #pragma omp section
-		{
-			shapePal->handleSelectionChanged();
-		}
+			{
+				xyzPal->handleSelectionChanged();
+			}
 #pragma omp section
-		{
-			groupPal->handleSelectionChanged();
-		}
+			{
+				shapePal->handleSelectionChanged();
+			}
 #pragma omp section
-		{
-			imagePal->handleSelectionChanged();
-		}
+			{
+				groupPal->handleSelectionChanged();
+			}
 #pragma omp section
-		{
-			linePal->handleSelectionChanged();
-		}
+			{
+				imagePal->handleSelectionChanged();
+			}
 #pragma omp section
-		{
-			textPal->handleSelectionChanged();
-		}
+			{
+				linePal->handleSelectionChanged();
+			}
 #pragma omp section
-		{
-			tablePal->handleSelectionChanged();
+			{
+				textPal->handleSelectionChanged();
+			}
+#pragma omp section
+			{
+				tablePal->handleSelectionChanged();
+			}
 		}
-	}
-	
-	if (m_item->asOSGFrame())
-	{
-		TabStack->setItemEnabled(idXYZItem, true);
-		TabStack->setItemEnabled(idShapeItem, true);
-		TabStack->setItemEnabled(idGroupItem, false);
-		TabStack->setItemEnabled(idLineItem, false);
-		TabStack->setItemEnabled(idColorsItem, true);
-		TabStack->setItemEnabled(idTableItem, false);
-		TabStack->setItemEnabled(idTransparencyItem, false);
-		TabStack->setItemEnabled(idTextItem, false);
-		TabStack->setItemEnabled(idImageItem, false);
-		TabStack->setItemEnabled(idTableItem, false);
-	}
-	if (m_item->asSymbolFrame())
-	{
-		TabStack->setItemEnabled(idXYZItem, true);
-		TabStack->setItemEnabled(idShapeItem, false);
-		TabStack->setItemEnabled(idGroupItem, true);
-		TabStack->setItemEnabled(idLineItem, false);
-		TabStack->setItemEnabled(idColorsItem, false);
-		TabStack->setItemEnabled(idTextItem, false);
-		TabStack->setItemEnabled(idImageItem, false);
-		TabStack->setItemEnabled(idTransparencyItem, false);
-		TabStack->setItemEnabled(idTableItem, false);
-	}
-	connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
 }
 
 void  PropertiesPalette::handleSelectionChanged()
 {
 	if (!m_haveDoc || !m_ScMW || m_ScMW->scriptIsRunning())
 		return;
-	disconnect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
 
 	PageItem* currItem = currentItemFromSelection();
-	if (m_doc->m_Selection->count() > 1)
+	if (currItem != m_item)
 	{
-		for (int ws = 1; ws < 9; ++ws)
-			TabStack->setItemEnabled(ws, false);
-		TabStack->widget(0)->setEnabled(true);
-		TabStack->setItemEnabled(idXYZItem, true);
-		TabStack->setItemEnabled(idLineItem, true);
-		TabStack->setItemEnabled(idColorsItem, true);
-		TabStack->setItemEnabled(idTransparencyItem, true);
-		TabStack->setItemEnabled(idTableItem, false); // At least not for now.
-		if (m_haveItem && m_item)
+		disconnect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
+		if (m_doc->m_Selection->count() > 1)
 		{
-			if ((m_item->isGroup()) && (!m_item->isSingleSel))
-			{
-				TabStack->setItemEnabled(idGroupItem, true);
-				TabStack->setCurrentIndex(idGroupItem, true);
-			}
-		}
-	}
-	else
-	{
-		int itemType = currItem ? (int) currItem->itemType() : -1;
-		m_haveItem   = (itemType != -1);
-
-//		int visID = TabStack->currentIndex();
-		TabStack->widget(0)->setEnabled(true);
-		TabStack->setItemEnabled(idXYZItem, true);
-		TabStack->setItemEnabled(idColorsItem, true);
-		TabStack->setItemEnabled(idTransparencyItem, true);
-		TabStack->setItemEnabled(idTableItem, false);
-		switch (itemType)
-		{
-		case -1:
-			m_haveItem = false;
 			for (int ws = 1; ws < 9; ++ws)
 				TabStack->setItemEnabled(ws, false);
-			TabStack->widget(0)->setEnabled(false);
-			TabStack->setItemEnabled(idXYZItem, false);
-			Cpal->displayGradient(0);
-			break;
-		case PageItem::ImageFrame:
-		case PageItem::LatexFrame:
-		case PageItem::OSGFrame:
-			if (currItem->asOSGFrame())
+			TabStack->widget(0)->setEnabled(true);
+			TabStack->setItemEnabled(idXYZItem, true);
+			TabStack->setItemEnabled(idLineItem, true);
+			TabStack->setItemEnabled(idColorsItem, true);
+			TabStack->setItemEnabled(idTransparencyItem, true);
+			TabStack->setItemEnabled(idTableItem, false); // At least not for now.
+			if (m_haveItem && m_item)
 			{
-				TabStack->setItemEnabled(idXYZItem, true);
-				TabStack->setItemEnabled(idShapeItem, true);
-				TabStack->setItemEnabled(idGroupItem, false);
-				TabStack->setItemEnabled(idLineItem, false);
-				TabStack->setItemEnabled(idColorsItem, true);
-				TabStack->setItemEnabled(idTransparencyItem, false);
-				TabStack->setItemEnabled(idTextItem, false);
-				TabStack->setItemEnabled(idImageItem, false);
+				if ((m_item->isGroup()) && (!m_item->isSingleSel))
+				{
+					TabStack->setItemEnabled(idGroupItem, true);
+					TabStack->setCurrentIndex(idGroupItem, true);
+				}
 			}
-			else
-			{
-				TabStack->setItemEnabled(idShapeItem, true);
-				TabStack->setItemEnabled(idTextItem, false);
-				TabStack->setItemEnabled(idImageItem, true);
-				TabStack->setItemEnabled(idLineItem, true);
-				if (currItem->PictureIsAvailable)
-					TabStack->setCurrentIndex(idImageItem, true);
-//				else
-//					TabStack->setCurrentIndex(idShapeItem, true);
-			}
-			break;
-		case PageItem::TextFrame:
-			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idTextItem, true);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, true);
-			if (currItem->itemText.length() > 0)
-				TabStack->setCurrentIndex(idTextItem, true);
-//			else
-//				TabStack->setCurrentIndex(idShapeItem, true);
-			break;
-		case PageItem::Line:
-			TabStack->setItemEnabled(idShapeItem, false);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, true);
-			TabStack->setCurrentIndex(idLineItem, true);
-			break;
-		case PageItem::ItemType1:
-		case PageItem::ItemType3:
-		case PageItem::Polygon:
-		case PageItem::RegularPolygon:
-		case PageItem::Arc:
-			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, true);
-			TabStack->setCurrentIndex(idColorsItem, true);
-			break;
-		case PageItem::PolyLine:
-		case PageItem::Spiral:
-			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, true);
-			TabStack->setCurrentIndex(idLineItem, true);
-			break;
-		case PageItem::PathText:
-			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idTextItem, true);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, true);
-			TabStack->setCurrentIndex(idTextItem, true);
-			break;
-		case PageItem::Symbol:
-		case PageItem::Group:
-			TabStack->setItemEnabled(idShapeItem, false);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, true);
-			TabStack->setItemEnabled(idGroupItem, false);
-			TabStack->setItemEnabled(idColorsItem, false);
-			TabStack->setItemEnabled(idTransparencyItem, false);
-			TabStack->setCurrentIndex(idGroupItem, true);
-			break;
-		case PageItem::Table:
-			TabStack->setItemEnabled(idTableItem, true);
-			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idLineItem, false);
-			TabStack->setItemEnabled(idGroupItem, false);
-			TabStack->setItemEnabled(idColorsItem, false);
-			TabStack->setItemEnabled(idTransparencyItem, false);
-			if (m_doc->appMode == modeEditTable)
-			{
-				TabStack->setItemEnabled(idTextItem, true);
-				TabStack->setCurrentIndex(idTextItem, true);
-			}
-			else
-			{
-				TabStack->setItemEnabled(idTextItem, false);
-				TabStack->setCurrentIndex(idTableItem, true);
-			}
-				break;
 		}
+		else
+		{
+			int itemType = currItem ? (int) currItem->itemType() : -1;
+			m_haveItem   = (itemType != -1);
+			
+			//		int visID = TabStack->currentIndex();
+			TabStack->widget(0)->setEnabled(true);
+			TabStack->setItemEnabled(idXYZItem, true);
+			TabStack->setItemEnabled(idColorsItem, true);
+			TabStack->setItemEnabled(idTransparencyItem, true);
+			TabStack->setItemEnabled(idTableItem, false);
+			switch (itemType)
+			{
+				case -1:
+					m_haveItem = false;
+					for (int ws = 1; ws < 9; ++ws)
+						TabStack->setItemEnabled(ws, false);
+					TabStack->widget(0)->setEnabled(false);
+					TabStack->setItemEnabled(idXYZItem, false);
+					Cpal->displayGradient(0);
+				break;
+				case PageItem::ImageFrame:
+				case PageItem::LatexFrame:
+				case PageItem::OSGFrame:
+					if (currItem->asOSGFrame())
+					{
+						TabStack->setItemEnabled(idXYZItem, true);
+						TabStack->setItemEnabled(idShapeItem, true);
+						TabStack->setItemEnabled(idGroupItem, false);
+						TabStack->setItemEnabled(idLineItem, false);
+						TabStack->setItemEnabled(idColorsItem, true);
+						TabStack->setItemEnabled(idTransparencyItem, false);
+						TabStack->setItemEnabled(idTextItem, false);
+						TabStack->setItemEnabled(idImageItem, false);
+					}
+					else
+					{
+						TabStack->setItemEnabled(idShapeItem, true);
+						TabStack->setItemEnabled(idTextItem, false);
+						TabStack->setItemEnabled(idImageItem, true);
+						TabStack->setItemEnabled(idLineItem, true);
+						if (currItem->PictureIsAvailable)
+							TabStack->setCurrentIndex(idImageItem, true);
+						//				else
+						//					TabStack->setCurrentIndex(idShapeItem, true);
+					}
+				break;
+				case PageItem::TextFrame:
+					TabStack->setItemEnabled(idShapeItem, true);
+					TabStack->setItemEnabled(idTextItem, true);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, true);
+					if (currItem->itemText.length() > 0)
+						TabStack->setCurrentIndex(idTextItem, true);
+					//			else
+					//				TabStack->setCurrentIndex(idShapeItem, true);
+				break;
+				case PageItem::Line:
+					TabStack->setItemEnabled(idShapeItem, false);
+					TabStack->setItemEnabled(idTextItem, false);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, true);
+					TabStack->setCurrentIndex(idLineItem, true);
+				break;
+				case PageItem::ItemType1:
+				case PageItem::ItemType3:
+				case PageItem::Polygon:
+				case PageItem::RegularPolygon:
+				case PageItem::Arc:
+					TabStack->setItemEnabled(idShapeItem, true);
+					TabStack->setItemEnabled(idTextItem, false);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, true);
+					TabStack->setCurrentIndex(idColorsItem, true);
+				break;
+				case PageItem::PolyLine:
+				case PageItem::Spiral:
+					TabStack->setItemEnabled(idShapeItem, true);
+					TabStack->setItemEnabled(idTextItem, false);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, true);
+					TabStack->setCurrentIndex(idLineItem, true);
+				break;
+				case PageItem::PathText:
+					TabStack->setItemEnabled(idShapeItem, true);
+					TabStack->setItemEnabled(idTextItem, true);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, true);
+					TabStack->setCurrentIndex(idTextItem, true);
+				break;
+				case PageItem::Symbol:
+				case PageItem::Group:
+					TabStack->setItemEnabled(idShapeItem, false);
+					TabStack->setItemEnabled(idTextItem, false);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, true);
+					TabStack->setItemEnabled(idGroupItem, false);
+					TabStack->setItemEnabled(idColorsItem, false);
+					TabStack->setItemEnabled(idTransparencyItem, false);
+					TabStack->setCurrentIndex(idGroupItem, true);
+				break;
+				case PageItem::Table:
+					TabStack->setItemEnabled(idTableItem, true);
+					TabStack->setItemEnabled(idShapeItem, true);
+					TabStack->setItemEnabled(idImageItem, false);
+					TabStack->setItemEnabled(idLineItem, false);
+					TabStack->setItemEnabled(idGroupItem, false);
+					TabStack->setItemEnabled(idColorsItem, false);
+					TabStack->setItemEnabled(idTransparencyItem, false);
+					if (m_doc->appMode == modeEditTable)
+					{
+						TabStack->setItemEnabled(idTextItem, true);
+						TabStack->setCurrentIndex(idTextItem, true);
+					}
+					else
+					{
+						TabStack->setItemEnabled(idTextItem, false);
+						TabStack->setCurrentIndex(idTableItem, true);
+					}
+				break;
+			}
+		}
+		int currentTab = TabStack->currentIndex();
+		if (TabStack->isItemEnabled(currentTab) && (TabStack->currentIndex() != currentTab))
+			TabStack->setCurrentIndex(currentTab);
+		connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
 	}
-	int currentTab = TabStack->currentIndex();
-	if (TabStack->isItemEnabled(currentTab) && (TabStack->currentIndex() != currentTab))
-		TabStack->setCurrentIndex(currentTab);
 	if (currItem)
 		setCurrentItem(currItem);
 	updateGeometry();
 	repaint();
-	connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
 }
 
 void PropertiesPalette::unitChange()

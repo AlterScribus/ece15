@@ -59,11 +59,13 @@ public slots:
 	void languageChange();
 	/// Handles unit changes.
 	void unitChange();
+
+private slots:
 	/// Updates the fill controls.
 	void updateFillControls();
 	void updateStyleControls();
+	void updatePadding();
 
-private slots:
 	void setTableStyle(const QString& name);
 	void setCellStyle(const QString& name);
 	/// Handles selection changes in the side selector.
@@ -90,6 +92,14 @@ private slots:
 	void on_buttonClearTableStyle_clicked();
 	void on_buttonClearCellStyle_clicked();
 
+	void on_topSpinBox_valueChanged(double arg1);
+	
+	void on_bottomSpinBox_valueChanged(double arg1);
+	
+	void on_leftSpinBox_valueChanged(double arg1);
+	
+	void on_rightSpinBox_valueChanged(double arg1);
+	
 private:
 	/// This enum represents three states. Used for three-state logic.
 	enum State

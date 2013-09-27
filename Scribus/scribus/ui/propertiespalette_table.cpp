@@ -66,6 +66,7 @@ void PropertiesPalette_Table::setMainWindow(ScribusMainWindow* mainWindow)
 	connect(m_mainWindow, SIGNAL(UpdateRequest(int)), SLOT(handleUpdateRequest(int)));
 	connect(m_mainWindow, SIGNAL(AppModeChanged(int,int)), this, SLOT(updateFillControls()));
 	connect(m_mainWindow, SIGNAL(AppModeChanged(int,int)), this, SLOT(updateStyleControls()));
+	connect(m_mainWindow, SIGNAL(AppModeChanged(int,int)), this, SLOT(updatePadding()));
 }
 
 void PropertiesPalette_Table::setDocument(ScribusDoc *doc)
@@ -117,6 +118,7 @@ void PropertiesPalette_Table::handleSelectionChanged()
 	blockSignalsWithChildrens(this,true);
 	updateFillControls();
 	updateStyleControls();
+	updatePadding();
 	blockSignalsWithChildrens(this,false);
 }
 
@@ -128,6 +130,7 @@ void PropertiesPalette_Table::handleCellSelectionChanged()
 		return;
 	updateFillControls();
 	updateStyleControls();
+	updatePadding();
 }
 
 void PropertiesPalette_Table::displayTableStyle(const QString& name)
@@ -173,6 +176,18 @@ void PropertiesPalette_Table::updateStyleControls()
 		buttonClearTableStyle->setEnabled(false);
 		buttonClearCellStyle->setEnabled(false);
 	}
+}
+
+void PropertiesPalette_Table::updatePadding()
+{
+	if (!m_item || !m_item->isTable() || m_doc->appMode != modeEditTable)
+		return;
+	PageItem_Table* table = m_item->asTable();
+	TableCell cell = table->activeCell();
+	topSpinBox->showValue(cell.topPadding());
+	bottomSpinBox->showValue(cell.bottomPadding());
+	leftSpinBox->showValue(cell.leftPadding());
+	rightSpinBox->showValue(cell.rightPadding());
 }
 
 void PropertiesPalette_Table::setTableStyle(const QString &name)
@@ -577,4 +592,48 @@ void PropertiesPalette_Table::languageChange()
 void PropertiesPalette_Table::unitChange()
 {
 	// Not implemented.
+}
+
+void PropertiesPalette_Table::on_topSpinBox_valueChanged(double arg1)
+{
+	if (!m_doc || !m_item || !m_item->isTable())
+		return;
+
+	PageItem_Table* table = m_item->asTable();
+	TableCell cell = table->activeCell();
+	cell.setTopPadding(arg1);
+	table->update();
+}
+
+void PropertiesPalette_Table::on_bottomSpinBox_valueChanged(double arg1)
+{
+	if (!m_doc || !m_item || !m_item->isTable())
+		return;
+
+	PageItem_Table* table = m_item->asTable();
+	TableCell cell = table->activeCell();
+	cell.setBottomPadding(arg1);
+	table->update();
+}
+
+void PropertiesPalette_Table::on_leftSpinBox_valueChanged(double arg1)
+{
+	if (!m_doc || !m_item || !m_item->isTable())
+		return;
+
+	PageItem_Table* table = m_item->asTable();
+	TableCell cell = table->activeCell();
+	cell.setLeftPadding(arg1);
+	table->update();
+}
+
+void PropertiesPalette_Table::on_rightSpinBox_valueChanged(double arg1)
+{
+	if (!m_doc || !m_item || !m_item->isTable())
+		return;
+
+	PageItem_Table* table = m_item->asTable();
+	TableCell cell = table->activeCell();
+	cell.setRightPadding(arg1);
+	table->update();
 }

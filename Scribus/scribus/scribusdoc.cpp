@@ -9180,6 +9180,8 @@ void ScribusDoc::itemSelection_SetParagraphStyle(const ParagraphStyle & newStyle
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 //		int currItemTextCount = currItem->lastInFrame() + 1 - currItem->firstInFrame();
 //		if (currItemTextCount > 0 && ( appMode == modeEdit || !FRAMESELECTION_EDITS_DEFAULTSTYLE))
 		int currItemTextCount = currItem->itemText.length();
@@ -9241,6 +9243,8 @@ void ScribusDoc::itemSelection_EraseParagraphStyle(Selection* customSelection)
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 		if (currItem->itemText.length() > 0)
 		{
 			//in edit mode without selection select paragraph where cursor is
@@ -9341,6 +9345,8 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 		if (currItem->itemText.length() == 0)
 			continue;
 		int currItemTextCount = currItem->itemText.length();
@@ -9412,6 +9418,9 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable && currItem->asTable())
+			currItem = currItem->asTable()->activeCell().textFrame();
+		
 		int currItemTextCount = currItem->itemText.length();
 		if ((currItemTextCount == 0) || ((appMode != modeEdit) && (appMode != modeEditTable)))
 		{
@@ -9501,6 +9510,8 @@ void ScribusDoc::itemSelection_ClearPStyle(Selection* customSelection)
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 		if (currItem->itemText.length() > 0)
 		{
 			//in edit mode without selection select paragraph where cursor is
@@ -9598,6 +9609,8 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 //		int currItemTextCount = currItem->lastInFrame() + 1 - currItem->firstInFrame();
 //		if (currItemTextCount > 0 && ( appMode == modeEdit || !FRAMESELECTION_EDITS_DEFAULTSTYLE))
 		int currItemTextCount = currItem->itemText.length();
@@ -9731,6 +9744,8 @@ void ScribusDoc::itemSelection_SetCharStyle(const CharStyle & newStyle, Selectio
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 //		int currItemTextCount = currItem->lastInFrame() + 1 - currItem->firstInFrame();
 //		if (currItemTextCount > 0 && ( appMode == modeEdit || !FRAMESELECTION_EDITS_DEFAULTSTYLE))
 		int currItemTextCount = currItem->itemText.length();
@@ -9820,6 +9835,8 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
+		if (appMode == modeEditTable)
+			currItem = currItem->asTable()->activeCell().textFrame();
 		if ((currItem->itemText.length() > 0))
 		{
 			int start = currItem->itemText.startOfItem(currItem->firstInFrame());
