@@ -40,6 +40,20 @@
       </widget>
      </item>
      <item>
+      <widget class="ScComboBox" name="columnGapLabel">
+       <item>
+        <property name="text">
+         <string>Gap:</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Width:</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
       <widget class="ScrSpinBox" name="gapSpinBox"/>
      </item>
      <item>
@@ -73,6 +87,9 @@
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::NoSelection</enum>
      </property>
      <attribute name="horizontalHeaderCascadingSectionResizes">
       <bool>true</bool>
@@ -154,6 +171,11 @@
    <class>ScTableWidget</class>
    <extends>QTableWidget</extends>
    <header>ui/sctablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ScComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ui/sccombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

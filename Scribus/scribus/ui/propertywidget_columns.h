@@ -52,6 +52,7 @@ private slots:
 	void on_gapSpinBox_valueChanged(double arg1);
 	void on_equalWidthsButton_clicked();
 	void on_equalGapsButton_clicked();
+	void on_columnGapLabel_currentIndexChanged(int index);
 };
 
 #endif // PROPERTYWIDGET_COLUMNS_H

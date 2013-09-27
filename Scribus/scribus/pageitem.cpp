@@ -1563,6 +1563,7 @@ void PageItem::setAutoColumns(bool setAuto)
 	{
 		Column Clm = columnsList.at(i);
 		Clm.autoWidth = setAuto;
+		Clm.gap = ColGap;
 		columnsList.replace(i,Clm);
 	}
 	recalculateColumns();
@@ -1598,7 +1599,7 @@ void PageItem::setColumns(int n)
 	if (addCols > 0)
 	{
 		double setWidth = m_width / addCols;
-		if (Cols > 0)
+		if (Cols > 1)
 			setWidth = columnsList.at(Cols -1).width/addCols;
 		Column col;
 		col.autoWidth = true;
@@ -1609,7 +1610,7 @@ void PageItem::setColumns(int n)
 	}
 	else if (addCols < 0)
 	{
-		for (int i = 0; i < n; ++i)
+		for (int i = addCols; i < 0; ++i)
 			columnsList.removeLast();
 	}
 	Cols = qMax(1, n);
@@ -1696,14 +1697,14 @@ void PageItem::recalculateColumns()
 {
 	double maxWidth = m_width - (m_textDistanceMargins.Left + m_textDistanceMargins.Right);
 	if (lineColor() != CommonStrings::None)
-		maxWidth -= m_lineWidth / 2.0;
+		maxWidth -= m_lineWidth;
 
 	if (Cols == 1)
 	{
 		Column col;
 		col.autoWidth = true;
 		col.width = maxWidth;
-		col.gap = 0;
+		col.gap = ColGap;
 		columnsList.replace(0,col);
 		return;
 	}
@@ -1722,10 +1723,7 @@ void PageItem::recalculateColumns()
 	{
 		double autoWidth = maxWidth - (getColumnsTotalGaps() + totalFixedWidth);
 		if (autoWidth < 0.0)
-		{
 			autoWidth = 0.0;
-			autoColumns = 0;
-		}
 		else
 			autoWidth = autoWidth / autoColumns;
 		for (int i = 0; i < columnsList.count(); ++i)
@@ -1737,6 +1735,10 @@ void PageItem::recalculateColumns()
 				columnsList.replace(i,col);
 			}
 		}
+		if (autoColumns == Cols)
+			return;
+		else
+			autoColumns = 0;
 	}
 	if (autoColumns == 0)
 	{

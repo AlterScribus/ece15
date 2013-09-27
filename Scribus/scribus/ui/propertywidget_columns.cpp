@@ -13,6 +13,7 @@ PropertyWidget_Columns::PropertyWidget_Columns(QWidget *parent) :
 	setupUi(this);
 	languageChange();
 	columnsTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	columnGapLabel->setCurrentIndex(0);
 }
 
 void PropertyWidget_Columns::configureWidgets()
@@ -56,74 +57,83 @@ void PropertyWidget_Columns::setCurrentItem(PageItem *item)
 	
 	bool signalsAreBlocked = signalsBlocked();
 	blockSignalsWithChildrens(this, true);
-	
 	maxWidth = item->width() - (item->textToFrameDistLeft() + item->textToFrameDistRight() + item->getColumnsTotalGaps());
 	if (item->lineColor() != CommonStrings::None)
-		maxWidth -= item->m_lineWidth / 2.0;
+		maxWidth -= item->m_lineWidth;
 	
-	columnsSpinBox->setMaximum(qMax(qRound(maxWidth), 1));
-	columnsSpinBox->setMinimum(1);
+	columnsSpinBox->setRange(1, item->Cols + qMax(qRound(maxWidth), 0));
 	columnsSpinBox->setValue(item->Cols);
 	if (m_item->isAutoColumns())
 	{
 		proportionalBox->setChecked(true);
-		gapSpinBox->setMaximum(maxWidth * m_unitRatio);
-		gapSpinBox->setValue(m_item->ColGap);
-		gapSpinBox->setEnabled(true);
+		proportionalBox->setEnabled(item->Cols > 1);
+		gapSpinBox->setEnabled(item->Cols > 1);
+		columnGapLabel->setEnabled(item->Cols > 1);
 		columnsTableWidget->setEnabled(false);
 	}
 	else
 	{
 		proportionalBox->setChecked(false);
-		gapSpinBox->setValue(m_item->ColGap);
 		gapSpinBox->setEnabled(false);
+		columnGapLabel->setEnabled(false);
 		columnsTableWidget->setEnabled(true);
-		columnsTableWidget->clearContents();
-		columnsTableWidget->setRowCount(item->Cols);
-		for (int i=0; i < item->Cols; ++i)
+	}
+	if (columnGapLabel->currentIndex() == 0)
+	{
+		gapSpinBox->setRange(0.0, qMax(item->ColGap, maxWidth) * m_unitRatio);
+		gapSpinBox->setValue(m_item->ColGap*m_unitRatio);
+	}
+	else
+	{
+		gapSpinBox->setRange(0.0, maxWidth * m_unitRatio);
+		gapSpinBox->setValue(m_item->columnsList.at(0).width * m_unitRatio);
+	}
+	columnsTableWidget->clearContents();
+	columnsTableWidget->setRowCount(item->Cols);
+	for (int i=0; i < item->Cols; ++i)
+	{
+		//empty last columns
+		QTableWidgetItem* emptyItem = new QTableWidgetItem();
+		emptyItem->setFlags(emptyItem->flags() ^ Qt::ItemIsEditable);
+		columnsTableWidget->setItem(i,3,emptyItem);
+		
+		Column col = item->columnsList.at(i);
+		//column#
+		QTableWidgetItem* numItem = new QTableWidgetItem();
+		numItem->setFlags(numItem->flags() ^ Qt::ItemIsEditable);
+		numItem->setData(Qt::UserRole, i);
+		numItem->setText(QString::number(i+1));
+		columnsTableWidget->setItem(i,0,numItem);
+		
+		//width
+		ScrSpinBox* widthItem = new ScrSpinBox(NULL, m_unitIndex);
+		widthItem->setRange(0.0, maxWidth * m_unitRatio);
+		widthItem->setDecimals(2);
+		widthItem->setSpecialValueText("auto");
+		widthItem->setToolTip(widthToolTip);
+		widthItem->setValue(col.autoWidth ? 0.0 : col.width * m_unitRatio);
+		if (col.autoWidth)
+			widthItem->setToolTip(widthToolTip + " [current width =" + QString::number(col.width) + "]");
+		columnsTableWidget->setCellWidget(i,1,widthItem);
+		connect(widthItem, SIGNAL(valueChanged(double)), this, SLOT(spinBoxChange(double)));
+		
+		//gap (not for last column)
+		if (i < item->columnsList.count() -1)
 		{
-			//empty last columns
-			QTableWidgetItem* emptyItem = new QTableWidgetItem();
-			emptyItem->setFlags(emptyItem->flags() ^ Qt::ItemIsEditable);
-			columnsTableWidget->setItem(i,3,emptyItem);
-			
-			Column col = item->columnsList.at(i);
-			//column#
-			QTableWidgetItem* numItem = new QTableWidgetItem();
-			numItem->setFlags(numItem->flags() ^ Qt::ItemIsEditable);
-			numItem->setData(Qt::UserRole, i);
-			numItem->setText(QString::number(i+1));
-			columnsTableWidget->setItem(i,0,numItem);
-			
-			//width
-			ScrSpinBox* widthItem = new ScrSpinBox(NULL, m_unitIndex);
-			widthItem->setRange(0.0, maxWidth * m_unitRatio);
-			widthItem->setDecimals(2);
-			widthItem->setSpecialValueText("auto");
-			widthItem->setToolTip(widthToolTip);
-			widthItem->setValue(col.autoWidth ? 0.0 : col.width);
-			if (col.autoWidth)
-				widthItem->setToolTip(widthToolTip + " [current width =" + QString::number(col.width) + "]");
-			columnsTableWidget->setCellWidget(i,1,widthItem);
-			connect(widthItem, SIGNAL(valueChanged(double)), this, SLOT(spinBoxChange(double)));
-			
-			//gap (not for last column)
-			if (i < item->columnsList.count() -1)
-			{
-				ScrSpinBox* gapItem = new ScrSpinBox(NULL, m_unitIndex);
-				gapItem->setRange(0.0, maxWidth * m_unitRatio);
-				gapItem->setDecimals(2);
-				gapItem->setValue(col.gap);
-				columnsTableWidget->setCellWidget(i,2,gapItem);
-				connect(gapItem, SIGNAL(valueChanged(double)), this, SLOT(spinBoxChange(double)));
-			}
-			else
-			{
-				emptyItem = new QTableWidgetItem();
-				emptyItem->setFlags(emptyItem->flags() ^ Qt::ItemIsEditable);
-				columnsTableWidget->setItem(i,2,emptyItem);
-			}
+			ScrSpinBox* gapItem = new ScrSpinBox(NULL, m_unitIndex);
+			gapItem->setRange(0.0, maxWidth * m_unitRatio);
+			gapItem->setDecimals(2);
+			gapItem->setValue(col.gap * m_unitRatio);
+			columnsTableWidget->setCellWidget(i,2,gapItem);
+			connect(gapItem, SIGNAL(valueChanged(double)), this, SLOT(spinBoxChange(double)));
 		}
+		else
+		{
+			emptyItem = new QTableWidgetItem();
+			emptyItem->setFlags(emptyItem->flags() ^ Qt::ItemIsEditable);
+			columnsTableWidget->setItem(i,2,emptyItem);
+		}
+		
 	}
 	columnsTableWidget->resizeColumnsToContents();
 	columnsTableWidget->resizeRowsToContents();
@@ -142,7 +152,7 @@ void PropertyWidget_Columns::updateItem(bool recalculateColumns)
 		textItem->recalculateColumns();
 	textItem->update();
 	m_doc->regionsChanged()->update(QRect());
-	setCurrentItem(m_item);
+	//setCurrentItem(m_item);
 }
 
 void PropertyWidget_Columns::connectSignals()
@@ -273,40 +283,39 @@ void PropertyWidget_Columns::spinBoxChange(double val)
 		return;
 	}
 	if (col == 1)
-	{
-		m_item->setColumnWidth(row, spin->value());
-		updateItem(false);
-	}
+		m_item->setColumnWidth(row, val / m_unitRatio);
 	else
-	{
-		m_item->setColumnGap(row, spin->value());
-		updateItem();
-	}
+		m_item->setColumnGap(row, val / m_unitRatio);
+	updateItem(false);
 }
 
 void PropertyWidget_Columns::on_columnsSpinBox_valueChanged(int arg1)
 {
-	m_item->setColumns(arg1);
+	m_item->setColumns(arg1 / m_unitRatio);
+	if (proportionalBox->isChecked())
+		m_item->setAutoColumns(true);
 	updateItem(false);
 }
 
 void PropertyWidget_Columns::on_gapSpinBox_valueChanged(double arg1)
 {
-	m_item->setColumnsGap(arg1);
-	m_item->setAutoColumns();
-	updateItem(false);
+	if (columnGapLabel->currentIndex() == 0)
+		m_item->setColumnsGap(arg1 / m_unitRatio);
+	else
+	{
+		double lineCorr = 0.0;
+		if ((m_item->lineColor() != CommonStrings::None) || (!m_item->strokePattern().isEmpty()))
+			lineCorr = m_item->lineWidth();
+		double newWidth = arg1 / m_unitRatio;
+		double newGap = qMax(((m_item->width() - m_item->textToFrameDistLeft() - m_item->textToFrameDistRight() - lineCorr) - (newWidth * m_item->Cols)) / (m_item->Cols - 1), 0.0);
+		m_item->setColumnsGap(newGap);
+	}
+	updateItem(true);
 }
 
 void PropertyWidget_Columns::on_proportionalBox_toggled(bool checked)
 {
-	if (checked)
-	{
-		m_item->setColumnsGap(gapSpinBox->value());
-		m_item->Cols = columnsSpinBox->value();
-		m_item->setAutoColumns(true);
-	}
-	else
-		m_item->setAutoColumns(false);
+	m_item->setAutoColumns(checked);
 	updateItem(false);
 }
 
@@ -324,4 +333,10 @@ void PropertyWidget_Columns::on_equalGapsButton_clicked()
 	double gap = dynamic_cast<ScrSpinBox*>(columnsTableWidget->cellWidget(0,2))->value();
 	m_item->setColumnsGap(gap);
 	updateItem();
+}
+
+void PropertyWidget_Columns::on_columnGapLabel_currentIndexChanged(int index)
+{
+	gapSpinBox->setToolTip((index == 0) ? tr( "Distance between columns" ) : tr( "Column width" ));
+	setCurrentItem(m_item);
 }
