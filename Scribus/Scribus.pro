@@ -1082,7 +1082,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/ui/searchreplacedialog.h \
     scribus/pdfoptionsio.h \
     scribus/selectionrubberband.h \
-    scribus/ui/propertywidget_textmargins.h
+    scribus/ui/propertywidget_textmargins.h \
+    scribus/ui/propertywidget_columns.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -1226,7 +1227,8 @@ FORMS += scribus/ui/aboutplugins.ui \
     scribus/ui/markparastyletext.ui \
     scribus/ui/searchform.ui \
     scribus/ui/searchreplacedialog.ui \
-    scribus/ui/propertywidget_textmarginsbase.ui
+    scribus/ui/propertywidget_textmarginsbase.ui \
+    scribus/ui/propertywidget_columns.ui
 SOURCES += scribus/actionmanager.cpp \
            scribus/canvas.cpp \
            scribus/canvasgesture_cellselect.cpp \
@@ -2103,7 +2105,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/ui/markparastyletext.cpp \
     scribus/ui/searchreplacedialog.cpp \
     scribus/selectionrubberband.cpp \
-    scribus/ui/propertywidget_textmargins.cpp
+    scribus/ui/propertywidget_textmargins.cpp \
+    scribus/ui/propertywidget_columns.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc \
     scribus/ui/local
 TRANSLATIONS += resources/translations/po/scribus.af.ts \

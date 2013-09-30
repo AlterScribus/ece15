@@ -127,7 +127,7 @@ void PropertyWidget_Distance::setCurrentItem(PageItem *item)
 	else
 	{
 		columnGap->setMaximum(qMax((textItem->width() / textItem->Cols) * m_unitRatio, 0.0));
-		columnGap->setValue(textItem->columnWidth() * m_unitRatio);
+		columnGap->setValue(textItem->columnWidth(0) * m_unitRatio);
 	}
 	leftDistance->setValue(textItem->textToFrameDistLeft()*m_unitRatio);
 	topDistance->setValue(textItem->textToFrameDistTop()*m_unitRatio);
@@ -246,7 +246,7 @@ void PropertyWidget_Distance::displayColumns(int r, double g)
 			else
 			{
 				columnGap->setMaximum(qMax((textItem->width() / textItem->Cols) * m_unitRatio, 0.0));
-				columnGap->setValue(textItem->columnWidth() * m_unitRatio);
+				columnGap->setValue(textItem->columnWidth(0) * m_unitRatio);
 			}
 		}
 	}
@@ -309,7 +309,7 @@ void PropertyWidget_Distance::handleColumnGap()
 	if (!textItem) return;
 
 	if (columnGapLabel->currentIndex() == 0)
-		textItem->setColumnGap(columnGap->value() / m_unitRatio);
+		textItem->setColumnsGap(columnGap->value() / m_unitRatio);
 	else
 	{
 		double lineCorr;
@@ -319,7 +319,7 @@ void PropertyWidget_Distance::handleColumnGap()
 			lineCorr = 0;
 		double newWidth = columnGap->value() / m_unitRatio;
 		double newGap = qMax(((textItem->width() - textItem->textToFrameDistLeft() - textItem->textToFrameDistRight() - lineCorr) - (newWidth * textItem->Cols)) / (textItem->Cols - 1), 0.0);
-		textItem->setColumnGap(newGap);
+		textItem->setColumnsGap(newGap);
 	}
 	textItem->update();
 	if (m_doc->appMode == modeEditTable)
@@ -349,7 +349,7 @@ void PropertyWidget_Distance::handleTabs()
 		if (tItem == 0)
 			return;
 		const ParagraphStyle& style(m_doc->appMode == modeEdit ? tItem->currentStyle() : tItem->itemText.defaultStyle());
-		TabManager *dia = new TabManager(this, m_doc->unitIndex(), style.tabValues(), tItem->columnWidth());
+		TabManager *dia = new TabManager(this, m_doc->unitIndex(), style.tabValues(), tItem->columnWidth(0));
 		if (dia->exec())
 		{
 			if (m_doc->appMode != modeEdit)

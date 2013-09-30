@@ -23,6 +23,10 @@ class ScTableWidget : public QTableWidget
 		~ScTableWidget ();
 		void setCellWidget ( int row, int column, QWidget * widget );
 		void removeCellWidget ( int row, int column );
+		QPair<int,int> getRCWidget(QWidget* widget);
+public slots:
+		void clearContents();
+		void clear();
 	protected:
 		bool eventFilter(QObject *obj, QEvent *event);
 

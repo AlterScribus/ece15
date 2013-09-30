@@ -2990,8 +2990,8 @@ int ScribusDoc::addAutomaticTextFrame(const int pageNumber)
 							 1, CommonStrings::None, docPrefsData.itemToolPrefs.shapeLineColor, true);
 		PageItem * currItem = Items->at(z);
 		currItem->isAutoText = true;
-		currItem->Cols = qRound(PageSp);
 		currItem->ColGap = PageSpa;
+		currItem->setColumns(qRound(PageSp));
 		if (LastAuto != 0)
 			LastAuto->link(currItem);
 		else
@@ -5687,8 +5687,8 @@ int ScribusDoc::itemAddUserFrame(InsertAFrameData &iafData)
 			}
 			if (iafData.frameType==PageItem::TextFrame)
 			{
+				currItem->setColumnsGap(iafData.columnGap/docUnitRatio);
 				currItem->setColumns(iafData.columnCount);
-				currItem->setColumnGap(iafData.columnGap/docUnitRatio);
 				if (i==0 && iafData.linkToExistingFrame && prevItem != NULL)
 				{
 					prevItem->link(currItem);

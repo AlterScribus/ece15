@@ -144,13 +144,15 @@ int Hruler::findRulerHandle(QPoint mp, double grabRadius)
 	if (Pos+1 < (mx + grabRadius) && Pos+1 > (mx - grabRadius))
 		result = rc_rightFrameDist;
 	
-	double ColWidth = (textWidth() - ColGap * (Cols - 1)) / Cols;
-	
+//	double ColWidth	= (textWidth() - ColGap * (Cols - 1)) / Cols;
+	double ColLeft = 0.0;
 	ActCol = 0;
-	for (int CurrCol = 0; CurrCol < Cols; ++CurrCol)
+	for (int CurrCol = 0; CurrCol < ColWidths.count(); ++CurrCol)
 	{
-		Pos = textPosToLocal((ColWidth+ColGap)*CurrCol);
-		fpo = QRect(Pos, topline, static_cast<int>(ColWidth*Scaling), rulerheight);
+		if (CurrCol > 0)
+			ColLeft += ColWidths.at(CurrCol-1) + ColGap.at(CurrCol-1);
+		Pos = textPosToLocal(ColLeft);
+		fpo = QRect(Pos, topline, static_cast<int>(ColWidths.at(CurrCol)*Scaling), rulerheight);
 		if (fpo.contains(mp))
 		{
 			ActCol = CurrCol+1;
@@ -162,20 +164,23 @@ int Hruler::findRulerHandle(QPoint mp, double grabRadius)
 		ActCol = 1;
 		return result;
 	}
+	ColLeft = 0.0;
+	for (int CurrCol = 1; CurrCol < ActCol; ++CurrCol)
+		ColLeft += ColWidths.at(CurrCol-1) + ColGap.at(CurrCol-1);
 	
-	Pos = textPosToLocal(First+Indent+(ColWidth+ColGap)*(ActCol-1));
+	Pos = textPosToLocal(First+Indent+ColLeft);
 	fpo = QRect(Pos-1, topline, grabRadius+1, rulerheight/2);
 	if (fpo.contains(mp))
 	{
 		return rc_indentFirst;
 	}
-	Pos = textPosToLocal(Indent+(ColWidth+ColGap)*(ActCol-1));
+	Pos = textPosToLocal(Indent+ColLeft);
 	fpo = QRect(Pos-1, midline, grabRadius+1, rulerheight/2);
 	if (fpo.contains(mp))
 	{
 		return rc_leftMargin;
 	}
-	Pos = textPosToLocal(RMargin+(ColWidth+ColGap)*(ActCol-1));
+	Pos = textPosToLocal(RMargin+ColLeft);
 	fpo = QRect(Pos-grabRadius, midline, grabRadius, rulerheight/2);
 	if (fpo.contains(mp))
 	{
@@ -185,7 +190,7 @@ int Hruler::findRulerHandle(QPoint mp, double grabRadius)
 	{
 		for (int yg = 0; yg < signed(TabValues.count()); yg++)
 		{
-			Pos = textPosToLocal(TabValues[yg].tabPosition+(ColWidth+ColGap)*(ActCol-1));
+			Pos = textPosToLocal(TabValues[yg].tabPosition+ColLeft);
 			fpo = QRect(Pos-grabRadius, tabline, 2*grabRadius, rulerheight/2 + 2);
 			if (fpo.contains(mp))
 			{
@@ -247,7 +252,6 @@ void Hruler::mouseReleaseEvent(QMouseEvent *m)
 		{
 			bool mustApplyStyle = false;
 			ParagraphStyle paraStyle;
-			double ColWidth = (textWidth() - ColGap * (Cols - 1)) / Cols;
 			switch (RulerCode)
 			{
 				case rc_leftFrameDist:
@@ -270,7 +274,7 @@ void Hruler::mouseReleaseEvent(QMouseEvent *m)
 					emit DocChanged(false);
 					break;
 				case rc_rightMargin:
-					paraStyle.setRightMargin(ColWidth - RMargin);
+					paraStyle.setRightMargin(ColWidths.at(ActCol-1) - RMargin);
 					mustApplyStyle = true;
 					emit DocChanged(false);
 					break;
@@ -347,7 +351,7 @@ void Hruler::mouseMoveEvent(QMouseEvent *m)
 		return;
 	if (textEditMode)
 	{
-		double ColWidth = (textWidth() - ColGap * (Cols - 1)) / Cols;
+		double ColWidth = ColWidths.at(ActCol-1);
 		int ColEnd, ColStart;
 		double oldInd;
 		if (RulerCode == rc_leftFrameDist || RulerCode == rc_rightFrameDist)
@@ -357,14 +361,14 @@ void Hruler::mouseMoveEvent(QMouseEvent *m)
 		}
 		else
 		{
-			ColStart = textPosToLocal((ColWidth+ColGap)*(ActCol-1));
-			ColEnd   = textPosToLocal((ColWidth+ColGap)*(ActCol-1) + ColWidth);
+			ColStart = textPosToLocal(currItem->getColumnLeft(ActCol-1));
+			ColEnd   = textPosToLocal(currItem->getColumnLeft(ActCol-1) + ColWidth);
 		}
 		if ((Mpressed) && (m->y() < height()) && (m->y() > 0) && (m->x() > ColStart - m_doc->guidesPrefs().grabRadius) && (m->x() < ColEnd + m_doc->guidesPrefs().grabRadius))
 		{
 			qApp->changeOverrideCursor(QCursor(Qt::SizeHorCursor));
-			double toplimit = textWidth() + RExtra - (ColGap * (Cols - 1))-1;
-			double toplimit2 = textWidth() + Extra - (ColGap * (Cols - 1))-1;
+			double toplimit = textWidth() + RExtra - (currItem->getColumnsTotalGaps())-1;
+			double toplimit2 = textWidth() + Extra - (currItem->getColumnsTotalGaps())-1;
 			switch (RulerCode)
 			{
 				case rc_leftFrameDist:
@@ -522,10 +526,10 @@ void Hruler::paintEvent(QPaintEvent *e)
 			p.translate( textPosToLocal(Extra) - textPosToLocal(ItemEndPos-ItemPos-RExtra), 0);
 			p.translate(-textPosToLocal(0), 0);
 		}
-		for (int CurrCol = 0; CurrCol < Cols; ++CurrCol)
+		for (int CurrCol = 0; CurrCol < ColWidths.count(); ++CurrCol)
 		{
-			double ColWidth = (textWidth() - ColGap * (Cols - 1)) / Cols;
-			double Pos = (ColWidth + ColGap) * CurrCol;
+			double ColWidth = ColWidths.at(CurrCol);
+			double Pos = currItem->getColumnLeft(CurrCol);
 			double EndPos = Pos + ColWidth;
 			drawTextMarks(Pos, EndPos, p);
 			
@@ -617,7 +621,7 @@ void Hruler::paintEvent(QPaintEvent *e)
 			p.setPen(QPen(Qt::blue, 2, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
 			xPos = textPosToLocal(EndPos);
 			p.drawLine(xPos, topline, xPos, bottomline);
-			if (CurrCol == Cols-1)
+			if (CurrCol == ColWidths.count() -1)
 			{
 				p.drawLine(xPos, bottomline, xPos-4 , bottomline);
 				p.drawLine(xPos, topline, xPos-4, topline);
@@ -884,8 +888,13 @@ void Hruler::setItem(PageItem * item)
 		lineCorr = item->lineWidth() / 2.0;
 	else
 		lineCorr = 0;
-	ColGap = item->ColGap;
-	Cols = item->Cols;
+	ColWidths.clear();
+	ColGap.clear();
+	for (int i=0; i < item->Cols; ++i)
+	{
+		ColWidths.append(item->columnsList.at(i).width);
+		ColGap.append(item->columnsList.at(i).gap);
+	}
 	Extra = item->textToFrameDistLeft();
 	RExtra = item->textToFrameDistRight();
 	const ParagraphStyle& currStyle = item->currentStyle();

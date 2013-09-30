@@ -144,6 +144,7 @@ SET(SCRIBUS_UI_SRC
   ui/propertiespalette_textbase.ui
   ui/propertiespalette_xyzbase.ui
   ui/propertywidget_advancedbase.ui
+  ui/propertywidget_columns.ui
   ui/propertywidget_distancebase.ui
   ui/propertywidget_pareffectbase.ui
   ui/propertywidget_flopbase.ui
@@ -417,6 +418,7 @@ SET(SCRIBUS_MOC_CLASSES
   ui/propertiespalette_utils.h
   ui/propertiespalette_xyz.h
   ui/propertywidget_advanced.h
+  ui/propertywidget_columns.h
   ui/propertywidget_distance.h
   ui/propertywidget_pareffect.h
   ui/propertywidget_flop.h
@@ -868,6 +870,7 @@ SET(SCRIBUS_SOURCES
   ui/propertiespalette_utils.cpp
   ui/propertiespalette_xyz.cpp
   ui/propertywidget_advanced.cpp
+  ui/propertywidget_columns.cpp
   ui/propertywidget_distance.cpp
   ui/propertywidget_pareffect.cpp
   ui/propertywidget_flop.cpp

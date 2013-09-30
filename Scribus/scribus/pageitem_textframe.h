@@ -87,7 +87,7 @@ public:
 	bool isInChain() { return ((prevInChain() != NULL) || (nextInChain() != NULL)); }
 	void setTextAnnotationOpen(bool open);
 
-	double columnWidth();
+	double columnWidth(int colNr);
 #ifdef NLS_PROTO
 	int firstTextItem() const { return itemText.firstFrameItem; }
 	int lastTextItem() const { return itemText.lastFrameItem; }

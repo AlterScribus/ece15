@@ -3730,6 +3730,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 	struct PageItem_OSGFrame::viewDefinition currentView;
 #endif
 	QList<ParagraphStyle::TabRecord> tabValues;
+	QList<Column> customColumns;
 	
 	int mGArrayRows = 0;
 	int mGArrayCols = 0;
@@ -4029,6 +4030,14 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 			wInf.weldID = tAtt.valueAsInt("Target", 0);
 			newItem->weldList.append(wInf);
 		}
+		if (tName == "Column")
+		{
+			Column col;
+			col.autoWidth = tAtt.valueAsBool("auto");
+			col.width = tAtt.valueAsDouble("width");
+			col.gap = tAtt.valueAsDouble("gap");
+			customColumns.append(col);
+		}
 	}
 	delete lastStyle;
 	
@@ -4095,6 +4104,11 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 				doc->loadPict(newItem->Pfile, newItem, true);
 			}
 		}
+	}
+	if (customColumns.count() > 0)
+	{
+		Q_ASSERT(newItem->Cols == customColumns.count());
+		newItem->setColumns(customColumns);
 	}
 	if (!loadPage)
 		doc->setMasterPageMode(false);
@@ -5033,8 +5047,12 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 	currItem->setLineBlendmode(attrs.valueAsInt("TransBlendS", 0));
 	if (attrs.valueAsInt("TRANSPARENT", 0) == 1)
 		currItem->setFillColor(CommonStrings::None);
-	currItem->Cols   = attrs.valueAsInt("COLUMNS", 1);
-	currItem->ColGap = attrs.valueAsDouble("COLGAP", 0.0);
+	if (currItem->asTextFrame() || currItem->asTable())
+	{
+		currItem->ColGap = attrs.valueAsDouble("COLGAP", 0.0);
+		currItem->setColumnsGap(currItem->ColGap);
+		currItem->setColumns(attrs.valueAsInt("COLUMNS", 1));
+	}
 	if (attrs.valueAsInt("LAYER", 0) != -1)
 		currItem->LayerID = attrs.valueAsInt("LAYER", 0);
 	tmp = "";

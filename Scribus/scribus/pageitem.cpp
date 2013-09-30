@@ -134,6 +134,7 @@ PageItem::PageItem(const PageItem & other)
 	selectedMeshControlPoint(other.selectedMeshControlPoint),
 	snapToPatchGrid(other.snapToPatchGrid),
 	Cols(other.Cols),
+	columnsList(other.columnsList),
 	ColGap(other.ColGap),
 	m_startArrowIndex(other.m_startArrowIndex),
 	m_endArrowIndex(other.m_endArrowIndex),
@@ -790,8 +791,9 @@ PageItem::PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double 
 	meshGradientPatches.append(patch);
 
 	firstLineOffsetP = FLOPRealGlyphHeight;
-	Cols = m_Doc->itemToolPrefs().textColumns;
 	ColGap = m_Doc->itemToolPrefs().textColumnGap;
+	Cols = 0;
+	setColumns(m_Doc->itemToolPrefs().textColumns);
 	LeftLink = 0;
 	RightLink = 0;
 	TopLink = 0;
@@ -1545,6 +1547,7 @@ void PageItem::setTextToFrameDist(double newLeft, double newRight, double newTop
 		delete activeTransaction;
 		activeTransaction = NULL;
 	}
+	recalculateColumns();
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
@@ -1553,10 +1556,36 @@ double PageItem::gridDistance() const { return m_Doc->guidesPrefs().valueBaselin
 
 void PageItem::setGridOffset(double) { } // FIXME
 void PageItem::setGridDistance(double) { } // FIXME
+
+void PageItem::setAutoColumns(bool setAuto)
+{
+	for(int i=0; i < Cols; ++i)
+	{
+		Column Clm = columnsList.at(i);
+		Clm.autoWidth = setAuto;
+		Clm.gap = ColGap;
+		columnsList.replace(i,Clm);
+	}
+	recalculateColumns();
+}
+
+bool PageItem::isAutoColumns()
+{
+	if (Cols == 1)
+		return true;
+	for(int i=0; i < Cols; ++i)
+	{
+		if (!columnsList.at(i).autoWidth || columnsList.at(i).gap != ColGap)
+			return false;
+	}
+	return true;
+}
+
 void PageItem::setColumns(int n) 
 {
 	if(Cols==n)
 		return;
+
 	if(UndoManager::undoEnabled())
 	{
 		SimpleState *ss = new SimpleState(Um::Columns, "", Um::IBorder);
@@ -1565,13 +1594,69 @@ void PageItem::setColumns(int n)
 		ss->set("NEW_COLUMNS",n);
 		undoManager->action(this, ss);
 	}
+	//FIXME - undo!!!
+	int addCols = n - Cols;
+	if (addCols > 0)
+	{
+		double setWidth = m_width / addCols;
+		if (Cols > 1)
+			setWidth = columnsList.at(Cols -1).width/addCols;
+		Column col;
+		col.autoWidth = true;
+		col.gap = ColGap;
+		col.width = qMax(setWidth,1.0);
+		for (int i = addCols; i > 0; --i)
+			columnsList.append(col);
+	}
+	else if (addCols < 0)
+	{
+		for (int i = addCols; i < 0; ++i)
+			columnsList.removeLast();
+	}
 	Cols = qMax(1, n);
+	recalculateColumns();
 }
-void PageItem::setColumnGap(double gap)
+
+void PageItem::setColumns(QList<Column> newColumns)
 {
-	if(ColGap==gap)
-		return;
-	if(UndoManager::undoEnabled()){
+	//FIXME - undo!!!
+	columnsList = newColumns;
+	recalculateColumns();
+}
+
+void PageItem::setColumn(int num, Column col)
+{
+	//FIXME: undo!!!
+	columnsList.replace(num, col);
+	recalculateColumns();
+}
+
+void PageItem::setColumnWidth(int num, double w)
+{
+	//FIXME - undo
+	Column col = columnsList.at(num);
+	if (w == 0.0)
+		col.autoWidth = true;
+	else
+	{
+		col.width = w;
+		col.autoWidth = false;
+	}
+	columnsList.replace(num, col);
+	recalculateColumns();
+}
+
+//set ga
+void PageItem::setColumnsGap(double gap)
+{
+	//FIXME - undo!!!
+	for (int i =0; i < columnsList.count(); ++i)
+	{
+		Column col = columnsList.at(i);
+		col.gap = gap;
+		columnsList.replace(i,col);
+	}
+	if(ColGap!=gap && UndoManager::undoEnabled()){
 		SimpleState *ss = new SimpleState(Um::Columns, "", Um::IBorder);
 		ss->set("COLUMNSGAP", "columnsgap");
 		ss->set("OLD_COLUMNS", ColGap);
@@ -1579,6 +1664,119 @@ void PageItem::setColumnGap(double gap)
 		undoManager->action(this, ss);
 	}
 	ColGap = gap;
+}
+
+void PageItem::setColumnGap(int num, double gap)
+{
+	//FIXME - undo
+	Column col = columnsList.at(num);
+	col.gap = gap;
+	columnsList.replace(num, col);
+	recalculateColumns();
+}
+
+double PageItem::getColumnLeft(int colNr)
+{
+	double colLeft = 0.0;
+	if (lineColor() != CommonStrings::None)
+		colLeft = m_lineWidth / 2.0;
+	for (int i=0; i < colNr; ++i)
+		colLeft+=columnsList.at(i).width + columnsList.at(i).gap;
+	return colLeft;
+}
+
+double PageItem::getColumnsTotalGaps()
+{
+	double totalGaps = 0.0;
+	for(int i =0; i < columnsList.count() -1; ++i)
+		totalGaps += columnsList.at(i).gap;
+	return totalGaps;
+}
+
+void PageItem::recalculateColumns()
+{
+	double maxWidth = m_width - (m_textDistanceMargins.Left + m_textDistanceMargins.Right);
+	if (lineColor() != CommonStrings::None)
+		maxWidth -= m_lineWidth;
+
+	if (Cols == 1)
+	{
+		Column col;
+		col.autoWidth = true;
+		col.width = maxWidth;
+		col.gap = ColGap;
+		columnsList.replace(0,col);
+		return;
+	}
+	double totalFixedWidth = 0.0;
+	int autoColumns = 0;
+	for (int i=0; i < Cols; ++ i)
+	{
+		Column col = columnsList.at(i);
+		if (col.autoWidth)
+			++autoColumns;
+		else
+			totalFixedWidth += col.width;
+	}
+
+	if (autoColumns > 0)
+	{
+		double autoWidth = maxWidth - (getColumnsTotalGaps() + totalFixedWidth);
+		if (autoWidth < 0.0)
+			autoWidth = 0.0;
+		else
+			autoWidth = autoWidth / autoColumns;
+		for (int i = 0; i < columnsList.count(); ++i)
+		{
+			Column col = columnsList.at(i);
+			if (col.autoWidth)
+			{
+				col.width = autoWidth;
+				columnsList.replace(i,col);
+			}
+		}
+		if (autoColumns == Cols)
+			return;
+		else
+			autoColumns = 0;
+	}
+	if (autoColumns == 0)
+	{
+		//if any column is auto width or there is to small space for autocolumns
+		//then force new width for fixed columns too to fit frame
+		
+		double currWidth = 0.0;
+		double gapsRemain = getColumnsTotalGaps();
+		
+		for (int i=0; i < Cols; ++ i)
+		{
+			Column col = columnsList.at(i);
+			if (i == Cols -1) //strech or expand last column to fit in frame
+			{
+				col.width = maxWidth - currWidth;
+				columnsList.replace(i, col);
+			}
+			else
+			{
+				currWidth += col.width;
+				if (currWidth + gapsRemain > maxWidth)
+				{
+					col.width = maxWidth - (currWidth + gapsRemain);
+					columnsList.replace(i, col);
+					for (int j=i+1; j<Cols;++j)
+					{
+						Column c = columnsList.at(j);
+						c.width = 0.0;
+						c.autoWidth = true;
+						columnsList.replace(j, c);
+					}
+					break;
+				}
+				currWidth += col.gap;
+				gapsRemain -= col.gap;
+			}
+		}
+	}
 }
 
 void PageItem::setCornerRadius(double newRadius)
@@ -6319,9 +6517,9 @@ void PageItem::restoreBottomTextFrameDist(SimpleState *ss, bool isUndo)
 void PageItem::restoreColumns(SimpleState *ss, bool isUndo)
 {
 	if (isUndo)
-		Cols = ss->getInt("OLD_COLUMNS");
+		setColumns(ss->getInt("OLD_COLUMNS"));
 	else
-		Cols = ss->getInt("NEW_COLUMNS");
+		setColumns(ss->getInt("NEW_COLUMNS"));
 	update();
 }
 
@@ -9909,6 +10107,9 @@ void PageItem::updateClip(bool updateWelded)
 					   static_cast<int>(ceil(width()+ph)),static_cast<int>(ceil(height()+ph)),
 					   -ph,static_cast<int>(ceil(height()+ph)));
 		break;
+	case PageItem::TextFrame:
+			if (Cols > 1)
+				recalculateColumns();
 	default:
 		if (((!ClipEdited) || (FrameType < 3)) && !(asPathText()))
 		{

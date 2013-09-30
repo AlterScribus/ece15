@@ -2142,8 +2142,8 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 					item->setTextToFrameDistTop(TExtra);
 					item->setTextToFrameDistRight(RExtra);
 					item->setTextToFrameDistBottom(BExtra);
+					item->setColumnsGap(TextColumnGutter);
 					item->setColumns(TextColumnCount);
-					item->setColumnGap(TextColumnGutter);
 				}
 				else if (isPathText)
 				{
@@ -2374,8 +2374,8 @@ QList<PageItem*> IdmlPlug::parseItemXML(const QDomElement& itElem, QTransform pT
 				item->setTextToFrameDistTop(TExtra);
 				item->setTextToFrameDistRight(RExtra);
 				item->setTextToFrameDistBottom(BExtra);
+				item->setColumnsGap(TextColumnGutter);
 				item->setColumns(TextColumnCount);
-				item->setColumnGap(TextColumnGutter);
 			}
 			else if (isPathText)
 			{

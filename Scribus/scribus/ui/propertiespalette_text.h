@@ -24,6 +24,7 @@ for which a new license (GPL+exception) is in place.
 
 class PageItem;
 class PropertyWidget_Advanced;
+class PropertyWidget_Columns;
 class PropertyWidget_Distance;
 class PropertyWidget_TextMargins;
 class PropertyWidget_ParEffect;
@@ -122,6 +123,9 @@ protected:
 
 	PropertyWidget_TextColor* colorWidgets;
 	QTreeWidgetItem* colorWidgetsItem;
+
+	PropertyWidget_Columns* columnsWidgets;
+	QTreeWidgetItem* columnsItem;
 
 	PropertyWidget_Distance* distanceWidgets;
 	QTreeWidgetItem* distanceItem;
