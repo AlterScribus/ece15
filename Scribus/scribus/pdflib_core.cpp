@@ -60,6 +60,7 @@ for which a new license (GPL+exception) is in place.
 #include "commonstrings.h"
 #include "pageitem.h"
 #include "pageitem_textframe.h"
+#include "pageitem_noteframe.h"
 #include "pageitem_group.h"
 #include "pageitem_pathtext.h"
 #include "pageitem_table.h"
@@ -2211,6 +2212,78 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 						}
 						break;
 					case PageItem::TextFrame:
+						if (ite->isNoteFrame() && ite->asNoteFrame()->hasTopLine())
+						{
+							PageItem * topLine = (PageItem*) ite->asNoteFrame()->getTopLine();
+							if (((topLine->lineTransparency() != 0) || (topLine->lineBlendmode() != 0)) && ((Options.Version >= PDFOptions::PDFVersion_14) || (Options.Version == PDFOptions::PDFVersion_X4)))
+								PutPage(PDF_TransparenzStroke(topLine));
+							if (topLine->NamedLStyle.isEmpty())
+							{
+								if (!topLine->strokePattern().isEmpty())
+								{
+									if (topLine->patternStrokePath)
+									{
+										QPainterPath path;
+										path.moveTo(0, 0);
+										path.lineTo(topLine->width(), 0);
+										PutPage(HandleBrushPattern(topLine, path, pag, pag->pageNr()));
+									}
+									else
+									{
+										if (!PDF_PatternFillStroke(tmpOut, topLine, 1))
+											return false;
+										PutPage(tmpOut);
+										PutPage("0 0 m\n");
+										PutPage(FToStr(topLine->width())+" 0 l\n");
+										PutPage("S\n");
+									}
+								}
+								else if (topLine->GrTypeStroke > 0)
+								{
+									if (!PDF_GradientFillStroke(tmpOut, topLine, true))
+										return false;
+									PutPage("q\n");
+									PutPage(tmpOut);
+									PutPage("0 0 m\n");
+									PutPage(FToStr(topLine->width())+" 0 l\n");
+									PutPage("S\nQ\n");
+								}
+								else
+								{
+									PutPage("0 0 m\n");
+									PutPage(FToStr(topLine->width())+" 0 l\n");
+									PutPage("S\n");
+								}
+							}
+							else
+							{
+								multiLine ml = doc.MLineStyles[topLine->NamedLStyle];
+								for (int it = ml.size()-1; it > -1; it--)
+								{
+										if ((ml[it].Color != CommonStrings::None) && (ml[it].Width != 0))
+										{
+											PutPage(setStrokeMulti(&ml[it]));
+											PutPage("0 0 m\n");
+											PutPage(FToStr(topLine->width())+" 0 l\n");
+											PutPage("S\n");
+										}
+								}
+							}
+							if (ite->startArrowIndex() != 0)
+							{
+								QTransform arrowTrans;
+								arrowTrans.scale(-1,1);
+								arrowTrans.scale(topLine->startArrowScale() / 100.0, topLine->startArrowScale() / 100.0);
+								PutPage(drawArrow(topLine, arrowTrans, topLine->startArrowIndex()));
+							}
+							if (ite->endArrowIndex() != 0)
+							{
+								QTransform arrowTrans;
+								arrowTrans.translate(topLine->width(), 0);
+								arrowTrans.scale(topLine->endArrowScale() / 100.0, topLine->endArrowScale() / 100.0);
+								PutPage(drawArrow(topLine, arrowTrans, ite->endArrowIndex()));
+							}
+						}
 						break;
 					case PageItem::Line:
 						if (((ite->lineTransparency() != 0) || (ite->lineBlendmode() != 0)) && ((Options.Version >= PDFOptions::PDFVersion_14) || (Options.Version == PDFOptions::PDFVersion_X4)))
@@ -3814,6 +3887,13 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 						}
 					}
 				}
+			}
+			if (ite->isNoteFrame() && ite->asNoteFrame()->hasTopLine())
+			{
+				PageItem * topLine = (PageItem*) ite->asNoteFrame()->getTopLine();
+				QString tmp2 = "";
+				if (PDF_ProcessItem(tmp2, topLine, pag, PNr))
+					tmp += tmp2;
 			}
 			break;
 		case PageItem::Line:

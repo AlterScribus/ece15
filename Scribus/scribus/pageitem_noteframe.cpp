@@ -139,10 +139,11 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *
 PageItem_NoteFrame::~PageItem_NoteFrame()
 {
 	if (m_topLine != NULL)
-	{
-		m_topLine->unWeld();
-		m_Doc->DocItems.removeOne(m_topLine);
-	}
+		delete m_topLine;
+//	{
+//		m_topLine->unWeld();
+//		m_Doc->DocItems.removeOne(m_topLine);
+//	}
 }
 
 void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
@@ -290,21 +291,34 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 void PageItem_NoteFrame::updateTopLine()
 {
 	UndoManager::instance()->setUndoEnabled(false);
-	if (m_topLine != NULL)
+	if (isequiv(m_nstyle->topLineWidth(),0.0))
 	{
-		m_topLine->unWeld();
-		m_Doc->DocItems.removeOne(m_topLine);
+		if (m_topLine)
+			delete m_topLine;
 	}
-	if (!isequiv(m_nstyle->topLineWidth(),0.0))
+//	if (m_topLine != NULL)
+//	{
+//		m_topLine->unWeld();
+//		m_Doc->DocItems.removeOne(m_topLine);
+//	}
+	else
 	{
-		m_topLine = new PageItem_Line(m_Doc, xPos(), yPos(), width() * (notesStyle()->topLineWidth()), 0, m_Doc->itemToolPrefs().lineWidth, CommonStrings::None, m_Doc->itemToolPrefs().lineColor);
-		m_topLine->m_NoteFrameTopLine = this;
-		m_topLine->setLocked(true);
-		m_topLine->weldTo(this);
+		if (m_topLine == NULL)
+		{
+			m_topLine = new PageItem_Line(m_Doc, xPos(), yPos(), width() * (notesStyle()->topLineWidth()), 0, m_Doc->itemToolPrefs().lineWidth, CommonStrings::None, m_Doc->itemToolPrefs().lineColor);
+			m_topLine->m_NoteFrameTopLine = this;
+			m_topLine->setLocked(true);
+		}
+		else
+			m_topLine->setXYPos(xPos(), yPos());
+		m_topLine->setWidth(width() * (notesStyle()->topLineWidth()));
+		m_topLine->setFillColor(CommonStrings::None);
 		if (notesStyle()->topLineStyle() != "" && notesStyle()->topLineStyle() != tr("No Style"))
 		{
 			m_topLine->setCustomLineStyle(notesStyle()->topLineStyle());
-			m_topLine->update();
+
+			multiLine ml = m_Doc->MLineStyles[notesStyle()->topLineStyle()];
+			m_topLine->setHeight(ml.at(0).Width);
 		}
 	}
 	UndoManager::instance()->setUndoEnabled(true);
@@ -458,4 +472,11 @@ int PageItem_NoteFrame::findNoteCpos(TextNote* note)
 		}
 	}
 	return -1;
+}
+
+void PageItem_NoteFrame::DrawObj_Item(ScPainter *p, QRectF e)
+{
+	PageItem_TextFrame::DrawObj_Item(p,e);
+	if (m_topLine)
+		m_topLine->DrawObj_Item(p,e);
 }

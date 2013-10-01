@@ -42,6 +42,8 @@ public:
 	bool isAutoWelded() { return m_nstyle->isAutoWeldNotesFrames(); }
 	bool isAutoHeight() { return m_nstyle->isAutoNotesHeight(); }
 	bool isAutoWidth() { return m_nstyle->isAutoNotesWidth(); }
+	bool hasTopLine() {return (m_topLine!=NULL);}
+	PageItem_Line * getTopLine() const  { return m_topLine; }
 
 	//return list of notes in noteframe
 	QList<TextNote*> notesList() { return l_notes; }
@@ -67,7 +69,8 @@ private:
 //not used???
 	//find position of note marker in text
 	int findNoteCpos(TextNote* note);
-	
+protected:
+	virtual void DrawObj(ScPainter *p, QRectF e);
 };
 
 #endif // PAGEITEM_NOTEFRAME_H
