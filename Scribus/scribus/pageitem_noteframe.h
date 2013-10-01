@@ -70,7 +70,7 @@ private:
 	//find position of note marker in text
 	int findNoteCpos(TextNote* note);
 protected:
-	virtual void DrawObj(ScPainter *p, QRectF e);
+	virtual void DrawObj_Item(ScPainter *p, QRectF e);
 };
 
 #endif // PAGEITEM_NOTEFRAME_H
