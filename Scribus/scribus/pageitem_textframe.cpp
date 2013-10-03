@@ -1543,31 +1543,34 @@ void PageItem_TextFrame::layout()
 					NotesStyle* nStyle = note->notesStyle();
 						Q_ASSERT(nStyle != NULL);
 					QString chsName = nStyle->marksChStyle();
-					CharStyle newStyle(itemText.charStyle(a));
 					if ((chsName != "") && (chsName != tr("No Style")))
 					{
 						CharStyle marksStyle(m_Doc->charStyle(chsName));
-						if (!newStyle.equiv(marksStyle))
+						if (!hl->equiv(marksStyle))
 						{
-							newStyle.setParent(chsName);
+							hl->setParent(chsName);
 							itemText.applyCharStyle(a, 1, marksStyle);
 						}
 					}
-					else
-						itemText.eraseCharStyle(a, 1, newStyle);
+//					else
+//						itemText.eraseCharStyle(a, 1, newStyle);
 					if (hl->mark->isType(MARKNoteMasterType))
 					{
 						if (nStyle->isSuperscriptInMaster())
-							hl->setEffects(hl->effects() | ScStyle_Superscript);
-						else
-							hl->setEffects(hl->effects() & ~ScStyle_Superscript);
+						{
+							CharStyle newStyle;
+							newStyle.setFeatures(static_cast<StyleFlag>(ScStyle_Superscript).featureList());
+							hl->applyCharStyle(newStyle);
+						}
 					}
 					else
 					{
 						if (nStyle->isSuperscriptInNote())
-							hl->setEffects(hl->effects() | ScStyle_Superscript);
-						else
-							hl->setEffects(hl->effects() & ~ScStyle_Superscript);
+						{
+							CharStyle newStyle;
+							newStyle.setFeatures(static_cast<StyleFlag>(ScStyle_Superscript).featureList());
+							hl->applyCharStyle(newStyle);
+						}
 					}
 				}
 			}
@@ -5954,8 +5957,7 @@ void PageItem_TextFrame::notesFramesLayout()
 			continue;
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
-		nF->invalid = true;
-		nF->layout();
+		nF->update();
 	}
 }
 
@@ -6002,7 +6004,13 @@ PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(NotesStyle *nStyle)
 
 void PageItem_TextFrame::setNoteFrame(PageItem_NoteFrame *nF)
 {
-	 m_notesFramesMap.insert(nF, nF->notesList());
+	m_notesFramesMap.insert(nF, nF->notesList());
+}
+
+void PageItem_TextFrame::invalidateNotesFrames()
+{
+	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+		nF->invalidateLayout();
 }
 
 void PageItem_TextFrame::setMaxY(double y)

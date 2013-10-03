@@ -3348,6 +3348,7 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 {
 	//read notes
 	QStringRef tagName = reader.name();
+	TextNote * newNote = NULL;
 	while(!reader.atEnd() && !reader.hasError())
 	{
 		reader.readNext();
@@ -3356,12 +3357,19 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 		if (reader.isStartElement() && reader.name() == "Note")
 		{
 			ScXmlStreamAttributes attrs = reader.scAttributes();
-			TextNote* note = m_Doc->newNote(NULL);
-			note->setSaxedText(attrs.valueAsString("Text"));
+			newNote = m_Doc->newNote(NULL);
+			newNote->setSaxedText(attrs.valueAsString("Text"));
 			//temporaly insert names of master mark and notes style into maps with note pointer
 			//will be resolved to pointers by updateNames2Ptr() after all will read
-			notesMasterMarks.insert(attrs.valueAsString("Master"), note);
-			notesNSets.insert(note, attrs.valueAsString("NStyle"));
+			notesMasterMarks.insert(attrs.valueAsString("Master"), newNote);
+			notesNSets.insert(newNote, attrs.valueAsString("NStyle"));
+		}
+		else if (newNote && reader.isStartElement() && reader.name() == "NoteMarkerCharStyle")
+		{
+			CharStyle newStyle;
+			ScXmlStreamAttributes attrs = reader.scAttributes();
+			readCharacterStyleAttrs(doc,attrs,newStyle);
+			newNote->setCharStyleNoteMark(newStyle);
 		}
 	}
 	return !reader.hasError();
