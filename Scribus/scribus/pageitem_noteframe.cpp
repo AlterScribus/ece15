@@ -341,6 +341,7 @@ void PageItem_NoteFrame::updateNotesText()
 	int startPos = 0;
 	TextNote *note = NULL;
 	Mark* prevMrk = NULL;
+	const CharStyle * lastNoteMarkCharStyle = NULL;
 	while (pos < itemText.length())
 	{
 		ScText* hl = itemText.item(pos);
@@ -351,6 +352,7 @@ void PageItem_NoteFrame::updateNotesText()
 				note = prevMrk->getNotePtr();
 				if (note != NULL)
 				{
+					note->setCharStyleNoteMark(*lastNoteMarkCharStyle);
 					int offset = 0;
 					if (itemText.text(pos-1) == SpecialChars::PARSEP)
 						++offset;
@@ -364,6 +366,7 @@ void PageItem_NoteFrame::updateNotesText()
 				}
 			}
 			prevMrk = hl->mark;
+			lastNoteMarkCharStyle = dynamic_cast<CharStyle*>(hl);
 			startPos = pos +1;
 		}
 		++pos;
@@ -382,6 +385,7 @@ void PageItem_NoteFrame::updateNotesText()
 			note->setSaxedText("");
 			note->textLen = 0;
 		}
+		note->setCharStyleNoteMark(*lastNoteMarkCharStyle);
 	}
 	if (oldSelLen > 0)
 		itemText.select(oldSelStart, oldSelLen);

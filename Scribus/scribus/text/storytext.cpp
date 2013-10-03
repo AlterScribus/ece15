@@ -823,9 +823,6 @@ const CharStyle & StoryText::charStyle(int pos) const
 //		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
-	//for notes frames - get style from note text, not from mark
-	if ((pos+1 < length()) && hasMark(pos) && mark(pos)->isNoteType())
-		++pos;
 	if (text(pos) == SpecialChars::PARSEP)
 	{
 		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP)

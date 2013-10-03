@@ -21,3 +21,23 @@ bool NotesStyle::operator!=(const NotesStyle& n2)
 			|| (m_topLineStyle != n2.m_topLineStyle) || (m_topLineWidth != n2.m_topLineWidth)
 			);
 }
+
+CharStyle TextNote::getCharStyleNoteMark() const
+{
+	return charStyleNoteMark;
+}
+
+void TextNote::setCharStyleNoteMark(const CharStyle &value)
+{
+	charStyleNoteMark = value;
+}
+CharStyle TextNote::getCharStyleMasterMark() const
+{
+	return charStyleMasterMark;
+}
+
+void TextNote::setCharStyleMasterMark(const CharStyle &value)
+{
+	charStyleMasterMark = value;
+}
+

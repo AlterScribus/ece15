@@ -4309,12 +4309,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			if((ite->nextInChain() == NULL) && !ite->isNoteFrame())  //do not layout notes frames
 				ite->layout();
 		}
-		if (!doc->marksList().isEmpty())
-		{
-			doc->setLoading(true);
-			doc->updateMarks(true);
-			doc->setLoading(false);
-		}
 		for (QHash<int, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
 		{
 			PageItem *ite = itf.value();
@@ -4382,8 +4376,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	qApp->restoreOverrideCursor();
 	undoManager->setUndoEnabled(true);
 	doc->setModified(false);
-	foreach (NotesStyle* NS, doc->m_docNotesStylesList)
-		doc->updateNotesFramesStyles(NS);
 #ifdef DEBUG_LOAD_TIMES
 	times(&tms2);
 	double ticks = sysconf(_SC_CLK_TCK);

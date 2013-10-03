@@ -121,12 +121,20 @@ public:
 	bool isEndNote() { return m_notesStyle->isEndNotes(); }
 	int textLen;
 
+	CharStyle getCharStyleNoteMark() const;
+	void setCharStyleNoteMark(const CharStyle &value);
+	
+	CharStyle getCharStyleMasterMark() const;
+	void setCharStyleMasterMark(const CharStyle &value);
+	
 protected:
 	NotesStyle *m_notesStyle;
 	QString m_noteSaxedText;
 	Mark *m_noteMasterMark;
 	Mark *m_noteFrameMark;
 	int m_number;
+	CharStyle charStyleNoteMark;
+	CharStyle charStyleMasterMark;
 };
 
 #endif // NOTESSTYLES_H

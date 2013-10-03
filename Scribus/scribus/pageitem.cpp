@@ -4821,6 +4821,8 @@ void PageItem::checkChanges(bool force)
 	{
 		checkTextFlowInteractions();
 	}
+	if (isTextFrame() && !isNoteFrame())
+		asTextFrame()->invalidateNotesFrames();
 }
 
 bool PageItem::shouldCheck()
