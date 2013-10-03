@@ -18,5 +18,6 @@ bool NotesStyle::operator!=(const NotesStyle& n2)
 			(autoRemoveEmptyNotesFrames != n2.autoRemoveEmptyNotesFrames) || (autoWeldNotesFrames != n2.autoWeldNotesFrames) ||
 			(superscriptInMaster != n2.superscriptInMaster) || (superscriptInNote != n2.superscriptInNote) ||
 			(marksCharStyle != n2.marksCharStyle) || (notesParaStyle != n2.notesParaStyle)
+			|| (m_topLineStyle != n2.m_topLineStyle) || (m_topLineWidth != n2.m_topLineWidth)
 			);
 }

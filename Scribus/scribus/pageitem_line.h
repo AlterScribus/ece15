@@ -28,13 +28,14 @@ for which a new license (GPL+exception) is in place.
 
 #include "scribusapi.h"
 #include "pageitem.h"
+
 class ScPainter;
 class ScribusDoc;
 
 class SCRIBUS_API PageItem_Line : public PageItem
 {
 	Q_OBJECT
-
+friend class PageItem_NoteFrame;
 public:
 	PageItem_Line(ScribusDoc *pa, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_Line(const PageItem & p) : PageItem(p) {}

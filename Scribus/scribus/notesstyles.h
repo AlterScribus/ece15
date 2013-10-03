@@ -33,7 +33,7 @@ class SCRIBUS_API NotesStyle
 public:
 	NotesStyle() : nameStr ("Default"), startNum(1), m_endNotesStyle(false), numeration(), numRange(NSRdocument), prefixStr(""), suffixStr(")"),
 		autoNotesHeight(true), autoNotesWidth(true), autoRemoveEmptyNotesFrames(true), autoWeldNotesFrames(true),
-		superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle("") {}
+		superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle(""), m_topLineStyle(""), m_topLineWidth(0.0) {}
 	~NotesStyle() {}
 	bool operator!=(const NotesStyle& n2);
 
@@ -69,6 +69,10 @@ public:
 	void setMarksCharStyle(const QString styleName) { marksCharStyle = styleName; }
 	const QString notesParStyle() { return notesParaStyle; }
 	void setNotesParStyle(const QString styleName) { notesParaStyle = styleName; }
+	QString topLineStyle() { return m_topLineStyle; }
+	void setTopLineStyle(const QString styleName) { m_topLineStyle = styleName; }
+	double topLineWidth() { return m_topLineWidth; }
+	void setTopLineWidth(const double w) { m_topLineWidth = w; }
 
 	void setEndNotes(bool);
 
@@ -89,6 +93,8 @@ private:
 	bool superscriptInMaster;
 	QString marksCharStyle;
 	QString notesParaStyle;
+	QString m_topLineStyle;
+	double m_topLineWidth;
 };
 
 class SCRIBUS_API TextNote : public QObject

@@ -356,7 +356,7 @@ void PropertiesPalette_Line::updateLineStyles()
 	updateLineStyles(m_doc);
 }
 
-void PropertiesPalette_Line::updateLineStyles(ScribusDoc *dd)
+void PropertiesPalette_Line::updateLineStyles(ScribusDoc * dd)
 {
 	if (!m_ScMW || m_ScMW->scriptIsRunning())
 		return;

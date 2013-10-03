@@ -1358,6 +1358,8 @@ void Scribus150Format::writeNotesStyles(ScXmlStreamWriter & docu)
 		docu.writeAttribute("SuperMaster", NS->isSuperscriptInMaster());
 		docu.writeAttribute("MarksStyle", NS->marksChStyle());
 		docu.writeAttribute("NotesStyle", NS->notesParStyle());
+		docu.writeAttribute("LineStyle", NS->topLineStyle());
+		docu.writeAttribute("LineWidth", NS->topLineWidth());
 	}
 	docu.writeEndElement();
 }

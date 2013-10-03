@@ -25,6 +25,7 @@ private:
 	void changeNotesStyle();
 	void setBlockSignals(bool block);
 	bool addNewNsMode;
+	void updateLineStyles();
 
 public slots:
 	void setDoc(ScribusDoc *doc);
@@ -54,5 +55,7 @@ private slots:
 	void on_NewButton_clicked();
 	void on_paraStyleCombo_currentIndexChanged(const int &arg1);
 	void on_charStyleCombo_currentIndexChanged(const int &arg1);
+	void on_topLineWidthSpin_valueChanged(double arg1);
+	void on_topLineStyleCombo_currentIndexChanged(const QString &arg1);
 };
 #endif // NOTESSTYLESEDITOR_H

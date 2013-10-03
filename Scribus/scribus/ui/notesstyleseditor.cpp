@@ -10,38 +10,38 @@
 #include "undomanager.h"
 
 NotesStylesEditor::NotesStylesEditor(QWidget *parent, const char *name)
-	: ScrPaletteBase(parent, name), m_Doc(NULL)
+    : ScrPaletteBase(parent, name), m_Doc(NULL)
 {
 	setupUi(this);
 	QString pname(name);
 	if (pname.isEmpty())
 		pname = "notesStylesEditor";
 	m_prefs = PrefsManager::instance()->prefsFile->getContext(pname);
-
+	
 	setBlockSignals(true);
 	
 	setDoc(0);
 	languageChange();
 	NSlistBox->setInsertPolicy(QComboBox::InsertAlphabetically);
-
+	
 	NumberingBox->addItem("1 2 3");
 	NumberingBox->addItem("i ii iii");
 	NumberingBox->addItem("I II III");
 	NumberingBox->addItem("a b c");
 	NumberingBox->addItem("A B C");
 	NumberingBox->addItem("*");
-
+	
 	RangeBox->addItem(tr("Document"));
 	RangeBox->addItem(tr("Section"));
 	RangeBox->addItem(tr("Story"));
 	RangeBox->addItem(tr("Page"));
 	RangeBox->addItem(tr("Frame"));
-
+	
 	StartSpinBox->setMinimum(1);
 	StartSpinBox->setMaximum(99999);
 	changesMap.clear();
 	addNewNsMode = false;
-
+	
 	setBlockSignals(isVisible());
 }
 
@@ -56,7 +56,7 @@ void NotesStylesEditor::languageChange()
 {
 	bool wasSignalsBlocked = signalsBlocked();
 	setBlockSignals(true);
-
+	
 	if (addNewNsMode)
 	{
 		OKButton->setText(tr("Cancel"));
@@ -88,6 +88,9 @@ void NotesStylesEditor::languageChange()
 	AutoWeldLabel->setText(tr("Auto Welding"));
 	AutoRemoveLabel->setText(tr("Remove if empty"));
 	DeleteButton->setText(tr("Delete"));
+	topLineStyleLabel->setText(tr("Top Line Style"));
+	topLineWidthLabel->setText(tr("Top Line Width"));
+	topLineWidthSpin->setToolTip(tr("Width of top line as % of noteframe width"));
 	setBlockSignals(wasSignalsBlocked);
 }
 
@@ -100,6 +103,7 @@ void NotesStylesEditor::setDoc(ScribusDoc *doc)
 	m_Doc = doc;
 	paraStyleCombo->setDoc(m_Doc);
 	charStyleCombo->setDoc(m_Doc);
+	updateLineStyles();
 	if (m_Doc != NULL)
 	{
 		updateNSList();
@@ -126,6 +130,8 @@ void NotesStylesEditor::handleUpdateRequest(int updateFlags)
 		charStyleCombo->updateFormatList();
 	if ((updateFlags & reqParaStylesUpdate) || (updateFlags & reqTextStylesUpdate))
 		paraStyleCombo->updateFormatList();
+	if (updateFlags & reqLineStylesUpdate)
+		updateLineStyles();
 	readNotesStyle(NSlistBox->currentText());
 	setBlockSignals(wasSignalsBlocked);
 }
@@ -165,6 +171,21 @@ void NotesStylesEditor::setBlockSignals(bool block)
 	}
 	paraStyleCombo->blockSignals(block);
 	charStyleCombo->blockSignals(block);
+	topLineStyleCombo->blockSignals(block);
+}
+
+void NotesStylesEditor::updateLineStyles()
+{
+	topLineStyleCombo->blockSignals(true);
+	topLineStyleCombo->clear();
+	if (m_Doc != NULL)
+	{
+		QHash<QString,multiLine>::Iterator it;
+		for (it = m_Doc->MLineStyles.begin(); it != m_Doc->MLineStyles.end(); ++it)
+			topLineStyleCombo->addItem(it.key());
+	}
+	topLineStyleCombo->insertItem( 0, tr("No Style"));
+	topLineStyleCombo->blockSignals(false);
 }
 
 void NotesStylesEditor::setNotesStyle(NotesStyle * NS)
@@ -217,7 +238,9 @@ void NotesStylesEditor::setNotesStyle(NotesStyle * NS)
 			RangeBox->addItem(tr("Frame"));
 	}
 	AutoRemove->setChecked(NS->isAutoRemoveEmptyNotesFrames());
-
+	topLineStyleCombo->setCurrentIndex(topLineStyleCombo->findText(NS->topLineStyle()));
+	topLineWidthSpin->setValue(NS->topLineWidth() * 100.0);
+	
 	ApplyButton->setEnabled(false);
 	setBlockSignals(wasSignalsBlocked);
 }
@@ -265,7 +288,7 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 		foreach (const QString &nsName, changesMap.keys())
 		{
 			NotesStyle n = changesMap.value(nsName);
-
+			
 			//validate settings
 			if (!m_Doc->validateNSet(n))
 			{
@@ -326,6 +349,8 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 					ss->set("NEWsuperNote", NS->isSuperscriptInNote());
 					ss->set("NEWmarksChStyle", NS->marksChStyle());
 					ss->set("NEWnotesParStyle", NS->notesParStyle());
+					ss->set("NEWtopLineStyle", NS->topLineStyle());
+					ss->set("NEWtopLineWidth", NS->topLineWidth());
 					UndoManager::instance()->action(m_Doc, ss);
 				}
 				//invalidate all text frames with marks from current changed notes style
@@ -351,7 +376,7 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 		//restore NStyle index
 		readNotesStyle(currNS);
 	}
-
+	
 	ApplyButton->setEnabled(false);
 	NSlistBox->setEnabled(true);
 	NewButton->setEnabled(true);
@@ -361,8 +386,8 @@ void NotesStylesEditor::on_DeleteButton_clicked()
 {
 	QString nsName = NSlistBox->currentText();
 	int t = QMessageBox::warning(m_Doc->scMW(), tr("Warning! Deleting Notes Style"), "<qt>" +
-								 tr("You are going to delete notes style %1. All notes and marks using that style are also going to be deleted.").arg(nsName) + "</qt>",
-								 QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
+	                             tr("You are going to delete notes style %1. All notes and marks using that style are also going to be deleted.").arg(nsName) + "</qt>",
+	                             QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
 	if (t == QMessageBox::Ok)
 	{
 		m_Doc->deleteNotesStyle(nsName);
@@ -415,7 +440,7 @@ void NotesStylesEditor::on_OKButton_clicked()
 		if (ApplyButton->isEnabled())
 			//apply changes
 			on_ApplyButton_clicked();
-
+		
 		//in normal mode close
 		close();
 	}
@@ -433,7 +458,7 @@ void NotesStylesEditor::on_FootRadio_toggled(bool checked)
 {
 	bool wasSignalsBlocked = signalsBlocked();
 	setBlockSignals(true);
-
+	
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setEndNotes(!checked);
 	changesMap.insert(NSlistBox->currentText(), ns);
@@ -457,7 +482,7 @@ void NotesStylesEditor::on_EndRadio_toggled(bool checked)
 {
 	bool wasSignalsBlocked = signalsBlocked();
 	setBlockSignals(true);
-
+	
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setEndNotes(checked);
 	FootRadio->setChecked(!checked);
@@ -489,7 +514,7 @@ void NotesStylesEditor::on_RangeBox_currentIndexChanged(int index)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setRange((NumerationRange) index);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -498,7 +523,7 @@ void NotesStylesEditor::on_StartSpinBox_valueChanged(int arg1)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setStart(arg1);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -507,7 +532,7 @@ void NotesStylesEditor::on_PrefixEdit_textChanged(const QString &arg1)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setPrefix(arg1);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -516,7 +541,7 @@ void NotesStylesEditor::on_SuffixEdit_textChanged(const QString &arg1)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setSuffix(arg1);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -525,7 +550,7 @@ void NotesStylesEditor::on_SuperMasterCheck_toggled(bool checked)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setSuperscriptInMaster(checked);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -534,7 +559,7 @@ void NotesStylesEditor::on_SuperNoteCheck_toggled(bool checked)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setSuperscriptInNote(checked);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -543,7 +568,7 @@ void NotesStylesEditor::on_AutoH_toggled(bool checked)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setAutoNotesHeight(checked);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -552,7 +577,7 @@ void NotesStylesEditor::on_AutoW_toggled(bool checked)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setAutoNotesWidth(checked);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -561,7 +586,7 @@ void NotesStylesEditor::on_AutoWeld_toggled(bool checked)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setAutoWeldNotesFrames(checked);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -570,7 +595,7 @@ void NotesStylesEditor::on_AutoRemove_toggled(bool checked)
 {
 	NotesStyle ns = changesMap.value(NSlistBox->currentText());
 	ns.setAutoRemoveEmptyNotesFrames(checked);
-
+	
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
@@ -593,6 +618,22 @@ void NotesStylesEditor::on_charStyleCombo_currentIndexChanged(const int &arg1)
 		ns.setMarksCharStyle("");
 	else
 		ns.setMarksCharStyle(charStyleCombo->itemText(arg1));
+	changesMap.insert(NSlistBox->currentText(), ns);
+	ApplyButton->setEnabled(true);
+}
+
+void NotesStylesEditor::on_topLineWidthSpin_valueChanged(double arg1)
+{
+	NotesStyle ns = changesMap.value(NSlistBox->currentText());
+	ns.setTopLineWidth(arg1/100.0);
+	changesMap.insert(NSlistBox->currentText(), ns);
+	ApplyButton->setEnabled(true);
+}
+
+void NotesStylesEditor::on_topLineStyleCombo_currentIndexChanged(const QString &arg1)
+{
+	NotesStyle ns = changesMap.value(NSlistBox->currentText());
+	ns.setTopLineStyle(arg1);
 	changesMap.insert(NSlistBox->currentText(), ns);
 	ApplyButton->setEnabled(true);
 }
