@@ -31,7 +31,6 @@ for which a new license (GPL+exception) is in place.
 
 class ScPainter;
 class ScribusDoc;
-class PageItem_NoteFrame;
 
 class SCRIBUS_API PageItem_Line : public PageItem
 {
@@ -50,7 +49,6 @@ public:
 
 	QPointF startPoint();
 	QPointF endPoint();
-	PageItem_NoteFrame * m_NoteFrameTopLine;
 	
 protected:
 	virtual void DrawObj_Item(ScPainter *p, QRectF e);

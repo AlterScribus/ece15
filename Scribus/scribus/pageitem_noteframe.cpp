@@ -306,7 +306,6 @@ void PageItem_NoteFrame::updateTopLine()
 		if (m_topLine == NULL)
 		{
 			m_topLine = new PageItem_Line(m_Doc, xPos(), yPos(), width() * (notesStyle()->topLineWidth()), 0, m_Doc->itemToolPrefs().lineWidth, CommonStrings::None, m_Doc->itemToolPrefs().lineColor);
-			m_topLine->m_NoteFrameTopLine = this;
 			m_topLine->setLocked(true);
 		}
 		else
