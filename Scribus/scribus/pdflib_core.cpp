@@ -3893,7 +3893,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 				PageItem * topLine = (PageItem*) ite->asNoteFrame()->getTopLine();
 				QString tmp2 = "";
 				if (PDF_ProcessItem(tmp2, topLine, pag, PNr))
-					tmp += tmp2;
+					tmp += "Q\n" + tmp2.remove("Q\n");
 			}
 			break;
 		case PageItem::Line:
