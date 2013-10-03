@@ -140,10 +140,6 @@ PageItem_NoteFrame::~PageItem_NoteFrame()
 {
 	if (m_topLine != NULL)
 		delete m_topLine;
-//	{
-//		m_topLine->unWeld();
-//		m_Doc->DocItems.removeOne(m_topLine);
-//	}
 }
 
 void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
@@ -296,11 +292,6 @@ void PageItem_NoteFrame::updateTopLine()
 		if (m_topLine)
 			delete m_topLine;
 	}
-//	if (m_topLine != NULL)
-//	{
-//		m_topLine->unWeld();
-//		m_Doc->DocItems.removeOne(m_topLine);
-//	}
 	else
 	{
 		if (m_topLine == NULL)

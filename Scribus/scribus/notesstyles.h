@@ -31,7 +31,7 @@ class SCRIBUS_API NotesStyle
 public:
 	NotesStyle() : nameStr ("Default"), startNum(1), m_endNotesStyle(false), numeration(), numRange(NSRdocument), prefixStr(""), suffixStr(")"),
 		autoNotesHeight(true), autoNotesWidth(true), autoRemoveEmptyNotesFrames(true), autoWeldNotesFrames(true),
-	    superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle(""), m_topLineStyle(""), m_topLineWidth(0.0) {}
+		superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle(""), m_topLineStyle(""), m_topLineWidth(0.0) {}
 	~NotesStyle() {}
 	bool operator!=(const NotesStyle& n2);
 
