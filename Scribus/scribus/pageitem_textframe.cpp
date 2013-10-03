@@ -1615,9 +1615,9 @@ void PageItem_TextFrame::layout()
 				opticalMargins = style.opticalMargins();
 			CharStyle charStyle = ((hl->ch != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
 			chstr = ExpandToken(a);
-			int chstrLen = chstr.length();
 			if (chstr.isEmpty())
 				chstr = SpecialChars::ZWNBSPACE;
+			int chstrLen = chstr.length();
 
 			curStat = SpecialChars::getCJKAttr(hl->ch);
 
@@ -1652,6 +1652,32 @@ void PageItem_TextFrame::layout()
 			double offset = hlcsize10 * (charStyle.baselineOffset() / 1000.0);
 			style.setLineSpacing (calculateLineSpacing (style, this));
 			FlopBaseline = (current.startOfCol && firstLineOffset() == FLOPBaselineGrid);
+
+			//change characters and/or scaling/offset due to typographic effects
+			int chst = charStyle.effects() & 1919;
+			if (chst != ScStyle_Default)
+			{
+				if (chst & ScStyle_Superscript)
+				{
+					offset += charStyle.fontSize() * m_Doc->typographicPrefs().valueSuperScript / 100.0;
+					scaleV *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
+					scaleH *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
+				}
+				else if (chst & ScStyle_Subscript)
+				{
+					offset -= charStyle.fontSize() * m_Doc->typographicPrefs().valueSubScript / 100.0;
+					scaleV *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
+					scaleH *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
+				}
+				if ((chst & ScStyle_AllCaps) || (chst & ScStyle_SmallCaps))
+					chstr = chstr.toUpper();
+				if (chst & ScStyle_SmallCaps)
+				{
+					double smallcapsScale = m_Doc->typographicPrefs().valueSmallCaps / 100.0;
+					scaleV *=smallcapsScale;
+					scaleH *= smallcapsScale;
+				}
+			}
 
 			// find out about par gap and dropcap
 			if (a == firstInFrame())
