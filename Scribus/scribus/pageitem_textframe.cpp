@@ -1666,10 +1666,10 @@ void PageItem_TextFrame::layout()
 			CharStyle charStyle = ((hl->ch != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
 			growKerning = !compareDouble(style.maxTracking(), charStyle.tracking());
 			chstr = ExpandToken(a);
-			int chstrLen = chstr.length();
 			if (chstr.isEmpty())
 				chstr = SpecialChars::ZWNBSPACE;
-			
+			int chstrLen = chstr.length();
+
 			curStat = SpecialChars::getCJKAttr(hl->ch);
 			
 			//set style for paragraph effects
@@ -1704,6 +1704,33 @@ void PageItem_TextFrame::layout()
 			if (current.startOfCol && firstLineOffset() == FLOPBaselineGrid)
 				style.setLineSpacingMode(ParagraphStyle::BaselineGridLineSpacing);
 			style.setLineSpacing (calculateLineSpacing (style, this));
+
+			//change characters and/or scaling/offset due to typographic effects
+			int chst = charStyle.effects() & 1919;
+			if (chst != ScStyle_Default)
+			{
+				if (chst & ScStyle_Superscript)
+				{
+					offset += charStyle.fontSize() * m_Doc->typographicPrefs().valueSuperScript / 100.0;
+					scaleV *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
+					scaleH *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
+				}
+				else if (chst & ScStyle_Subscript)
+				{
+					offset -= charStyle.fontSize() * m_Doc->typographicPrefs().valueSubScript / 100.0;
+					scaleV *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
+					scaleH *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
+				}
+				if ((chst & ScStyle_AllCaps) || (chst & ScStyle_SmallCaps))
+					chstr = chstr.toUpper();
+				if (chst & ScStyle_SmallCaps)
+				{
+					double smallcapsScale = m_Doc->typographicPrefs().valueSmallCaps / 100.0;
+					scaleV *=smallcapsScale;
+					scaleH *= smallcapsScale;
+				}
+			}
+
 			//avoid hyphenation for words with softhyphen at it beginning
 			if (hl->ch == SpecialChars::SHYPHEN && !disableHyph)
 			{
@@ -2147,14 +2174,14 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing();
 				}
-				maxYAsc = (long) ceil((current.yPos - addAsce) * 1000);
+				maxYAsc = (long) floor((current.yPos - addAsce) * 1000);
 			}
 			else
-				maxYAsc = (long) ceil((current.yPos - realAsce) * 1000);
+				maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
 			//fix for glyphs with negative realAsce value
 			maxYAsc = qMax(maxYAsc, (long) 0);
 			maxYDesc = (long) floor((current.yPos + realDesc) * 1000);
-			int maxYAsc1000 = ceil(maxYAsc/1000.0);
+			int maxYAsc1000 = floor(maxYAsc/1000.0);
 			int maxYDesc1000 = floor(maxYDesc/1000.0);
 			
 			if (current.itemsInLine == 0 && !current.afterOverflow)
@@ -2225,11 +2252,12 @@ void PageItem_TextFrame::layout()
 							current.yPos++;
 						lastLineY = (double) maxYAsc / 1000.0;
 						if (current.startOfCol)
-							maxYAsc = (long) ceil((current.yPos - addAsce)*1000);
+							maxYAsc = (long) floor((current.yPos - addAsce)*1000);
 						else
-							maxYAsc = (long) ceil((current.yPos - realAsce) * 1000);
+							maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
+						maxYAsc = qMax(maxYAsc, (long) 0);
 						maxYDesc = (long) floor((current.yPos + realDesc) * 1000);
-						maxYAsc1000 = ceil(maxYAsc/1000.0);
+						maxYAsc1000 = floor(maxYAsc/1000.0);
 						maxYDesc1000 = floor(maxYDesc/1000.0);
 						
 						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc1000));
@@ -3040,13 +3068,13 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = (long) ceil((current.yPos - addAsce)*1000);
+				maxYAsc = (long) floor((current.yPos - addAsce)*1000);
 			}
 			else
-				maxYAsc = (long) ceil((current.yPos - realAsce)*1000);
+				maxYAsc = (long) floor((current.yPos - realAsce)*1000);
 			maxYAsc = qMax(maxYAsc, (long) 0);
 			maxYDesc = (long) floor((current.yPos + realDesc)*1000);
-			int maxYAsc1000 = ceil(maxYAsc/1000.0);
+			int maxYAsc1000 = floor(maxYAsc/1000.0);
 			int maxYDesc1000 = floor(maxYDesc/1000.0);
 			
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc1000, maxYDesc1000);
