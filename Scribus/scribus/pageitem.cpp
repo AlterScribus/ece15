@@ -1677,7 +1677,7 @@ void PageItem::setColumnGap(int num, double gap)
 
 double PageItem::getColumnLeft(int colNr)
 {
-	double colLeft = 0.0;
+	double colLeft = m_textDistanceMargins.Left;
 	if (lineColor() != CommonStrings::None)
 		colLeft = m_lineWidth / 2.0;
 	for (int i=0; i < colNr; ++i)
