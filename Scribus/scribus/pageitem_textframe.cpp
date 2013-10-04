@@ -1741,7 +1741,7 @@ void PageItem_TextFrame::layout()
 			else if (disableHyph && !hl->ch.isLetterOrNumber())
 				disableHyph = false;
 			FlopBaseline = (current.startOfCol && firstLineOffset() == FLOPBaselineGrid);
-			
+
 			// find out about par gap and dropcap
 			if (a == firstInFrame())
 			{
@@ -2175,15 +2175,14 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing();
 				}
-				maxYAsc = (long) floor((current.yPos - addAsce) * 1000);
+				maxYAsc = static_cast<long>(floor((current.yPos - addAsce)*1000.0));
 			}
 			else
-				maxYAsc = (long) floor((current.yPos - realAsce) * 1000);
-			//fix for glyphs with negative realAsce value
-			maxYAsc = qMax(maxYAsc, (long) 0);
-			maxYDesc = (long) floor((current.yPos + realDesc) * 1000);
-			int maxYAsc1000 = floor(maxYAsc/1000.0);
-			int maxYDesc1000 = floor(maxYDesc/1000.0);
+				maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
+			maxYAsc = qMax(maxYAsc, static_cast<long>(0));
+			maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
+			int maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
+			int maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 			
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2253,14 +2252,13 @@ void PageItem_TextFrame::layout()
 							current.yPos++;
 						lastLineY = (double) maxYAsc / 1000.0;
 						if (current.startOfCol)
-							maxYAsc = static_cast<long>((current.yPos - addAsce)*1000);
-						}
+							maxYAsc = static_cast<long>(floor((current.yPos - addAsce)*1000.0));
 						else
-							maxYAsc = static_cast<long>((current.yPos - realAsce)*1000);
+							maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
 						maxYAsc = qMax(maxYAsc, static_cast<long>(0));
-						maxYDesc = static_cast<long>((current.yPos + realDesc)*1000);
+						maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
 						maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
-						maxYDesc1000 = static_cast<int>(floor(maxYDesc/1000.0));
+						maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 
 						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc1000));
 						done = false;
@@ -3070,14 +3068,14 @@ void PageItem_TextFrame::layout()
 					else if (firstLineOffset() == FLOPLineSpacing)
 						addAsce = style.lineSpacing() + offset;
 				}
-				maxYAsc = static_cast<long>((current.yPos - addAsce)*1000);
+				maxYAsc = static_cast<long>(floor((current.yPos - addAsce)*1000.0));
 			}
 			else
-				maxYAsc = static_cast<long>((current.yPos - realAsce)*1000);
+				maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
 			maxYAsc = qMax(maxYAsc, static_cast<long>(0));
-			maxYDesc = static_cast<long>((current.yPos + realDesc)*1000);
+			maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
 			int maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
-			int maxYDesc1000 = static_cast<int>(floor(maxYDesc/1000.0));
+			int maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 			
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc1000, maxYDesc1000);
 			current.finishLine(EndX);
