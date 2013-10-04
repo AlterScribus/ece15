@@ -44,7 +44,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, ApplicationPrefs& prefsDat
 	prefs_PageSizes(0),
 	prefs_Paths(0),
 	prefs_Plugins(0),prefs_PreflightVerifier(0),
-	prefs_Printer(0),
+//	prefs_Printer(0),
 	prefs_Scrapbook(0),
 	prefs_Spelling(0),
 	prefs_TableOfContents(0),
@@ -78,7 +78,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, ApplicationPrefs& prefsDat
 	prefs_OperatorTools = new Prefs_OperatorTools(prefsStackWidget, m_Doc);
 	prefs_PDFExport = new Prefs_PDFExport(prefsStackWidget, m_Doc);
 	prefs_PreflightVerifier = new Prefs_PreflightVerifier(prefsStackWidget, m_Doc);
-	prefs_Printer = new Prefs_Printer(prefsStackWidget, m_Doc);
+//	prefs_Printer = new Prefs_Printer(prefsStackWidget, m_Doc);
 	prefs_TableOfContents = new Prefs_TableOfContents(prefsStackWidget, m_Doc);
 	prefs_Typography = new Prefs_Typography(prefsStackWidget, m_Doc);
 	if (doc)
@@ -121,7 +121,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent, ApplicationPrefs& prefsDat
 	addItem( tr("Hyphenator"), loadIcon("signature_16.png"), prefs_Hyphenator);
 	addItem( tr("Fonts"), loadIcon("16/preferences-desktop-font.png"), prefs_Fonts);
 	addItem( tr("Color Management"), loadIcon("blend_16.png"), prefs_ColorManagement);
-	addItem( tr("Printer"), loadIcon("16/printer.png"), prefs_Printer);
+//	addItem( tr("Printer"), loadIcon("16/printer.png"), prefs_Printer);
 	addItem( tr("PDF Export"), loadIcon("acroread16.png"), prefs_PDFExport);
 	addItem( tr("Preflight Verifier"), loadIcon("16/preflight-verifier.png"), prefs_PreflightVerifier);
 	addItem( tr("Document Item Attributes"), loadIcon("docattributes_16.png"), prefs_DocumentItemAttributes);
@@ -199,7 +199,7 @@ void PreferencesDialog::setupGui()
 	if (prefs_OperatorTools) prefs_OperatorTools->restoreDefaults(&localPrefs);
 	if (prefs_Hyphenator) prefs_Hyphenator->restoreDefaults(&localPrefs);
 	if (prefs_Fonts) prefs_Fonts->restoreDefaults(&localPrefs);
-	if (prefs_Printer) prefs_Printer->restoreDefaults(&localPrefs);
+//	if (prefs_Printer) prefs_Printer->restoreDefaults(&localPrefs);
 	if (prefs_PDFExport) prefs_PDFExport->restoreDefaults(&localPrefs, ScCore->PDFXProfiles);
 	if (prefs_PreflightVerifier) prefs_PreflightVerifier->restoreDefaults(&localPrefs);
 	if (prefs_DocumentItemAttributes) prefs_DocumentItemAttributes->restoreDefaults(&localPrefs);
@@ -234,7 +234,7 @@ void PreferencesDialog::saveGuiToPrefs()
 	if (prefs_OperatorTools) prefs_OperatorTools->saveGuiToPrefs(&localPrefs);
 	if (prefs_Hyphenator) prefs_Hyphenator->saveGuiToPrefs(&localPrefs);
 	if (prefs_Fonts) prefs_Fonts->saveGuiToPrefs(&localPrefs);
-	if (prefs_Printer) prefs_Printer->saveGuiToPrefs(&localPrefs);
+//	if (prefs_Printer) prefs_Printer->saveGuiToPrefs(&localPrefs);
 	if (prefs_PDFExport) prefs_PDFExport->saveGuiToPrefs(&localPrefs);
 	if (prefs_PreflightVerifier) prefs_PreflightVerifier->saveGuiToPrefs(&localPrefs);
 	if (prefs_DocumentItemAttributes) prefs_DocumentItemAttributes->saveGuiToPrefs(&localPrefs);
@@ -256,7 +256,10 @@ void PreferencesDialog::applyButtonClicked()
 {
 	Prefs_Pane* pp=qobject_cast<Prefs_Pane *>(prefsStackWidget->currentWidget());
 	if (pp)
+	{
 		pp->saveGuiToPrefs(&localPrefs);
+		emit accepted();
+	}
 }
 
 void PreferencesDialog::accept()
