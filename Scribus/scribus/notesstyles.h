@@ -8,7 +8,7 @@
 #include "numeration.h"
 #include "pagestructs.h"
 //#include "scpage.h"
-//#include "styles/charstyle.h"
+#include "styles/charstyle.h"
 //#include "styles/paragraphstyle.h"
 //#include "text/storytext.h"
 #include "util.h"
