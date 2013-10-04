@@ -1013,12 +1013,8 @@ void SMParagraphStyle::slotParEffectIndent(bool isOn)
 
 void SMParagraphStyle::slotParEffectCharStyle(const QString& name)
 {
-	if (m_pwidget->parEffectCharStyleCombo->useParentValue())
-		for (int i = 0; i < m_selection.count(); ++i)
-			m_selection[i]->parentPeCharStyleName();
-	else
-		for (int i = 0; i < m_selection.count(); ++i)
-			m_selection[i]->setPeCharStyleName(name);
+	for (int i = 0; i < m_selection.count(); ++i)
+		m_selection[i]->setPeCharStyleName(name);
 
 	if (!m_selectionIsDirty)
 	{

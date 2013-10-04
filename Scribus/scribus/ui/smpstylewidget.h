@@ -46,6 +46,7 @@ private:
 	void fillNumerationsCombo();
 	void fillNumRestartCombo();
 	void fillHyphModeCombo();
+	void fillLineSpacingCombo();
 	void checkParEffectState();
 	void showLineSpacing(QList<ParagraphStyle*> &pstyles);
 	void showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex);
