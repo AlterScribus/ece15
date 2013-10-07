@@ -1894,6 +1894,13 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	lastStyle.saxx(handler);
 	for (int i=0; i < length(); ++i)
 	{
+		if (hasMark(i))
+		{
+			Mark* mrk = mark(i);
+			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType))
+			    || mrk->isType(MARKBullNumType))
+				continue; //do not insert notes marks into notes frames and bullets marks anywhere
+		}
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));
 		
@@ -1935,33 +1942,10 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 		else if (hasMark(i))
 		{
 			Mark* mrk = mark(i);
-			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteMasterType))
-				|| (!m_doc->m_Selection->itemAt(0)->isTextFrame() && mrk->isType(MARKNoteFrameType))
-			    || mrk->isType(MARKBullNumType))
-				continue; //do not insert notes marks into text frames nad vice versa
 			Xml_attr mark_attr;
 			mark_attr.insert("label", mrk->label);
 			mark_attr.insert("typ", QString::number((int )mrk->getType()));
-//			if (!mrk->isType(MARKBullNumType))
-//			{
-//				mark_attr.insert("strtxt", mrk->getString());
-//				ParagraphStyle pstyle = this->paragraphStyle(i);
-//				mark_attr.insert("style_peoffset", QString::number(pstyle.parEffectOffset(),'f',2));
-//				mark_attr.insert("style_peindent", QString::number(pstyle.parEffectIndent(),'f',2));
-//				mark_attr.insert("style_pecharstyle", pstyle.peCharStyleName());
-//				mark_attr.insert("style_hasbul", pstyle.hasBullet() ? "1" : "0");
-//				mark_attr.insert("style_bulletstr", pstyle.bulletStr());
-//				mark_attr.insert("style_hasnum", pstyle.hasNum() ? "1" : "0");
-//				mark_attr.insert("style_numname", pstyle.numName());
-//				mark_attr.insert("style_numformat", QString::number( (int)pstyle.numFormat()));
-//				mark_attr.insert("style_numprefix", pstyle.numPrefix());
-//				mark_attr.insert("style_numsuffix", pstyle.numSuffix());
-//				mark_attr.insert("style_numlevel", QString::number(pstyle.numLevel()));
-//				mark_attr.insert("style_numstart", QString::number(pstyle.numStart()));
-//				mark_attr.insert("style_numrestart", QString::number((int) pstyle.numRestart()));
-//				mark_attr.insert("style_numother", pstyle.numOther() ? "1" : "0");
-//				mark_attr.insert("style_numhigher", pstyle.numHigher() ? "1" : "0");
-//			}
+
 			if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
 				mark_attr.insert("item", mrk->getItemPtr()->itemName());
 			else if (mrk->isType(MARK2MarkType))
@@ -2174,59 +2158,6 @@ public:
 				//				ParagraphStyle* pstyle = NULL;
 				if (t == MARKVariableTextType)
 					mrk = doc->getMarkDefinied(l,t);
-				//			else if (t == MARKBullNumType)
-				//			{
-				//				mrk = (Mark*) new BulNumMark();
-				//				Xml_attr::iterator str_It = attr.find("strtxt");
-				//				mrk->setString(Xml_data(str_It));
-				//				pstyle = new ParagraphStyle();
-				//				Xml_attr::iterator ite;
-				//				ite = attr.find("style_peoffset");
-				//				if (ite != attr.end())
-				//					pstyle->setParEffectOffset(parseDouble(Xml_data(ite)));
-				//				ite = attr.find("style_peindent");
-				//				if (ite != attr.end())
-				//					pstyle->setParEffectIndent(parseDouble(Xml_data(ite)));
-				//				ite = attr.find("style_pecharstyle");
-				//				if (ite != attr.end())
-				//					pstyle->setPeCharStyleName(Xml_data(ite));
-				//				ite = attr.find("style_hasbul");
-				//				if (ite != attr.end())
-				//					pstyle->setHasBullet(parseInt(Xml_data(ite)) == 1);
-				//				ite = attr.find("style_bulletstr");
-				//				if (ite != attr.end())
-				//					pstyle->setBulletStr(Xml_data(ite));
-				//				ite = attr.find("style_hasnum");
-				//				if (ite != attr.end())
-				//					pstyle->setHasNum(parseInt(Xml_data(ite)) == 1);
-				//				ite = attr.find("style_numname");
-				//				if (ite != attr.end())
-				//					pstyle->setNumName(Xml_data(ite));
-				//				ite = attr.find("style_numformat");
-				//				if (ite != attr.end())
-				//					pstyle->setNumFormat(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numprefix");
-				//				if (ite != attr.end())
-				//					pstyle->setNumPrefix(Xml_data(ite));
-				//				ite = attr.find("style_numsuffix");
-				//				if (ite != attr.end())
-				//					pstyle->setNumSuffix(Xml_data(ite));
-				//				ite = attr.find("style_numlevel");
-				//				if (ite != attr.end())
-				//					pstyle->setNumLevel(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numstart");
-				//				if (ite != attr.end())
-				//					pstyle->setNumStart(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numrestart");
-				//				if (ite != attr.end())
-				//					pstyle->setNumRestart(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numother");
-				//				if (ite != attr.end())
-				//					pstyle->setNumOther(parseInt(Xml_data(ite)) == 1);
-				//				ite = attr.find("style_numhigher");
-				//				if (ite != attr.end())
-				//					pstyle->setNumHigher(parseInt(Xml_data(ite)) == 1);
-				//			}
 				else
 				{
 					mrk = doc->newMark();
@@ -2270,28 +2201,12 @@ public:
 						note->setMasterMark(mrk);
 						if (nIt != attr.end())
 							note->setSaxedText(Xml_data(nIt));
-						//					if (!NS->isAutoRemoveEmptyNotesFrames() && (nf_It != attr.end()))
-						//					{
-						//						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) doc->getItemFromName(Xml_data(nf_It));
-						//						if (nF != NULL)
-						//							doc->m_Selection->itemAt(0)->asTextFrame()->setNoteFrame(nF);
-						//					}
 						mrk->setNotePtr(note);
 						doc->setNotesChanged(true);
 					}
 					doc->newMark(mrk);
 				}
 				story->insertMark(mrk);
-				//			if (pstyle != NULL)
-				//			{
-				//				int i = story->cursorPosition() -1;
-				//				if (story->item(i)->parstyle == NULL) {
-				//					story->item(i)->parstyle = new ParagraphStyle(*pstyle);
-				//					story->item(i)->parstyle->setContext( &doc->paragraphStyles());
-				//				}
-				//				else
-				//					story->item(i)->parstyle->applyStyle(*pstyle);
-				//			}
 			}
 		}
 	}

@@ -1653,19 +1653,21 @@ void PageItem_TextFrame::layout()
 			style.setLineSpacing (calculateLineSpacing (style, this));
 			FlopBaseline = (current.startOfCol && firstLineOffset() == FLOPBaselineGrid);
 
+			const ScFace font = charStyle.font();
+
 			//change characters and/or scaling/offset due to typographic effects
 			int chst = charStyle.effects() & 1919;
 			if (chst != ScStyle_Default)
 			{
 				if (chst & ScStyle_Superscript)
 				{
-					offset += charStyle.fontSize() * m_Doc->typographicPrefs().valueSuperScript / 100.0;
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
+					offset += charStyle.fontSize()/10.0 * ((m_Doc->typographicPrefs().valueSuperScript / 100.0) + (1.0-scaleV));
 				}
 				else if (chst & ScStyle_Subscript)
 				{
-					offset -= charStyle.fontSize() * m_Doc->typographicPrefs().valueSubScript / 100.0;
+					offset -= (charStyle.fontSize()/10.0) * m_Doc->typographicPrefs().valueSubScript / 100.0;
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 				}
@@ -1694,8 +1696,6 @@ void PageItem_TextFrame::layout()
 						DropCmode = false;
 				}
 			}
-
-			const ScFace font = charStyle.font();
 
 			{  // local block for 'fl'
 				StyleFlag fl = hl->effects();
