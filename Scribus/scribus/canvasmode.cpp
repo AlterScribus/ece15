@@ -980,10 +980,10 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 			double lineSpacing(textframe->itemText.paragraphStyle(textCursorPos).lineSpacing());
 
 			// take care if cursor is not in first column
-			int curCol(1);
+			int curCol(0);
 			double ccPos(textframe->itemText.boundingBox ( textCursorPos ).x());
 			double leftOffset(textframe->textToFrameDistLeft());
-			for(int ci(1); ci <= textframe->columns(); ++ci)
+			for(int ci(0); ci < textframe->columns(); ++ci)
 			{
 //				double cLeft(((ci-1) * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
 //				double cRight((ci * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
@@ -1012,10 +1012,10 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 			// A bit tricky :)
 			// We want to position the cursor at the beginning of the next column, if any.
 			// At first we need to know in which column the cursor is.
-			int curCol(1);
+			int curCol(0);
 			double ccPos(textframe->itemText.boundingBox ( textCursorPos ).x());
 			double leftOffset(textframe->textToFrameDistLeft());
-			for(int ci(1); ci <= textframe->columns(); ++ci)
+			for(int ci(0); ci < textframe->columns(); ++ci)
 			{
 //				double cLeft(((ci-1) * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
 //				double cRight((ci * textframe->columnWidth()) + ((ci -1) * textframe->columnGap()) + leftOffset);
@@ -1027,7 +1027,7 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 					break;
 				}
 			}
-			if(textframe->columns() > curCol)
+			if(textframe->columns() >= curCol)
 			{
 //				dx = (textframe->columnWidth() * curCol) + (textframe->columnGap() * curCol)  + leftOffset;
 				dx = textframe->getColumnLeft(curCol) + leftOffset;
