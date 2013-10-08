@@ -54,6 +54,13 @@ bool ScText::hasMark(Mark* MRK) const
 	return false;
 }
 
+bool ScText::hasMarkType(MarkType mt)
+{
+	if (mark == NULL)
+		return false;
+	return (mark->isType(mt));
+}
+
 QList<PageItem*> ScText::getGroupedItems(ScribusDoc *doc)
 {
 	QList<PageItem*> result;

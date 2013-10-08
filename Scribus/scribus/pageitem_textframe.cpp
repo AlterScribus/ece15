@@ -4604,7 +4604,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		break;
 	default:
 		if (isNoteFrame() && itemText.cursorPosition() == 0)
+		{
+			QApplication::beep();
 			break; //avoid inserting chars before first note mark
+		}
 		bool doUpdate = false;
 		UndoTransaction* activeTransaction = NULL;
 		if (itemText.lengthOfSelection() > 0) //(kk < 0x1000)
@@ -4690,7 +4693,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					undoManager->action(undoTarget, ss);
 				}
 			}
-			itemText.insertChars(uc, true);
+			bool applyNeighbourStyle = true;
+			if (isNoteFrame())
+				applyNeighbourStyle = ! itemText.item(itemText.cursorPosition() -1)->hasMarkType(MARKNoteFrameType);
+			itemText.insertChars(uc, applyNeighbourStyle);
 			if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
 			{
 				Twort = "";

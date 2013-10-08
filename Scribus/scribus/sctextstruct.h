@@ -22,15 +22,15 @@ for which a new license (GPL+exception) is in place.
 
 #include <QString>
 
+#include "marks.h"
 #include "scfonts.h"
 #include "style.h"
 #include "styles/charstyle.h"
 #include "styles/paragraphstyle.h"
 
 class PageItem;
-class Mark;
+//class Mark;
 class ScribusDoc;
-
 /* Struktur fuer Pageitem Text */
 
 
@@ -142,6 +142,7 @@ public:
 	bool hasObject(ScribusDoc *doc) const;
 	//returns true if given MRK is found, if MRK is NULL then any mark returns true
 	bool hasMark(Mark * MRK = NULL) const;
+	bool hasMarkType(MarkType mt);
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
 private:
