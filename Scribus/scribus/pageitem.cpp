@@ -10445,6 +10445,7 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 	it.saxx(xmlStream, "SCRIBUSTEXT");
 	xmlStream.endDoc();
 	std::string xml(xmlString.str());
+	qDebug() << xml.c_str();
 	return QString(xml.c_str());
 }
 

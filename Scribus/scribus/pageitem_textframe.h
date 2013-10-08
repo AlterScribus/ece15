@@ -175,6 +175,7 @@ protected:
 
 public:
 	void setTextFrameHeight();
+	void increaseHeightAndUpdate(double addValue);
 };
 
 #endif

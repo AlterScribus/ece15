@@ -188,6 +188,7 @@ void PageItem_NoteFrame::layout()
 		return;
 
 	//while layouting notes frames undo should be disabled
+	bool isUndoEnabled = UndoManager::instance()->undoEnabled();
 	UndoManager::instance()->setUndoEnabled(false);
 
 	if (m_nstyle->isAutoNotesWidth() && (m_width != m_masterFrame->width()))
@@ -217,7 +218,7 @@ void PageItem_NoteFrame::layout()
 					break;
 			}
 		}
-		double hackValue = 0.5;
+		double hackValue = 0.8;
 		oldHeight = m_height = ceil(maxY) + m_textDistanceMargins.Bottom + hackValue;
 		updateConstants();
 		updateClip();
@@ -234,7 +235,7 @@ void PageItem_NoteFrame::layout()
 	}
 	invalid = false;
 	m_Doc->regionsChanged()->update(getBoundingRect());
-	UndoManager::instance()->setUndoEnabled(true);
+	UndoManager::instance()->setUndoEnabled(isUndoEnabled);
 }
 
 void PageItem_NoteFrame::insertNote(TextNote *note)

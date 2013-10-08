@@ -1972,7 +1972,7 @@ void PageItem_TextFrame::layout()
 						realDesc = qMax(realDesc, font.realCharDescent(chstr[i], hlcsize10));
 						realAsce = font.realCharAscent(chstr[i], hlcsize10);
 					}
-					realDesc =  realDesc * scaleV - offset;
+					realDesc =  realDesc * scaleV + offset;
 					desc = -font.descent(hlcsize10);
 					current.rememberShrinkStretch(hl->ch, wide, style);
 				}
@@ -2102,7 +2102,7 @@ void PageItem_TextFrame::layout()
 //			regionMinY = static_cast<int>(floor(maxYAsc));
 //			regionMaxY = static_cast<int>(floor(maxYDesc));
 			regionMinY = qMax(0, static_cast<int>(floor(current.yPos - (asce + offset))));
-			regionMaxY = static_cast<int>(floor(current.yPos + desc));
+			regionMaxY = qMax(static_cast<int>(floor(current.yPos + desc)),static_cast<int>(floor(maxYDesc)));
 
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2194,7 +2194,7 @@ void PageItem_TextFrame::layout()
 //						regionMinY = static_cast<int>(floor(maxYAsc));
 //						regionMaxY = static_cast<int>(floor(maxYDesc));
 						regionMinY = qMax(0,static_cast<int>(floor(current.yPos - (asce + offset))));
-						regionMaxY = static_cast<int>(floor(current.yPos + desc));
+						regionMaxY = qMax(static_cast<int>(floor(current.yPos + desc)),static_cast<int>(floor(maxYDesc)));
 
 						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), regionMinY));
 						done = false;
@@ -2597,7 +2597,7 @@ void PageItem_TextFrame::layout()
 						inOverflow = true;
 				}
 				else
-					setMaxY(maxYDesc);
+					setMaxY(regionMaxY);
 			}
 
 			// hyphenation
@@ -3002,7 +3002,7 @@ void PageItem_TextFrame::layout()
 //			regionMinY = static_cast<int>(floor(maxYAsc));
 //			regionMaxY = static_cast<int>(floor(maxYDesc));
 			regionMinY = qMax(0,static_cast<int>(floor(current.yPos - (asce + offset))));
-			regionMaxY = static_cast<int>(floor(current.yPos + desc));
+			regionMaxY = qMax(static_cast<int>(floor(current.yPos + desc)),static_cast<int>(floor(maxYDesc)));
 
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), regionMinY, regionMaxY);
 			current.finishLine(EndX);
@@ -3043,7 +3043,7 @@ void PageItem_TextFrame::layout()
 			goNextColumn = false;
 
 			itemText.appendLine(current.line);
-			setMaxY(maxYDesc);
+			setMaxY(regionMaxY);
 			current.startOfCol = false;
 
 			if (moveLinesFromPreviousFrame ()) {
@@ -4603,10 +4603,11 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 //		view->RefreshItem(this);
 		break;
 	default:
-		if (isNoteFrame() && itemText.cursorPosition() == 0)
+			if (isNoteFrame() && (itemText.lengthOfSelection() == 0) && (itemText.cursorPosition() < itemText.length())
+					&& (itemText.item(itemText.cursorPosition())->hasMarkType(MARKNoteFrameType) || itemText.item(itemText.cursorPosition())->hasMarkType(MARKBullNumType)))
 		{
 			QApplication::beep();
-			break; //avoid inserting chars before first note mark
+			break; //avoid inserting chars before notes and bullets marks
 		}
 		bool doUpdate = false;
 		UndoTransaction* activeTransaction = NULL;
@@ -6052,15 +6053,48 @@ void PageItem_TextFrame::setMaxY(double y)
 	else
 		maxY = qMax(y, maxY);
 }
-
 void PageItem_TextFrame::setTextFrameHeight()
 {
-	//ugly hack increasing min frame`s haeight against strange glyph painting if it is too close of bottom
-	double hackValue = 0.5;
-
-	setHeight(ceil(maxY) + m_textDistanceMargins.Bottom + hackValue);
+	//m_Doc->view()->updatesOn(false);
+	
+	qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
+	int oldLastInFrame = lastInFrame();
+	setHeight(ceil(double(maxY)/1000.0 + m_textDistanceMargins.Bottom));
 	updateClip();
 	invalid = true;
+	PageItem_TextFrame::layout();
+	if (frameOverflows())
+	{
+		double stepValue = 5;
+		
+		if (nextInChain() == NULL)
+		{
+			//expand frame to page bottom
+			double maxHeight = m_Doc->currentPage()->height() + m_Doc->currentPage()->yOffset();
+			while (frameOverflows() && m_height < maxHeight)
+				increaseHeightAndUpdate(stepValue);
+		}
+		else
+		{
+			while (oldLastInFrame != lastInFrame())
+				increaseHeightAndUpdate(stepValue);
+		}
+		setHeight(ceil(double(maxY)/1000.0 + m_textDistanceMargins.Bottom));
+		updateClip();
+		invalid = true;
+		layout();
+	}
+	checkTextFlowInteractions();
+	qApp->restoreOverrideCursor();
 	m_Doc->changed();
+	//m_Doc->view()->updatesOn(true);
 	m_Doc->regionsChanged()->update(QRect());
+}
+
+void PageItem_TextFrame::increaseHeightAndUpdate(double addValue)
+{
+	m_height += addValue;
+	updateClip(true);
+	invalid = true;
+	PageItem_TextFrame::layout();
 }
