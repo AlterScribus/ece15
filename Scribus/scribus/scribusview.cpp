@@ -441,8 +441,10 @@ void ScribusView::switchPreviewVisual(int vis)
 	m_canvas->setPreviewVisual(vis);
 	Doc->viewAsPreview = m_canvas->usePreviewVisual();
 	Doc->previewVisual = m_canvas->previewVisual();
+	undoManager->setUndoEnabled(false);
 	Doc->recalculateColors();
 	Doc->recalcPicturesRes();
+	undoManager->setUndoEnabled(true);
 	DrawNew();
 }
 

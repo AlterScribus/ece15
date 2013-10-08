@@ -5099,10 +5099,12 @@ bool ScribusDoc::changePageMargins(const double initialTop, const double initial
 
 void ScribusDoc::recalculateColorsList(QList<PageItem*> *itemList)
 {
-	QList<PageItem*> allItems;
+	undoManager->setUndoEnabled(false);
+	#pragma omp parallel for
 	for (int c = 0; c < itemList->count(); ++c)
 	{
 		PageItem *ite = itemList->at(c);
+		QList<PageItem*> allItems;
 		if (ite->isGroup())
 			allItems = ite->asGroupFrame()->getItemList();
 		else
@@ -5143,6 +5145,7 @@ void ScribusDoc::recalculateColorsList(QList<PageItem*> *itemList)
 		}
 		allItems.clear();
 	}
+	undoManager->setUndoEnabled(true);
 }
 
 void ScribusDoc::recalculateColorItem(PageItem *item)
@@ -5219,50 +5222,50 @@ void ScribusDoc::recalculateColors()
 //#endif
 	QList<PageItem*> itemList = FrameItems.values();
 	recalculateColorsList(&itemList);
-	QList<PageItem*> allItems;
-	for (QHash<int, PageItem*>::iterator it = FrameItems.begin(); it != FrameItems.end(); ++it)
-	{
-		PageItem *ite = it.value();
-		if (ite->isGroup())
-			allItems = ite->asGroupFrame()->getItemList();
-		else
-			allItems.append(ite);
-		for (int ii = 0; ii < allItems.count(); ii++)
-		{
-			ite = allItems.at(ii);
-			ite->setLineQColor();
-			ite->setFillQColor();
-			ite->set4ColorColors(ite->GrColorP1, ite->GrColorP2, ite->GrColorP3, ite->GrColorP4);
-			for (int grow = 0; grow < ite->meshGradientArray.count(); grow++)
-			{
-				for (int gcol = 0; gcol < ite->meshGradientArray[grow].count(); gcol++)
-				{
-					meshPoint mp = ite->meshGradientArray[grow][gcol];
-					ite->setMeshPointColor(grow, gcol, mp.colorName, mp.shade, mp.transparency);
-				}
-			}
-			for (int grow = 0; grow < ite->meshGradientPatches.count(); grow++)
-			{
-				meshGradientPatch patch = ite->meshGradientPatches[grow];
-				ite->setMeshPointColor(grow, 1, patch.TL.colorName, patch.TL.shade, patch.TL.transparency, true);
-				ite->setMeshPointColor(grow, 2, patch.TR.colorName, patch.TR.shade, patch.TR.transparency, true);
-				ite->setMeshPointColor(grow, 3, patch.BR.colorName, patch.BR.shade, patch.BR.transparency, true);
-				ite->setMeshPointColor(grow, 4, patch.BL.colorName, patch.BL.shade, patch.BL.transparency, true);
-			}
-			QList<VColorStop*> cstops = ite->fill_gradient.colorStops();
-			for (uint cst = 0; cst < ite->fill_gradient.Stops(); ++cst)
-				ite->SetQColor(&cstops.at(cst)->color, cstops.at(cst)->name, cstops.at(cst)->shade);
-			cstops = ite->stroke_gradient.colorStops();
-			for (uint cst = 0; cst < ite->stroke_gradient.Stops(); ++cst)
-				ite->SetQColor(&cstops.at(cst)->color, cstops.at(cst)->name, cstops.at(cst)->shade);
-			cstops = ite->mask_gradient.colorStops();
-			for (uint cst = 0; cst < ite->mask_gradient.Stops(); ++cst)
-				ite->SetQColor(&cstops.at(cst)->color, cstops.at(cst)->name, cstops.at(cst)->shade);
-			if (ite->GrType == 13)
-				ite->createConicalMesh();
-		}
-		allItems.clear();
-	}
+//	QList<PageItem*> allItems;
+//	for (QHash<int, PageItem*>::iterator it = FrameItems.begin(); it != FrameItems.end(); ++it)
+//	{
+//		PageItem *ite = it.value();
+//		if (ite->isGroup())
+//			allItems = ite->asGroupFrame()->getItemList();
+//		else
+//			allItems.append(ite);
+//		for (int ii = 0; ii < allItems.count(); ii++)
+//		{
+//			ite = allItems.at(ii);
+//			ite->setLineQColor();
+//			ite->setFillQColor();
+//			ite->set4ColorColors(ite->GrColorP1, ite->GrColorP2, ite->GrColorP3, ite->GrColorP4);
+//			for (int grow = 0; grow < ite->meshGradientArray.count(); grow++)
+//			{
+//				for (int gcol = 0; gcol < ite->meshGradientArray[grow].count(); gcol++)
+//				{
+//					meshPoint mp = ite->meshGradientArray[grow][gcol];
+//					ite->setMeshPointColor(grow, gcol, mp.colorName, mp.shade, mp.transparency);
+//				}
+//			}
+//			for (int grow = 0; grow < ite->meshGradientPatches.count(); grow++)
+//			{
+//				meshGradientPatch patch = ite->meshGradientPatches[grow];
+//				ite->setMeshPointColor(grow, 1, patch.TL.colorName, patch.TL.shade, patch.TL.transparency, true);
+//				ite->setMeshPointColor(grow, 2, patch.TR.colorName, patch.TR.shade, patch.TR.transparency, true);
+//				ite->setMeshPointColor(grow, 3, patch.BR.colorName, patch.BR.shade, patch.BR.transparency, true);
+//				ite->setMeshPointColor(grow, 4, patch.BL.colorName, patch.BL.shade, patch.BL.transparency, true);
+//			}
+//			QList<VColorStop*> cstops = ite->fill_gradient.colorStops();
+//			for (uint cst = 0; cst < ite->fill_gradient.Stops(); ++cst)
+//				ite->SetQColor(&cstops.at(cst)->color, cstops.at(cst)->name, cstops.at(cst)->shade);
+//			cstops = ite->stroke_gradient.colorStops();
+//			for (uint cst = 0; cst < ite->stroke_gradient.Stops(); ++cst)
+//				ite->SetQColor(&cstops.at(cst)->color, cstops.at(cst)->name, cstops.at(cst)->shade);
+//			cstops = ite->mask_gradient.colorStops();
+//			for (uint cst = 0; cst < ite->mask_gradient.Stops(); ++cst)
+//				ite->SetQColor(&cstops.at(cst)->color, cstops.at(cst)->name, cstops.at(cst)->shade);
+//			if (ite->GrType == 13)
+//				ite->createConicalMesh();
+//		}
+//		allItems.clear();
+//	}
 	QStringList patterns = docPatterns.keys();
 	for (int c = 0; c < patterns.count(); ++c)
 	{
@@ -10446,7 +10449,7 @@ void ScribusDoc::updatePictDir(QString name)
 void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 {
 	int ca = 0;
-	ScGuardedPtr<ScribusDoc> docPtr = guardedPtr();
+//	ScGuardedPtr<ScribusDoc> docPtr = guardedPtr();
 	m_ScMW->mainWindowProgressBar->reset();
 	QList<PageItem*> allItems;
 	QStringList patterns = docPatterns.keys();
@@ -10459,6 +10462,7 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 //	QtConcurrent::blockingMap(MasterItems, PicResMapped(applyNewRes, lowRes));
 //#else
 	int cc = 0;
+#pragma omp parallel for shared(cc)
 	for (int a = 0; a < DocItems.count(); ++a)
 	{
 		PageItem *currItem = DocItems.at(a);
@@ -10470,10 +10474,12 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 		{
 			currItem = allItems.at(ii);
 			if (currItem->PictureIsAvailable)
+				#pragma omp critical
 				cc++;
 		}
 		allItems.clear();
 	}
+#pragma omp parallel for shared(cc)
 	for (int a = 0; a < MasterItems.count(); ++a)
 	{
 		PageItem *currItem = MasterItems.at(a);
@@ -10485,13 +10491,17 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 		{
 			currItem = allItems.at(ii);
 			if (currItem->PictureIsAvailable)
+				#pragma omp critical
 				cc++;
 		}
 		allItems.clear();
 	}
-	for (QHash<int, PageItem*>::iterator it = FrameItems.begin(); it != FrameItems.end(); ++it)
+	QList<PageItem*> frameItemsList = FrameItems.values();
+	
+#pragma omp parallel for shared(cc,frameItemsList)
+	for (int a = 0; a < frameItemsList.count(); ++a)
 	{
-		PageItem *currItem = it.value();
+		PageItem *currItem = frameItemsList.at(a);
 		if (currItem->isGroup())
 			allItems = currItem->asGroupFrame()->getItemList();
 		else
@@ -10500,10 +10510,12 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 		{
 			currItem = allItems.at(ii);
 			if (currItem->PictureIsAvailable)
+				#pragma omp critical
 				cc++;
 		}
 		allItems.clear();
 	}
+#pragma omp parallel for shared(cc)
 	for (int c = 0; c < patterns.count(); ++c)
 	{
 		ScPattern pa = docPatterns[patterns[c]];
@@ -10518,12 +10530,14 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 			{
 				currItem = allItems.at(ii);
 				if (currItem->PictureIsAvailable)
+					#pragma omp critical
 					cc++;
 			}
 			allItems.clear();
 		}
 	}
 	m_ScMW->mainWindowProgressBar->setMaximum((cc > 0) ? cc : 1);
+#pragma omp parallel for shared(ca)
 	for (int a = 0; a < DocItems.count(); ++a)
 	{
 		PageItem *currItem = DocItems.at(a);
@@ -10551,13 +10565,17 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 			currItem->setImageXOffset(imgX);
 			currItem->setImageYOffset(imgY);
 			currItem->AdjustPictScale();
-			ca++;
-			m_ScMW->mainWindowProgressBar->setValue(ca);
-			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-			if (!docPtr) return;
+			#pragma omp critical
+			{
+				ca++;
+				m_ScMW->mainWindowProgressBar->setValue(ca);
+				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+			}
+//			if (!docPtr) return;
 		}
 		allItems.clear();
 	}
+#pragma omp parallel for shared(ca)
 	for (int a = 0; a < MasterItems.count(); ++a)
 	{
 		PageItem *currItem = MasterItems.at(a);
@@ -10585,17 +10603,21 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 			currItem->setImageXOffset(imgX);
 			currItem->setImageYOffset(imgY);
 			currItem->AdjustPictScale();
-			ca++;
-			m_ScMW->mainWindowProgressBar->setValue(ca);
-			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-			if (!docPtr) return;
+			#pragma omp critical
+			{
+				ca++;
+				m_ScMW->mainWindowProgressBar->setValue(ca);
+				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+			}
+//			if (!docPtr) return;
 		}
 		allItems.clear();
 	}
 //#endif
-	for (QHash<int, PageItem*>::iterator it = FrameItems.begin(); it != FrameItems.end(); ++it)
+#pragma omp parallel for shared(ca,frameItemsList)
+	for (int a = 0; a < frameItemsList.count(); ++a)
 	{
-		PageItem *currItem = it.value();
+		PageItem *currItem = frameItemsList.at(a);
 		if (currItem->isGroup())
 			allItems = currItem->asGroupFrame()->getItemList();
 		else
@@ -10620,13 +10642,17 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 			currItem->setImageXOffset(imgX);
 			currItem->setImageYOffset(imgY);
 			currItem->AdjustPictScale();
-			ca++;
-			m_ScMW->mainWindowProgressBar->setValue(ca);
-			qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-			if (!docPtr) return;
+			#pragma omp critical
+			{
+				ca++;
+				m_ScMW->mainWindowProgressBar->setValue(ca);
+				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+			}
+//			if (!docPtr) return;
 		}
 		allItems.clear();
 	}
+#pragma omp parallel for shared(ca)
 	for (int c = 0; c < patterns.count(); ++c)
 	{
 		ScPattern pa = docPatterns[patterns[c]];
@@ -10659,10 +10685,13 @@ void ScribusDoc::recalcPicturesRes(bool applyNewRes)
 				currItem->setImageXOffset(imgX);
 				currItem->setImageYOffset(imgY);
 				currItem->AdjustPictScale();
-				ca++;
-				m_ScMW->mainWindowProgressBar->setValue(ca);
-				qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-				if (!docPtr) return;
+				#pragma omp critical
+				{
+					ca++;
+					m_ScMW->mainWindowProgressBar->setValue(ca);
+					qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+				}
+//				if (!docPtr) return;
 			}
 			allItems.clear();
 		}
