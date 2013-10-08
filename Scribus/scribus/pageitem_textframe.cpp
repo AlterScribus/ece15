@@ -1672,6 +1672,7 @@ void PageItem_TextFrame::layout()
 			int chstrLen = chstr.length();
 
 			curStat = SpecialChars::getCJKAttr(hl->ch);
+			const ScFace font = charStyle.font();
 			
 			//set style for paragraph effects
 			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
@@ -1712,13 +1713,13 @@ void PageItem_TextFrame::layout()
 			{
 				if (chst & ScStyle_Superscript)
 				{
-					offset += charStyle.fontSize() * m_Doc->typographicPrefs().valueSuperScript / 100.0;
+					offset += font.ascent(charStyle.fontSize()/10.0) * (m_Doc->typographicPrefs().valueSuperScript / 100.0);
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
 				}
 				else if (chst & ScStyle_Subscript)
 				{
-					offset -= charStyle.fontSize() * m_Doc->typographicPrefs().valueSubScript / 100.0;
+					offset -= font.ascent(charStyle.fontSize()/10.0) * (m_Doc->typographicPrefs().valueSubScript / 100.0);
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 				}
@@ -1757,8 +1758,6 @@ void PageItem_TextFrame::layout()
 						DropCmode = false;
 				}
 			}
-			
-			const ScFace font = charStyle.font();
 			
 			{  // local block for 'fl'
 				StyleFlag fl = hl->effects();
@@ -4831,8 +4830,12 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			//		view->RefreshItem(this);
 		break;
 		default:
-			if (isNoteFrame() && itemText.cursorPosition() == 0)
-				break; //avoid inserting chars before first note mark
+			if (isNoteFrame() && (itemText.lengthOfSelection() == 0) && (itemText.cursorPosition() < itemText.length())
+					&& (itemText.item(itemText.cursorPosition())->hasMarkType(MARKNoteFrameType) || itemText.item(itemText.cursorPosition())->hasMarkType(MARKBullNumType)))
+		{
+			QApplication::beep();
+			break; //avoid inserting chars before notes and bullets marks
+		}
 			bool doUpdate = false;
 			UndoTransaction* activeTransaction = NULL;
 			if (itemText.lengthOfSelection() > 0) //(kk < 0x1000)
@@ -4918,7 +4921,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 						undoManager->action(undoTarget, ss);
 					}
 				}
-				itemText.insertChars(uc, true);
+				bool applyNeighbourStyle = true;
+				if (isNoteFrame())
+					applyNeighbourStyle = ! itemText.item(itemText.cursorPosition() -1)->hasMarkType(MARKNoteFrameType);
+				itemText.insertChars(uc, applyNeighbourStyle);
 				if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
 				{
 					Twort = "";
@@ -6283,7 +6289,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 	setHeight(ceil(double(maxY)/1000.0 + m_textDistanceMargins.Bottom));
 	updateClip();
 	invalid = true;
-	layout();
+	PageItem_TextFrame::layout();
 	if (frameOverflows())
 	{
 		double stepValue = 5;
@@ -6317,7 +6323,7 @@ void PageItem_TextFrame::increaseHeightAndUpdate(double addValue)
 	m_height += addValue;
 	updateClip(true);
 	invalid = true;
-	layout();
+	PageItem_TextFrame::layout();
 }
 
 bool PageItem_TextFrame::isWarnedText(int pos)

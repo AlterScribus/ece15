@@ -453,14 +453,19 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 	
 	if (txt.length() == 0)
 		return;
-	
 	const StyleContext* cStyleContext = paragraphStyle(pos).charStyleContext();
 
 	ScText clone;
 	if (applyNeighbourStyle)
 	{
-		int referenceChar = qMax(0, qMin(pos, length()-1));
-		clone.applyCharStyle(charStyle(referenceChar));
+		int referenceChar = qMax(0, qMin(pos-1, length()-1));
+		//do not apply style from note or bullet mark
+		while (referenceChar >0 && item(referenceChar -1)->hasMark() && (item(referenceChar-1)->mark->isNoteType() || item(referenceChar -1)->mark->isType(MARKBullNumType)))
+			--referenceChar;
+		if (referenceChar==0)
+			clone.applyCharStyle(defaultStyle().charStyle());
+		else
+			clone.applyCharStyle(charStyle(referenceChar));
 		clone.setEffects(ScStyle_Default);
 	}
 
@@ -499,8 +504,14 @@ void StoryText::insertCharsWithSoftHyphens(int pos, QString txt, bool applyNeigh
 	ScText clone;
 	if (applyNeighbourStyle)
 	{
-		int referenceChar = qMax(0, qMin(pos, length()-1));
-		clone.applyCharStyle(charStyle(referenceChar));
+		int referenceChar = qMax(0, qMin(pos-1, length()-1));
+		//do not apply style from note or bullet mark
+		while (referenceChar >0 && item(referenceChar -1)->hasMark() && (item(referenceChar-1)->mark->isNoteType() || item(referenceChar -1)->mark->isType(MARKBullNumType)))
+			--referenceChar;
+		if (referenceChar==0)
+			clone.applyCharStyle(defaultStyle().charStyle());
+		else
+			clone.applyCharStyle(charStyle(referenceChar));
 		clone.setEffects(ScStyle_Default);
 	}
 
@@ -823,6 +834,13 @@ const CharStyle & StoryText::charStyle(int pos) const
 //		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
+	//if previous is note or bullet mark then search backward
+	//for normal char or return default style
+	int pos2 = pos;
+	while (pos2 >= 0 && item(pos2)->hasMark() && (item(pos2)->mark->isNoteType() || item(pos2)->mark->isType(MARKBullNumType)))
+		--pos2;
+	if (pos2 < 0)
+		return paragraphStyle(pos).charStyle();
 	if (text(pos) == SpecialChars::PARSEP)
 	{
 		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP)
