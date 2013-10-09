@@ -491,7 +491,7 @@ void  PropertiesPalette::handleSelectionChanged()
 	PageItem* currItem = currentItemFromSelection();
 	if (currItem != m_item)
 	{
-		disconnect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
+		disconnect(TabStack, SIGNAL(currentChanged2(int)), this, SLOT(SelTab(int)));
 		if (m_doc->m_Selection->count() > 1)
 		{
 			for (int ws = 1; ws < 9; ++ws)
@@ -636,7 +636,7 @@ void  PropertiesPalette::handleSelectionChanged()
 		int currentTab = TabStack->currentIndex();
 		if (TabStack->isItemEnabled(currentTab) && (TabStack->currentIndex() != currentTab))
 			TabStack->setCurrentIndex(currentTab);
-		connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
+		connect(TabStack, SIGNAL(currentChanged2(int)), this, SLOT(SelTab(int)));
 	}
 	if (currItem)
 		setCurrentItem(currItem);
