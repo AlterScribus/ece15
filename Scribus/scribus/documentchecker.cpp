@@ -30,7 +30,6 @@ for which a new license (GPL+exception) is in place.
 #include "scpage.h"
 #include "scribusdoc.h"
 #include "scribusstructs.h"
-#include "text/nlsconfig.h"
 #include "util.h"
 #include "util_formats.h"
 
@@ -345,7 +344,6 @@ void DocumentChecker::checkItems(ScribusDoc *currDoc, struct CheckerPrefs checke
 			}
 			if ((currItem->asTextFrame()) || (currItem->asPathText()))
 			{
-	#ifndef NLS_PROTO
 				if ( currItem->frameOverflows() && (checkerSettings.checkOverflow) && (!((currItem->isAnnotation()) && ((currItem->annotation().Type() == Annotation::Combobox) || (currItem->annotation().Type() == Annotation::Listbox)))))
 					itemError.insert(TextOverflow, 0);
 
@@ -414,7 +412,6 @@ void DocumentChecker::checkItems(ScribusDoc *currDoc, struct CheckerPrefs checke
 					if ((!currItem->itemText.charStyle(e).font().canRender(chr)) && (checkerSettings.checkGlyphs))
 						itemError.insert(MissingGlyph, e);
 				}
-	#endif
 			}
 			if (((currItem->fillColor() != CommonStrings::None) || (currItem->lineColor() != CommonStrings::None)) && (checkerSettings.checkNotCMYKOrSpot))
 			{
@@ -649,7 +646,6 @@ void DocumentChecker::checkItems(ScribusDoc *currDoc, struct CheckerPrefs checke
 			}
 			if ((currItem->asTextFrame()) || (currItem->asPathText()))
 			{
-	#ifndef NLS_PROTO
 				if ( currItem->frameOverflows() && (checkerSettings.checkOverflow) && (!((currItem->isAnnotation()) && ((currItem->annotation().Type() == Annotation::Combobox) || (currItem->annotation().Type() == Annotation::Listbox)))))
 					itemError.insert(TextOverflow, 0);
 
@@ -718,7 +714,6 @@ void DocumentChecker::checkItems(ScribusDoc *currDoc, struct CheckerPrefs checke
 					if ((!currItem->itemText.charStyle(e).font().canRender(chr)) && (checkerSettings.checkGlyphs))
 						itemError.insert(MissingGlyph, e);
 				}
-	#endif
 			}
 			if (((currItem->fillColor() != CommonStrings::None) || (currItem->lineColor() != CommonStrings::None)) && (checkerSettings.checkNotCMYKOrSpot))
 			{

@@ -20,7 +20,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -90,12 +90,12 @@
                    <string>TextLabel</string>
                   </property>
                   <property name="buddy">
-                   <cstring>lineSpacingMode_</cstring>
+                   <cstring>lineSpacingMode</cstring>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="SMScComboBox" name="lineSpacingMode_">
+                 <widget class="SMScComboBox" name="lineSpacingMode">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -105,7 +105,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="SMScrSpinBox" name="lineSpacing_">
+                 <widget class="SMScrSpinBox" name="lineSpacing">
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -143,12 +143,12 @@
                    <string>TextLabel</string>
                   </property>
                   <property name="buddy">
-                   <cstring>spaceAbove_</cstring>
+                   <cstring>spaceAbove</cstring>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="SMScrSpinBox" name="spaceAbove_">
+                 <widget class="SMScrSpinBox" name="spaceAbove">
                   <property name="maximum">
                    <number>300</number>
                   </property>
@@ -182,12 +182,12 @@
                    <string>TextLabel</string>
                   </property>
                   <property name="buddy">
-                   <cstring>spaceBelow_</cstring>
+                   <cstring>spaceBelow</cstring>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="SMScrSpinBox" name="spaceBelow_">
+                 <widget class="SMScrSpinBox" name="spaceBelow">
                   <property name="maximum">
                    <number>300</number>
                   </property>
@@ -211,7 +211,7 @@
               <item>
                <layout class="QHBoxLayout">
                 <item>
-                 <widget class="SMAlignSelect" name="alignement_" native="true">
+                 <widget class="SMAlignSelect" name="alignement" native="true">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                     <horstretch>0</horstretch>
@@ -562,7 +562,7 @@
           <item>
            <layout class="QHBoxLayout">
             <item>
-             <widget class="SMTabruler" name="tabList_" native="true">
+             <widget class="SMTabruler" name="tabList" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                 <horstretch>0</horstretch>

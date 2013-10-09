@@ -30,11 +30,11 @@ protected:
 	void readPrefs();
 	void connectIndexReset(QObject * child = NULL);
 	void rebuildRangeCombo();
-	PageItem* Item;
-	ScribusDoc* Doc;
-	uint ReplStart;
-	PrefsContext* prefs;
-	bool NotFound;
+	PageItem* m_item;
+	ScribusDoc* m_doc;
+	uint m_replStart;
+	PrefsContext* m_prefs;
+	bool m_notFound;
 	bool styleEditorMode;
 	int matchesFound;
 	int currItemIndex;

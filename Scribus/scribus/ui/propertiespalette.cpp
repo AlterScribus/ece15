@@ -62,7 +62,6 @@ for which a new license (GPL+exception) is in place.
 #include "util.h"
 #include "util_icon.h"
 #include "util_math.h"
-#include "text/nlsconfig.h"
 #include "dasheditor.h"
 #include "fontcombo.h"
 #include "colorcombo.h"
@@ -125,7 +124,7 @@ PropertiesPalette::PropertiesPalette( QWidget* parent) : ScDockPalette( parent, 
 	connect(groupPal, SIGNAL(shapeChanged(int)) , this, SLOT(handleNewShape(int)));
 	connect(groupPal, SIGNAL(shapeEditStarted()), this, SLOT(handleShapeEdit()));
 
-	connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
+	connect(TabStack, SIGNAL(currentChanged2(int)), this, SLOT(SelTab(int)));
 
 	connect(Cpal, SIGNAL(NewSpecial(double, double, double, double, double, double, double, double, double, double)), this, SLOT(NewSpGradient(double, double, double, double, double, double, double, double, double, double )));
 	connect(Cpal, SIGNAL(editGradient(int)), this, SLOT(toggleGradientEdit(int)));
@@ -240,6 +239,9 @@ void PropertiesPalette::setDoc(ScribusDoc *d)
 
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+
+	// Handle properties update when switching document
+	handleSelectionChanged();
 }
 
 void PropertiesPalette::unsetDoc()
@@ -365,78 +367,57 @@ void PropertiesPalette::setCurrentItem(PageItem *i)
 
 	if (!m_doc)
 		setDoc(i->doc());
+	disconnect(TabStack, SIGNAL(currentChanged2(int)) , this, SLOT(SelTab(int)));
+	disconnect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
 
+	m_haveItem = false;
+	m_item = i;
 
-	if (m_item != i)
+	tablePal->setItem(m_item);
+
+	Tpal->setCurrentItem(m_item);
+	Tpal->updateFromItem();
+
+	setTextFlowMode(m_item->textFlowMode());
+
+	connect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
+
+//CB replaces old emits from PageItem::emitAllToGUI()
+	setLocked(i->locked());
+
+	if ((m_item->isGroup()) && (!m_item->isSingleSel))
 	{
-		m_haveItem = false;
-
-		disconnect(TabStack, SIGNAL(currentChanged(int)) , this, SLOT(SelTab(int)));
-		disconnect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
-
-		m_item = i;
-		
-		tablePal->setItem(m_item);
-		
-		Tpal->setCurrentItem(m_item);
-		Tpal->updateFromItem();
-		
-		setTextFlowMode(m_item->textFlowMode());
-		
-		connect(linePal , SIGNAL(lineModeChanged(int)), this, SLOT(NewLineMode(int)));
-		
-		//CB replaces old emits from PageItem::emitAllToGUI()
-		setLocked(i->locked());
-		
-		if ((m_item->isGroup()) && (!m_item->isSingleSel))
-		{
-			TabStack->setItemEnabled(idXYZItem, true);
-			TabStack->setItemEnabled(idShapeItem, false);
-			TabStack->setItemEnabled(idGroupItem, true);
-			TabStack->setItemEnabled(idLineItem, false);
-			TabStack->setItemEnabled(idColorsItem, false);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idTableItem, false);
-		}
-		else
-			TabStack->setItemEnabled(idGroupItem, false);
-		
-		m_haveItem = true;
-		
-		if (oldTabIndex != TabStack->currentIndex())
-		{
-			//Must be called only when necessary : cause focus problem
-			//in spinboxes when processing valueChanged() signals
-			SelTab(TabStack->currentIndex());
-		}
-		if (m_item->asOSGFrame())
-		{
-			TabStack->setItemEnabled(idXYZItem, true);
-			TabStack->setItemEnabled(idShapeItem, true);
-			TabStack->setItemEnabled(idGroupItem, false);
-			TabStack->setItemEnabled(idLineItem, false);
-			TabStack->setItemEnabled(idColorsItem, true);
-			TabStack->setItemEnabled(idTableItem, false);
-			TabStack->setItemEnabled(idTransparencyItem, false);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idTableItem, false);
-		}
-		if (m_item->asSymbolFrame())
-		{
-			TabStack->setItemEnabled(idXYZItem, true);
-			TabStack->setItemEnabled(idShapeItem, false);
-			TabStack->setItemEnabled(idGroupItem, true);
-			TabStack->setItemEnabled(idLineItem, false);
-			TabStack->setItemEnabled(idColorsItem, false);
-			TabStack->setItemEnabled(idTextItem, false);
-			TabStack->setItemEnabled(idImageItem, false);
-			TabStack->setItemEnabled(idTransparencyItem, false);
-			TabStack->setItemEnabled(idTableItem, false);
-		}
-		connect(TabStack, SIGNAL(currentChanged(int)), this, SLOT(SelTab(int)));
+		TabStack->setItemEnabled(idXYZItem, true);
+		TabStack->setItemEnabled(idShapeItem, false);
+		TabStack->setItemEnabled(idGroupItem, true);
+		TabStack->setItemEnabled(idLineItem, false);
+		TabStack->setItemEnabled(idColorsItem, false);
+		TabStack->setItemEnabled(idTextItem, false);
+		TabStack->setItemEnabled(idImageItem, false);
+		TabStack->setItemEnabled(idTableItem, false);
 	}
+	else
+		TabStack->setItemEnabled(idGroupItem, false);
+
+	m_haveItem = true;
+
+	if (oldTabIndex != TabStack->currentIndex())
+	{
+		//Must be called only when necessary : cause focus problem
+		//in spinboxes when processing valueChanged() signals
+		SelTab(TabStack->currentIndex());
+	}
+
+//	if (!sender())
+//	{
+//		xyzPal->handleSelectionChanged();
+//		shapePal->handleSelectionChanged();
+//		groupPal->handleSelectionChanged();
+//		imagePal->handleSelectionChanged();
+//		linePal->handleSelectionChanged();
+//		textPal->handleSelectionChanged();
+//		tablePal->handleSelectionChanged();
+//		Cpal->handleSelectionChanged();
 #pragma omp parallel sections
 		{
 #pragma omp section
@@ -467,7 +448,39 @@ void PropertiesPalette::setCurrentItem(PageItem *i)
 			{
 				tablePal->handleSelectionChanged();
 			}
+//#pragma omp section
+//			{
+//				Cpal->handleSelectionChanged();
+//			}
 		}
+//	}
+
+	if (m_item->asOSGFrame())
+	{
+		TabStack->setItemEnabled(idXYZItem, true);
+		TabStack->setItemEnabled(idShapeItem, true);
+		TabStack->setItemEnabled(idGroupItem, false);
+		TabStack->setItemEnabled(idLineItem, false);
+		TabStack->setItemEnabled(idColorsItem, true);
+		TabStack->setItemEnabled(idTableItem, false);
+		TabStack->setItemEnabled(idTransparencyItem, false);
+		TabStack->setItemEnabled(idTextItem, false);
+		TabStack->setItemEnabled(idImageItem, false);
+		TabStack->setItemEnabled(idTableItem, false);
+	}
+	if (m_item->asSymbolFrame())
+	{
+		TabStack->setItemEnabled(idXYZItem, true);
+		TabStack->setItemEnabled(idShapeItem, false);
+		TabStack->setItemEnabled(idGroupItem, true);
+		TabStack->setItemEnabled(idLineItem, false);
+		TabStack->setItemEnabled(idColorsItem, false);
+		TabStack->setItemEnabled(idTextItem, false);
+		TabStack->setItemEnabled(idImageItem, false);
+		TabStack->setItemEnabled(idTransparencyItem, false);
+		TabStack->setItemEnabled(idTableItem, false);
+	}
+	connect(TabStack, SIGNAL(currentChanged2(int)), this, SLOT(SelTab(int)));
 }
 
 void  PropertiesPalette::handleSelectionChanged()

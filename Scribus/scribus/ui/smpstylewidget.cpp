@@ -27,11 +27,11 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 	spaceAboveLabel->setPixmap( loadIcon("above.png") );
 	spaceBelowLabel->setPixmap( loadIcon("below.png") );
 
-	connect(lineSpacingMode_, SIGNAL(highlighted(int)), this, SLOT(slotLineSpacingModeChanged(int)));
+	connect(lineSpacingMode, SIGNAL(highlighted(int)), this, SLOT(slotLineSpacingModeChanged(int)));
 
-	lineSpacing_->setSuffix(unitGetSuffixFromIndex(0));
-	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
-	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
+	lineSpacing->setSuffix(unitGetSuffixFromIndex(0));
+	spaceAbove->setSuffix(unitGetSuffixFromIndex(0));
+	spaceBelow->setSuffix(unitGetSuffixFromIndex(0));
 
 //	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
 //	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
@@ -83,7 +83,7 @@ SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
 
 void SMPStyleWidget::slotLineSpacingModeChanged(int i)
 {
-	lineSpacing_->setEnabled(i == 0);
+	lineSpacing->setEnabled(i == 0);
 }
 
 void SMPStyleWidget::changeEvent(QEvent *e)
@@ -106,14 +106,15 @@ void SMPStyleWidget::languageChange()
 /***********************************/
 // These are for the paragraph style
 	parentCombo->setToolTip(      tr("Parent Style"));
-	lineSpacingMode_->setToolTip( tr("Line Spacing Mode"));
-	lineSpacing_->setToolTip(     tr("Line Spacing"));
-	spaceAbove_->setToolTip(      tr("Space Above"));
-	spaceBelow_->setToolTip(      tr("Space Below"));
 	hyphModeCombo->setToolTip(  tr("Hyphenation Mode"));
-	lineSpacingLabel->setToolTip(lineSpacing_->toolTip());
-	spaceAboveLabel->setToolTip(spaceAbove_->toolTip());
-	spaceBelowLabel->setToolTip(spaceBelow_->toolTip());
+
+	lineSpacingMode->setToolTip( tr("Line Spacing Mode"));
+	lineSpacing->setToolTip(     tr("Line Spacing"));
+	spaceAbove->setToolTip(      tr("Space Above"));
+	spaceBelow->setToolTip(      tr("Space Below"));
+	lineSpacingLabel->setToolTip(lineSpacing->toolTip());
+	spaceAboveLabel->setToolTip(spaceAbove->toolTip());
+	spaceBelowLabel->setToolTip(spaceBelow->toolTip());
 //	optMarginCombo->setToolTip(tr("Activate an optical margins layout"));
 //	optMarginLabel->setToolTip(optMarginCombo->toolTip());
 	//CB Unneeded, gets in the way of single widget tooltips
@@ -123,12 +124,12 @@ void SMPStyleWidget::languageChange()
 	parEffectOffset->setToolTip(   tr("Paragraph Effects Chars Offset"));
 	parEffectIndentBox->setToolTip(   tr("Hang Paragraph Effect before paragraph indent"));
 	parEffectCharStyleCombo->setToolTip("<qt>" + tr("Choose chracter style or leave blank for use default paragraph style"));
-	alignement_->setToolTip(      tr("Alignment"));
-	tabList_->first_->setToolTip( tr("First Line Indent"));
-	tabList_->left_->setToolTip(  tr("Left Indent"));
-	tabList_->right_->setToolTip( tr("Right Indent"));
+	alignement->setToolTip(      tr("Alignment"));
+	tabList->first_->setToolTip( tr("First Line Indent"));
+	tabList->left_->setToolTip(  tr("Left Indent"));
+	tabList->right_->setToolTip( tr("Right Indent"));
 	//CB Unneeded, gets in the way of single widget tooltips
-	//tabList_->setToolTip(         tr("Tabulators"));
+	//tabList->setToolTip(         tr("Tabulators"));
 	
 	minSpaceSpin->setToolTip(tr("Maximum white space compression allowed.\nExpressed as a percentage of the current white space value."));
 	minSpaceLabel->setToolTip(minSpaceSpin->toolTip());
@@ -152,19 +153,9 @@ void SMPStyleWidget::languageChange()
 /*      End Tooltips               */
 /***********************************/
 
-//	optMarginCombo->clear();
-//	optMarginCombo->addItem(tr("None"), ParagraphStyle::OM_None);
-//	optMarginCombo->addItem(tr("Left Protruding"), ParagraphStyle::OM_LeftProtruding);
-//	optMarginCombo->addItem(tr("Right Protruding"), ParagraphStyle::OM_RightProtruding);
-//	optMarginCombo->addItem(tr("Left Hanging Punctuation"), ParagraphStyle::OM_LeftHangingPunct);
-//	optMarginCombo->addItem(tr("Right Hanging Punctuation"), ParagraphStyle::OM_RightHangingPunct);
-//	optMarginCombo->addItem(tr("Default"), ParagraphStyle::OM_Default);
-//
-//	optMarginLabel->setText(tr("Optical Margins:"));
-
-	lineSpacing_->setSuffix(unitGetSuffixFromIndex(0));
-	spaceAbove_->setSuffix(unitGetSuffixFromIndex(0));
-	spaceBelow_->setSuffix(unitGetSuffixFromIndex(0));
+	lineSpacing->setSuffix(unitGetSuffixFromIndex(0));
+	spaceAbove->setSuffix(unitGetSuffixFromIndex(0));
+	spaceBelow->setSuffix(unitGetSuffixFromIndex(0));
 	parentLabel->setText( tr("Based On:"));
 	distancesBox->setTitle( tr("Distances and Alignment"));
 
@@ -234,7 +225,7 @@ void SMPStyleWidget::languageChange()
 void SMPStyleWidget::unitChange(double oldRatio, double newRatio, int unitIndex)
 {
 	parEffectOffset->setNewUnit(unitIndex);
-	tabList_->unitChange(unitIndex);
+	tabList->unitChange(unitIndex);
 }
 
 void SMPStyleWidget::setDoc(ScribusDoc *doc)
@@ -298,10 +289,10 @@ void SMPStyleWidget::fillHyphModeCombo()
 
 void SMPStyleWidget::fillLineSpacingCombo()
 {
-	lineSpacingMode_->clear();
-	lineSpacingMode_->addItem( tr("Fixed Linespacing"));
-	lineSpacingMode_->addItem( tr("Automatic Linespacing"));
-	lineSpacingMode_->addItem( tr("Align to Baseline Grid"));
+	lineSpacingMode->clear();
+	lineSpacingMode->addItem( tr("Fixed Linespacing"));
+	lineSpacingMode->addItem( tr("Automatic Linespacing"));
+	lineSpacingMode->addItem( tr("Align to Baseline Grid"));
 }
 
 void SMPStyleWidget::checkParEffectState()
@@ -332,8 +323,8 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	
 	if (hasParent_)
 	{
-		lineSpacingMode_->setCurrentItem(pstyle->lineSpacingMode(), pstyle->isInhLineSpacingMode());
-		lineSpacingMode_->setParentItem(parent->lineSpacingMode());
+		lineSpacingMode->setCurrentItem(pstyle->lineSpacingMode(), pstyle->isInhLineSpacingMode());
+		lineSpacingMode->setParentItem(parent->lineSpacingMode());
 		
 //		optMarginCombo->setCurrentItemByData( pstyle->opticalMargins(),  pstyle->isInhOpticalMargins() );
 //		optMarginCombo->setParentItem(optMarginCombo->getItemIndexForData( parent->opticalMargins()));
@@ -349,17 +340,18 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		advSetParentButton->setVisible(!(pstyle->isInhMinWordTracking() && pstyle->isInhMinGlyphExtension() && pstyle->isInhMaxGlyphExtension()));
 		connect(advSetParentButton, SIGNAL(clicked()), this, SLOT(slotParentAdvancedSettings()));
 
-		lineSpacing_->setValue(pstyle->lineSpacing(), pstyle->isInhLineSpacing());
-		lineSpacing_->setParentValue(parent->lineSpacing());
+		lineSpacing->setValue(pstyle->lineSpacing(), pstyle->isInhLineSpacing());
+		lineSpacing->setParentValue(parent->lineSpacing());
 
-		spaceAbove_->setValue(pstyle->gapBefore(), pstyle->isInhGapBefore());
-		spaceAbove_->setParentValue(parent->gapBefore());
+		spaceAbove->setValue(pstyle->gapBefore(), pstyle->isInhGapBefore());
+		spaceAbove->setParentValue(parent->gapBefore());
 
-		spaceBelow_->setValue(pstyle->gapAfter(), pstyle->isInhGapAfter());
-		spaceBelow_->setParentValue(parent->gapAfter());
+		spaceBelow->setValue(pstyle->gapAfter(), pstyle->isInhGapAfter());
+		spaceBelow->setParentValue(parent->gapAfter());
 
-		alignement_->setStyle(pstyle->alignment(), pstyle->isInhAlignment());
-		alignement_->setParentItem(parent->alignment());
+
+		alignement->setStyle(pstyle->alignment(), pstyle->isInhAlignment());
+		alignement->setParentItem(parent->alignment());
 
 		bool hasParentTabs = pstyle->isInhTabValues();
 		QList<ParagraphStyle::TabRecord> tabs;
@@ -368,17 +360,17 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		else
 			tabs = pstyle->tabValues();
 
-		tabList_->setTabs(tabs, unitIndex, hasParentTabs);
-		tabList_->setParentTabs(parent->tabValues());
+		tabList->setTabs(tabs, unitIndex, hasParentTabs);
+		tabList->setParentTabs(parent->tabValues());
 
-		tabList_->setLeftIndentValue(pstyle->leftMargin() * unitRatio,pstyle->isInhLeftMargin());
-		tabList_->setParentLeftIndent(parent->leftMargin() * unitRatio);
+		tabList->setLeftIndentValue(pstyle->leftMargin() * unitRatio,pstyle->isInhLeftMargin());
+		tabList->setParentLeftIndent(parent->leftMargin() * unitRatio);
 
-		tabList_->setFirstLineValue(pstyle->firstIndent() * unitRatio, pstyle->isInhFirstIndent());
-		tabList_->setParentFirstLine(parent->firstIndent() * unitRatio);
+		tabList->setFirstLineValue(pstyle->firstIndent() * unitRatio, pstyle->isInhFirstIndent());
+		tabList->setParentFirstLine(parent->firstIndent() * unitRatio);
 
-		tabList_->setRightIndentValue(pstyle->rightMargin() * unitRatio, pstyle->isInhRightMargin());
-		tabList_->setParentRightIndent(parent->rightMargin() * unitRatio);
+		tabList->setRightIndentValue(pstyle->rightMargin() * unitRatio, pstyle->isInhRightMargin());
+		tabList->setParentRightIndent(parent->rightMargin() * unitRatio);
 
 		keepLinesStart->setValue (pstyle->keepLinesStart(), pstyle->isInhKeepLinesStart());
 		keepLinesEnd->setValue (pstyle->keepLinesEnd(), pstyle->isInhKeepLinesEnd());
@@ -477,10 +469,10 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 	}
 	else
 	{
-		lineSpacingMode_->setCurrentItem(pstyle->lineSpacingMode());
-		lineSpacing_->setValue(pstyle->lineSpacing());
-		spaceAbove_->setValue(pstyle->gapBefore());
-		spaceBelow_->setValue(pstyle->gapAfter());
+		lineSpacingMode->setCurrentIndex(pstyle->lineSpacingMode());
+		lineSpacing->setValue(pstyle->lineSpacing());
+		spaceAbove->setValue(pstyle->gapBefore());
+		spaceBelow->setValue(pstyle->gapAfter());
 //		optMarginCombo->setCurrentItemByData( pstyle->opticalMargins() );
 		setOpticalMargins(pstyle->opticalMargins());
 		optMarginParentButton->hide();
@@ -527,11 +519,11 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		numRestartOtherBox->setChecked(pstyle->numOther());
 		numRestartHigherBox->setChecked(pstyle->numHigher());
 
-		alignement_->setStyle(pstyle->alignment());
-		tabList_->setTabs(pstyle->tabValues(), unitIndex);
-		tabList_->setLeftIndentValue(pstyle->leftMargin() * unitRatio);
-		tabList_->setFirstLineValue(pstyle->firstIndent() * unitRatio);
-		tabList_->setRightIndentValue(pstyle->rightMargin() * unitRatio);
+		alignement->setStyle(pstyle->alignment());
+		tabList->setTabs(pstyle->tabValues(), unitIndex);
+		tabList->setLeftIndentValue(pstyle->leftMargin() * unitRatio);
+		tabList->setFirstLineValue(pstyle->firstIndent() * unitRatio);
+		tabList->setRightIndentValue(pstyle->rightMargin() * unitRatio);
 
 		keepLinesStart->setValue (pstyle->keepLinesStart());
 		keepLinesEnd->setValue (pstyle->keepLinesEnd());
@@ -548,7 +540,7 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		coaParentButton->hide();
 	}
 
-	lineSpacing_->setEnabled(pstyle->lineSpacingMode() == ParagraphStyle::FixedLineSpacing);
+	lineSpacing->setEnabled(pstyle->lineSpacingMode() == ParagraphStyle::FixedLineSpacing);
 	dropCapLines->setEnabled(pstyle->hasDropCap());
 	bulletCharTableButton->setEnabled(bulletBox->isChecked());
 
@@ -659,14 +651,14 @@ void SMPStyleWidget::showLineSpacing(QList<ParagraphStyle*> &pstyles)
 
 	if (tmpLP == -1)
 	{
-		if (lineSpacingMode_->itemText(lineSpacingMode_->count() - 1) != "")
-			lineSpacingMode_->addItem("");
-		tmpLP = lineSpacingMode_->count() - 1;
+		if (lineSpacingMode->itemText(lineSpacingMode->count() - 1) != "")
+			lineSpacingMode->addItem("");
+		lineSpacingMode->setCurrentIndex(lineSpacingMode->count() - 1);
 	}
 	if (hasParent_)
-		lineSpacingMode_->setCurrentItem(tmpLP, pstyles[0]->isInhLineSpacingMode());
+		lineSpacingMode->setCurrentItem(tmpLP, pstyles[0]->isInhLineSpacingMode());
 	else
-		lineSpacingMode_->setCurrentItem(tmpLP);
+		lineSpacingMode->setCurrentIndex(tmpLP);
 
 	double tmpLS = -1.0;
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -679,13 +671,11 @@ void SMPStyleWidget::showLineSpacing(QList<ParagraphStyle*> &pstyles)
 		else
 			tmpLS = pstyles[i]->lineSpacing();
 	}
-	lineSpacing_->setEnabled(tmpLP == 0);
+	lineSpacing->setEnabled(true);
 	if (tmpLS < 0)
-		tmpLS = 0;
-	if (hasParent_)
-		lineSpacing_->setValue(tmpLS, pstyles[0]->isInhLineSpacing());
+		lineSpacing->clear();
 	else
-		lineSpacing_->setValue(tmpLS);
+		lineSpacing->setValue(tmpLS);
 }
 
 void SMPStyleWidget::showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex)
@@ -704,8 +694,9 @@ void SMPStyleWidget::showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	}
 
 	if (tmpA < 0)
-		tmpA = 0;
-	spaceAbove_->setValue(tmpA, (hasParent_ && pstyles[0]->isInhGapBefore()));
+		spaceAbove->clear();
+	else
+		spaceAbove->setValue(tmpA);
 
 	tmpA = -1.2;
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -718,8 +709,9 @@ void SMPStyleWidget::showSpaceAB(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	}
 
 	if (tmpA < 0)
-		tmpA = 0;
-	spaceBelow_->setValue(tmpA, (hasParent_ && pstyles[0]->isInhGapAfter()));
+		spaceBelow->clear();
+	else
+		spaceBelow->setValue(tmpA);
 }
 
 void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
@@ -755,12 +747,13 @@ void SMPStyleWidget::showDropCap(QList<ParagraphStyle*> &pstyles, QList<CharStyl
 			lines = pstyles[i]->dropCapLines();
 	}
 	if (lines == -1)
-		lines = 0;
-	dropCapLines->setValue(lines, (hasParent_ && pstyles[0]->isInhDropCapLines()));
+		dropCapLines->clear();
+	else
+		dropCapLines->setValue(lines);
 
-	dropCapsBox->setEnabled(dc);
-	dropCapLines->setEnabled(dc);
-	connect(dropCapsBox, SIGNAL(toggled(bool)), this, SLOT(slotDropCap(bool)));
+	dropCapsBox->setEnabled(true);
+	dropCapLines->setEnabled(true);
+	connectPESignals();
 }
 
 void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyle> &cstyles, int unitIndex)
@@ -933,16 +926,16 @@ void SMPStyleWidget::showAlignment(QList<ParagraphStyle*> &pstyles)
 	{
 		if (a != pstyles[i]->alignment())
 		{
-			if (alignement_->selectedId() > -1 && alignement_->selectedId() < 5)
+			if (alignement->selectedId() > -1 && alignement->selectedId() < 5)
 			{
-				alignement_->buttonGroup->setExclusive(false);
-				alignement_->buttonGroup->button(alignement_->selectedId())->toggle();
-				alignement_->buttonGroup->setExclusive(true);
+				alignement->buttonGroup->setExclusive(false);
+				alignement->buttonGroup->button(alignement->selectedId())->toggle();
+				alignement->buttonGroup->setExclusive(true);
 			}
 			return;
 		}
 	}
-	alignement_->setStyle(a, (hasParent_ && pstyles[0]->isInhAlignment()));
+	alignement->setStyle(a);
 }
 
 void SMPStyleWidget::showOpticalMargin(QList< ParagraphStyle * > & pstyles)
@@ -1028,7 +1021,7 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 			break;
 		}
 	}
-	tabList_->setTabs(t, unitIndex, (hasParent_ && pstyles[0]->isInhTabValues()));
+	tabList->setTabs(t, unitIndex);
 
 	double l = -4000.0;
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -1043,10 +1036,11 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	}
 	if (l < -3800.0)
 	{
-		l = 0.0;
-		tabList_->left_->clear();
+		tabList->setLeftIndentValue(0.0);
+		tabList->left_->clear();
 	}
-		tabList_->setLeftIndentValue(l * unitRatio, (hasParent_ && pstyles[0]->isInhLeftMargin()));
+	else
+		tabList->setLeftIndentValue(l * unitRatio);
 
 	l = -4000.0;
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -1061,10 +1055,11 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	}
 	if (l < -3800.0)
 	{
-		l = 0.0;
-		tabList_->first_->clear();
+		tabList->setFirstLineValue(0.0);
+		tabList->first_->clear();
 	}
-	tabList_->setFirstLineValue(l * unitRatio, (hasParent_ && pstyles[0]->isInhFirstIndent()));
+	else
+		tabList->setFirstLineValue(l * unitRatio);
 
 	l = -4000.0;
 	for (int i = 0; i < pstyles.count(); ++i)
@@ -1079,11 +1074,11 @@ void SMPStyleWidget::showTabs(QList<ParagraphStyle*> &pstyles, int unitIndex)
 	}
 	if (l < -3800.0)
 	{
-		l = 0.0;
-		tabList_->right_->clear();
+		tabList->setRightIndentData(0.0);
+		tabList->right_->clear();
 	}
-	tabList_->setRightIndentValue(l * unitRatio, (hasParent_ && pstyles[0]->isInhRightMargin()));
-
+	else
+		tabList->setRightIndentValue(l * unitRatio);
 }
 
 void SMPStyleWidget::showCStyle(QList<ParagraphStyle*> &pstyles, QList<CharStyle> &cstyles, const QString &defLang, int unitIndex)

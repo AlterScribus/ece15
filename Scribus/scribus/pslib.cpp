@@ -61,7 +61,6 @@ for which a new license (GPL+exception) is in place.
 #include "util_formats.h"
 #include "util_math.h"
 
-#include "text/nlsconfig.h"
 using namespace TableUtils;
 
 PSLib::PSLib(PrintOptions &options, bool psart, SCFonts &AllFonts, QMap<QString, QMap<uint, FPointArray> > DocFonts, ColorList DocColors, bool pdf, bool spot)
@@ -2159,14 +2158,13 @@ bool PSLib::ProcessItem(ScribusDoc* Doc, ScPage* a, PageItem* c, uint PNr, bool 
 					PS_restore();
 				}
 			}
-#ifndef NLS_PROTO
 			savedOwnPage = c->OwnPage;
 			c->OwnPage = PNr-1;
 			c->asPathText()->layout();
 			c->OwnPage = savedOwnPage;
 			for (d = 0; d < c->maxCharsInFrame(); ++d)
 			{
-				hl = c->asPathText()->itemRenderText.item(d);
+                hl = c->asPathText()->itemRenderText.item_p(d);
 				const CharStyle & style(c->asPathText()->itemRenderText.charStyle(d));
 				if ((hl->ch == QChar(13)) || (hl->ch == QChar(30)) || (hl->ch == QChar(9)) || (hl->ch == QChar(28)))
 					continue;
@@ -2545,7 +2543,6 @@ bool PSLib::ProcessItem(ScribusDoc* Doc, ScPage* a, PageItem* c, uint PNr, bool 
 					PS_restore();
 				}
 			}
-#endif
 			break;
 		case PageItem::Symbol:
 			if (m_Doc->docPatterns.contains(c->pattern()))
@@ -3266,14 +3263,13 @@ bool PSLib::ProcessMasterPageLayer(ScribusDoc* Doc, ScPage* page, ScLayer& layer
 						PS_restore();
 					}
 				}
-	#ifndef NLS_PROTO
 				int savedOwnPage = ite->OwnPage;
 				ite->OwnPage = PNr;
 				ite->asPathText()->layout();
 				ite->OwnPage = savedOwnPage;
 				for (d = 0; d < ite->maxCharsInFrame(); ++d)
 				{
-					hl = ite->asPathText()->itemRenderText.item(d);
+                    hl = ite->asPathText()->itemRenderText.item_p(d);
 					const CharStyle & style(ite->asPathText()->itemRenderText.charStyle(d));
 					if ((hl->ch == QChar(13)) || (hl->ch == QChar(30)) || (hl->ch == QChar(9)) || (hl->ch == QChar(28)))
 						continue;
@@ -3652,7 +3648,6 @@ bool PSLib::ProcessMasterPageLayer(ScribusDoc* Doc, ScPage* page, ScLayer& layer
 						PS_restore();
 					}
 				}
-	#endif
 				PS_restore();
 			}
 			if (!success)
@@ -4941,6 +4936,18 @@ void PSLib::SetColor(const ScColor& farb, double shade, int *h, int *s, int *v, 
 	}
 }
 
+/**
+ * @brief PSLib::setTextSt
+ * @param Doc   our dicument
+ * @param ite   the Textitem to set
+ * @param gcr   gray color removal option
+ * @param argh  current page number
+ * @param pg    current page
+ * @param sep   separate colors option
+ * @param farb  useColors option (== !grayscale)
+ * @param ic    use ICC profile option
+ * @param master true if setting master page item
+ */
 void PSLib::setTextSt(ScribusDoc* Doc, PageItem* ite, bool gcr, uint argh, ScPage* pg, bool sep, bool farb, bool ic, bool master)
 {
 //	qDebug() << QString("pslib setTextSt: ownPage=%1 pageNr=%2 OnMasterPage=%3;").arg(ite->OwnPage).arg(pg->pageNr()).arg(ite->OnMasterPage);
@@ -4952,7 +4959,6 @@ void PSLib::setTextSt(ScribusDoc* Doc, PageItem* ite, bool gcr, uint argh, ScPag
 	ite->OwnPage = argh;
 	ite->layout();
 	ite->OwnPage = savedOwnPage;
-#ifndef NLS_PROTO
 	if (ite->lineColor() != CommonStrings::None)
 		tabDist += ite->lineWidth() / 2.0;
 
@@ -4963,16 +4969,16 @@ void PSLib::setTextSt(ScribusDoc* Doc, PageItem* ite, bool gcr, uint argh, ScPag
 
 		for (int d = ls.firstItem; d <= ls.lastItem; ++d)
 		{
-			ScText *hl = ite->itemText.item(d);
+            ScText *hl = ite->itemText.item_p(d);
 			const CharStyle & cstyle(ite->itemText.charStyle(d));
 			const ParagraphStyle& pstyle(ite->itemText.paragraphStyle(d));
 			
 //			if ((hl->ch == QChar(13)) || (hl->ch == QChar(10)) || (hl->ch == QChar(28)) || (hl->ch == QChar(27)) || (hl->ch == QChar(26)))
 //				continue;
-			if (hl->effects() & 4096)
+			if (hl->effects() & ScLayout_SuppressSpace)
 				continue;
 			tTabValues = pstyle.tabValues();
-			if (hl->effects() & 16384)
+			if (hl->effects() & ScLayout_StartOfLine)
 				tabCc = 0;
 			if ((hl->ch == SpecialChars::TAB) && (tTabValues.count() != 0))
 			{
@@ -5060,7 +5066,6 @@ void PSLib::setTextSt(ScribusDoc* Doc, PageItem* ite, bool gcr, uint argh, ScPag
 			tabDist = CurX;
 		}
 	}
-#endif
 }
 
 void PSLib::setTextCh(ScribusDoc* Doc, PageItem* ite, double x, double y, bool gcr, uint argh, uint doh, ScText *hl, const ParagraphStyle& pstyle, ScPage* pg, bool sep, bool farb, bool ic, bool master)

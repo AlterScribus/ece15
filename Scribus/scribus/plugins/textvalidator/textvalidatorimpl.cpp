@@ -174,8 +174,7 @@ int TextValidatorImpl::validateItemText(PageItem* item, bool force)
 	for (int i=0; i < item->itemText.length(); )
 	{
 		//omit marks and embeded items
-		ScText* hl = item->itemText.item(i);
-		if (hl->hasMark() || hl->hasObject(m_Doc))
+		if (item->itemText.hasMark(i) || item->itemText.hasObject(i))
 		{
 			++i;
 			continue;

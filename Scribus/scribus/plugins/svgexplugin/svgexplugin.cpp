@@ -944,7 +944,7 @@ QDomElement SVGExPlug::processTextItem(PageItem *Item, QString trans, QString fi
 		{
 			x = 0.0;
 			y = 0.0;
-			ScText * hl = Item->itemText.item(a);
+			ScText * hl = Item->itemText.item_p(a);
 			const CharStyle& charStyle(Item->itemText.charStyle(a));
 			chstr = Item->itemText.text(a,1);
 			if ((chstr == QChar(13)) || (chstr == QChar(29)))
@@ -993,7 +993,7 @@ QDomElement SVGExPlug::processTextItem(PageItem *Item, QString trans, QString fi
 				chma3.translate(-wide, 0);
 			}
 			chma4.translate(0, Item->BaseOffs - (charStyle.fontSize() / 10.0) * hl->glyph.scaleV);
-			if (charStyle.effects() & (ScStyle_Subscript | ScStyle_Superscript | ScStyle_DropCap))
+			if (charStyle.effects() & (ScStyle_Subscript | ScStyle_Superscript | ScLayout_DropCap))
 				chma6.translate(0, hl->glyph.yoffset);
 			if (hl->baselineOffset() != 0)
 				chma6.translate(0, (-charStyle.fontSize() / 10.0) * (charStyle.baselineOffset() / 1000.0));
@@ -1034,7 +1034,7 @@ QDomElement SVGExPlug::processTextItem(PageItem *Item, QString trans, QString fi
 					y = ls.y;
 					double Ulen = hl->glyph.xadvance;
 					double Upos, lw, kern;
-					if (charStyle.effects() & ScStyle_StartOfLine)
+					if (charStyle.effects() & ScLayout_StartOfLine)
 						kern = 0;
 					else
 						kern = charStyle.fontSize() * charStyle.tracking() / 10000.0;
@@ -1091,7 +1091,7 @@ QDomElement SVGExPlug::processTextItem(PageItem *Item, QString trans, QString fi
 					y = ls.y;
 					double Ulen = hl->glyph.xadvance;
 					double Upos, lw, kern;
-					if (charStyle.effects() & ScStyle_StartOfLine)
+					if (charStyle.effects() & ScLayout_StartOfLine)
 						kern = 0;
 					else
 						kern = charStyle.fontSize() * charStyle.tracking() / 10000.0;
@@ -1187,7 +1187,7 @@ QDomElement SVGExPlug::processPathTextItem(PageItem *Item, QString trans, QStrin
 	QString chstr;
 	for (int a = 0; a < Item->asPathText()->itemRenderText.length(); ++a)
 	{
-		ScText *hl = Item->asPathText()->itemRenderText.item(a);
+		ScText *hl = Item->asPathText()->itemRenderText.item_p(a);
 		const CharStyle& charStyle(Item->asPathText()->itemRenderText.charStyle(a));
 		chstr = Item->asPathText()->itemRenderText.text(a,1);
 		if ((chstr == QChar(13)) || (chstr == QChar(29)))
@@ -1257,7 +1257,7 @@ QDomElement SVGExPlug::processPathTextItem(PageItem *Item, QString trans, QStrin
 				chma3.translate(-wide, 0);
 			}
 			chma4.translate(0, Item->BaseOffs - (charStyle.fontSize() / 10.0) * hl->glyph.scaleV);
-			if (charStyle.effects() & (ScStyle_Subscript | ScStyle_Superscript | ScStyle_DropCap))
+			if (charStyle.effects() & (ScStyle_Subscript | ScStyle_Superscript | ScLayout_DropCap))
 				chma6.translate(0, hl->glyph.yoffset);
 			if (hl->baselineOffset() != 0)
 				chma6.translate(0, (-charStyle.fontSize() / 10.0) * (charStyle.baselineOffset() / 1000.0));
@@ -1281,7 +1281,7 @@ QDomElement SVGExPlug::processPathTextItem(PageItem *Item, QString trans, QStrin
 				}
 				double Ulen = hl->glyph.xadvance;
 				double Upos, Uwid, kern;
-				if (hl->effects() & ScStyle_StartOfLine)
+				if (hl->effects() & ScLayout_StartOfLine)
 					kern = 0;
 				else
 					kern = charStyle.fontSize() * charStyle.tracking() / 10000.0;
@@ -1357,7 +1357,7 @@ QDomElement SVGExPlug::processPathTextItem(PageItem *Item, QString trans, QStrin
 				}
 				double Ulen = hl->glyph.xadvance;
 				double Upos, Uwid, kern;
-				if (hl->effects() & ScStyle_StartOfLine)
+				if (hl->effects() & ScLayout_StartOfLine)
 					kern = 0;
 				else
 					kern = charStyle.fontSize() * charStyle.tracking() / 10000.0;

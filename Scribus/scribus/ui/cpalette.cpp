@@ -573,6 +573,8 @@ void Cpalette::displayColorValues(QString stroke, QString fill, int sShade, int 
 
 void Cpalette::selectColorS(QListWidgetItem *item)
 {
+	if (item == NULL)
+		return;
 	ColorPixmapItem* c = dynamic_cast<ColorPixmapItem*>(item);
 	if (c != NULL)	
 		sFarbe = c->colorName();
@@ -585,6 +587,8 @@ void Cpalette::selectColorS(QListWidgetItem *item)
 
 void Cpalette::selectColorF(QListWidgetItem *item)
 {
+	if (item == NULL)
+		return;
 	ColorPixmapItem* c = dynamic_cast<ColorPixmapItem*>(item);
 	if (c != NULL)	
 		sFarbe = c->colorName();

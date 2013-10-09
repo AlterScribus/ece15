@@ -281,6 +281,6 @@ void ScTreeWidget::handleMousePress(QTreeWidgetItem *item)
 			setColumnWidth(0, wide);
 		else
 			resizeColumnToContents(0);
-		emit currentChanged(indexOfTopLevelItem(item));
+		emit currentChanged2(indexOfTopLevelItem(item));
 	}
 }

@@ -341,33 +341,36 @@ void PageItem_NoteFrame::updateNotesText()
 	int startPos = 0;
 	TextNote *note = NULL;
 	Mark* prevMrk = NULL;
-	const CharStyle * lastNoteMarkCharStyle = NULL;
+	CharStyle lastNoteMarkCharStyle;
 	while (pos < itemText.length())
 	{
-		ScText* hl = itemText.item(pos);
-		if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
+		if (itemText.hasMark(pos))
 		{
-			if (prevMrk != NULL)
+			Mark* mark = itemText.mark(pos);
+			if  (mark->isType(MARKNoteFrameType))
 			{
-				note = prevMrk->getNotePtr();
-				if (note != NULL)
+				if (prevMrk != NULL)
 				{
-					note->setCharStyleNoteMark(*lastNoteMarkCharStyle);
-					int offset = 0;
-					if (itemText.text(pos-1) == SpecialChars::PARSEP)
-						++offset;
-					int len = pos - startPos -offset;
-					if (len <= 0)
-						note->setSaxedText("");
-					else
-						note->setSaxedText(getItemTextSaxed(startPos, len));
-					note->textLen = len;
-					itemText.deselectAll();
+					note = prevMrk->getNotePtr();
+					if (note != NULL)
+					{
+						note->setCharStyleNoteMark(lastNoteMarkCharStyle);
+						int offset = 0;
+						if (itemText.text(pos-1) == SpecialChars::PARSEP)
+							++offset;
+						int len = pos - startPos -offset;
+						if (len <= 0)
+							note->setSaxedText("");
+						else
+							note->setSaxedText(getItemTextSaxed(startPos, len));
+						note->textLen = len;
+						itemText.deselectAll();
+					}
 				}
+				prevMrk = mark;
+				lastNoteMarkCharStyle = itemText.charStyle(pos);
+				startPos = pos +1;
 			}
-			prevMrk = hl->mark;
-			lastNoteMarkCharStyle = dynamic_cast<CharStyle*>(hl);
-			startPos = pos +1;
 		}
 		++pos;
 	}
@@ -385,7 +388,7 @@ void PageItem_NoteFrame::updateNotesText()
 			note->setSaxedText("");
 			note->textLen = 0;
 		}
-		note->setCharStyleNoteMark(*lastNoteMarkCharStyle);
+		note->setCharStyleNoteMark(lastNoteMarkCharStyle);
 	}
 	if (oldSelLen > 0)
 		itemText.select(oldSelStart, oldSelLen);
@@ -435,10 +438,10 @@ int PageItem_NoteFrame::findNoteCpos(TextNote* note)
 		return -1;
 	for (int pos=0; pos < itemText.length(); ++pos)
 	{
-		ScText* hl = itemText.item(pos);
-		if (hl->hasMark() && hl->mark->isType(MARKNoteFrameType))
+        Mark* mark = itemText.mark(pos);
+        if (itemText.hasMark(pos) && mark->isType(MARKNoteFrameType))
 		{
-			if (hl->mark->getNotePtr() == note)
+            if (mark->getNotePtr() == note)
 				return (pos);
 		}
 	}

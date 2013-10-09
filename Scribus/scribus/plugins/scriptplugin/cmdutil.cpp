@@ -76,6 +76,15 @@ PageItem *GetItem(QString Name)
 void ReplaceColor(QString col, QString rep)
 {
 	QColor tmpc;
+
+	CharStyle fill;
+	CharStyle stroke;
+	CharStyle fill_stroke;
+	fill.setFillColor(rep);
+	stroke.setStrokeColor(rep);
+	fill_stroke.setFillColor(rep);
+	fill_stroke.setStrokeColor(rep);
+
 	for (int c = 0; c < ScCore->primaryMainWindow()->doc->Items->count(); c++)
 	{
 		PageItem *ite = ScCore->primaryMainWindow()->doc->Items->at(c);
@@ -84,10 +93,20 @@ void ReplaceColor(QString col, QString rep)
 			for (int d = 0; d < ite->itemText.length(); d++)
 			{
 				//FIXME:NLS  that should work on runs
-				if (col == ite->itemText.charStyle(d).fillColor())
-					ite->itemText.item(d)->setFillColor(rep);
-				if (col == ite->itemText.charStyle(d).strokeColor())
-					ite->itemText.item(d)->setStrokeColor(rep);
+				int combi = (col == ite->itemText.charStyle(d).fillColor() ? 1 : 0) +
+							(col == ite->itemText.charStyle(d).strokeColor() ? 2 : 0);
+				switch (combi)
+				{
+				case 1:
+					ite->itemText.applyCharStyle(d, 1, fill);
+					break;
+				case 2:
+					ite->itemText.applyCharStyle(d, 1, stroke);
+					break;
+				case 3:
+					ite->itemText.applyCharStyle(d, 1, fill_stroke);
+					break;
+				}
 			}
 		}
 		if (col == ite->fillColor())
@@ -113,10 +132,20 @@ void ReplaceColor(QString col, QString rep)
 			for (int d = 0; d < ite->itemText.length(); d++)
 			{
 				//FIXME: NLS this should work on runs
-				if (col == ite->itemText.charStyle(d).fillColor())
-					ite->itemText.item(d)->setFillColor(rep);
-				if (col == ite->itemText.charStyle(d).strokeColor())
-					ite->itemText.item(d)->setStrokeColor(rep);
+				int combi = (col == ite->itemText.charStyle(d).fillColor() ? 1 : 0) +
+							(col == ite->itemText.charStyle(d).strokeColor() ? 2 : 0);
+				switch (combi)
+				{
+				case 1:
+					ite->itemText.applyCharStyle(d, 1, fill);
+					break;
+				case 2:
+					ite->itemText.applyCharStyle(d, 1, stroke);
+					break;
+				case 3:
+					ite->itemText.applyCharStyle(d, 1, fill_stroke);
+					break;
+				}
 			}
 		}
 		if (col == ite->fillColor())
