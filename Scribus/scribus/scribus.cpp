@@ -822,12 +822,12 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemLowerToBottom", "Locking");
 	scrMenuMgr->createMenu("ItemLayer", tr("Send to La&yer"));
 	scrMenuMgr->addMenuItemString("ItemLayer", "Item");
-	scrMenuMgr->addMenuToMenu("ItemLayer", "Item");
+//	scrMenuMgr->addMenuToMenu("ItemLayer", "Item");
 	scrMenuMgr->createMenu("SendTo", tr("Send to"), "Item");
 	scrMenuMgr->addMenuItemString("SendTo", "Item");
-	scrMenuMgr->createMenu("itemSendToScrapbook", tr("Scrapbook"));
-	scrMenuMgr->addMenuItemString("itemSendToScrapbook", "SendTo");
-	scrMenuMgr->addMenuToMenu("itemSendToScrapbook", "SendTo");
+	scrMenuMgr->createMenu("ItemSendToScrapbook", tr("Scrapbook"));
+	scrMenuMgr->addMenuItemString("ItemSendToScrapbook", "SendTo");
+//	scrMenuMgr->addMenuToMenu("itemSendToScrapbook", "SendTo");
 	scrMenuMgr->addMenuItemString("itemSendToPattern", "SendTo");
 	scrMenuMgr->addMenuItemString("itemSendToInline", "SendTo");
 	scrMenuMgr->createMenu("Adjust", tr("Adjust"), "Item");
@@ -849,7 +849,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemPreviewNormal", "ItemPreviewSettings");
 	scrMenuMgr->addMenuItemString("itemPreviewFull", "ItemPreviewSettings");
 	scrMenuMgr->createMenu("ItemPDFOptions", tr("&PDF Options"));
-	scrMenuMgr->addMenuToMenu("ItemPDFOptions", "Item");
+//	scrMenuMgr->addMenuToMenu("ItemPDFOptions", "Item");
 	scrMenuMgr->addMenuItemString("ItemPDFOptions", "Item");
 	scrMenuMgr->addMenuItemString("itemPDFIsAnnotation", "ItemPDFOptions");
 	scrMenuMgr->addMenuItemString("itemPDFIsBookmark", "ItemPDFOptions");
@@ -885,7 +885,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemWeld", "Weld");
 	scrMenuMgr->addMenuItemString("itemEditWeld", "Weld");
 
-	scrMenuMgr->addMenuItem(scrActions["editMark"], "Item", false);
+	//scrMenuMgr->addMenuItem(scrActions["editMark"], "Item", false);
 	scrMenuMgr->addMenuItemString("editMark", "Item");
 
 	//Insert menu
@@ -1088,7 +1088,7 @@ void ScribusMainWindow::initMenuBar()
 
 	//Window menu
 	scrMenuMgr->createMenu("Windows", ActionManager::defaultMenuNameEntryTranslated("Windows"), QString::null, true);
-	//connect(scrMenuMgr->getLocalPopupMenu("Windows"), SIGNAL(aboutToShow()), this, SLOT(windowsMenuAboutToShow()));
+	connect(scrMenuMgr->getLocalPopupMenu("Windows"), SIGNAL(aboutToShow()), this, SLOT(windowsMenuAboutToShow()));
 	//addDefaultWindowMenuItems();
 
 	//Help menu
@@ -1130,19 +1130,7 @@ void ScribusMainWindow::initMenuBar()
 	menuBar()->addSeparator();
 	scrMenuMgr->addMenuStringToMenuBar("Help");
 	scrMenuMgr->addMenuItemStringstoMenuBar("Help", scrActions);
-//	scrMenuMgr->addMenuToMenuBar("File");
-//	scrMenuMgr->addMenuToMenuBar("Edit");
-//	scrMenuMgr->addMenuToMenuBar("Item");
-//	scrMenuMgr->addMenuToMenuBar("Insert");
-//	scrMenuMgr->addMenuToMenuBar("Page");
-//	scrMenuMgr->addMenuToMenuBar("ItemTable");
-//	scrMenuMgr->addMenuToMenuBar("Extras");
-//	scrMenuMgr->addMenuToMenuBar("View");
-//	scrMenuMgr->addMenuToMenuBar("Windows");
-	menuBar()->addSeparator();
-//	scrMenuMgr->addMenuToMenuBar("Help");
 
-	scrMenuMgr->dumpMenuStrings();
 }
 
 
@@ -3340,16 +3328,15 @@ void ScribusMainWindow::HaveNewSel(int SelectedType)
 		updateItemLayerList();
 		QStringList scrapNames = scrapbookPalette->getOpenScrapbooksNames();
 		scrapNames.removeAt(1);
-		for( QMap<QString, QPointer<ScrAction> >::Iterator it0s = scrScrapActions.begin(); it0s != scrScrapActions.end(); ++it0s )
-			scrMenuMgr->removeMenuItem((*it0s), "itemSendToScrapbook");
+		scrMenuMgr->clearMenuStrings("itemSendToScrapbook");
 		scrScrapActions.clear();
 		for (int i = 0; i < scrapNames.count(); i++)
 		{
 			ScrAction *act = new ScrAction( ScrAction::DataInt, QPixmap(), QPixmap(), scrapNames[i], QKeySequence(), this, i);
 			scrScrapActions.insert(scrapNames[i], act);
-			scrMenuMgr->addMenuItem(act, "itemSendToScrapbook", true);
 			connect(act, SIGNAL(triggeredData(int)), this, SLOT(PutScrap(int)));
 		}
+		scrMenuMgr->addMenuItemStringstoSpecialMenu("ItemSendToScrapbook", scrScrapActions);
 		//propertiesPalette->textFlowsAroundFrame->setChecked(currItem->textFlowsAroundFrame());
 		propertiesPalette->setTextFlowMode(currItem->textFlowMode());
 		scrActions["itemLock"]->setEnabled(true);
