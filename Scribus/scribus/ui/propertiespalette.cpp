@@ -408,8 +408,8 @@ void PropertiesPalette::setCurrentItem(PageItem *i)
 		SelTab(TabStack->currentIndex());
 	}
 
-//	if (!sender())
-//	{
+	if (!sender())
+	{
 //		xyzPal->handleSelectionChanged();
 //		shapePal->handleSelectionChanged();
 //		groupPal->handleSelectionChanged();
@@ -417,7 +417,8 @@ void PropertiesPalette::setCurrentItem(PageItem *i)
 //		linePal->handleSelectionChanged();
 //		textPal->handleSelectionChanged();
 //		tablePal->handleSelectionChanged();
-//		Cpal->handleSelectionChanged();
+		Cpal->handleSelectionChanged();
+	}
 #pragma omp parallel sections
 		{
 #pragma omp section
