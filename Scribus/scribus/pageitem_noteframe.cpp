@@ -188,7 +188,6 @@ void PageItem_NoteFrame::layout()
 		return;
 
 	//while layouting notes frames undo should be disabled
-	bool isUndoEnabled = UndoManager::instance()->undoEnabled();
 	UndoManager::instance()->setUndoEnabled(false);
 
 	if (m_nstyle->isAutoNotesWidth() && (m_width != m_masterFrame->width()))
@@ -235,7 +234,7 @@ void PageItem_NoteFrame::layout()
 	}
 	invalid = false;
 	m_Doc->regionsChanged()->update(getBoundingRect());
-	UndoManager::instance()->setUndoEnabled(isUndoEnabled);
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem_NoteFrame::insertNote(TextNote *note)

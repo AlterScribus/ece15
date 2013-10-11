@@ -1716,18 +1716,14 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
-					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
-					{
-						if (!currItem->asNoteFrame()->isEndNotesFrame())
-						{
-							currItem->asNoteFrame()->masterFrame()->invalidateLayout(false);
-							currItem->asNoteFrame()->masterFrame()->updateLayout();
-						}
-					}
 					keyrep=kr;
+
+					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
+						//empty note frame can be deleted so lets get pointer to master frame
+						currItem = currItem->asNoteFrame()->masterFrame();
+					currItem->updateLayout();
 				}
-				if (!currItem->isTextFrame() || (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty()))
-					slotDocCh(false);
+				slotDocCh();
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -10407,7 +10403,6 @@ void ScribusMainWindow::PutToInline(QString buffer)
 	doc->SnapGrid  = false;
 	doc->SnapGuides = false;
 	doc->SnapElement = false;
-	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	slotElemRead(buffer, 0, 0, false, true, doc, view);
 	doc->SnapGrid  = savedAlignGrid;
@@ -10444,7 +10439,7 @@ void ScribusMainWindow::PutToInline(QString buffer)
 	*doc->m_Selection=tempSelection;
 	doc->minCanvasCoordinate = minSize;
 	doc->maxCanvasCoordinate = maxSize;
-	undoManager->setUndoEnabled(wasUndo);
+	undoManager->setUndoEnabled(true);
 	inlinePalette->unsetDoc();
 	inlinePalette->setDoc(doc);
 	if (outlinePalette->isVisible())
@@ -10466,7 +10461,6 @@ void ScribusMainWindow::PutToInline()
 	doc->SnapGrid  = false;
 	doc->SnapGuides = false;
 	doc->SnapElement = false;
-	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	internalCopy = true;
 	slotEditCopy();
@@ -10506,7 +10500,7 @@ void ScribusMainWindow::PutToInline()
 	*doc->m_Selection=tempSelection;
 	doc->minCanvasCoordinate = minSize;
 	doc->maxCanvasCoordinate = maxSize;
-	undoManager->setUndoEnabled(wasUndo);
+	undoManager->setUndoEnabled(true);
 	inlinePalette->unsetDoc();
 	inlinePalette->setDoc(doc);
 	if (outlinePalette->isVisible())
@@ -10527,7 +10521,6 @@ void ScribusMainWindow::PutToPatterns()
 	doc->SnapGrid  = false;
 	doc->SnapGuides = false;
 	doc->SnapElement = false;
-	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	internalCopy = true;
 	slotEditCopy();
@@ -10605,7 +10598,7 @@ void ScribusMainWindow::PutToPatterns()
 		doc->maxCanvasCoordinate = maxSize;
 		if (outlinePalette->isVisible())
 			outlinePalette->BuildTree();
-		undoManager->setUndoEnabled(wasUndo);
+		undoManager->setUndoEnabled(true);
 		return;
 	}
 	ScPattern pat = ScPattern();
@@ -10651,7 +10644,7 @@ void ScribusMainWindow::PutToPatterns()
 	view->DrawNew();
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
-	undoManager->setUndoEnabled(wasUndo);
+	undoManager->setUndoEnabled(true);
 }
 
 void ScribusMainWindow::ConvertToSymbol()
@@ -10660,7 +10653,6 @@ void ScribusMainWindow::ConvertToSymbol()
 	uint docSelectionCount = doc->m_Selection->count();
 	QString patternName = "Pattern_"+doc->m_Selection->itemAt(0)->itemName();
 	patternName = patternName.trimmed().simplified().replace(" ", "_");
-	bool wasUndo = undoManager->undoEnabled();
 	undoManager->setUndoEnabled(false);
 	PageItem* currItem;
 	Selection itemSelection(this, false);
@@ -10777,7 +10769,7 @@ void ScribusMainWindow::ConvertToSymbol()
 	if (outlinePalette->isVisible())
 		outlinePalette->BuildTree();
 	view->DrawNew();
-	undoManager->setUndoEnabled(wasUndo);
+	undoManager->setUndoEnabled(true);
 }
 
 void ScribusMainWindow::managePaints()

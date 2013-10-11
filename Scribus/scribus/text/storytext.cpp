@@ -416,11 +416,14 @@ void StoryText::removeChars(int pos, uint len)
 		if ((it->ch == SpecialChars::PARSEP)) {
 			removeParSep(i);
 		}
-        if (it->mark != NULL)
-        {
-            delete it->mark;
-            it->mark = NULL;
-        }
+		//No avox, mark must be deleted by ScribusDoc
+		//because it is "owner" of the pointer and there is many dependencies
+		//when mark can be deleted and what should be done if it is deleted
+//        if (it->mark != NULL)
+//        {
+//            delete it->mark;
+//            it->mark = NULL;
+//        }
 
 //		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
 		d->takeAt(i);
@@ -2051,7 +2054,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			}
 			else if (mrk->isType(MARKNoteMasterType))
 			{
-				TextNote * note = mrk->getNotePtr();
+				TextNote * const note = mrk->getNotePtr();
 				assert(note != null);
 				mark_attr.insert("nStyle", note->notesStyle()->name());
 				mark_attr.insert("note",note->saxedText());
