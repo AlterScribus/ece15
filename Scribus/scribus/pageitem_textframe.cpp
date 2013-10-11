@@ -5782,7 +5782,7 @@ Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
 	return NULL;
 }
 
-TextNote* PageItem_TextFrame::selectedNoteMark(int &foundPos, bool onlySelection)
+TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(int &foundPos, bool onlySelection)
 {
 	//return pointer to note from first mark found in text
 	int start = 0;
@@ -5809,10 +5809,10 @@ TextNote* PageItem_TextFrame::selectedNoteMark(int &foundPos, bool onlySelection
 	return NULL;
 }
 
-TextNote* PageItem_TextFrame::selectedNoteMark(bool onlySelection)
+TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(bool onlySelection)
 {
 	int dummy;
-	return selectedNoteMark(dummy, onlySelection);
+	return noteFromSelectedNoteMark(dummy, onlySelection);
 }
 
 NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarksPosMap)
@@ -6013,7 +6013,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	int num = 0;
 	if (!isNoteFrame())
 	{
-		TextNote* note = selectedNoteMark(true);
+		TextNote* note = noteFromSelectedNoteMark(true);
 		while (note != NULL)
 		{
 			if (doUndo && UndoManager::undoEnabled())
@@ -6021,7 +6021,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 			if (note->isEndNote())
 				m_Doc->flag_updateEndNotes = true;
 			m_Doc->deleteNote(note);
-			note = selectedNoteMark(true);
+			note = noteFromSelectedNoteMark(true);
 			++num;
 		}
 	}
