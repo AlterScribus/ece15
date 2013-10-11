@@ -7476,49 +7476,64 @@ int ScribusDoc::columnOfPage(int pageIndex) const
 //CB Moved from view
 void ScribusDoc::RecalcPictures(ProfilesL *Pr, ProfilesL *PrCMYK, QProgressBar *dia)
 {
-	RecalcPictures(&MasterItems, Pr, PrCMYK, dia);
-	RecalcPictures(&DocItems, Pr, PrCMYK, dia);
-	QList<PageItem*> itemList = FrameItems.values();
-	RecalcPictures(&itemList, Pr, PrCMYK, dia);
-	QList<PageItem*> allItems;
-	uint docItemCount = FrameItems.count();
-	if ( docItemCount!= 0)
+#pragma omp parallel sections
 	{
-		bool usingGUI=ScCore->usingGUI();
-		int counter = 0;
-		if (usingGUI && dia != NULL)
-			counter = dia->value();
-		for (QHash<int, PageItem*>::iterator itf = FrameItems.begin(); itf != FrameItems.end(); ++itf)
+#pragma omp section
 		{
-			PageItem *it = itf.value();
-			if (it->isGroup())
-				allItems = it->asGroupFrame()->getItemList();
-			else
-				allItems.append(it);
-			for (int ii = 0; ii < allItems.count(); ii++)
+			RecalcPictures(&MasterItems, Pr, PrCMYK, dia);
+		}
+#pragma omp section
+		{
+			RecalcPictures(&DocItems, Pr, PrCMYK, dia);
+		}
+#pragma omp section
+		{
+			QList<PageItem*> itemList = FrameItems.values();
+			RecalcPictures(&itemList, Pr, PrCMYK, dia);
+		}
+#pragma omp section
+		{
+			QList<PageItem*> allItems;
+			uint docItemCount = FrameItems.count();
+			if ( docItemCount!= 0)
 			{
-				it = allItems.at(ii);
-				if ((it->itemType() == PageItem::ImageFrame) && (it->PictureIsAvailable))
+				bool usingGUI=ScCore->usingGUI();
+				int counter = 0;
+				if (usingGUI && dia != NULL)
+					counter = dia->value();
+				for (QHash<int, PageItem*>::iterator itf = FrameItems.begin(); itf != FrameItems.end(); ++itf)
 				{
-					if (it->pixm.imgInfo.colorspace == ColorSpaceCMYK)
-					{
-						if (!PrCMYK->contains(it->IProfile))
-							it->IProfile = docPrefsData.colorPrefs.DCMSset.DefaultImageCMYKProfile;
-					}
+					PageItem *it = itf.value();
+					if (it->isGroup())
+						allItems = it->asGroupFrame()->getItemList();
 					else
+						allItems.append(it);
+					for (int ii = 0; ii < allItems.count(); ii++)
 					{
-						if (!Pr->contains(it->IProfile))
-							it->IProfile = docPrefsData.colorPrefs.DCMSset.DefaultImageRGBProfile;
+						it = allItems.at(ii);
+						if ((it->itemType() == PageItem::ImageFrame) && (it->PictureIsAvailable))
+						{
+							if (it->pixm.imgInfo.colorspace == ColorSpaceCMYK)
+							{
+								if (!PrCMYK->contains(it->IProfile))
+									it->IProfile = docPrefsData.colorPrefs.DCMSset.DefaultImageCMYKProfile;
+							}
+							else
+							{
+								if (!Pr->contains(it->IProfile))
+									it->IProfile = docPrefsData.colorPrefs.DCMSset.DefaultImageRGBProfile;
+							}
+							loadPict(it->Pfile, it, true);
+						}
 					}
-					loadPict(it->Pfile, it, true);
+					allItems.clear();
+					if (usingGUI)
+					{
+						++counter;
+						if (dia != NULL)
+							dia->setValue(counter);
+					}
 				}
-			}
-			allItems.clear();
-			if (usingGUI)
-			{
-				++counter;
-				if (dia != NULL)
-					dia->setValue(counter);
 			}
 		}
 	}

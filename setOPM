@@ -1,0 +1,8 @@
+#!/bin/bash -e
+export CXXFLAGS="-fopenmp"
+export CFLAGS="-fopenmp"
+export CPPFLAGS="-fopenmp"
+
+export OMP_NUM_THREADS=4
+alias g++='g++ -pg'
+alias gcc='gcc -fopenmp'

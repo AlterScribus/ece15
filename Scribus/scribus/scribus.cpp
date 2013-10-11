@@ -1230,6 +1230,7 @@ void ScribusMainWindow::setStatusBarInfoText(QString newText)
 	if (mainWindowStatusLabel)
 		mainWindowStatusLabel->setText(newText);
 	statusLabelText = newText;
+	qApp->processEvents();
 }
 
 //AV to be replaced with Selection::update and listener in PropertiesPalette
@@ -4202,6 +4203,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			doc->HasCMS = false;
 		if ((ScCore->haveCMS()) && (doc->cmsSettings().CMSinUse))
 		{
+			setStatusBarInfoText( tr("Setting CMS"));
 			bool cmsWarning = false;
 			QStringList missing;
 			QStringList replacement;
@@ -4297,8 +4299,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 				setStatusBarInfoText( tr("Recalculate colors and images for use with CMS"));
 				recalcColors();
 				doc->RecalcPictures(&ScCore->InputProfiles, &ScCore->InputProfilesCMYK);
-				setStatusBarInfoText("");
 			}
+			setStatusBarInfoText("");
 		}
 		else
 		{
@@ -4351,6 +4353,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		t.start();*/
 		int docItemsCount=doc->Items->count();
 		doc->flag_Renumber = false;
+#pragma omp parallel for
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -4369,7 +4372,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		doc->setModified(false);
 		inlinePalette->setDoc(doc);
 		updateRecent(FName);
-		mainWindowStatusLabel->setText( tr("Ready"));
 		ret = true;
 		doc->setLoading(true);
 		for (int p = 0; p < doc->DocPages.count(); ++p)
@@ -4378,6 +4380,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		}
 		view->reformPages(false);
 		checkExternals();
+		mainWindowStatusLabel->setText( tr("Ready"));
 		doc->setLoading(false);
 //		if (fileLoader->fileType() > FORMATID_NATIVEIMPORTEND)
 //			scrActions["fileSave"]->setEnabled(false);
