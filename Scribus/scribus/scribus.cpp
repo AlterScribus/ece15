@@ -4475,7 +4475,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		t.start();*/
 		int docItemsCount=doc->Items->count();
 		doc->flag_Renumber = false;
-#pragma omp parallel for
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
