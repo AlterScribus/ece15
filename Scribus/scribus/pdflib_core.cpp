@@ -549,6 +549,7 @@ int PDFLibCore::WriteImageToStream(ScImage& image, int ObjNum, ColorSpaceEnum fo
 int PDFLibCore::WriteJPEGImageToStream(ScImage& image, const QString& fn, int ObjNum, int quality, ColorSpaceEnum format,
 										 bool sameFile, bool precal)
 {
+	QFileInfo fi(fn);
 	bool succeed = true;
 	int  bytesWritten = 0;
 	QFileInfo fInfo(fn);
@@ -5260,7 +5261,7 @@ bool PDFLibCore::setTextCh(PageItem *ite, uint PNr, double x, double y, uint d, 
 			tmp += "1 0 0 1 0 "+ FToStr( -ite->BaseOffs)+" cm\n";
 		if (hl->glyph.xoffset != 0.0 || hl->glyph.yoffset != 0.0)
 			tmp += "1 0 0 1 " + FToStr( hl->glyph.xoffset)+ " " + FToStr( -hl->glyph.yoffset)+" cm\n";
-		if (hl->ch != SpecialChars::OBJECT)
+		if (hl->hasObject(&doc))
 			tmp += "BT\n";
 	}
 	double tsz = hl->fontSize();
@@ -9965,6 +9966,7 @@ bool PDFLibCore::PDF_Image(PageItem* c, const QString& fn, double sx, double sy,
 	bool   bitmapFromGS = false;
 	bool   isEmbeddedPDF = false;
 	bool   hasGrayProfile = false;
+	bool   cropped = false;
 	QString profInUse = Profil;
 	int    afl = Options.Resolution;
 	double ax, ay, a2, a1;
@@ -9998,6 +10000,11 @@ bool PDFLibCore::PDF_Image(PageItem* c, const QString& fn, double sx, double sy,
 		 || (ImInfo2.RequestProps != c->pixm.imgInfo.RequestProps)
 		 || (ImInfo2.Page != c->pixm.imgInfo.actualPageNumber))
 	{
+		if (c->pixm.imgInfo.colorspace == ColorSpaceGray)
+		{
+			Options.isGrayscale =true;
+			Options.UseRGB = false;
+		}
 		bool imageLoaded = false;
 		if ((extensionIndicatesPDF(ext) || ((extensionIndicatesEPSorPS(ext)) && (c->pixm.imgInfo.type != ImageType7))) && c->effectsInUse.count() == 0)
 		{
@@ -10148,20 +10155,39 @@ bool PDFLibCore::PDF_Image(PageItem* c, const QString& fn, double sx, double sy,
 					PDF_Error_ImageLoadFailure(fn);
 					return false;
 				}
-				if ((Options.RecalcPic) && (Options.PicRes < (qMax(72.0 / c->imageXScale(), 72.0 / c->imageYScale()))))
+				if (Options.RecalcPic)
 				{
-					double afl = Options.PicRes;
-					a2 = (72.0 / sx) / afl;
-					a1 = (72.0 / sy) / afl;
-					origWidth = img.width();
-					origHeight = img.height();
-					ax = img.width() / a2;
-					ay = img.height() / a1;
-					// #10510 : do not use scaled() here, may cause display problem 
-					// with acrobat reader if image contains some transparency
-					img.scaleImage(qRound(ax), qRound(ay));
-					ImInfo.sxa = sx * a2;
-					ImInfo.sya = sy * a1;
+					if (extensionIndicatesJPEG(ext) && c->ScaleType)
+					{
+						//autocropping only for JPG images (till now) and for images with manually scaling settings
+						double xs = sx * c->pixm.imgInfo.xres/72;
+						double ys = sy * c->pixm.imgInfo.yres/72;
+						double w = (c->width()/72) * c->pixm.imgInfo.xres / xs;
+						double h = (c->height()/72) * c->pixm.imgInfo.yres / ys;
+						QRect cropBox(-x, y, w, h);
+						
+						QImage tempImage = img.qImage().copy(cropBox);
+						img = ScImage(tempImage);
+						x=0; y=0;
+						ImInfo.xa = x;
+						ImInfo.ya = y;
+						cropped = true;
+					}
+					if ((Options.PicRes < (qMax(72.0 / c->imageXScale(), 72.0 / c->imageYScale()))))
+					{
+						double afl = Options.PicRes;
+						a2 = (72.0 / sx) / afl;
+						a1 = (72.0 / sy) / afl;
+						origWidth = img.width();
+						origHeight = img.height();
+						ax = img.width() / a2;
+						ay = img.height() / a1;
+						// #10510 : do not use scaled() here, may cause display problem 
+						// with acrobat reader if image contains some transparency
+						img.scaleImage(qRound(ax), qRound(ay));
+						ImInfo.sxa = sx * a2;
+						ImInfo.sya = sy * a1;
+					}
 				}
 				ImInfo.reso = 1;
 			}
@@ -10415,7 +10441,8 @@ bool PDFLibCore::PDF_Image(PageItem* c, const QString& fn, double sx, double sy,
 			{
 				if (((Options.UseRGB || Options.UseProfiles2) && (cm == PDFOptions::Compression_Auto) && (c->effectsInUse.count() == 0) && (img.imgInfo.colorspace == ColorSpaceRGB)) && (!img.imgInfo.progressive) && (!((Options.RecalcPic) && (Options.PicRes < (qMax(72.0 / c->imageXScale(), 72.0 / c->imageYScale()))))))
 				{
-					jpegUseOriginal = true;
+					if (!cropped)
+						jpegUseOriginal = true;
 					cm = PDFOptions::Compression_JPEG;
 				}
 				// We can't unfortunately use directly cmyk jpeg files. Otherwise we have to use the /Decode argument in image
