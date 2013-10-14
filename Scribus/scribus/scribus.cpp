@@ -365,10 +365,12 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 //	prefsManager->applyLoadedShortCuts();
 //	initKeyboardShortcuts();
 	initMenuBar();
+	createMenuBar();
 	initToolBars();
 	ScCore->pluginManager->setupPluginActions(this);
 	ScCore->pluginManager->enableOnlyStartupPluginActions(this);
 	ScCore->pluginManager->languageChange();
+
 	if (primaryMainWindow)
 		ScCore->setSplashStatus( tr("Applying User Shortcuts") );
 	prefsManager->applyLoadedShortCuts();
@@ -816,10 +818,10 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemLockSize", "Locking");
 	scrMenuMgr->createMenu("ItemLevel", tr("Level"), "Item");
 	scrMenuMgr->addMenuItemString("ItemLevel", "Item");
-	scrMenuMgr->addMenuItemString("itemRaise", "Locking");
-	scrMenuMgr->addMenuItemString("itemLower", "Locking");
-	scrMenuMgr->addMenuItemString("itemRaiseToTop", "Locking");
-	scrMenuMgr->addMenuItemString("itemLowerToBottom", "Locking");
+	scrMenuMgr->addMenuItemString("itemRaise", "ItemLevel");
+	scrMenuMgr->addMenuItemString("itemLower", "ItemLevel");
+	scrMenuMgr->addMenuItemString("itemRaiseToTop", "ItemLevel");
+	scrMenuMgr->addMenuItemString("itemLowerToBottom", "ItemLevel");
 	scrMenuMgr->createMenu("ItemLayer", tr("Send to La&yer"));
 	scrMenuMgr->addMenuItemString("ItemLayer", "Item");
 //	scrMenuMgr->addMenuToMenu("ItemLayer", "Item");
@@ -1046,8 +1048,8 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("viewShowLayerMarkers", "ViewDocument");
 	scrMenuMgr->createMenu("ViewGrids", tr("Grids and Guides"), "View");
 	scrMenuMgr->addMenuItemString("ViewGrids", "View");
-	scrMenuMgr->addMenuItemString("viewShowGrid", "ViewDocument");
-	scrMenuMgr->addMenuItemString("viewShowGuides", "ViewDocument");
+	scrMenuMgr->addMenuItemString("viewShowGrid", "ViewGrids");
+	scrMenuMgr->addMenuItemString("viewShowGuides", "ViewGrids");
 
 	//CB If this is viewNewView imeplemented, it should be on the windows menu
 //	scrMenuMgr->addMenuItem(scrActions["viewNewView"], "View");
@@ -1108,7 +1110,10 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("helpAboutScribus", "Help");
 	scrMenuMgr->addMenuItemString("helpAboutPlugins", "Help");
 	scrMenuMgr->addMenuItemString("helpAboutQt", "Help");
+}
 
+void ScribusMainWindow::createMenuBar()
+{
 	scrMenuMgr->addMenuStringToMenuBar("File");
 	scrMenuMgr->addMenuItemStringstoMenuBar("File", scrActions);
 	scrMenuMgr->addMenuStringToMenuBar("Edit");
@@ -1130,7 +1135,6 @@ void ScribusMainWindow::initMenuBar()
 	menuBar()->addSeparator();
 	scrMenuMgr->addMenuStringToMenuBar("Help");
 	scrMenuMgr->addMenuItemStringstoMenuBar("Help", scrActions);
-
 }
 
 
@@ -1963,6 +1967,124 @@ void ScribusMainWindow::startUpDialog()
 			if (!fileName.isEmpty())
 				loadRecent(fileName);
 		}
+	}
+	else
+	{
+		scrActions["fileDocSetup150"]->setEnabled(false);
+		scrActions["filePrint"]->setEnabled(false);
+		scrActions["fileSave"]->setEnabled(false);
+		scrActions["fileSaveAs"]->setEnabled(false);
+		scrActions["fileRevert"]->setEnabled(false);
+		scrActions["fileCollect"]->setEnabled(false);
+		scrActions["fileClose"]->setEnabled(false);
+		scrActions["PrintPreview"]->setEnabled(false);
+		scrActions["SaveAsDocumentTemplate"]->setEnabled(false);
+		scrMenuMgr->setMenuEnabled("FileImport", false);
+		scrMenuMgr->setMenuEnabled("FileExport", false);
+		scrActions["fileExportAsPDF"]->setEnabled(false);
+		scrActions["fileExportText"]->setEnabled(false);
+		scrActions["fileExportAsEPS"]->setEnabled(false);
+		scrActions["fileImportText"]->setEnabled(false);
+		scrActions["fileImportText2"]->setEnabled(false);
+		scrActions["fileImportImage"]->setEnabled(false);
+		scrActions["fileImportAppendText"]->setEnabled(false);
+		scrActions["pageInsert"]->setEnabled(false);
+		scrActions["pageImport"]->setEnabled(false);
+		scrActions["pageDelete"]->setEnabled(false);
+		scrActions["pageImport"]->setEnabled(false);
+		scrActions["pageMove"]->setEnabled(false);
+		scrActions["pageCopy"]->setEnabled(false);
+		scrActions["pageApplyMasterPage"]->setEnabled(false);
+		scrActions["pageCopyToMasterPage"]->setEnabled(false);
+		scrActions["pageManageGuides"]->setEnabled(false);
+		scrActions["pageManageMargins"]->setEnabled(false);
+		scrActions["editUndoAction"]->setEnabled(false);
+		scrActions["editRedoAction"]->setEnabled(false);
+		scrActions["editCut"]->setEnabled(false);
+		scrActions["editCopy"]->setEnabled(false);
+		scrActions["editPaste"]->setEnabled(false);
+		scrMenuMgr->setMenuEnabled("EditPasteRecent", false);
+		scrActions["editClearContents"]->setEnabled(false);
+		scrActions["editSelectAll"]->setEnabled(false);
+		scrActions["editSelectAllOnLayer"]->setEnabled(false);
+		scrActions["editDeselectAll"]->setEnabled(false);
+		scrActions["editReplaceColors"]->setEnabled(false);
+		scrActions["editStyles"]->setEnabled(false);
+		scrActions["editMarks"]->setEnabled(false);
+		scrActions["editNotesStyles"]->setEnabled(false);
+		scrActions["editSearchReplace"]->setEnabled(false);
+		scrActions["editMasterPages"]->setEnabled(false);
+		scrActions["editJavascripts"]->setEnabled(false);
+		scrActions["toolsPreflightVerifier"]->setEnabled(false);
+		scrActions["extrasHyphenateText"]->setEnabled(false);
+		scrActions["extrasDeHyphenateText"]->setEnabled(false);
+		scrActions["viewFitInWindow"]->setEnabled(false);
+		scrActions["viewFitWidth"]->setEnabled(false);
+		scrActions["viewFit50"]->setEnabled(false);
+		scrActions["viewFit75"]->setEnabled(false);
+		scrActions["viewFit100"]->setEnabled(false);
+		scrActions["viewFit200"]->setEnabled(false);
+		scrActions["viewFit400"]->setEnabled(false);
+		scrActions["viewSnapToGuides"]->setChecked(false);
+		scrActions["viewSnapToElements"]->setChecked(false);
+		scrActions["viewSnapToGrid"]->setChecked(false);
+		scrActions["viewShowRulers"]->setEnabled(false);
+		scrMenuMgr->setMenuEnabled("Insert", false);
+		scrActions["insertFrame"]->setEnabled(false);
+		scrActions["itemDuplicate"]->setEnabled(false);
+		scrActions["itemMulDuplicate"]->setEnabled(false);
+		scrActions["itemTransform"]->setEnabled(false);
+		scrActions["itemDelete"]->setEnabled(false);
+		scrActions["itemRaise"]->setEnabled(false);
+		scrActions["itemLower"]->setEnabled(false);
+		scrActions["itemRaiseToTop"]->setEnabled(false);
+		scrActions["itemLowerToBottom"]->setEnabled(false);
+		scrMenuMgr->setMenuEnabled("itemSendToScrapbook", false);
+		scrActions["itemSendToPattern"]->setEnabled(false);
+		scrActions["itemSendToInline"]->setEnabled(false);
+		scrActions["itemAdjustFrameToImage"]->setEnabled(false);
+		scrActions["itemAdjustImageToFrame"]->setEnabled(false);
+		scrActions["itemExtendedImageProperties"]->setEnabled(false);
+		scrActions["itemUpdateImage"]->setEnabled(false);
+		scrActions["itemPreviewLow"]->setEnabled(false);
+		scrActions["itemPreviewNormal"]->setEnabled(false);
+		scrActions["itemPreviewFull"]->setEnabled(false);
+		scrActions["itemAttributes"]->setEnabled(false);
+		scrActions["toolsSelect"]->setEnabled(false);
+		scrActions["toolsRotate"]->setEnabled(false);
+		scrActions["toolsEditContents"]->setEnabled(false);
+		scrActions["toolsEditWithStoryEditor"]->setEnabled(false);
+		scrActions["toolsZoom"]->setEnabled(false);
+		scrActions["toolsInsertTextFrame"]->setEnabled(false);
+		scrActions["toolsInsertImageFrame"]->setEnabled(false);
+		scrActions["toolsInsertShape"]->setEnabled(false);
+		scrActions["toolsInsertLine"]->setEnabled(false);
+		scrActions["toolsInsertBezier"]->setEnabled(false);
+		scrActions["toolsInsertFreehandLine"]->setEnabled(false);
+		scrActions["toolsInsertCalligraphicLine"]->setEnabled(false);
+		scrActions["toolsInsertPolygon"]->setEnabled(false);
+		scrActions["toolsInsertArc"]->setEnabled(false);
+		scrActions["toolsInsertSpiral"]->setEnabled(false);
+		scrActions["toolsInsertRenderFrame"]->setEnabled(false);
+		scrActions["toolsInsertTable"]->setEnabled(false);
+		scrActions["toolsLinkTextFrame"]->setEnabled(false);
+		scrActions["toolsUnlinkTextFrame"]->setEnabled(false);
+		scrActions["toolsUnlinkTextFrameWithTextCopy"]->setEnabled(false);
+		scrActions["toolsUnlinkTextFrameWithTextCut"]->setEnabled(false);
+		scrActions["toolsMeasurements"]->setEnabled(false);
+		scrActions["toolsCopyProperties"]->setEnabled(false);
+		scrActions["toolsEyeDropper"]->setEnabled(false);
+		scrActions["toolsPDFPushButton"]->setEnabled(false);
+		scrActions["toolsPDFRadioButton"]->setEnabled(false);
+		scrActions["toolsPDFTextField"]->setEnabled(false);
+		scrActions["toolsPDFCheckBox"]->setEnabled(false);
+		scrActions["toolsPDFComboBox"]->setEnabled(false);
+		scrActions["toolsPDFListBox"]->setEnabled(false);
+		scrActions["toolsPDFAnnotText"]->setEnabled(false);
+		scrActions["toolsPDFAnnotLink"]->setEnabled(false);
+#ifdef HAVE_OSG
+		scrActions["toolsPDFAnnot3D"]->setEnabled(false);
+#endif
 	}
 	prefsManager->setShowStartupDialog(!dia->startUpDialog->isChecked());
 	delete dia;
@@ -3564,9 +3686,6 @@ void ScribusMainWindow::loadRecent(QString fn)
 void ScribusMainWindow::rebuildRecentFileMenu()
 {
 	scrMenuMgr->clearMenuStrings("FileOpenRecent");
-	for( QMap<QString, QPointer<ScrAction> >::Iterator it = scrRecentFileActions.begin(); it!=scrRecentFileActions.end(); ++it )
-		scrMenuMgr->removeMenuItem((*it), "FileOpenRecent");
-
 	scrRecentFileActions.clear();
 	uint max = qMin(prefsManager->appPrefs.uiPrefs.recentDocCount, RecentDocs.count());
 	QString strippedName, localName;
@@ -3574,18 +3693,19 @@ void ScribusMainWindow::rebuildRecentFileMenu()
 	{
 		strippedName = localName = QDir::toNativeSeparators(RecentDocs[m]);
 		strippedName.remove(QDir::separator());
-		scrRecentFileActions.insert(strippedName, new ScrAction(ScrAction::RecentFile, QPixmap(), QPixmap(), QString("&%1").arg(localName.replace("&","&&")), QKeySequence(), this, 0,0.0,RecentDocs[m]));
+		strippedName.prepend(QString("%1").arg(m+1, 2, 10, QChar('0')));
+		scrRecentFileActions.insert(strippedName, new ScrAction(ScrAction::RecentFile, QPixmap(), QPixmap(), QString("%1 &%2").arg(m+1).arg(localName.replace("&","&&")), QKeySequence(), this, 0,0.0,RecentDocs[m]));
 		connect( scrRecentFileActions[strippedName], SIGNAL(triggeredData(QString)), this, SLOT(loadRecent(QString)) );
 //		scrMenuMgr->addMenuItem(scrRecentFileActions[strippedName], "FileOpenRecent", true);
 
 	}
 	scrMenuMgr->addMenuItemStringstoSpecialMenu("FileOpenRecent", scrRecentFileActions);
+	fileToolBar->rebuildRecentFileMenu();
 }
 
 void ScribusMainWindow::rebuildRecentPasteMenu()
 {
-	for( QMap<QString, QPointer<ScrAction> >::Iterator it = scrRecentPasteActions.begin(); it!=scrRecentPasteActions.end(); ++it )
-		scrMenuMgr->removeMenuItem((*it), "EditPasteRecent");
+	scrMenuMgr->clearMenuStrings("EditPasteRecent");
 
 	scrRecentPasteActions.clear();
 	int max = qMin(prefsManager->appPrefs.scrapbookPrefs.numScrapbookCopies, scrapbookPalette->tempBView->objectMap.count());
@@ -3601,9 +3721,10 @@ void ScribusMainWindow::rebuildRecentPasteMenu()
 			QPixmap pm = it.value().Preview;
 			scrRecentPasteActions.insert(strippedName, new ScrAction(ScrAction::RecentPaste, pm, QPixmap(), QString("&%1 %2").arg(m+1).arg(strippedName), QKeySequence(), this, 0,0.0,it.key()));
 			connect( scrRecentPasteActions[strippedName], SIGNAL(triggeredData(QString)), this, SLOT(pasteRecent(QString)) );
-			scrMenuMgr->addMenuItem(scrRecentPasteActions[strippedName], "EditPasteRecent", true);
+//			scrMenuMgr->addMenuItem(scrRecentPasteActions[strippedName], "EditPasteRecent", true);
 			it--;
 		}
+		scrMenuMgr->addMenuItemStringstoSpecialMenu("EditPasteRecent", scrRecentPasteActions);
 	}
 }
 
@@ -3782,8 +3903,7 @@ void ScribusMainWindow::rebuildLayersList()
 {
 	if (HaveDoc)
 	{
-		for( QMap<QString, QPointer<ScrAction> >::Iterator it0 = scrLayersActions.begin(); it0 != scrLayersActions.end(); ++it0 )
-			scrMenuMgr->removeMenuItem((*it0), "ItemLayer");
+		scrMenuMgr->clearMenuStrings("ItemLayer");
 		scrLayersActions.clear();
 		ScLayers::iterator it;
 		if (doc->Layers.count()!= 0)
@@ -3812,9 +3932,11 @@ void ScribusMainWindow::rebuildLayersList()
 
 		for( QMap<QString, QPointer<ScrAction> >::Iterator it = scrLayersActions.begin(); it!=scrLayersActions.end(); ++it )
 		{
-			scrMenuMgr->addMenuItem((*it), "ItemLayer", true);
+			//scrMenuMgr->addMenuItem((*it), "ItemLayer", true);
 			connect( (*it), SIGNAL(triggeredData(int)), doc, SLOT(itemSelection_SendToLayer(int)) );
 		}
+		scrMenuMgr->addMenuItemStringstoSpecialMenu("ItemLayer", scrLayersActions);
+
 	}
 }
 
