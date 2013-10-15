@@ -10000,11 +10000,6 @@ bool PDFLibCore::PDF_Image(PageItem* c, const QString& fn, double sx, double sy,
 		 || (ImInfo2.RequestProps != c->pixm.imgInfo.RequestProps)
 		 || (ImInfo2.Page != c->pixm.imgInfo.actualPageNumber))
 	{
-		if (c->pixm.imgInfo.colorspace == ColorSpaceGray)
-		{
-			Options.isGrayscale =true;
-			Options.UseRGB = false;
-		}
 		bool imageLoaded = false;
 		if ((extensionIndicatesPDF(ext) || ((extensionIndicatesEPSorPS(ext)) && (c->pixm.imgInfo.type != ImageType7))) && c->effectsInUse.count() == 0)
 		{
