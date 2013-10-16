@@ -58,13 +58,19 @@ StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 {
 	assert(!saxedString.isEmpty());
 
+	qDebug() << "desaxe" << saxedString;
 	Serializer* dig = doc->textSerializer();
 	dig->reset();
 	dig->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
+	if (dig->nrOfErrors() > 0)
+	{
+		qDebug() << "serializer errors" << dig->nrOfErrors();
+		for (int i=0; i < dig->nrOfErrors(); ++i)
+			qDebug() << dig->getError(i);
+		return StoryText();
+	}
 
 	StoryText* story = dig->result<StoryText>();
-	assert (story != NULL);
-
 	StoryText res = *story;
 	delete story;
 	return res;

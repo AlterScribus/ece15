@@ -31,14 +31,14 @@ public:
 	//used while reading SLA file
 	void setNS(NotesStyle* nStyle, PageItem_TextFrame* master = NULL);
 	//returns Notes Style
-	NotesStyle* notesStyle() { return m_nstyle; }
+	NotesStyle* notesStyle() const { return m_nstyle; }
 
 	//insert notes content into notesframe
 	void updateNotes(QList<TextNote*> nList, bool clear = true);
 	//read notes text from notesframe itemText and store it in notes`s saxed text field
 	void updateNotesText();
 
-	PageItem_TextFrame* masterFrame() { return m_masterFrame; }
+	PageItem_TextFrame* masterFrame() const { return m_masterFrame; }
 	void setMaster(PageItem* frame) { m_masterFrame = frame->asTextFrame(); }
 	bool isEndNotesFrame() { return m_nstyle->isEndNotes(); }
 	bool isAutoWelded() { return m_nstyle->isAutoWeldNotesFrames(); }

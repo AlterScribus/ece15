@@ -18107,13 +18107,14 @@ void ScribusDoc::deleteNote(TextNote* note)
 	if (nF != NULL)
 	{
 		nF->removeNote(note);
-		nF->invalid = true;
 		master->invalid = true;
 		if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
 		{
 			nF->deleteIt = true;
 			master->asTextFrame()->removeNoteFrame(nF);
 		}
+		else
+			nF->invalid = true;
 	}
 	//	else
 	//		master->asTextFrame()->setNoteFrame(nF);

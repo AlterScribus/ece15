@@ -1547,5 +1547,4 @@ void Imposition::accepted()
 	connect(w, SIGNAL(AutoSaved()), scMW, SLOT(slotAutoSaved()));
 	connect(UndoManager::instance(), SIGNAL(undoRedoDone()), view, SLOT(DrawNew()));
 	targetDoc->connectDocSignals();
-	UndoManager::instance()->setUndoEnabled(true);
 }

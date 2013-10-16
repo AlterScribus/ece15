@@ -60,7 +60,7 @@ void PropertyWidget_Advanced::setDoc(ScribusDoc *d)
 	if (m_doc)
 	{
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	}
 
 	m_doc  = d;
@@ -84,7 +84,7 @@ void PropertyWidget_Advanced::setDoc(ScribusDoc *d)
 	maxGlyphExtSpinBox->setValues(100, 120, 2, 100);
 
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertyWidget_Advanced::setCurrentItem(PageItem *item)

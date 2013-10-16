@@ -46,7 +46,7 @@ void PropertyWidget_DropCap::setDoc(ScribusDoc *doc)
 	if (m_doc)
 	{
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	}
 
 	m_doc = doc;
@@ -63,7 +63,7 @@ void PropertyWidget_DropCap::setDoc(ScribusDoc *doc)
 	dropCapOffset->setSuffix(unitGetSuffixFromIndex(0));
 
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertyWidget_DropCap::setCurrentItem(PageItem *item)

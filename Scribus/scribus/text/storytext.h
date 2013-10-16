@@ -160,9 +160,8 @@ public:
 	bool hasObject(int pos) const;
 	PageItem* object(int pos) const;
 	bool hasMark(int pos, Mark* mrk = NULL) const;
-	bool hasMarkType(int pos, MarkType mt);
-	
-	Mark *mark(int pos) const;
+	bool hasMarkType(int pos, MarkType mt) const;
+	Mark* mark(int pos) const;
 	void replaceMark(int pos, Mark* mrk);
 	
 	// Get charstyle at current cursor position

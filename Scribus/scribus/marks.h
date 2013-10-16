@@ -51,11 +51,15 @@ class SCRIBUS_API Mark
 	friend class BulNumMark;
 	friend class StyleVariableMark;
 	
+
+	//URGENT for anyone want to edit this class!!!
 	//only ScribusDoc && ScribusMainWindow can create and delete marks
+	//ScribusDoc is owner of MARK pointers created in document
+	//ScribusMainWindow create temporary MARK instance (not a pointer) only for undo purposes on case of editing mark
 private:
 	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
 	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), typ(other.typ), data(other.data) {}
-
+	virtual ~Mark() {}
 public:
 	QString label;
 	int OwnPage;
@@ -65,7 +69,7 @@ public:
 	void setType(MarkType t) { typ = t; }
 	const MarkData getData() { return data; }
 	void setData(const MarkData d) { data = d; }
-	PageItem* getItemPtr() { return data.itemPtr; }
+	PageItem* getItemPtr() const { return data.itemPtr; }
 	void setItemPtr( PageItem* ptr ) { data.itemPtr = ptr; }
 	const QString getItemName() { return data.itemName; }
 	void setItemName( const QString name ) { data.itemName = name; }
@@ -91,7 +95,7 @@ public:
 	void setMarkType(MarkType t) { data.markTyp = t; }
 	const QString getString() { return data.strtxt; }
 	void setString( const QString str ) { data.strtxt = str; }
-	TextNote* getNotePtr() { return data.notePtr; }
+	TextNote* getNotePtr() const { return data.notePtr; }
 	void setNotePtr(TextNote *note) { data.notePtr = note; }
 
 	bool hasItemPtr() { return data.itemPtr != NULL; }
@@ -100,8 +104,10 @@ public:
 	bool isUnique() { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
 	bool isNoteType() { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) { return t==typ; }
-
-    virtual ~Mark() {}
+//No avox - this cannot be public because
+//marks should be deleted only by friend classes
+//except is BulNumMark as that one is not maintained by ScribusDoc
+//    virtual ~Mark() {}
 
 protected:
 	MarkType typ;

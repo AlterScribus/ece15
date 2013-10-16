@@ -4001,8 +4001,9 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
 				Mark* mark = m_Doc->getMarkDefinied(l, t);
 				if (mark == NULL)
+					//FIX ME mark will be null on page import
+					//TODO support for marks on page import
 					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
-				Q_ASSERT(mark); //must be not null
 
 				if (!m_Doc->isLoading())
 				{	//doc is not loading so it is copy/paste task

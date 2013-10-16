@@ -3,6 +3,7 @@
 #include "pageitem_noteframe.h"
 #include "pageitem_textframe.h"
 #include "pageitem.h"
+#include "scpage.h"
 #include "scribus.h"
 #include "scribusdoc.h"
 #include "undomanager.h"
@@ -199,7 +200,6 @@ void PageItem_NoteFrame::layout()
 		return;
 
 	//while layouting notes frames undo should be disabled
-	bool isUndoEnabled = UndoManager::instance()->undoEnabled();
 	UndoManager::instance()->setUndoEnabled(false);
 
 	updateTopLine();
@@ -220,10 +220,38 @@ void PageItem_NoteFrame::layout()
 	{
 		foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
 			nF->invalid = true;
+		if (frameOverflows())
+		{
+			//increase height while text don`t fit in frame
+			double maxH = m_Doc->currentPage()->height() - m_xPos;
+			while (frameOverflows())
+			{
+				oldHeight = m_height += 8;
+				updateClip(false);
+				invalid = true;
+				PageItem_TextFrame::layout();
+				if (m_height >= maxH)
+					break;
+			}
+		}
+		double hackValue = 0.8;
+		oldHeight = m_height = ceil(maxY) + m_textDistanceMargins.Bottom + hackValue;
+		updateConstants();
+		updateClip();
+		invalid = true;
+		PageItem_TextFrame::layout();
+	}
+	if (oldH != height())
+	{
+		if (masterFrame() != NULL)
+		{
+			foreach(PageItem_NoteFrame* nF, masterFrame()->notesFramesList())
+				nF->invalid = true;
+		}
 	}
 	invalid = false;
 	m_Doc->regionsChanged()->update(getBoundingRect());
-	UndoManager::instance()->setUndoEnabled(isUndoEnabled);
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem_NoteFrame::insertNote(TextNote *note)

@@ -191,7 +191,7 @@ void PropertyWidget_Columns::setDoc(ScribusDoc *d)
 	if (m_doc)
 	{
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	}
 	
 	m_doc  = d;
@@ -207,7 +207,7 @@ void PropertyWidget_Columns::setDoc(ScribusDoc *d)
 	m_unitIndex   = m_doc->unitIndex();
 	
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 }
 
 void PropertyWidget_Columns::handleAppModeChanged(int oldMode, int mode)

@@ -14,6 +14,7 @@ for which a new license (GPL+exception) is in place.
 #include "scribusapi.h"
 
 #include <QString>
+
 #include "marks.h"
 #include "scfonts.h"
 #include "style.h"
@@ -22,7 +23,6 @@ for which a new license (GPL+exception) is in place.
 
 class PageItem;
 class ScribusDoc;
-
 /* Struktur fuer Pageitem Text */
 
 

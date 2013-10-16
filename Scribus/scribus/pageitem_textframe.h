@@ -160,8 +160,8 @@ private:
 	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> noteMarksPosMap); //update notes frames content
 	void updateNotesMarks(NotesInFrameMap notesMap);
 	Mark* selectedMark(bool onlySelection = true);
-    TextNote* selectedNoteMark(int& foundPos, bool onlySelection = true);
-	TextNote* selectedNoteMark(bool onlySelection = true);
+    TextNote* noteFromSelectedNoteMark(int& foundPos, bool onlySelection = true);
+	TextNote* noteFromSelectedNoteMark(bool onlySelection = true);
 protected:
 	// set text frame height to last line of text
 	long maxY;

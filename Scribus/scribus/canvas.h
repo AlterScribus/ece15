@@ -24,12 +24,12 @@ scribusview.h  -  description
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <QtWidgets/QApplication>
+#include <QApplication>
 //#include <QDebug>
 #include <QPolygon>
 #include <QRect>
 #include <QRectF>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 #include "scribusapi.h"
 

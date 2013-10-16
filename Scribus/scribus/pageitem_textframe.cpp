@@ -1591,8 +1591,8 @@ void PageItem_TextFrame::layout()
 					mark->setItemPtr(this);
 					NotesStyle* nStyle = note->notesStyle();
 					Q_ASSERT(nStyle != NULL);
-					QString chsName = nStyle->marksChStyle();
 					CharStyle currStyle(itemText.charStyle(a));
+					QString chsName = nStyle->marksChStyle();
 					if ((chsName != "") && (chsName != tr("No Style")))
 					{
 						CharStyle marksStyle(m_Doc->charStyle(chsName));
@@ -1715,10 +1715,12 @@ void PageItem_TextFrame::layout()
 					offset += font.ascent(charStyle.fontSize()/10.0) * (m_Doc->typographicPrefs().valueSuperScript / 100.0);
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
+					offset += charStyle.fontSize()/10.0 * ((m_Doc->typographicPrefs().valueSuperScript / 100.0) + (1.0-scaleV));
 				}
 				else if (chst & ScStyle_Subscript)
 				{
 					offset -= font.ascent(charStyle.fontSize()/10.0) * (m_Doc->typographicPrefs().valueSubScript / 100.0);
+//					offset -= (charStyle.fontSize()/10.0) * m_Doc->typographicPrefs().valueSubScript / 100.0;
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 				}
@@ -2048,7 +2050,7 @@ void PageItem_TextFrame::layout()
 						realDesc = qMax(realDesc, font.realCharDescent(chstr[i], hlcsize10));
 						realAsce = font.realCharAscent(chstr[i], hlcsize10);
 					}
-					realDesc =  realDesc * scaleV - offset;
+					realDesc =  realDesc * scaleV + offset;
 					desc = -font.descent(hlcsize10);
 					current.rememberShrinkStretch(currentCh, wide, style);
 				}
@@ -2267,20 +2269,20 @@ void PageItem_TextFrame::layout()
 						maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
 						maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
 						maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
-						
-						if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
-						{
-							regionMinY = static_cast<int>(floor(maxYAsc));
-							regionMaxY = static_cast<int>(floor(maxYDesc));
-						}
-						else // #11727, #11628, etc.
-						{
-							regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
-							regionMaxY = static_cast<int>(floor(current.yPos + desc));
-						}
-						
-						//						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc1000));
 						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), regionMinY));
+//						maxYAsc = current.yPos - realAsce;
+//						maxYDesc = current.yPos + realDesc;
+//						if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
+//						{
+//							regionMinY = static_cast<int>(floor(maxYAsc));
+//							regionMaxY = static_cast<int>(floor(maxYDesc));
+//						}
+//						else // #11727, #11628, etc.
+//						{
+//							regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
+//							regionMaxY = static_cast<int>(floor(current.yPos + desc));
+//						}
+//						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc1000));
 						done = false;
 					}
 					if (current.isEndOfCol(realDesc))
@@ -2689,7 +2691,7 @@ void PageItem_TextFrame::layout()
 						inOverflow = true;
 				}
 				else
-					setMaxY(maxYDesc);
+					setMaxY(regionMaxY);
 			}
 			
 			// hyphenation
@@ -3101,22 +3103,22 @@ void PageItem_TextFrame::layout()
 			int maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 			
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc1000, maxYDesc1000);
-			//			maxYAsc = current.yPos - realAsce;
-			//			maxYAsc = qMax(maxYAsc, 0.0);
-			//			maxYDesc = current.yPos + realDesc;
 			
-			if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
-			{
-				regionMinY = static_cast<int>(floor(maxYAsc));
-				regionMaxY = static_cast<int>(floor(maxYDesc));
-			}
-			else // #11727, #11628, etc.
-			{
-				regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
-				regionMaxY = static_cast<int>(floor(current.yPos + desc));
-			}
-			
-			//			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), regionMinY, regionMaxY);
+//			maxYAsc = current.yPos - realAsce;
+//			maxYAsc = qMax(maxYAsc, 0.0);
+//			maxYDesc = current.yPos + realDesc;
+
+//			if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
+//			{
+//				regionMinY = static_cast<int>(floor(maxYAsc));
+//				regionMaxY = static_cast<int>(floor(maxYDesc));
+//			}
+//			else // #11727, #11628, etc.
+//			{
+//				regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
+//				regionMaxY = static_cast<int>(floor(current.yPos + desc));
+//			}
+//			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), regionMinY, regionMaxY);
 			current.finishLine(EndX);
 			
 			if (opticalMargins & ParagraphStyle::OM_RightHangingPunct)
@@ -3155,7 +3157,7 @@ void PageItem_TextFrame::layout()
 			goNextColumn = false;
 			
 			itemText.appendLine(current.line);
-			setMaxY(maxYDesc);
+			setMaxY(regionMaxY);
 			current.startOfCol = false;
 			
 			if (moveLinesFromPreviousFrame ()) {
@@ -3169,14 +3171,12 @@ void PageItem_TextFrame::layout()
 	
 NoRoom:
 	invalid = false;
-	int pos = itemText.lastInFrame();
-	if (pos < 0)
+	if (!isNoteFrame())
 	{
-		qDebug() << "textframe:layout - negative last in frame";
-		return;
+		int pos = itemText.lastInFrame();
+		if (pos > 0 && pos < itemText.length());
+			adjustParagraphEndings (pos, true);
 	}
-	if (pos < itemText.length());
-	adjustParagraphEndings (pos, true);
 	
 	setColumnSE(Cols-1, startColumn, MaxChars -1);
 	
@@ -4875,7 +4875,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		break;
 		default:
 			if (isNoteFrame() && (itemText.lengthOfSelection() == 0) && (itemText.cursorPosition() < itemText.length())
-					&& (itemText.hasMarkType(itemText.cursorPosition(), MARKNoteFrameType) || itemText.hasMarkType(itemText.cursorPosition(),MARKBullNumType)))
+					&& (itemText.hasMarkType(itemText.cursorPosition(),MARKNoteFrameType) || itemText.hasMarkType(itemText.cursorPosition(),MARKBullNumType)))
 			{
 				QApplication::beep();
 				break; //avoid inserting chars before notes and bullets marks
@@ -4971,11 +4971,16 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 						}
 					}
 				}
-				bool applyNeighbourStyle = true;
-				if (isNoteFrame())
-					applyNeighbourStyle = ! itemText.hasMarkType(itemText.cursorPosition() -1,MARKNoteFrameType);
-				itemText.insertChars(uc, applyNeighbourStyle);
-				if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
+			}
+			bool applyNeighbourStyle = true;
+			if (isNoteFrame())
+				applyNeighbourStyle = ! itemText.hasMarkType(itemText.cursorPosition() -1, MARKNoteFrameType);
+			itemText.insertChars(uc, applyNeighbourStyle);
+			if ((m_Doc->docHyphenator->AutoCheck) && (itemText.cursorPosition() > 1))
+			{
+				Twort = "";
+				Tcoun = 0;
+				for (int hych = itemText.cursorPosition()-1; hych > -1; hych--)
 				{
 					Twort = "";
 					Tcoun = 0;
@@ -6044,7 +6049,7 @@ Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
 	return NULL;
 }
 
-TextNote* PageItem_TextFrame::selectedNoteMark(int &foundPos, bool onlySelection)
+TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(int &foundPos, bool onlySelection)
 {
 	//return pointer to note from first mark found in text
 	int start = 0;
@@ -6071,10 +6076,10 @@ TextNote* PageItem_TextFrame::selectedNoteMark(int &foundPos, bool onlySelection
 	return NULL;
 }
 
-TextNote* PageItem_TextFrame::selectedNoteMark(bool onlySelection)
+TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(bool onlySelection)
 {
 	int dummy;
-	return selectedNoteMark(dummy, onlySelection);
+	return noteFromSelectedNoteMark(dummy, onlySelection);
 }
 
 NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarksPosMap)
@@ -6275,7 +6280,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	int num = 0;
 	if (!isNoteFrame())
 	{
-		TextNote* note = selectedNoteMark(true);
+		TextNote* note = noteFromSelectedNoteMark(true);
 		while (note != NULL)
 		{
 			if (doUndo && UndoManager::undoEnabled())
@@ -6283,7 +6288,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 			if (note->isEndNote())
 				m_Doc->flag_updateEndNotes = true;
 			m_Doc->deleteNote(note);
-			note = selectedNoteMark(true);
+			note = noteFromSelectedNoteMark(true);
 			++num;
 		}
 	}
@@ -6327,7 +6332,6 @@ void PageItem_TextFrame::setMaxY(long y)
 	if (y > maxY)
 		maxY = y;
 }
-
 void PageItem_TextFrame::setTextFrameHeight()
 {
 	//m_Doc->view()->updatesOn(false);
@@ -6357,7 +6361,7 @@ void PageItem_TextFrame::setTextFrameHeight()
 		setHeight(ceil(double(maxY)/1000.0 + m_textDistanceMargins.Bottom));
 		updateClip();
 		invalid = true;
-		layout();
+		PageItem_TextFrame::layout();
 	}
 	checkTextFlowInteractions();
 	qApp->restoreOverrideCursor();

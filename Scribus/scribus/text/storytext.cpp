@@ -417,13 +417,16 @@ void StoryText::removeChars(int pos, uint len)
 		if ((it->ch == SpecialChars::PARSEP)) {
 			removeParSep(i);
 		}
-		if (it->mark != NULL)
-		{
-			delete it->mark;
-			it->mark = NULL;
-		}
-		
-		//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
+		//No avox, mark must be deleted by ScribusDoc
+		//because it is "owner" of the pointer and there is many dependencies
+		//when mark can be deleted and what should be done if it is deleted
+//        if (it->mark != NULL)
+//        {
+//            delete it->mark;
+//            it->mark = NULL;
+//        }
+
+//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
 		d->takeAt(i);
 		d->len--;
 		delete it;
@@ -827,12 +830,10 @@ bool StoryText::hasMark(int pos, Mark* mrk) const
 	assert(pos < length());
 	
 	StoryText* that = const_cast<StoryText *>(this);
-	if (that->d->at(pos)->ch == SpecialChars::OBJECT)
-		return that->d->at(pos)->hasMark(mrk);
-	return false;
+	return that->d->at(pos)->hasMark(mrk);
 }
 
-bool StoryText::hasMarkType(int pos, MarkType mt)
+bool StoryText::hasMarkType(int pos, MarkType mt) const
 {
 	return (hasMark(pos) && mark(pos)->isType(mt));
 }
@@ -933,14 +934,15 @@ const CharStyle & StoryText::charStyle(int pos) const
 	}
 	//if previous is note or bullet mark then search backward
 	//for normal char or return default style
-	int pos2 = pos;
-	while (pos2 >= 0 && item(pos2)->hasMark() && (item(pos2)->mark->isNoteType() || item(pos2)->mark->isType(MARKBullNumType)))
-		--pos2;
-	if (pos2 < 0)
-		return paragraphStyle(pos).charStyle();
+	if (pos > 0 && (hasMarkType(pos,MARKNoteFrameType) || hasMarkType(pos,MARKBullNumType)))
+	{
+		//case when there no normal text after mark
+		if ((pos == length()-1) || (text(pos+1) == SpecialChars::PARSEP))
+			return paragraphStyle(pos).charStyle();
+	}
 	if (text(pos) == SpecialChars::PARSEP)
 	{
-		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP)
+		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP || hasMarkType(pos-1,MARKNoteFrameType) || hasMarkType(pos-1,MARKBullNumType))
 			return paragraphStyle(pos).charStyle();
 		else //get charStyle from last char in paragraph
 			--pos;
@@ -2029,6 +2031,13 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	lastStyle.saxx(handler);
 	for (int i=0; i < length(); ++i)
 	{
+		if (hasMark(i))
+		{
+			Mark* mrk = mark(i);
+			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType))
+			    || mrk->isType(MARKBullNumType))
+				continue; //do not insert notes marks into notes frames and bullets marks anywhere
+		}
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));
 		
@@ -2112,8 +2121,8 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			}
 			else if (mrk->isType(MARKNoteMasterType))
 			{
-				TextNote * note = mrk->getNotePtr();
-				assert(note != NULL);
+				TextNote * const note = mrk->getNotePtr();
+				assert(note != null);
 				mark_attr.insert("nStyle", note->notesStyle()->name());
 				mark_attr.insert("note",note->saxedText());
 				//store noteframe name for inserting into note if it is non-auto-removable
@@ -2324,59 +2333,6 @@ public:
 				}
 				else if (t == MARKVariableTextType)
 					mrk = doc->getMarkDefinied(l,t);
-				//			else if (t == MARKBullNumType)
-				//			{
-				//				mrk = (Mark*) new BulNumMark();
-				//				Xml_attr::iterator str_It = attr.find("strtxt");
-				//				mrk->setString(Xml_data(str_It));
-				//				pstyle = new ParagraphStyle();
-				//				Xml_attr::iterator ite;
-				//				ite = attr.find("style_peoffset");
-				//				if (ite != attr.end())
-				//					pstyle->setParEffectOffset(parseDouble(Xml_data(ite)));
-				//				ite = attr.find("style_peindent");
-				//				if (ite != attr.end())
-				//					pstyle->setParEffectIndent(parseDouble(Xml_data(ite)));
-				//				ite = attr.find("style_pecharstyle");
-				//				if (ite != attr.end())
-				//					pstyle->setPeCharStyleName(Xml_data(ite));
-				//				ite = attr.find("style_hasbul");
-				//				if (ite != attr.end())
-				//					pstyle->setHasBullet(parseInt(Xml_data(ite)) == 1);
-				//				ite = attr.find("style_bulletstr");
-				//				if (ite != attr.end())
-				//					pstyle->setBulletStr(Xml_data(ite));
-				//				ite = attr.find("style_hasnum");
-				//				if (ite != attr.end())
-				//					pstyle->setHasNum(parseInt(Xml_data(ite)) == 1);
-				//				ite = attr.find("style_numname");
-				//				if (ite != attr.end())
-				//					pstyle->setNumName(Xml_data(ite));
-				//				ite = attr.find("style_numformat");
-				//				if (ite != attr.end())
-				//					pstyle->setNumFormat(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numprefix");
-				//				if (ite != attr.end())
-				//					pstyle->setNumPrefix(Xml_data(ite));
-				//				ite = attr.find("style_numsuffix");
-				//				if (ite != attr.end())
-				//					pstyle->setNumSuffix(Xml_data(ite));
-				//				ite = attr.find("style_numlevel");
-				//				if (ite != attr.end())
-				//					pstyle->setNumLevel(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numstart");
-				//				if (ite != attr.end())
-				//					pstyle->setNumStart(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numrestart");
-				//				if (ite != attr.end())
-				//					pstyle->setNumRestart(parseInt(Xml_data(ite)));
-				//				ite = attr.find("style_numother");
-				//				if (ite != attr.end())
-				//					pstyle->setNumOther(parseInt(Xml_data(ite)) == 1);
-				//				ite = attr.find("style_numhigher");
-				//				if (ite != attr.end())
-				//					pstyle->setNumHigher(parseInt(Xml_data(ite)) == 1);
-				//			}
 				else
 				{
 					mrk = doc->newMark();
@@ -2420,12 +2376,6 @@ public:
 						note->setMasterMark(mrk);
 						if (nIt != attr.end())
 							note->setSaxedText(Xml_data(nIt));
-						//					if (!NS->isAutoRemoveEmptyNotesFrames() && (nf_It != attr.end()))
-						//					{
-						//						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) doc->getItemFromName(Xml_data(nf_It));
-						//						if (nF != NULL)
-						//							doc->m_Selection->itemAt(0)->asTextFrame()->setNoteFrame(nF);
-						//					}
 						mrk->setNotePtr(note);
 						doc->setNotesChanged(true);
 					}

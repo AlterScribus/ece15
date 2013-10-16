@@ -2506,7 +2506,6 @@ double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, Glyp
 {
 	double retval = 0.0;
 	const ScFace font = style.font();
-	double asce = font.ascent(style.fontSize() / 10.0);
 	int chst = style.effects() & 1919;
 /*	if (chars[0] == SpecialChars::ZWSPACE ||
 		chars[0] == SpecialChars::ZWNBSPACE ||
@@ -2542,14 +2541,14 @@ double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, Glyp
 	{
 		if (chst & ScStyle_Superscript)
 		{
-			retval -= asce * m_Doc->typographicPrefs().valueSuperScript / 100.0;
-			layout.yoffset -= asce * m_Doc->typographicPrefs().valueSuperScript / 100.0;
 			layout.scaleV = layout.scaleH = qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / style.fontSize());
+			retval = (style.fontSize() / 10.0) * ((m_Doc->typographicPrefs().valueSuperScript / 100.0) + (1.0 - layout.scaleV));
+			layout.yoffset -= retval;
 		}
 		else if (chst & ScStyle_Subscript)
 		{
-			retval += asce * m_Doc->typographicPrefs().valueSubScript / 100.0;
-			layout.yoffset += asce * m_Doc->typographicPrefs().valueSubScript / 100.0;
+			retval = (style.fontSize() / 10.0) * m_Doc->typographicPrefs().valueSubScript / 100.0;
+			layout.yoffset += retval;
 			layout.scaleV = layout.scaleH = qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / style.fontSize());
 		}
 		else {
@@ -10833,14 +10832,7 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 	it.insert(0, itemText, true);
 	itemText.deselectAll();
 
-	//saxing text
-	std::ostringstream xmlString;
-	SaxXML xmlStream(xmlString);
-	xmlStream.beginDoc();
-	it.saxx(xmlStream, "SCRIBUSTEXT");
-	xmlStream.endDoc();
-	std::string xml(xmlString.str());
-	return QString(xml.c_str());
+	return saxedText(&it);
 }
 
 bool compareItemLevel(const PageItem* item1, const PageItem* item2)

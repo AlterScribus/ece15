@@ -1012,7 +1012,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/pdfoptionsio.h \
     scribus/selectionrubberband.h \
     scribus/ui/propertywidget_textmargins.h \
-    scribus/ui/propertywidget_columns.h
+    scribus/ui/propertywidget_columns.h \
+    scribus/canvasgesture_textcolumnresize.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -2133,7 +2134,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/ui/searchreplacedialog.cpp \
     scribus/selectionrubberband.cpp \
     scribus/ui/propertywidget_textmargins.cpp \
-    scribus/ui/propertywidget_columns.cpp
+    scribus/ui/propertywidget_columns.cpp \
+    scribus/canvasgesture_textcolumnresize.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/scribus.af.ts \
                 resources/translations/scribus.ar.ts \

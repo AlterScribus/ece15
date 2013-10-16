@@ -56,7 +56,7 @@ void PropertyWidget_ParEffect::setDoc(ScribusDoc *doc)
 	if (m_doc)
 	{
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	}
 
 	m_doc = doc;
@@ -74,7 +74,7 @@ void PropertyWidget_ParEffect::setDoc(ScribusDoc *doc)
 	fillNumerationsCombo();
 
 	connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//	connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 
 	// Handle properties update when switching document
 	handleSelectionChanged();
@@ -539,7 +539,7 @@ void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &new
 	if (item != NULL)
 	{
 		disconnect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//		disconnect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 
 		Selection tempSelection(this, false);
 		tempSelection.addItem(item, true);
@@ -547,7 +547,7 @@ void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &new
 		m_doc->updateNumbers();
 
 		connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
-		connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
+//		connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));
 	}
 }
 
