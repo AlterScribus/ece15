@@ -15,7 +15,7 @@ for which a new license (GPL+exception) is in place.
  ***************************************************************************/
 
 //#include <QDebug>
-
+#include <QTextCodec>
 #include <sstream>
 #include "desaxe/saxXML.h"
 #include "scribusdoc.h"
@@ -58,29 +58,29 @@ StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 {
 	assert(!saxedString.isEmpty());
 
-	qDebug() << "desaxe" << saxedString;
 	Serializer* dig = doc->textSerializer();
+	dig->reset();
+
 	dig->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
-	if (dig->nrOfErrors() > 0)
+	StoryText * story = dig->result<StoryText>();
+	if (story == NULL)
 	{
-		qDebug() << "serializer errors" << dig->nrOfErrors();
-		for (int i=0; i < dig->nrOfErrors(); ++i)
-			qDebug() << dig->getError(i);
-		return StoryText();
+		qDebug() << saxedString << "\n" << saxedString.toStdString().c_str() << "\n";
+		return StoryText(doc);
 	}
 
-	StoryText* story = dig->result<StoryText>();
-	StoryText res = *story;
+	StoryText res(doc);
+	res.insert(*story);
 	delete story;
 	return res;
 }
 
-QString saxedText(StoryText* story)
+QString saxedText(StoryText const &story)
 {
 	std::ostringstream xmlString;
 	SaxXML xmlStream(xmlString);
 	xmlStream.beginDoc();
-	story->saxx(xmlStream, "SCRIBUSTEXT");
+	story.saxx(xmlStream, "SCRIBUSTEXT");
 	xmlStream.endDoc();
 	std::string xml(xmlString.str());
 	return QString(xml.c_str());

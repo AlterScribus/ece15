@@ -10,7 +10,7 @@
 
 #include <QFile>
 #include <QString>
-#include <QtXml/QXmlDefaultHandler>
+#include <QXmlDefaultHandler>
 
 #include "digester.h"
 

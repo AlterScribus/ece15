@@ -10409,14 +10409,7 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 	itemText.deselectAll();
 
 	//saxing text
-	std::ostringstream xmlString;
-	SaxXML xmlStream(xmlString);
-	xmlStream.beginDoc();
-	it.saxx(xmlStream, "SCRIBUSTEXT");
-	xmlStream.endDoc();
-	std::string xml(xmlString.str());
-	qDebug() << xml.c_str();
-	return QString(xml.c_str());
+	return saxedText(it);
 }
 
 bool compareItemLevel(const PageItem* item1, const PageItem* item2)

@@ -17743,7 +17743,7 @@ void ScribusDoc::deleteNote(TextNote* note)
 			nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
 	}
 	PageItem* master = note->masterMark()->getItemPtr();
-	if (nF)
+	if (nF != NULL)
 	{
 		nF->removeNote(note);
 		master->invalid = true;

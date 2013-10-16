@@ -1716,14 +1716,13 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
-					keyrep=kr;
-
 					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 						//empty note frame can be deleted so lets get pointer to master frame
 						currItem = currItem->asNoteFrame()->masterFrame();
-					currItem->updateLayout();
+					currItem->layout();
+					keyrep=kr;
 				}
-				slotDocCh();
+//				slotDocCh();
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -5417,7 +5416,7 @@ void ScribusMainWindow::slotEditPaste()
 					story->setDoc(doc);
 					for (int pos=story->length() -1; pos >= 0; --pos)
 					{
-                        if (story->hasMark(pos) && (story->mark(pos)->isNoteType()))
+						if (story->hasMark(pos) && (story->mark(pos)->isNoteType()))
 							story->removeChars(pos,1);
 					}
 				}
