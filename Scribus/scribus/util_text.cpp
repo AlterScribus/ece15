@@ -14,8 +14,6 @@ for which a new license (GPL+exception) is in place.
  *                                                                         *
  ***************************************************************************/
 
-//#include <QDebug>
-#include <QTextCodec>
 #include <sstream>
 #include "desaxe/saxXML.h"
 #include "scribusdoc.h"
