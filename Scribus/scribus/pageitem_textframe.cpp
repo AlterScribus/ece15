@@ -3191,6 +3191,8 @@ NoRoom:
 		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
+	if (invalid)
+		layout();
 	if (itemText.length() == 0)
 	{
 		itemText.blockSignals(false);
@@ -4773,8 +4775,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 							asNoteFrame()->masterFrame()->invalid = true;
 						}
 					}
-					else
-						update();
+//					else
+//						update();
 					//				view->RefreshItem(this);
 				}
 				keyRepeat = false;
@@ -4822,8 +4824,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 							asNoteFrame()->masterFrame()->invalid = true;
 						}
 					}
-					else
-						update();
+//					else
+//						update();
 				}
 				break;
 			}
@@ -4870,7 +4872,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 				}
 			}
 			m_Doc->scMW()->setTBvals(this);
-			//		update();
+//			update();
 			//		view->RefreshItem(this);
 		break;
 		default:
@@ -5022,10 +5024,10 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 						asNoteFrame()->masterFrame()->invalid = true;
 					}
 				}
-				else
-					update();
-				if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
-					NextBox->updateLayout();
+//				else
+//					update();
+//				if (oldLast != lastInFrame() && NextBox != 0 && NextBox->invalid)
+//					NextBox->updateLayout();
 			}
 			//check if cursor need to jump to next linked frame
 			//but not for notes frames can`t be updated as may disapper during update

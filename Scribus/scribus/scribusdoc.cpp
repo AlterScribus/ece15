@@ -17509,7 +17509,9 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 			}
 		}
 	}
-	
+	if (flag_layoutNotesFrames)
+		changed();
+//		regionsChanged()->update(QRect());
 }
 
 QStringList ScribusDoc::marksLabelsList(MarkType type)

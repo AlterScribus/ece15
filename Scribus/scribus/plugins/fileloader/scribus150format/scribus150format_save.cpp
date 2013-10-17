@@ -1423,6 +1423,7 @@ void Scribus150Format::writeNotes(ScXmlStreamWriter & docu)
 		docu.writeAttribute("Master", TN->masterMark()->label);
 		docu.writeAttribute("NStyle", TN->notesStyle()->name());
 		docu.writeAttribute("Text", TN->saxedText());
+		//store charstyle for note number (not stored with note text)
 		docu.writeEmptyElement("NoteMarkerCharStyle");
 		putCStyle(docu, TN->getCharStyleNoteMark());
 	}

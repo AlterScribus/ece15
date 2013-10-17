@@ -3453,6 +3453,7 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 		}
 		else if (newNote && reader.isStartElement() && reader.name() == "NoteMarkerCharStyle")
 		{
+			//read charstyle for note number in noteframe (it is not stored with note text)
 			CharStyle newStyle;
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			readCharacterStyleAttrs(doc,attrs,newStyle);

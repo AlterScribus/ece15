@@ -1725,14 +1725,14 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					bool kr=keyrep;
 					view->canvasMode()->keyPressEvent(k); //Hack for 1.4.x for stopping the cursor blinking while moving about
 					currItem->handleModeEditKey(k, keyrep);
-					keyrep=kr;
-
 					if (currItem->isAutoNoteFrame() && currItem->asNoteFrame()->notesList().isEmpty())
 						//empty note frame can be deleted so lets get pointer to master frame
 						currItem = currItem->asNoteFrame()->masterFrame();
-					currItem->updateLayout();
+					if (currItem->invalid)
+						currItem->update();
+					keyrep=kr;
 				}
-				slotDocCh();
+//				slotDocCh();
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -4353,6 +4353,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		t.start();*/
 		int docItemsCount=doc->Items->count();
 		doc->flag_Renumber = false;
+		doc->setupNumerations();
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -4378,6 +4379,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			Apply_MasterPage(doc->DocPages.at(p)->MPageNam, p, false);
 		}
 		view->reformPages(false);
+		doc->updateNumbers(false);
 		checkExternals();
 		mainWindowStatusLabel->setText( tr("Ready"));
 		doc->setLoading(false);
@@ -4393,7 +4395,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		// Seems to fix crash on loading
 		ActWin = NULL;
 		newActWin(w->getSubWin());
-		doc->updateNumbers(true);
 		doc->setCurrentPage(doc->DocPages.at(0));
 		view->cmsToolbarButton->setChecked(doc->HasCMS);
 		view->zoom();
@@ -5231,7 +5232,6 @@ void ScribusMainWindow::slotEditCut()
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
-	QString BufferI = "";
 	uint docSelectionCount=doc->m_Selection->count();
 	if ((HaveDoc) && (docSelectionCount != 0))
 	{
@@ -5328,7 +5328,6 @@ void ScribusMainWindow::slotEditCopy()
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
-	QString BufferI = "";
 	if ((HaveDoc) && (doc->m_Selection->count() != 0))
 	{
 		PageItem *currItem = doc->m_Selection->itemAt(0);
@@ -5344,7 +5343,6 @@ void ScribusMainWindow::slotEditCopy()
 				StoryText itemText(doc);
 				itemText.setDefaultStyle(cItem->itemText.defaultStyle());
 				itemText.insert(0, cItem->itemText, true);
-				BufferI = itemText.text(0, itemText.length());
 				std::ostringstream xmlString;
 				SaxXML xmlStream(xmlString);
 				xmlStream.beginDoc();
@@ -5449,7 +5447,7 @@ void ScribusMainWindow::slotEditPaste()
 					story->setDoc(doc);
 					for (int pos=story->length() -1; pos >= 0; --pos)
 					{
-                        if (story->hasMark(pos) && (story->mark(pos)->isNoteType()))
+						if (story->hasMark(pos) && (story->mark(pos)->isNoteType()))
 							story->removeChars(pos,1);
 					}
 				}
