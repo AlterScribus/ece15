@@ -61,11 +61,11 @@ StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 	Serializer* dig = doc->textSerializer();
 	dig->reset();
 
-	dig->parseMemory(saxedString.toStdString().c_str(), saxedString.length());
+	dig->parseMemory(saxedString.toUtf8(), saxedString.toUtf8().length());
 	StoryText * story = dig->result<StoryText>();
 	if (story == NULL)
 	{
-		qDebug() << saxedString << "\n" << saxedString.toStdString().c_str() << "\n";
+		qWarning();
 		return StoryText(doc);
 	}
 

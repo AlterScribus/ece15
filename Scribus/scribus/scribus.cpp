@@ -5198,7 +5198,6 @@ void ScribusMainWindow::slotEditCut()
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
-	QString BufferI = "";
 	uint docSelectionCount=doc->m_Selection->count();
 	if ((HaveDoc) && (docSelectionCount != 0))
 	{
@@ -5295,7 +5294,6 @@ void ScribusMainWindow::slotEditCopy()
 //	int a;
 	if (HaveDoc && doc->appMode == modeEditClip)
 		view->requestMode(submodeEndNodeEdit);
-	QString BufferI = "";
 	if ((HaveDoc) && (doc->m_Selection->count() != 0))
 	{
 		PageItem *currItem = doc->m_Selection->itemAt(0);
@@ -5311,7 +5309,6 @@ void ScribusMainWindow::slotEditCopy()
 				StoryText itemText(doc);
 				itemText.setDefaultStyle(cItem->itemText.defaultStyle());
 				itemText.insert(0, cItem->itemText, true);
-				BufferI = itemText.text(0, itemText.length());
 				std::ostringstream xmlString;
 				SaxXML xmlStream(xmlString);
 				xmlStream.beginDoc();
