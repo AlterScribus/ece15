@@ -369,8 +369,8 @@ enum UpdateRequests
 	reqCmsOptionsUpdate  = 512,
 	reqCustomShapeUpdate = 1024,
 	reqInlinePalUpdate   = 2048,
-	reqMarksUpdate       = 4096,
-	reqNumUpdate         = 8192,
+	reqMarksListViewUpdate       = 4096,
+	reqNumListViewUpdate         = 8192,
 	reqUpdateAll = 65535
 };
 

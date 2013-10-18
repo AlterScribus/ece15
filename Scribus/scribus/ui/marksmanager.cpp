@@ -141,7 +141,7 @@ void MarksManager::languageChange()
 
 void MarksManager::handleUpdateRequest(int updateFlags)
 {
-	if (updateFlags & reqMarksUpdate) {
+	if (updateFlags & reqMarksListViewUpdate) {
 		updateListView();
 	}
 	m_Doc->flag_updateMarksLabels = false;

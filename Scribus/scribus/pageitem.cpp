@@ -2325,7 +2325,7 @@ double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, Glyp
 		if (chst & ScStyle_Superscript)
 		{
 			layout.scaleV = layout.scaleH = qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / style.fontSize());
-			retval = (style.fontSize() / 10.0) * ((m_Doc->typographicPrefs().valueSuperScript / 100.0) + (1.0 - layout.scaleV));
+			retval = (style.fontSize() / 10.0) * (m_Doc->typographicPrefs().valueSuperScript / 100.0);
 			layout.yoffset -= retval;
 		}
 		else if (chst & ScStyle_Subscript)

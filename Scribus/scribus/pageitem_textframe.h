@@ -146,6 +146,7 @@ public:
 
 private:
 	NotesInFrameMap m_notesFramesMap;
+	void updateAllMyMarks(QMap<int, Mark*> notesMarksPositions);
 	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> noteMarksPosMap); //update notes frames content
 	void updateNotesMarks(NotesInFrameMap notesMap);
 	Mark* selectedMark(bool onlySelection = true);

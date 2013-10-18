@@ -1786,7 +1786,7 @@ public:
 	bool flag_NumUpdateRequest;
 	// for local numeration of paragraphs
 	bool updateLocalListNumbers(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
-	void updateNumbers(bool updateNumerations = false);
+	bool updateListNumbers(bool updateNumerations = false);
 	void itemSelection_ClearBulNumStrings(Selection *customSelection);
 /* Functions for PDF Form Actions */
 

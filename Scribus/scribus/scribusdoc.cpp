@@ -1906,7 +1906,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				NS->setMarksCharStyle(ss->get("marksChStyle"));
 				NS->setNotesParStyle(ss->get("notesParStyle"));
 				m_docNotesStylesList.append(NS);
-				scMW()->emitUpdateRequest(reqMarksUpdate);
+				scMW()->emitUpdateRequest(reqMarksListViewUpdate);
 			}
 			else if (ss->get("NSTYLE") == "edit")
 			{
@@ -2268,7 +2268,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						qDebug() << "MARK redo - unhandled " << is->get("MARK");
 					}
 				}
-				scMW()->emitUpdateRequest(reqMarksUpdate);
+				scMW()->emitUpdateRequest(reqMarksListViewUpdate);
 				if (currItem != NULL && !isAutoNoteFrame)
 				{
 					currItem->invalidateLayout();
@@ -17040,7 +17040,8 @@ bool ScribusDoc::updateLocalListNumbers(StoryText& itemText)
 	return needUpdate;
 }
 
-void ScribusDoc::updateNumbers(bool updateNumerations)
+//returns if doc was changed
+bool ScribusDoc::updateListNumbers(bool updateNumerations)
 {
 	if (updateNumerations)
 		//after styles change reset all numerations settings
@@ -17174,8 +17175,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 			}
 		}
 	}
-	if (flag_layoutNotesFrames)
-		changed();
+	return (flag_Renumber);
 }
 
 QStringList ScribusDoc::marksLabelsList(MarkType type)
@@ -17698,7 +17698,7 @@ void ScribusDoc::deleteNotesStyle(QString nsName)
 		flag_updateEndNotes = true;
 	notesFramesUpdate();
 	m_docNotesStylesList.removeOne(NS);
-	scMW()->emitUpdateRequest(reqMarksUpdate);
+	scMW()->emitUpdateRequest(reqMarksListViewUpdate);
 	delete NS;
 }
 
@@ -18138,7 +18138,7 @@ void ScribusDoc::updateNotesFramesStyles(NotesStyle *nStyle)
 					{
 						//set back style from master frame
 						newStyle.setParent(item->asNoteFrame()->masterFrame()->itemText.defaultStyle().parent());
-						newStyle.applyStyle(item->asNoteFrame()->masterFrame()->currentStyle());
+						newStyle.applyStyle(item->asNoteFrame()->masterFrame()->itemText.defaultStyle());
 					}
 					else
 						newStyle.setParent(item->itemText.defaultStyle().parent());
