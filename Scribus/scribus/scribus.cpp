@@ -4320,6 +4320,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		t.start();*/
 		int docItemsCount=doc->Items->count();
 		doc->flag_Renumber = false;
+		doc->setupNumerations();
 		for (int azz=0; azz<docItemsCount; ++azz)
 		{
 			PageItem *ite = doc->Items->at(azz);
@@ -4346,6 +4347,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			Apply_MasterPage(doc->DocPages.at(p)->MPageNam, p, false);
 		}
 		view->reformPages(false);
+		doc->updateNumbers(false);
 		doc->setLoading(false);
 //		if (fileLoader->fileType() > FORMATID_NATIVEIMPORTEND)
 //			scrActions["fileSave"]->setEnabled(false);
@@ -4361,8 +4363,6 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		// Seems to fix crash on loading
 		ActWin = NULL;
 		newActWin(w->getSubWin());
-		doc->updateNumbers(true);
-		emit UpdateRequest(reqNumUpdate);
 		doc->setCurrentPage(doc->DocPages.at(0));
 		view->cmsToolbarButton->setChecked(doc->HasCMS);
 		view->zoom();
@@ -10064,9 +10064,11 @@ void ScribusMainWindow::updateDocument()
 	if (HaveDoc)
 	{
 		doc->updateNumbers(true);
-		doc->updateMarks(true);
-		doc->regionsChanged()->update(QRect());
-		emit UpdateRequest(reqNumUpdate);
+		if (doc->updateMarks(true))
+		{
+			slotDocCh();
+			doc->regionsChanged()->update(QRect());
+		}
 	}
 }
 

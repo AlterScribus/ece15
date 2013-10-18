@@ -1328,6 +1328,7 @@ void PageItem_TextFrame::layout()
 		firstChar = 0;
 
 //	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
+Start:
 	QPoint pt1, pt2;
 	QRect pt;
 	double chs, chsd = 0;
@@ -1502,7 +1503,6 @@ void PageItem_TextFrame::layout()
 		int regionMinY = 0, regionMaxY= 0;
 
 		double autoLeftIndent = 0.0;
-
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
 			currentCh = itemText.text(a);
@@ -3071,16 +3071,21 @@ void PageItem_TextFrame::layout()
 	MaxChars = itemText.length();
 	invalid = false;
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-	{ //if notes are used
+	{
 		UndoManager::instance()->setUndoEnabled(false);
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
-		if (notesMap != m_notesFramesMap)
+		if (notesMap != m_notesFramesMap || m_Doc->flag_layoutNotesFrames || m_Doc->flag_NumUpdateRequest || m_Doc->flag_Renumber)
 		{
 			updateNotesMarks(notesMap);
-			notesFramesLayout();
+			if (m_Doc->flag_restartMarksRenumbering || m_Doc->flag_NumUpdateRequest || m_Doc->flag_Renumber)
+				m_Doc->updateNumbers();
+			if (m_Doc->flag_layoutNotesFrames)
+				notesFramesLayout();
 		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
+	if (invalid)
+		goto Start;
 	if (NextBox != NULL)
 	{
 		PageItem_TextFrame * nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
@@ -3100,13 +3105,18 @@ NoRoom:
 	{
 		UndoManager::instance()->setUndoEnabled(false);
 		NotesInFrameMap notesMap = updateNotesFrames(noteMarksPosMap);
-		if (notesMap != m_notesFramesMap)
+		if (notesMap != m_notesFramesMap || m_Doc->flag_layoutNotesFrames || m_Doc->flag_NumUpdateRequest || m_Doc->flag_Renumber)
 		{
 			updateNotesMarks(notesMap);
-			notesFramesLayout();
+			if (m_Doc->flag_restartMarksRenumbering || m_Doc->flag_NumUpdateRequest || m_Doc->flag_Renumber)
+				m_Doc->updateNumbers();
+			if (m_Doc->flag_layoutNotesFrames)
+				notesFramesLayout();
 		}
 		UndoManager::instance()->setUndoEnabled(true);
 	}
+	if (invalid)
+		goto Start;
 
 	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (next != NULL)

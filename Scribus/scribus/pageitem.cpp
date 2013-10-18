@@ -9982,9 +9982,12 @@ void PageItem::updateClip(bool updateWelded)
 						gr4.map(ma);
 						double dx = gr4.point(0).x() - wp.x();
 						double dy = gr4.point(0).y() - wp.y();
-						moveWelded(dx, dy, i);
-						wInf.weldPoint = gr4.point(0);
-						weldList[i] = wInf;
+						if (dx != 0 || dy != 0)
+						{
+							moveWelded(dx, dy, i);
+							wInf.weldPoint = gr4.point(0);
+							weldList[i] = wInf;
+						}
 					}
 				}
 			}

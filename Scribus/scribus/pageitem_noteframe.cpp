@@ -10,12 +10,12 @@
 #include <cmath>
 
 PageItem_NoteFrame::PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
-    : PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
+	: PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
 {
 	m_nstyle = nStyle;
 	m_masterFrame = NULL;
 	itemText.clear();
-
+	
 	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
 	AutoName = false; //endnotes frame will saved with name
 	setUName(AnName);
@@ -38,10 +38,10 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, doub
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
-
+	
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
-
+	
 	if (m_nstyle->isAutoNotesHeight())
 		m_SizeVLocked = true;
 	else
@@ -59,7 +59,7 @@ PageItem_NoteFrame::PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, doub
 }
 
 PageItem_NoteFrame::PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
-    : PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
+	: PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
 {
 	m_nstyle = NULL;
 	m_masterFrame = NULL;
@@ -72,11 +72,11 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *
 {
 	m_nstyle = nStyle;
 	m_masterFrame = inFrame;
-
+	
 	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
 	AutoName = false;
 	setUName(AnName);
-
+	
 	//set default style for note frame
 	ParagraphStyle newStyle;
 	if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
@@ -104,10 +104,10 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *
 	oldRot = m_rotation;
 	oldXpos = m_xPos;
 	m_yPos = oldYpos =m_masterFrame->yPos() + m_masterFrame->height();
-
+	
 	textFlowModeVal = TextFlowUsesFrameShape;
 	setColumns(1);
-
+	
 	if (m_nstyle->isAutoWeldNotesFrames() && (m_masterFrame != NULL))
 	{
 		addWelded(m_masterFrame);
@@ -137,7 +137,7 @@ void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
 	if (master != NULL)
 		m_masterFrame = master;
 	itemText.clear();
-
+	
 	AnName = generateUniqueCopyName(m_nstyle->isEndNotes() ? "Endnote frame " + m_nstyle->name() : "Footnote frame " + m_nstyle->name(), false);
 	setUName(AnName);
 	
@@ -161,7 +161,7 @@ void PageItem_NoteFrame::setNS(NotesStyle *nStyle, PageItem_TextFrame* master)
 	itemText.blockSignals(true);
 	itemText.setDefaultStyle(newStyle);
 	itemText.blockSignals(false);
-
+	
 	if (m_nstyle->isAutoNotesHeight())
 		m_SizeVLocked = true;
 	else
@@ -186,19 +186,19 @@ void PageItem_NoteFrame::layout()
 		return;
 	if ((masterFrame() != NULL) && masterFrame()->invalid)
 		return;
-
+	
 	//while layouting notes frames undo should be disabled
 	UndoManager::instance()->setUndoEnabled(false);
-
+	
 	if (m_nstyle->isAutoNotesWidth() && (m_width != m_masterFrame->width()))
 	{
 		oldWidth = m_width = m_masterFrame->width();
 		updateClip();
 	}
-
+	
 	if ((m_Doc->appMode == modeEdit) && isSelected())
 		updateNotesText();
-
+	
 	PageItem_TextFrame::layout();
 	int oldH = m_height;
 	if (notesStyle()->isAutoNotesHeight())
@@ -260,14 +260,14 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 	}
 	mrk->setItemPtr(this);
 	mrk->setString(notesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
-
+	
 	StoryText story;
 	if (!note->saxedText().isEmpty())
 		story = desaxeString(m_Doc, note->saxedText());
 	story.insertMark(mrk, 0);
 	story.setDefaultStyle(itemText.defaultStyle());
 	story.applyCharStyle(0,1,note->getCharStyleNoteMark());
-//	story.applyCharStyle(0, story.length(), itemText.charStyle());
+	//	story.applyCharStyle(0, story.length(), itemText.charStyle());
 	if (itemText.length() > 0)
 		itemText.insertChars(itemText.length(), SpecialChars::PARSEP);
 	itemText.insert(itemText.length(), story);
@@ -280,7 +280,7 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> nList, bool clear)
 	UndoManager::instance()->setUndoEnabled(false);
 	m_Doc->setNotesChanged(true);
 	//itemText.blockSignals(true);
-
+	
 	if (clear)
 	{
 		itemText.selectAll();
@@ -316,7 +316,7 @@ void PageItem_NoteFrame::updateNotesText()
 	//read texts from notes frame and copy it to note`s data
 	if (l_notes.isEmpty() || (itemText.length() == 0))
 		return;
-
+	
 	int oldSelStart = itemText.startOfSelection();
 	int oldSelLen = itemText.lengthOfSelection();
 	int pos = 0;
@@ -326,33 +326,33 @@ void PageItem_NoteFrame::updateNotesText()
 	const CharStyle * lastNoteMarkCharStyle = NULL;
 	while (pos < itemText.length())
 	{
-        if (itemText.hasMark(pos))
+		if (itemText.hasMark(pos))
 		{
-            Mark* mark = itemText.mark(pos);
-            if  (mark->isType(MARKNoteFrameType))
-            {
-                if (prevMrk != NULL)
-                {
-                    note = prevMrk->getNotePtr();
-                    if (note != NULL)
-                    {
+			Mark* mark = itemText.mark(pos);
+			if  (mark->isType(MARKNoteFrameType))
+			{
+				if (prevMrk != NULL)
+				{
+					note = prevMrk->getNotePtr();
+					if (note != NULL)
+					{
 						note->setCharStyleNoteMark(*lastNoteMarkCharStyle);
-                        int offset = 0;
-                        if (itemText.text(pos-1) == SpecialChars::PARSEP)
-                            ++offset;
-                        int len = pos - startPos -offset;
-                        if (len <= 0)
-                            note->setSaxedText("");
-                        else
-                            note->setSaxedText(getItemTextSaxed(startPos, len));
-                        note->textLen = len;
-                        itemText.deselectAll();
-                    }
-                }
-                prevMrk = mark;
+						int offset = 0;
+						if (itemText.text(pos-1) == SpecialChars::PARSEP)
+							++offset;
+						int len = pos - startPos -offset;
+						if (len <= 0)
+							note->setSaxedText("");
+						else
+							note->setSaxedText(getItemTextSaxed(startPos, len));
+						note->textLen = len;
+						itemText.deselectAll();
+					}
+				}
+				prevMrk = mark;
 				lastNoteMarkCharStyle = &(itemText.charStyle(pos));
-                startPos = pos +1;
-            }
+				startPos = pos +1;
+			}
 		}
 		++pos;
 	}
@@ -420,10 +420,10 @@ int PageItem_NoteFrame::findNoteCpos(TextNote* note)
 		return -1;
 	for (int pos=0; pos < itemText.length(); ++pos)
 	{
-        Mark* mark = itemText.mark(pos);
-        if (itemText.hasMark(pos) && mark->isType(MARKNoteFrameType))
+		Mark* mark = itemText.mark(pos);
+		if (itemText.hasMark(pos) && mark->isType(MARKNoteFrameType))
 		{
-            if (mark->getNotePtr() == note)
+			if (mark->getNotePtr() == note)
 				return (pos);
 		}
 	}

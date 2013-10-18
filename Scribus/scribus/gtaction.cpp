@@ -353,7 +353,6 @@ void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 			if (story->text(pos -1) == SpecialChars::PARSEP)
 				story->removeChars(pos-1, 1);
 			note->setSaxedText(saxedText(*story));
-			StoryText story = desaxeString(it->m_Doc, note->saxedText());
 			note = NULL;
 			delete noteStory;
 			noteStory = NULL;
