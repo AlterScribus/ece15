@@ -1722,7 +1722,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 					currItem->layout();
 					keyrep=kr;
 				}
-//				slotDocCh();
+				slotDocCh();
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
