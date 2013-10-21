@@ -447,7 +447,7 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 			else
 				Cpfad = csm.paletteFileFromName(prefsManager->appPrefs.colorPrefs.DColorSet);
 			if (!Cpfad.isEmpty())
-				csm.loadPalette(Cpfad, m_doc, prefsManager->appPrefs.colorPrefs.DColors, prefsManager->appPrefs.defaultGradients, prefsManager->appPrefs.defaultPatterns, false);
+				csm.loadPalette(Cpfad, tmp_doc, prefsManager->appPrefs.colorPrefs.DColors, prefsManager->appPrefs.defaultGradients, prefsManager->appPrefs.defaultPatterns, false);
 		}
 	}
 	actionManager->setStartupActionsEnabled(false);

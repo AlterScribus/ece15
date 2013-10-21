@@ -2183,16 +2183,16 @@ Start:
 			maxYAsc = qMax(maxYAsc, (long) 0);
 			maxYDesc = current.yPos + realDesc;
 			
-			if (true||style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
-			{
-				regionMinY = static_cast<int>(floor(maxYAsc));
-				regionMaxY = static_cast<int>(floor(maxYDesc));
-			}
-			else // #11727, #11628, etc.
-			{
-				regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
-				regionMaxY = static_cast<int>(floor(current.yPos + desc));
-			}
+//			if (true||style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
+//			{
+//				regionMinY = static_cast<int>(floor(maxYAsc));
+//				regionMaxY = static_cast<int>(floor(maxYDesc));
+//			}
+//			else // #11727, #11628, etc.
+//			{
+//				regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
+//				regionMaxY = static_cast<int>(floor(current.yPos + desc));
+//			}
 			
 			if (current.itemsInLine == 0 && !current.afterOverflow)
 			{
@@ -2269,7 +2269,6 @@ Start:
 						maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
 						maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
 						maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
-						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), regionMinY));
 //						maxYAsc = current.yPos - realAsce;
 //						maxYDesc = current.yPos + realDesc;
 //						if (style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
@@ -2282,7 +2281,8 @@ Start:
 //							regionMinY = static_cast<int>(qMax(0.0, floor(current.yPos - (asce + offset))));
 //							regionMaxY = static_cast<int>(floor(current.yPos + desc));
 //						}
-//						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc1000));
+						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), maxYAsc1000));
+//						pt.moveTopLeft(QPoint(static_cast<int>(floor(current.xPos)), regionMinY));
 						done = false;
 					}
 					if (current.isEndOfCol(realDesc))
@@ -2691,7 +2691,7 @@ Start:
 						inOverflow = true;
 				}
 				else
-					setMaxY(regionMaxY);
+					setMaxY(maxYDesc);
 			}
 			
 			// hyphenation
@@ -3157,7 +3157,7 @@ Start:
 			goNextColumn = false;
 			
 			itemText.appendLine(current.line);
-			setMaxY(regionMaxY);
+			setMaxY(maxYDesc);
 			current.startOfCol = false;
 			
 			if (moveLinesFromPreviousFrame ()) {
@@ -3174,7 +3174,7 @@ NoRoom:
 	if (!isNoteFrame())
 	{
 		int pos = itemText.lastInFrame();
-		if (pos > 0 && pos < itemText.length());
+		if (pos > 0 && pos < itemText.length())
 			adjustParagraphEndings (pos, true);
 	}
 	
