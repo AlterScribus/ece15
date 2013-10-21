@@ -1,5 +1,6 @@
 #include "notesstyles.h"
 #include "marks.h"
+#include "util_text.h"
 
 void NotesStyle::setEndNotes(bool setendnotes)
 {

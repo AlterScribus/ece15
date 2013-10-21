@@ -119,7 +119,6 @@ public:
 	const QString saxedText() { return m_noteSaxedText; }
 	void setSaxedText(const QString string) { m_noteSaxedText = string; }
 	bool isEndNote() { return m_notesStyle->isEndNotes(); }
-	int textLen;
 
 	CharStyle getCharStyleNoteMark() const;
 	void setCharStyleNoteMark(const CharStyle &value);

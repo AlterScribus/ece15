@@ -52,7 +52,7 @@ int findParagraphStyle(ScribusDoc* doc, const QString &name)
 	return -1;
 }
 
-StoryText desaxeString(ScribusDoc* doc, QString saxedString)
+StoryText desaxeStoryFromString(ScribusDoc* doc, QString saxedString)
 {
 	assert(!saxedString.isEmpty());
 
@@ -72,7 +72,7 @@ StoryText desaxeString(ScribusDoc* doc, QString saxedString)
 	return res;
 }
 
-QString saxedText(StoryText const &story)
+QString saxedTextFromStory(StoryText const &story)
 {
 	std::ostringstream xmlString;
 	SaxXML xmlStream(xmlString);
