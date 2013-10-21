@@ -10412,7 +10412,7 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 	itemText.deselectAll();
 
 	//saxing text
-	return saxedText(it);
+	return saxedTextFromStory(it);
 }
 
 bool compareItemLevel(const PageItem* item1, const PageItem* item2)

@@ -55,6 +55,7 @@ for which a new license (GPL+exception) is in place.
 #include "undostate.h"
 #include "util.h"
 #include "util_math.h"
+#include "util_text.h"
 
 #include "ui/guidemanager.h"
 
@@ -4862,10 +4863,10 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 						{
 							TextNote* note = notes2DEL.at(ii).first;
 							Q_ASSERT(note != NULL);
-							if (note->textLen > 0)
+							if (!note->saxedText().isEmpty())
 							{
 								itemText.deselectAll();
-								itemText.select(notes2DEL.at(ii).second + 1, note->textLen);
+								itemText.select(notes2DEL.at(ii).second + 1, desaxeStoryFromString(m_Doc,note->saxedText()).length());
 								removeMarksFromText(true);
 							}
 						}

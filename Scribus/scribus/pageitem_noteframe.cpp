@@ -263,7 +263,7 @@ void PageItem_NoteFrame::insertNote(TextNote *note)
 	
 	StoryText story;
 	if (!note->saxedText().isEmpty())
-		story = desaxeString(m_Doc, note->saxedText());
+		story = desaxeStoryFromString(m_Doc, note->saxedText());
 	story.insertMark(mrk, 0);
 	story.setDefaultStyle(itemText.defaultStyle());
 	story.applyCharStyle(0,1,note->getCharStyleNoteMark());
@@ -345,7 +345,6 @@ void PageItem_NoteFrame::updateNotesText()
 							note->setSaxedText("");
 						else
 							note->setSaxedText(getItemTextSaxed(startPos, len));
-						note->textLen = len;
 						itemText.deselectAll();
 					}
 				}
@@ -361,15 +360,9 @@ void PageItem_NoteFrame::updateNotesText()
 		note = prevMrk->getNotePtr();
 		Q_ASSERT(note != NULL);
 		if (startPos != pos)
-		{
 			note->setSaxedText(getItemTextSaxed(startPos, pos - startPos));
-			note->textLen = pos - startPos;
-		}
 		else //empty note text (only note marker)
-		{
 			note->setSaxedText("");
-			note->textLen = 0;
-		}
 		note->setCharStyleNoteMark(*lastNoteMarkCharStyle);
 	}
 	if (oldSelLen > 0)
