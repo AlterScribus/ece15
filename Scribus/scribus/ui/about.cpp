@@ -112,8 +112,8 @@ About::About( QWidget* parent, AboutMode diaMode ) : QDialog( parent )
 	buildID = new QLabel( tab );
 	buildID->setAlignment(Qt::AlignCenter);
 	buildID->setTextInteractionFlags(Qt::TextSelectableByMouse);
-	QString BUILD_DAY = "03";
-	QString BUILD_MONTH = CommonStrings::september;
+	QString BUILD_DAY = "19";
+	QString BUILD_MONTH = CommonStrings::october;
 	QString BUILD_YEAR = "2013";
 	QString BUILD_TIME = "";
 	QString BUILD_TZ = "";
@@ -237,8 +237,10 @@ About::About( QWidget* parent, AboutMode diaMode ) : QDialog( parent )
 	else
 	{
 		QTextStream inTS(&licenceFile);
+		inTS.setAutoDetectUnicode(true);
+		inTS.setCodec("UTF-8");
 		QString licenceText = inTS.readAll();
-		textViewLicence->setSimpleText("<pre>"+licenceText+"</pre>");
+		textViewLicence->setSimpleText(licenceText);
 	} 
 	
 	//Add tab widget to about window
