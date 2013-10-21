@@ -323,7 +323,7 @@ void PropertyWidget_ParEffect::handleUpdateRequest(int updateFlags)
 		updateCharStyles();
 	if (updateFlags & reqStyleComboDocUpdate)
 		setDoc(m_doc ? m_doc : 0);
-	if (updateFlags & reqNumUpdate)
+	if (updateFlags & reqNumListViewUpdate)
 		fillNumerationsCombo();
 }
 
@@ -544,7 +544,6 @@ void PropertyWidget_ParEffect::handleChanges(PageItem *item, ParagraphStyle &new
 		Selection tempSelection(this, false);
 		tempSelection.addItem(item, true);
 		m_doc->itemSelection_ApplyParagraphStyle(newStyle, &tempSelection);
-		m_doc->updateNumbers();
 
 		connect(m_doc->m_Selection, SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
 //		connect(m_doc             , SIGNAL(docChanged())      , this, SLOT(handleSelectionChanged()));

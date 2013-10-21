@@ -2542,7 +2542,7 @@ double PageItem::layoutGlyphs(const CharStyle& style, const QString& chars, Glyp
 		if (chst & ScStyle_Superscript)
 		{
 			layout.scaleV = layout.scaleH = qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / style.fontSize());
-			retval = (style.fontSize() / 10.0) * ((m_Doc->typographicPrefs().valueSuperScript / 100.0) + (1.0 - layout.scaleV));
+			retval = (style.fontSize() / 10.0) * (m_Doc->typographicPrefs().valueSuperScript / 100.0);
 			layout.yoffset -= retval;
 		}
 		else if (chst & ScStyle_Subscript)
@@ -10211,9 +10211,12 @@ void PageItem::updateClip(bool updateWelded)
 						gr4.map(ma);
 						double dx = gr4.point(0).x() - wp.x();
 						double dy = gr4.point(0).y() - wp.y();
-						moveWelded(dx, dy, i);
-						wInf.weldPoint = gr4.point(0);
-						weldList[i] = wInf;
+						if (dx != 0 || dy != 0)
+						{
+							moveWelded(dx, dy, i);
+							wInf.weldPoint = gr4.point(0);
+							weldList[i] = wInf;
+						}
 					}
 				}
 			}

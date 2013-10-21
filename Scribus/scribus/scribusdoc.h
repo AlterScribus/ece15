@@ -1793,8 +1793,8 @@ public:
 	bool flag_Renumber;
 	bool flag_NumUpdateRequest;
 	// for local numeration of paragraphs
-	bool updateLocalNums(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
-	void updateNumbers(bool updateNumerations = false);
+	bool updateLocalListNumbers(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
+	bool updateListNumbers(bool updateNumerations = false);
 	void itemSelection_ClearBulNumStrings(Selection *customSelection);
 /* Functions for PDF Form Actions */
 

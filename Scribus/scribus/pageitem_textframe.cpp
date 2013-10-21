@@ -1361,8 +1361,9 @@ void PageItem_TextFrame::layout()
 	}
 	if (invalid && BackBox == NULL)
 		firstChar = 0;
-	
-	//	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
+
+//	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
+Start:
 	QPoint pt1, pt2;
 	QRect pt;
 	double chs, chsd = 0;
@@ -1550,7 +1551,7 @@ void PageItem_TextFrame::layout()
 		bool inOverflow = false;
 		double autoLeftIndent = 0.0;
 		bool growKerning = false;
-		
+
 		for (int a = firstInFrame(); a < itLen; ++a)
 		{
 			if (startColumn == -1)  //for widows/orphans checking
@@ -1627,14 +1628,14 @@ void PageItem_TextFrame::layout()
 				}
 			}
 			BulNumMode = false;
-			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP)
+			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP || itemText.hasMarkType(a-1,MARKNoteFrameType))
 			{
 				autoLeftIndent = 0.0;
 				style = itemText.paragraphStyle(a);
-				if (style.hasBullet() || style.hasNum())
+				if (style.hasBullet() || style.hasNum()) 
 				{
 					BulNumMode = true;
-					if (mark == NULL || !mark->isType(MARKBullNumType))
+					if (mark == NULL ||	!(mark->isType(MARKBullNumType) || mark->isType(MARKNoteFrameType)))
 					{
 						BulNumMark* bnMark = new BulNumMark();
 						itemText.insertMark(bnMark,a);
@@ -1715,12 +1716,10 @@ void PageItem_TextFrame::layout()
 					offset += font.ascent(charStyle.fontSize()/10.0) * (m_Doc->typographicPrefs().valueSuperScript / 100.0);
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSuperScript / 100.0, 10.0 / charStyle.fontSize());
-					offset += charStyle.fontSize()/10.0 * ((m_Doc->typographicPrefs().valueSuperScript / 100.0) + (1.0-scaleV));
 				}
 				else if (chst & ScStyle_Subscript)
 				{
 					offset -= font.ascent(charStyle.fontSize()/10.0) * (m_Doc->typographicPrefs().valueSubScript / 100.0);
-//					offset -= (charStyle.fontSize()/10.0) * m_Doc->typographicPrefs().valueSubScript / 100.0;
 					scaleV *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 					scaleH *= qMax(m_Doc->typographicPrefs().scalingSubScript / 100.0, 10.0 / charStyle.fontSize());
 				}
@@ -3198,7 +3197,10 @@ NoRoom:
 		itemText.blockSignals(false);
 		return;
 	}
-	if (NextBox != NULL) 
+		updateAllMyMarks(noteMarksPosMap);
+	if (invalid)
+		goto Start;
+	if (NextBox != NULL)
 	{
 		PageItem_TextFrame * nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
 		nextFrame->invalid = true;
@@ -5101,7 +5103,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		//delete text
 		for (int i=start; i <= stop; ++i)
 		{
-			Mark* mark = i < itemText.length() && itemText.hasMark(i)? itemText.mark(i) : NULL;
+			Mark* mark =( i < itemText.length() && itemText.hasMark(i))? itemText.mark(i) : NULL;
 			const CharStyle& curParent = itemText.charStyle(i);
 			if (i==stop || !curParent.equiv(lastParent) || (mark!=NULL && mark->isType(MARKNoteFrameType)))
 			{
@@ -6084,6 +6086,99 @@ TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(bool onlySelection)
 	return noteFromSelectedNoteMark(dummy, onlySelection);
 }
 
+void PageItem_TextFrame::updateAllMyMarks(QMap<int, Mark*> notesMarksPositions)
+{
+	UndoManager::instance()->setUndoEnabled(false);
+	NotesInFrameMap notesMap = updateNotesFrames(notesMarksPositions);
+	if (notesMap != m_notesFramesMap || m_Doc->flag_layoutNotesFrames || m_Doc->flag_Renumber)
+	{
+		updateNotesMarks(notesMap);
+		if (m_Doc->flag_Renumber)
+			m_Doc->updateListNumbers();
+		if (m_Doc->flag_layoutNotesFrames)
+			notesFramesLayout();
+	}
+	UndoManager::instance()->setUndoEnabled(true);
+}
+
+void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
+{
+	bool docWasChanged = false;
+
+//	QList<PageItem_NoteFrame*> curr_footNotesList;
+//	QList<PageItem_NoteFrame*> old_footNotesList;
+//	QList<PageItem_NoteFrame*> curr_endNotesList;
+//	QList<PageItem_NoteFrame*> old_endNotesList;
+
+
+//	foreach(PageItem_NoteFrame* nF, notesMap.keys())
+//	{
+//		if (nF->isEndNotesFrame())
+//			curr_endNotesList.append(nF);
+//		else if (!notesMap.value(nF).isEmpty())
+//			curr_footNotesList.append(nF);
+//	}
+//	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+//	{
+//		if (nF->isEndNotesFrame())
+//			old_endNotesList.append(nF);
+//		else
+//			old_footNotesList.append(nF);
+//	}
+//	//check for endnotes marks change in current frame
+//	foreach (PageItem_NoteFrame* nF, old_endNotesList)
+//	{
+//		if (nF->deleteIt)
+//		{
+//			m_Doc->delNoteFrame(nF,true);
+//			docWasChanged = true;
+//		}
+//		else if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
+//		{
+//			m_Doc->endNoteFrameChanged(nF);
+//			docWasChanged = true;
+//		}
+//	}
+	//check if some notes frames are not used anymore
+	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+	{
+		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
+		{
+			m_Doc->delNoteFrame(nF,true);
+			docWasChanged = true;
+		}
+		else
+		{
+			QList<TextNote*> nList = notesMap.value(nF);
+			if (nList != nF->notesList() || m_Doc->notesChanged())
+			{
+				nF->updateNotes(nList, (!nF->isEndNotesFrame() && !nF->notesList().isEmpty()));
+				docWasChanged = true;
+			}
+		}
+	}
+	if (m_notesFramesMap != notesMap)
+	{
+		docWasChanged = true;
+		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+		{
+			if (notesMap.contains(nF))
+			{
+				m_notesFramesMap.insert(nF, notesMap.value(nF));
+				notesMap.remove(nF);
+			}
+			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
+				m_notesFramesMap.remove(nF);
+		}
+		m_notesFramesMap.unite(notesMap);
+	}
+	if (docWasChanged)
+	{
+		m_Doc->flag_restartMarksRenumbering = true;
+		m_Doc->setNotesChanged(true);
+	}
+}
+
 NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarksPosMap)
 {
 	NotesInFrameMap notesMap; //= m_notesFramesMap;
@@ -6185,84 +6280,6 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarks
 	return notesMap;
 }
 
-void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
-{
-	bool docWasChanged = false;
-	
-	//	QList<PageItem_NoteFrame*> curr_footNotesList;
-	//	QList<PageItem_NoteFrame*> old_footNotesList;
-	//	QList<PageItem_NoteFrame*> curr_endNotesList;
-	//	QList<PageItem_NoteFrame*> old_endNotesList;
-	
-	
-	//	foreach(PageItem_NoteFrame* nF, notesMap.keys())
-	//	{
-	//		if (nF->isEndNotesFrame())
-	//			curr_endNotesList.append(nF);
-	//		else if (!notesMap.value(nF).isEmpty())
-	//			curr_footNotesList.append(nF);
-	//	}
-	//	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-	//	{
-	//		if (nF->isEndNotesFrame())
-	//			old_endNotesList.append(nF);
-	//		else
-	//			old_footNotesList.append(nF);
-	//	}
-	//	//check for endnotes marks change in current frame
-	//	foreach (PageItem_NoteFrame* nF, old_endNotesList)
-	//	{
-	//		if (nF->deleteIt)
-	//		{
-	//			m_Doc->delNoteFrame(nF,true);
-	//			docWasChanged = true;
-	//		}
-	//		else if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
-	//		{
-	//			m_Doc->endNoteFrameChanged(nF);
-	//			docWasChanged = true;
-	//		}
-	//	}
-	//check if some notes frames are not used anymore
-	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-	{
-		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
-		{
-			m_Doc->delNoteFrame(nF,true);
-			docWasChanged = true;
-		}
-		else
-		{
-			QList<TextNote*> nList = notesMap.value(nF);
-			if (nList != nF->notesList() || m_Doc->notesChanged())
-			{
-				nF->updateNotes(nList, (!nF->isEndNotesFrame() && !nF->notesList().isEmpty()));
-				docWasChanged = true;
-			}
-		}
-	}
-	if (m_notesFramesMap != notesMap)
-	{
-		docWasChanged = true;
-		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-		{
-			if (notesMap.contains(nF))
-			{
-				m_notesFramesMap.insert(nF, notesMap.value(nF));
-				notesMap.remove(nF);
-			}
-			else if (nF->isAutoNoteFrame() || nF->isEndNotesFrame())
-				m_notesFramesMap.remove(nF);
-		}
-		m_notesFramesMap.unite(notesMap);
-	}
-	if (docWasChanged)
-	{
-		m_Doc->flag_restartMarksRenumbering = true;
-		m_Doc->setNotesChanged(true);
-	}
-}
-
 void PageItem_TextFrame::notesFramesLayout()
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
@@ -6273,7 +6290,7 @@ void PageItem_TextFrame::notesFramesLayout()
 			continue;
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
-		nF->update();
+		nF->layout();
 	}
 }
 
@@ -6294,7 +6311,20 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 			++num;
 		}
 	}
-	
+	//remove lists property from paragraph style
+	for (int i = itemText.startOfSelection(); i < itemText.endOfSelection(); ++i)
+	{
+		if (itemText.hasMarkType(i,MARKBullNumType))
+		{
+			if (itemText.paragraphStyle(i).hasNum())
+				m_Doc->flag_Renumber = true;
+			ParagraphStyle newStyle;
+			newStyle.setHasBullet(false);
+			newStyle.setHasNum(false);
+			itemText.applyStyle(i,newStyle);
+		}
+		i = itemText.nextParagraph(i);
+	}
 	Mark* mrk = selectedMark(true);
 	while (mrk != NULL)
 	{

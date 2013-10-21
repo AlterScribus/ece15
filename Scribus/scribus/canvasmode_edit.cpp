@@ -112,10 +112,10 @@ void CanvasMode_Edit::keyPressEvent(QKeyEvent *e)
 				case Qt::Key_Home:
 				case Qt::Key_End:
 					m_longCursorTime=true;
-					break;
+				break;
 				default:
 					m_longCursorTime=false;
-					break;
+				break;
 			}
 			blinkTextCursor();
 		}
@@ -195,8 +195,8 @@ void CanvasMode_Edit::drawControls(QPainter* p)
 void CanvasMode_Edit::drawTextCursor ( QPainter *p, PageItem_TextFrame* textframe )
 {
 	if ((!m_longCursorTime && m_blinkTime.elapsed() > qApp->cursorFlashTime() / 2 ) ||
-		(m_longCursorTime && m_blinkTime.elapsed() > qApp->cursorFlashTime() )
-		)
+			(m_longCursorTime && m_blinkTime.elapsed() > qApp->cursorFlashTime() )
+			)
 	{
 		m_cursorVisible = !m_cursorVisible;
 		m_blinkTime.restart();
@@ -277,7 +277,7 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 		//CB if annotation, open the annotation dialog
 		if (currItem->isAnnotation())
 		{
-		//	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
+			//	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
 			m_view->requestMode(submodeAnnotProps);
 		}
 		//otherwise, select between the whitespace
@@ -286,7 +286,7 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 			if (m->modifiers() & Qt::ControlModifier)
 			{
 				int start=0, stop=0;
-
+				
 				if (m->modifiers() & Qt::ShiftModifier)
 				{//Double click with Ctrl+Shift in a frame to select few paragraphs
 					int currCp = currItem->itemText.cursorPosition();
@@ -311,7 +311,7 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 				currItem->itemText.extendSelection(start, stop);
 				currItem->itemText.setCursorPosition(stop);
 			}
-            else if ((currItem->itemText.cursorPosition() < currItem->itemText.length()) && (currItem->itemText.hasMark(currItem->itemText.cursorPosition())))
+			else if ((currItem->itemText.cursorPosition() < currItem->itemText.length()) && (currItem->itemText.hasMark(currItem->itemText.cursorPosition())))
 			{	//invoke edit marker dialog
 				m_ScMW->slotEditMark();
 				return;
@@ -345,8 +345,8 @@ void CanvasMode_Edit::mouseDoubleClickEvent(QMouseEvent *m)
 
 void CanvasMode_Edit::mouseMoveEvent(QMouseEvent *m)
 {
-// 	const double mouseX = m->globalX();
-// 	const double mouseY = m->globalY();
+	// 	const double mouseX = m->globalX();
+	// 	const double mouseY = m->globalY();
 	const FPoint mousePointDoc = m_canvas->globalToCanvas(m->globalPos());
 	
 	m_lastPosWasOverGuide = false;
@@ -418,7 +418,7 @@ void CanvasMode_Edit::mouseMoveEvent(QMouseEvent *m)
 					m_ScMW->EnableTxEdit();
 					m_canvas->m_viewMode.operTextSelecting = true;
 					if((refStartSel != currItem->asTextFrame()->itemText.startOfSelection())
-						|| (refEndSel != currItem->asTextFrame()->itemText.endOfSelection()))
+							|| (refEndSel != currItem->asTextFrame()->itemText.endOfSelection()))
 					{
 						QRectF br(currItem->getBoundingRect());
 						m_canvas->update(QRectF(m_canvas->canvasToLocal(br.topLeft()), br.size() * m_canvas->scale()).toRect());
@@ -426,7 +426,7 @@ void CanvasMode_Edit::mouseMoveEvent(QMouseEvent *m)
 				}
 				else
 					m_ScMW->DisableTxEdit();
-
+				
 			}
 		}
 		if (!m_canvas->m_viewMode.m_MouseButtonPressed)
@@ -459,7 +459,7 @@ void CanvasMode_Edit::mouseMoveEvent(QMouseEvent *m)
 				}
 				else
 				{
-// 					setModeCursor();
+					// 					setModeCursor();
 					m_view->setCursor(QCursor(Qt::ArrowCursor));
 				}
 			}
@@ -498,10 +498,10 @@ void CanvasMode_Edit::mousePressEvent(QMouseEvent *m)
 				ss->set("ETEA",QString(""));
 		}
 	}
-// 	const double mouseX = m->globalX();
-// 	const double mouseY = m->globalY();
+	// 	const double mouseX = m->globalX();
+	// 	const double mouseY = m->globalY();
 	const FPoint mousePointDoc = m_canvas->globalToCanvas(m->globalPos());
-
+	
 	bool inText;
 	PageItem *currItem;
 	m_canvas->PaintSizeRect(QRect());
@@ -512,13 +512,13 @@ void CanvasMode_Edit::mousePressEvent(QMouseEvent *m)
 	m_view->HaveSelRect = false;
 	m_doc->DragP = false;
 	m_doc->leaveDrag = false;
-//	oldClip = 0;
+	//	oldClip = 0;
 	m->accept();
 	m_view->registerMousePress(m->globalPos());
 	Mxp = mousePointDoc.x(); //qRound(m->x()/m_canvas->scale() + 0*m_doc->minCanvasCoordinate.x());
 	Myp = mousePointDoc.y(); //qRound(m->y()/m_canvas->scale() + 0*m_doc->minCanvasCoordinate.y());
-// 	QRect mpo(m->x()-m_doc->guidesPrefs().grabRad, m->y()-m_doc->guidesPrefs().grabRad, m_doc->guidesPrefs().grabRad*2, m_doc->guidesPrefs().grabRad*2);
-//	mpo.moveBy(qRound(m_doc->minCanvasCoordinate.x() * m_canvas->scale()), qRound(m_doc->minCanvasCoordinate.y() * m_canvas->scale()));
+	// 	QRect mpo(m->x()-m_doc->guidesPrefs().grabRad, m->y()-m_doc->guidesPrefs().grabRad, m_doc->guidesPrefs().grabRad*2, m_doc->guidesPrefs().grabRad*2);
+	//	mpo.moveBy(qRound(m_doc->minCanvasCoordinate.x() * m_canvas->scale()), qRound(m_doc->minCanvasCoordinate.y() * m_canvas->scale()));
 	SeRx = Mxp;
 	SeRy = Myp;
 	if (m->button() == Qt::MidButton)
@@ -528,12 +528,12 @@ void CanvasMode_Edit::mousePressEvent(QMouseEvent *m)
 			m_view->DrawNew();
 		return;
 	}
-
+	
 	frameResizeHandle = 0;
 	int oldP=0;
 	if (GetItem(&currItem))
 	{
-//		m_view->slotDoCurs(false);
+		//		m_view->slotDoCurs(false);
 		if ((!currItem->locked() || currItem->isTextFrame()) && !currItem->asLine())
 		{
 			FPoint canvasPoint = m_canvas->globalToCanvas(m->globalPos());
@@ -583,7 +583,7 @@ void CanvasMode_Edit::mousePressEvent(QMouseEvent *m)
 				m_view->requestMode(modeNormal);
 				return;
 			}
-
+			
 			if (m->button() != Qt::RightButton)
 			{
 				//currItem->asTextFrame()->deselectAll();
@@ -686,14 +686,14 @@ void CanvasMode_Edit::mousePressEvent(QMouseEvent *m)
 void CanvasMode_Edit::mouseReleaseEvent(QMouseEvent *m)
 {
 #ifdef GESTURE_FRAME_PREVIEW
-        clearPixmapCache();
+	clearPixmapCache();
 #endif // GESTURE_FRAME_PREVIEW
 	const FPoint mousePointDoc = m_canvas->globalToCanvas(m->globalPos());
 	PageItem *currItem;
 	m_canvas->m_viewMode.m_MouseButtonPressed = false;
 	m_canvas->resetRenderMode();
 	m->accept();
-//	m_view->stopDragTimer();
+	//	m_view->stopDragTimer();
 	if ((GetItem(&currItem)) && (m->button() == Qt::RightButton) && (!m_doc->DragP))
 	{
 		createContextMenu(currItem, mousePointDoc.x(), mousePointDoc.y());
@@ -701,7 +701,7 @@ void CanvasMode_Edit::mouseReleaseEvent(QMouseEvent *m)
 	}
 	if (m_view->moveTimerElapsed() && (GetItem(&currItem)))
 	{
-//		m_view->stopDragTimer();
+		//		m_view->stopDragTimer();
 		m_canvas->setRenderModeUseBuffer(false);
 		if (!m_doc->m_Selection->isMultipleSelection())
 		{
@@ -916,9 +916,9 @@ bool CanvasMode_Edit::SeleItem(QMouseEvent *m)
 	int MxpS = static_cast<int>(mousePointDoc.x()); //m->x()/m_canvas->scale() + 0*m_doc->minCanvasCoordinate.x());
 	int MypS = static_cast<int>(mousePointDoc.y()); //m->y()/m_canvas->scale() + 0*m_doc->minCanvasCoordinate.y());
 	mpo = QRectF(Mxp-grabRadius, Myp-grabRadius, grabRadius*2, grabRadius*2);
-//	mpo.translate(m_doc->minCanvasCoordinate.x() * m_canvas->scale(), m_doc->minCanvasCoordinate.y() * m_canvas->scale());
+	//	mpo.translate(m_doc->minCanvasCoordinate.x() * m_canvas->scale(), m_doc->minCanvasCoordinate.y() * m_canvas->scale());
 	m_doc->nodeEdit.deselect();
-// 	int a;
+	// 	int a;
 	if (!m_doc->masterPageMode())
 	{
 		int pgNum = -1;

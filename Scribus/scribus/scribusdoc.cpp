@@ -306,6 +306,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	numS->m_counters.insert(0, 0);
 	numS->m_lastlevel = -1;
 	numerations.insert("default", numS);
+	
 	currentEditedTextframe = NULL;
 }
 
@@ -1953,7 +1954,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 				NS->setMarksCharStyle(ss->get("marksChStyle"));
 				NS->setNotesParStyle(ss->get("notesParStyle"));
 				m_docNotesStylesList.append(NS);
-				scMW()->emitUpdateRequest(reqMarksUpdate);
+				scMW()->emitUpdateRequest(reqMarksListViewUpdate);
 			}
 			else if (ss->get("NSTYLE") == "edit")
 			{
@@ -2373,7 +2374,7 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 						qDebug() << "MARK redo - unhandled " << is->get("MARK");
 					}
 				}
-				scMW()->emitUpdateRequest(reqMarksUpdate);
+				scMW()->emitUpdateRequest(reqMarksListViewUpdate);
 				if (currItem != NULL && !isAutoNoteFrame)
 				{
 					currItem->invalidateLayout();
@@ -4660,7 +4661,7 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 					pageNumberText=SpecialChars::ZWNBSPACE;
 				else if (lc!=0) //If not on a master page just get the page number for the page and the text
 				{
-					//						pageNumberText=getSectionPageNumberForPageIndex(it->OwnPage);
+					//					pageNumberText=getSectionPageNumberForPageIndex(it->OwnPage);
 					pageNumberText = QString("%1").arg(getSectionPageNumberForPageIndex(it->OwnPage),
 													   getSectionPageNumberWidthForPageIndex(it->OwnPage),
 													   getSectionPageNumberFillCharForPageIndex(it->OwnPage));
@@ -9868,6 +9869,7 @@ void ScribusDoc::itemSelection_EraseCharStyle(Selection* customSelection)
 				else
 				{
 					start = qMax(currItem->firstInFrame(), currItem->itemText.cursorPosition());
+					//9876					length = (start + 1) < currItem->itemText.length()? 1 : 0;
 					length = start < currItem->itemText.length() ? 1 : 0;
 				}
 			}
@@ -14638,7 +14640,7 @@ bool ScribusDoc::SizeItem(double newX, double newY, PageItem *pi, bool fromMP, b
 		if (currItem->FrameType != 0 && !currItem->asLine())
 		{
 			currItem->updateClip();
-			//		currItem->updateGradientVectors();
+			//			currItem->updateGradientVectors();
 		}
 		
 		if (activeTransaction)
@@ -17302,7 +17304,7 @@ void ScribusDoc::setNumerationCounter(QString numName, int level, int number)
 		numS->m_counters.replace(level, number);
 }
 
-bool ScribusDoc::updateLocalNums(StoryText& itemText)
+bool ScribusDoc::updateLocalListNumbers(StoryText& itemText)
 {
 	QList<Numeration> m_nums;
 	QList<int> m_counters;
@@ -17375,7 +17377,8 @@ bool ScribusDoc::updateLocalNums(StoryText& itemText)
 	return needUpdate;
 }
 
-void ScribusDoc::updateNumbers(bool updateNumerations)
+//returns if doc was changed
+bool ScribusDoc::updateListNumbers(bool updateNumerations)
 {
 	if (updateNumerations)
 		//after styles change reset all numerations settings
@@ -17500,7 +17503,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 		if (item->itemText.length() > 0)
 		{
 			PageItem* itemFirst = item->firstInChain();
-			if (updateLocalNums(itemFirst->itemText))
+			if (updateLocalListNumbers(itemFirst->itemText))
 			{
 				if (itemFirst->isTextFrame())
 					itemFirst->asTextFrame()->invalidateLayout(true);
@@ -17509,9 +17512,7 @@ void ScribusDoc::updateNumbers(bool updateNumerations)
 			}
 		}
 	}
-	if (flag_layoutNotesFrames)
-		changed();
-//		regionsChanged()->update(QRect());
+	return (flag_Renumber);
 }
 
 QStringList ScribusDoc::marksLabelsList(MarkType type)
@@ -18060,7 +18061,7 @@ void ScribusDoc::deleteNotesStyle(QString nsName)
 		flag_updateEndNotes = true;
 	notesFramesUpdate();
 	m_docNotesStylesList.removeOne(NS);
-	scMW()->emitUpdateRequest(reqMarksUpdate);
+	scMW()->emitUpdateRequest(reqMarksListViewUpdate);
 	delete NS;
 }
 
@@ -18118,8 +18119,6 @@ void ScribusDoc::deleteNote(TextNote* note)
 		else
 			nF->invalid = true;
 	}
-	//	else
-	//		master->asTextFrame()->setNoteFrame(nF);
 	if (note->masterMark() != NULL)
 		eraseMark(note->masterMark(), true, master);
 	if (note->noteMark() != NULL)
@@ -18137,7 +18136,7 @@ void ScribusDoc::setUndoDelNote(TextNote *note)
 	{
 		ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
 		ims->set("DELETE_NOTE", QString("delete_note"));
-		//		ims->set("ETEA", note->masterMark()->label);
+		ims->set("ETEA", note->masterMark()->label);
 		PageItem* master = note->masterMark()->getItemPtr();
 		int pos = findMarkCPos(note->masterMark(), master);
 		Q_ASSERT(pos > -1);
@@ -18156,6 +18155,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, NotesStyle* nSty
 {
 	//update marks strings in master text and in notes frame (only numbers!)
 	//check if notes schould be added or removed from notes frame
+	//in num parameter returns last note number in current frame
 	int noteNum = num;
 	int index = 0;
 	bool doUpdate = false;

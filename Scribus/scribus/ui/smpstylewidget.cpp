@@ -1508,6 +1508,6 @@ void SMPStyleWidget::on_bulletCharTableButton_toggled(bool checked)
 
 void SMPStyleWidget::handleUpdateRequest(int updateFlags)
 {
-	if (updateFlags & reqNumUpdate)
+	if (updateFlags & reqNumListViewUpdate)
 		fillNumerationsCombo();
 }

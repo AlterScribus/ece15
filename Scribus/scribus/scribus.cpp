@@ -1732,7 +1732,7 @@ void ScribusMainWindow::keyPressEvent(QKeyEvent *k)
 						currItem->update();
 					keyrep=kr;
 				}
-//				slotDocCh();
+				slotDocCh();
 				doc->regionsChanged()->update(QRectF());
 			}
 		}
@@ -3491,31 +3491,29 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		Q_ASSERT(plugin); // all the returned names should represent loaded plugins
 		plugin->changedDoc(doc);
 	}
-	if (doc->flag_NumUpdateRequest)
+	bool updateEnd;
+	do
 	{
-		doc->setupNumerations();
-		emit UpdateRequest(reqNumUpdate);
-	}
-	while (doc->flag_Renumber)
-	{
-		doc->updateNumbers();
-		if (!doc->flag_Renumber)
-			doc->regionsChanged()->update(QRect());
-	}
-	if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
-	{
-		bool sendUpdateReqest = false;
-		if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
-			sendUpdateReqest = true;
-		m_marksCount = doc->marksList().count();
-		doc->updateMarks(doc->notesChanged());
-		doc->updateChangedEndNotesFrames();
-		if (sendUpdateReqest)
-			emit UpdateRequest(reqMarksUpdate);
-		doc->setNotesChanged(false);
-		doc->flag_updateEndNotes = false;
-		doc->flag_updateMarksLabels = false;
-	}
+		updateEnd = true;
+		if (doc->flag_NumUpdateRequest)
+		{
+			doc->setupNumerations();
+			emit UpdateRequest(reqNumListViewUpdate);
+		}
+		while (doc->flag_Renumber)
+			updateEnd = doc->updateListNumbers();
+		if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+		{
+			if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
+				emit UpdateRequest(reqMarksListViewUpdate);
+			m_marksCount = doc->marksList().count();
+			updateEnd = updateEnd && doc->updateMarks(doc->notesChanged());
+			doc->updateChangedEndNotesFrames();
+			doc->setNotesChanged(false);
+			doc->flag_updateEndNotes = false;
+			doc->flag_updateMarksLabels = false;
+		}
+	} while (!updateEnd);
 }
 
 void ScribusMainWindow::updateRecent(QString fn)
@@ -4379,7 +4377,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			Apply_MasterPage(doc->DocPages.at(p)->MPageNam, p, false);
 		}
 		view->reformPages(false);
-		doc->updateNumbers(false);
+		doc->updateListNumbers(false);
+		doc->updateMarks(doc->notesChanged());
 		checkExternals();
 		mainWindowStatusLabel->setText( tr("Ready"));
 		doc->setLoading(false);
@@ -10117,11 +10116,13 @@ void ScribusMainWindow::updateDocument()
 {
 	if (HaveDoc)
 	{
-		doc->updateNumbers(true);
-		doc->updateMarks(true);
+		doc->updateListNumbers(true);
+		if (doc->updateMarks(true) || doc->flag_layoutNotesFrames || doc->flag_Renumber || doc->flag_restartMarksRenumbering || doc->flag_updateEndNotes)
+		{
+			slotDocCh();
+			doc->regionsChanged()->update(QRect());
+		}
 		generateTableOfContents();
-		doc->regionsChanged()->update(QRect());
-		emit UpdateRequest(reqNumUpdate);
 	}
 }
 
@@ -11596,7 +11597,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					{
 						getUniqueName(label,doc->marksLabelsList(mrk->getType()), "_"); //FIX ME here user should be warned that inserted mark`s label was changed
 						mrk->label = label;
-						emit UpdateRequest(reqMarksUpdate);
+						emit UpdateRequest(reqMarksListViewUpdate);
 					}
 					if (text != oldStr)
 					{
