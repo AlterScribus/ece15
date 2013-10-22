@@ -146,8 +146,8 @@ public:
 
 	bool hasObject(ScribusDoc *doc) const;
 	//returns true if given MRK is found, if MRK is NULL then any mark returns true
-	bool hasMark(Mark * MRK = NULL) const;
-	bool hasMarkType(MarkType mt);
+	bool hasMark(const Mark * const mrk = NULL) const;
+	bool hasMarkType(MarkType mt) const;
 	QList<PageItem*> getGroupedItems(ScribusDoc *doc);
 	PageItem* getItem(ScribusDoc *doc);
 private:

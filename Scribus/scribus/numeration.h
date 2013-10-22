@@ -30,7 +30,7 @@ class Numeration
 public:
 	Numeration() : numFormat(Type_1_2_3), asterix(QString()), lead('0'), len(0), range(NSRdocument), prefix(QString()), suffix(QString()), start(1) {}
 	Numeration(NumFormat f) : numFormat(f), asterix("*") {}
-	const QString numString(const int num);
+	const QString numString(const int num) const;
 
 	NumFormat numFormat;
 	QString asterix;

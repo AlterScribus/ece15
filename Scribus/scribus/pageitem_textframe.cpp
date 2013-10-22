@@ -1579,7 +1579,11 @@ Start:
 				}
 			}
 			BulNumMode = false;
-			if (a==0 || itemText.text(a-1) == SpecialChars::PARSEP || itemText.hasMarkType(a-1,MARKNoteFrameType))
+			if (isNoteFrame())
+				qDebug();
+			if ((a==0 || itemText.text(a-1) == SpecialChars::PARSEP || itemText.hasMarkType(a-1,MARKNoteFrameType)) 
+					//list number or bullet after note number, not before
+					&& !(mark && mark->isType(MARKNoteFrameType)))
 			{
 				autoLeftIndent = 0.0;
 				style = itemText.paragraphStyle(a);
@@ -1608,6 +1612,7 @@ Start:
 			}
 			if (!BulNumMode && mark && mark->isType(MARKBullNumType))
 			{
+				delete (BulNumMark*) mark;
 				itemText.removeChars(a,1);
 				a--;
 				itLen = itemText.length();
@@ -3072,7 +3077,7 @@ Start:
 	MaxChars = itemText.length();
 	invalid = false;
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-		updateAllMyMarks(noteMarksPosMap);
+		updateAllMyNotes(noteMarksPosMap);
 	if (invalid)
 		goto Start;
 	if (NextBox != NULL)
@@ -3091,7 +3096,7 @@ NoRoom:
 	adjustParagraphEndings ();
 
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-		updateAllMyMarks(noteMarksPosMap);
+		updateAllMyNotes(noteMarksPosMap);
 	if (invalid)
 		goto Start;
 
@@ -5619,12 +5624,12 @@ QString PageItem_TextFrame::infoDescription()
 	return QString();
 }
 
-bool PageItem_TextFrame::hasNoteMark(NotesStyle *NS)
+bool PageItem_TextFrame::hasNoteMark(const NotesStyle* const nStyle)
 {
 	if (isNoteFrame())
-		return (asNoteFrame()->notesStyle() == NS);
+		return (asNoteFrame()->getNotesStyle() == nStyle);
 
-	if (NS == NULL)
+	if (nStyle == NULL)
 	{
 		//find any mark
 		if (!m_notesFramesMap.isEmpty())
@@ -5640,7 +5645,7 @@ bool PageItem_TextFrame::hasNoteMark(NotesStyle *NS)
 			if (itemText.hasMark(pos))
 			{
 				TextNote* note = itemText.mark(pos)->getNotePtr();
-				if (note != NULL && (note->notesStyle() == NS))
+				if (note != NULL && (note->notesStyle() == nStyle))
 					return true;
 			}
 		}
@@ -5648,13 +5653,13 @@ bool PageItem_TextFrame::hasNoteMark(NotesStyle *NS)
 	return false;
 }
 
-bool PageItem_TextFrame::hasNoteFrame(NotesStyle *NS, bool inChain)
+bool PageItem_TextFrame::hasNoteFrame(const NotesStyle* const nStyle, bool inChain)
 {
 	if (isNoteFrame())
 		return false;
 	if (m_notesFramesMap.isEmpty())
 		return false;
-	if (NS == NULL)
+	if (nStyle == NULL)
 	{ //check if any notes are in frame or whole chain
 		if (!inChain)
 			return !m_notesFramesMap.isEmpty();
@@ -5680,7 +5685,7 @@ bool PageItem_TextFrame::hasNoteFrame(NotesStyle *NS, bool inChain)
 		QMap<PageItem_NoteFrame*, QList<TextNote*> >::iterator end = m_notesFramesMap.end();
 		while (it != end)
 		{
-			if (it.key()->notesStyle() == NS)
+			if (it.key()->getNotesStyle() == nStyle)
 				return true;
 			++it;
 		}
@@ -5802,7 +5807,7 @@ TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(bool onlySelection)
 	return noteFromSelectedNoteMark(dummy, onlySelection);
 }
 
-void PageItem_TextFrame::updateAllMyMarks(QMap<int, Mark*> notesMarksPositions)
+void PageItem_TextFrame::updateAllMyNotes(QMap<int, Mark*> &notesMarksPositions)
 {
 	UndoManager::instance()->setUndoEnabled(false);
 	NotesInFrameMap notesMap = updateNotesFrames(notesMarksPositions);
@@ -5817,7 +5822,7 @@ void PageItem_TextFrame::updateAllMyMarks(QMap<int, Mark*> notesMarksPositions)
 	UndoManager::instance()->setUndoEnabled(true);
 }
 
-void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
+void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 {
 	bool docWasChanged = false;
 
@@ -5895,7 +5900,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap notesMap)
 	}
 }
 
-NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> noteMarksPosMap)
+NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMarksPosMap)
 {
 	NotesInFrameMap notesMap; //= m_notesFramesMap;
 	QMap<int, Mark*>::Iterator it = noteMarksPosMap.begin();
@@ -6057,10 +6062,10 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	return num;
 }
 
-PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(NotesStyle *nStyle)
+PageItem_NoteFrame *PageItem_TextFrame::itemNoteFrame(const NotesStyle* const nStyle)
 {
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-		if (nF->notesStyle() == nStyle)
+		if (nF->getNotesStyle() == nStyle)
 			return nF;
 	return NULL;
 }

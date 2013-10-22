@@ -7,9 +7,9 @@
 /***************************************************************************
 pageitem.cpp  -  description
 -------------------
-    begin                : Sat Apr 7 2001
-    copyright            : (C) 2001 by Franz Schmid
-    email                : Franz.Schmid@altmuehlnet.de
+	begin                : Sat Apr 7 2001
+	copyright            : (C) 2001 by Franz Schmid
+	email                : Franz.Schmid@altmuehlnet.de
 ***************************************************************************/
 
 /***************************************************************************
@@ -65,7 +65,7 @@ StoryText::StoryText(ScribusDoc * doc_) : m_doc(doc_)
 StoryText::StoryText() : m_doc(NULL)
 {
 	d = new ScText_Shared(NULL);
-
+	
 	m_selFirst = 0;
 	m_selLast = -1;
 	
@@ -92,16 +92,16 @@ StoryText::StoryText(const StoryText & other) : QObject(), SaxIO(), m_doc(other.
 	m_lastFrameItem = -1;
 	m_magicX = 0.0;
 	m_lastMagicPos = -1;
-
+	
 	invalidateLayout();
 }
 
 StoryText::~StoryText()
 {
-/* Code below is not needed imho, as all connections will be disconnected automatically
+	/* Code below is not needed imho, as all connections will be disconnected automatically
 	by the QObject destructor. At least removing that code fixes a crash when closing
 	documents */
-/*	if (doc)
+	/*	if (doc)
 	{
 		doc->paragraphStyles().disconnect(this, SLOT(invalidateAll()));
 		doc->charStyles().disconnect(this, SLOT(invalidateAll()));
@@ -154,7 +154,7 @@ StoryText& StoryText::operator= (const StoryText & other)
 	
 	m_firstFrameItem = 0;
 	m_lastFrameItem = -1;
-
+	
 	invalidateLayout();
 	return *this;
 }
@@ -185,13 +185,13 @@ void StoryText::clear()
 {
 	m_selFirst = 0;
 	m_selLast = -1;
-
+	
 	m_firstFrameItem = 0;
 	m_lastFrameItem = -1;
 	
 	d->defaultStyle.erase();
 	d->trailingStyle.erase();
-
+	
 	d->clear();
 	d->len = 0;
 	invalidateAll();
@@ -200,18 +200,18 @@ void StoryText::clear()
 int StoryText::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
 	int foundIndex = -1;
-
+	
 	if (str.isEmpty() || (from < 0))
 		return -1;
-
+	
 	int strLen   = str.length();
 	int storyLen = length();
-
+	
 	QString qStr = str;
 	if (cs == Qt::CaseInsensitive)
 		qStr = qStr.toLower();
 	QChar ch = qStr.at(0);
-
+	
 	if (cs == Qt::CaseSensitive)
 	{
 		int i = indexOf(ch, from, cs);
@@ -252,7 +252,7 @@ int StoryText::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) con
 			i = indexOf(ch, i + 1, cs);
 		}
 	}
-
+	
 	return foundIndex;
 }
 
@@ -260,7 +260,7 @@ int StoryText::indexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
 	int foundIndex = -1;
 	int textLength = length();
-
+	
 	if (cs == Qt::CaseSensitive)
 	{
 		for (int i = from; i < textLength; ++i)
@@ -308,8 +308,8 @@ void StoryText::insert(int pos, const StoryText& other, bool onlySelection)
 	int cstyleStart = otherStart;
 	for (int i=otherStart; i < otherEnd; ++i) {
 		if (other.charStyle(i) == cstyle 
-			&& other.text(i) != SpecialChars::OBJECT
-			&& other.text(i) != SpecialChars::PARSEP)
+				&& other.text(i) != SpecialChars::OBJECT
+				&& other.text(i) != SpecialChars::PARSEP)
 			continue;
 		int len = i - cstyleStart;
 		if (len > 0) {
@@ -356,7 +356,7 @@ void StoryText::insert(int pos, const StoryText& other, bool onlySelection)
 
 
 /**
-    Make sure that the paragraph CharStyle's point to the new ParagraphStyle
+	Make sure that the paragraph CharStyle's point to the new ParagraphStyle
  */
 void StoryText::insertParSep(int pos)
 {
@@ -370,23 +370,23 @@ void StoryText::insertParSep(int pos)
 			applyStyle(pos, d->trailingStyle);
 			d->trailingStyle.erase();
 		}
-//		it->parstyle->setName("para"); // DONT TRANSLATE
-//		it->parstyle->charStyle().setName("cpara"); // DONT TRANSLATE
-//		it->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
+		//		it->parstyle->setName("para"); // DONT TRANSLATE
+		//		it->parstyle->charStyle().setName("cpara"); // DONT TRANSLATE
+		//		it->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
 	}
 	d->replaceCharStyleContextInParagraph(pos, it->parstyle->charStyleContext());
 }
 /**
-     need to remove the ParagraphStyle structure and replace all pointers
-     to it...
+	 need to remove the ParagraphStyle structure and replace all pointers
+	 to it...
  */
 void StoryText::removeParSep(int pos)
 {
 	ScText* it = item_p(pos);
 	if (it->parstyle) {
-//		const CharStyle* oldP = & it->parstyle->charStyle();
-//		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
-//		d->replaceParentStyle(pos, oldP, newP);
+		//		const CharStyle* oldP = & it->parstyle->charStyle();
+		//		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
+		//		d->replaceParentStyle(pos, oldP, newP);
 		delete it->parstyle;
 		it->parstyle = 0;
 	}
@@ -409,7 +409,7 @@ void StoryText::removeChars(int pos, uint len)
 		return;
 	if (pos + static_cast<int>(len) > length())
 		len = length() - pos;
-
+	
 	for ( int i=pos + static_cast<int>(len) - 1; i >= pos; --i )
 	{
 		ScText *it = d->at(i);
@@ -419,13 +419,13 @@ void StoryText::removeChars(int pos, uint len)
 		//No avox, mark must be deleted by ScribusDoc
 		//because it is "owner" of the pointer and there is many dependencies
 		//when mark can be deleted and what should be done if it is deleted
-//        if (it->mark != NULL)
-//        {
-//            delete it->mark;
-//            it->mark = NULL;
-//        }
-
-//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
+		//        if (it->mark != NULL)
+		//        {
+		//            delete it->mark;
+		//            it->mark = NULL;
+		//        }
+		
+		//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
 		d->takeAt(i);
 		d->len--;
 		delete it;
@@ -435,7 +435,7 @@ void StoryText::removeChars(int pos, uint len)
 		if (i < m_selFirst) --m_selFirst;
 		if ((i + 1 ) <= d->cursorPosition && d->cursorPosition > 0) d->cursorPosition -= 1;
 	}
-
+	
 	d->len = d->count();
 	d->cursorPosition = qMin(d->cursorPosition, d->len);
 	if (m_selFirst > m_selLast)
@@ -455,7 +455,7 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 {
 	if (pos < 0)
 		pos += length()+1;
-
+	
 	assert(pos >= 0);
 	assert(pos <= length());
 	
@@ -463,7 +463,7 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 		return;
 	
 	const StyleContext* cStyleContext = paragraphStyle(pos).charStyleContext();
-
+	
 	ScText clone;
 	if (applyNeighbourStyle)
 	{
@@ -471,7 +471,7 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 		clone.applyCharStyle(charStyle(referenceChar));
 		clone.setEffects(ScStyle_Default);
 	}
-
+	
 	for (int i = 0; i < txt.length(); ++i) {
 		ScText * item = new ScText(clone);
 		item->ch= txt.at(i);
@@ -479,14 +479,14 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 		d->insert(pos + i, item);
 		d->len++;
 		if (item->ch == SpecialChars::PARSEP) {
-//			qDebug() << QString("new PARSEP %2 at %1").arg(pos).arg(paragraphStyle(pos).name());
+			//			qDebug() << QString("new PARSEP %2 at %1").arg(pos).arg(paragraphStyle(pos).name());
 			insertParSep(pos + i);
 		}
 		if (d->cursorPosition >= (pos + i)) {
 			d->cursorPosition += 1;
 		}
 	}
-
+	
 	d->len = d->count();
 	invalidate(pos, pos + txt.length());
 }
@@ -495,7 +495,7 @@ void StoryText::insertCharsWithSoftHyphens(int pos, QString txt, bool applyNeigh
 {
 	if (pos < 0)
 		pos += length()+1;
-
+	
 	assert(pos >= 0);
 	assert(pos <= length());
 	
@@ -503,7 +503,7 @@ void StoryText::insertCharsWithSoftHyphens(int pos, QString txt, bool applyNeigh
 		return;
 	
 	const StyleContext* cStyleContext = paragraphStyle(pos).charStyleContext();
-
+	
 	ScText clone;
 	if (applyNeighbourStyle)
 	{
@@ -511,7 +511,7 @@ void StoryText::insertCharsWithSoftHyphens(int pos, QString txt, bool applyNeigh
 		clone.applyCharStyle(charStyle(referenceChar));
 		clone.setEffects(ScStyle_Default);
 	}
-
+	
 	int inserted = 0;
 	for (int i = 0; i < txt.length(); ++i) 
 	{
@@ -543,7 +543,7 @@ void StoryText::insertCharsWithSoftHyphens(int pos, QString txt, bool applyNeigh
 			++inserted;
 		}
 	}
-
+	
 	d->len = d->count();
 	invalidate(pos, pos + inserted);
 }
@@ -552,10 +552,10 @@ void StoryText::replaceChar(int pos, QChar ch)
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	ScText* item = d->at(pos);
 	if (item->ch == ch)
 		return;
@@ -612,19 +612,19 @@ void StoryText::hyphenateWord(int pos, uint len, char* hyphens)
 	assert(pos >= 0);
 	assert(pos + signed(len) <= length());
 	
-//	QString dump("");
+	//	QString dump("");
 	for (int i=pos; i < pos+signed(len); ++i)
 	{
-//		dump += d->at(i)->ch;
+		//		dump += d->at(i)->ch;
 		if(hyphens && hyphens[i-pos] & 1) {
 			d->at(i)->setEffects(d->at(i)->effects() | ScStyle_HyphenationPossible);
-//			dump += "-";
+			//			dump += "-";
 		}
 		else {
 			d->at(i)->setEffects(d->at(i)->effects() & ~ScStyle_HyphenationPossible);
 		}
 	}
-//	qDebug() << QString("st: %1").arg(dump);
+	//	qDebug() << QString("st: %1").arg(dump);
 	invalidate(pos, pos + len);
 }
 
@@ -637,29 +637,29 @@ void StoryText::insertObject(int pos, int ob)
 {
 	if (pos < 0)
 		pos += length()+1;
-
+	
 	insertChars(pos, SpecialChars::OBJECT);
 	const_cast<StoryText *>(this)->d->at(pos)->embedded = ob;
 	m_doc->FrameItems[ob]->isEmbedded = true;   // this might not be enough...
 	m_doc->FrameItems[ob]->OwnPage = -1; // #10379: OwnPage is not meaningful for inline object
 }
 
-void StoryText::insertMark(Mark* Mark, int pos)
+void StoryText::insertMark(const Mark* const mrk, int pos)
 {
-	if (Mark == NULL)
+	if (mrk == NULL)
 		return;
 	if (pos < 0)
 		pos = d->cursorPosition;
-
+	
 	insertChars(pos, SpecialChars::OBJECT, false);
-	const_cast<StoryText *>(this)->d->at(pos)->mark = Mark;
+	const_cast<StoryText *>(this)->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
 void StoryText::replaceObject(int pos, int ob)
 {
 	if (pos < 0)
 		pos += length()+1;
-
+	
 	replaceChar(pos, SpecialChars::OBJECT);
 	const_cast<StoryText *>(this)->d->at(pos)->embedded = ob;
 	m_doc->FrameItems[ob]->isEmbedded = true;   // this might not be enough...
@@ -676,13 +676,13 @@ QString StoryText::plainText() const
 {
 	if (length() <= 0)
 		return QString();
-
+	
 	QChar   ch;
 	QString result;
-
+	
 	int len = length();
 	result.reserve(len);
-
+	
 	StoryText* that(const_cast<StoryText*>(this));
 	for (int i = 0; i < len; ++i) {
 		ch = that->d->at(i)->ch;
@@ -690,31 +690,31 @@ QString StoryText::plainText() const
 			ch = QLatin1Char('\n');
 		result += ch;
 	}
-
+	
 	return result;
 }
 
 
 GlyphLayout* StoryText::getGlyphs(int pos)
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	
 	assert((this->d->at(pos)->glyph).scaleH > 0.5);
 	return &(this->d->at(pos)->glyph);
 }
 
 const GlyphLayout* StoryText::getGlyphs(int pos) const
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	
 	assert( (const_cast<StoryText *>(this)->d->at(pos)->glyph).scaleH > 0.5);
 	return &(const_cast<StoryText *>(this)->d->at(pos)->glyph);
 }
@@ -728,10 +728,10 @@ QChar StoryText::text(int pos) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	return const_cast<StoryText *>(this)->d->at(pos)->ch;
 }
 
@@ -739,16 +739,16 @@ QString StoryText::text(int pos, uint len) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos + signed(len) <= length());
-
+	
 	QString result;
 	StoryText* that(const_cast<StoryText*>(this));
 	for (int i = pos; i < pos+signed(len); ++i) {
 		result += that->d->at(i)->ch;
 	}
-
+	
 	return result;
 }
 
@@ -765,13 +765,13 @@ QString StoryText::textWithSoftHyphens(int pos, uint len) const
 {
 	QString result("");
 	int lastPos = pos;
-
+	
 	len = qMin((uint) (length() - pos), len);
 	for (int i = pos; i < pos+signed(len); ++i)
 	{
 		if (this->charStyle(i).effects() & ScStyle_HyphenationPossible 
-			// duplicate SHYPHEN if already present to indicate a user provided SHYPHEN:
-			|| this->text(i) == SpecialChars::SHYPHEN)
+				// duplicate SHYPHEN if already present to indicate a user provided SHYPHEN:
+				|| this->text(i) == SpecialChars::SHYPHEN)
 		{
 			result += text(lastPos, i + 1 - lastPos);
 			result += SpecialChars::SHYPHEN;
@@ -787,10 +787,10 @@ bool StoryText::hasObject(int pos) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	StoryText* that = const_cast<StoryText *>(this);
 	if (that->d->at(pos)->ch == SpecialChars::OBJECT)
 		return that->d->at(pos)->hasObject(m_doc);
@@ -801,22 +801,22 @@ PageItem* StoryText::object(int pos) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	StoryText* that = const_cast<StoryText *>(this);
 	return that->d->at(pos)->getItem(m_doc);
 }
 
-bool StoryText::hasMark(int pos, Mark* mrk) const
+bool StoryText::hasMark(int pos, const Mark* const mrk) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	StoryText* that = const_cast<StoryText *>(this);
 	return that->d->at(pos)->hasMark(mrk);
 }
@@ -825,10 +825,10 @@ bool StoryText::hasMarkType(int pos, MarkType mt) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	StoryText* that = const_cast<StoryText *>(this);
 	return that->d->at(pos)->hasMarkType(mt);
 }
@@ -837,71 +837,72 @@ Mark* StoryText::mark(int pos) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos < length());
-
+	
 	StoryText* that = const_cast<StoryText *>(this);
 	return that->d->at(pos)->mark;
 }
 
 
-void StoryText::replaceMark(int pos, Mark* mrk)
+void StoryText::replaceMark(int pos, const Mark* const mrk)
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-
-    this->d->at(pos)->mark = mrk;
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	
+	StoryText* that = const_cast<StoryText *>(this);
+	that->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
 
 LayoutFlags StoryText::flags(int pos) const
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-
-    StoryText* that = const_cast<StoryText *>(this);
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	
+	StoryText* that = const_cast<StoryText *>(this);
 	return  static_cast<LayoutFlags>((*that->d->at(pos)).effects().value & ScStyle_NonUserStyles);
 }
 
 bool StoryText::hasFlag(int pos, LayoutFlags flags) const
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-    assert((flags & ScStyle_UserStyles) == ScStyle_None);
-
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	assert((flags & ScStyle_UserStyles) == ScStyle_None);
+	
 	return (flags & d->at(pos)->effects().value) == flags;
 }
 
 void StoryText::setFlag(int pos, LayoutFlags flags)
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-    assert((flags & ScStyle_UserStyles) == ScStyle_None);
-
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	assert((flags & ScStyle_UserStyles) == ScStyle_None);
+	
 	d->at(pos)->setEffects(flags | d->at(pos)->effects().value);
 }
 
 void StoryText::clearFlag(int pos, LayoutFlags flags)
 {
-    if (pos < 0)
-        pos += length();
-
-    assert(pos >= 0);
-    assert(pos < length());
-
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	
 	d->at(pos)->setEffects(~(flags & ScStyle_NonUserStyles) & d->at(pos)->effects().value);
 }
 
@@ -915,12 +916,12 @@ const CharStyle & StoryText::charStyle(int pos) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos <= length());
-
+	
 	if (length() == 0) {
-//		qDebug() << "storytext::charstyle: default";
+		//		qDebug() << "storytext::charstyle: default";
 		return defaultStyle().charStyle();
 	}
 	else if (pos == length()) {
@@ -942,16 +943,16 @@ const ParagraphStyle & StoryText::paragraphStyle(int pos) const
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos <= length());
-
+	
 	assert(d);
 	
 	StoryText * that = const_cast<StoryText *> (this);
-//	assert( that->at(pos)->cab >= 0 );
-//	assert( that->at(pos)->cab < doc->docParagraphStyles.count() );
-//	return doc->docParagraphStyles[that->at(pos)->cab];
+	//	assert( that->at(pos)->cab >= 0 );
+	//	assert( that->at(pos)->cab < doc->docParagraphStyles.count() );
+	//	return doc->docParagraphStyles[that->at(pos)->cab];
 	
 	while (pos < length() && that->d->at(pos)->ch != SpecialChars::PARSEP) {
 		++pos;
@@ -964,12 +965,12 @@ const ParagraphStyle & StoryText::paragraphStyle(int pos) const
 		qDebug("inserting default parstyle at %i", pos);
 		current->parstyle = new ParagraphStyle();
 		current->parstyle->setContext( & d->pstyleContext);
-//		current->parstyle->setName( "para(paragraphStyle)" ); // DONT TRANSLATE
-//		current->parstyle->charStyle().setName( "cpara(paragraphStyle)" ); // DONT TRANSLATE
-//		current->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext());
+		//		current->parstyle->setName( "para(paragraphStyle)" ); // DONT TRANSLATE
+		//		current->parstyle->charStyle().setName( "cpara(paragraphStyle)" ); // DONT TRANSLATE
+		//		current->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext());
 	}
 	else {
-//		qDebug() << QString("using parstyle at %1").arg(pos);
+		//		qDebug() << QString("using parstyle at %1").arg(pos);
 	}
 	assert (that->d->at(pos)->parstyle);
 	return *that->d->at(pos)->parstyle;
@@ -985,16 +986,16 @@ const ParagraphStyle& StoryText::defaultStyle() const
 void StoryText::setDefaultStyle(const ParagraphStyle& style)
 {
 	const StyleContext * oldPContext = d->defaultStyle.context();
-//	const StyleContext * oldCContext = d->defaultStyle.charStyle().context();
+	//	const StyleContext * oldCContext = d->defaultStyle.charStyle().context();
 	d->defaultStyle = style;
 	d->defaultStyle.setContext( oldPContext );
-//	d->defaultStyle.setName( "storydefault" ); // DONT TRANSLATE
-//	d->defaultStyle.charStyle().setName( "cstorydefault" ); // DONT TRANSLATE
-//	qDebug() << QString("defstyle %1 context %2 defcstyle %3 ccontext %4 newcontext %5")
-//		   .arg((uint)&d->defaultStyle,16).arg((uint)oldPContext,16)
-//		   .arg((uint)&d->defaultStyle.charStyle(),16).arg((uint)oldCContext,16)
-//		   .arg((uint)d->defaultStyle.charStyle().context(),16);
-//	d->defaultStyle.charStyle().setContext( oldCContext );
+	//	d->defaultStyle.setName( "storydefault" ); // DONT TRANSLATE
+	//	d->defaultStyle.charStyle().setName( "cstorydefault" ); // DONT TRANSLATE
+	//	qDebug() << QString("defstyle %1 context %2 defcstyle %3 ccontext %4 newcontext %5")
+	//		   .arg((uint)&d->defaultStyle,16).arg((uint)oldPContext,16)
+	//		   .arg((uint)&d->defaultStyle.charStyle(),16).arg((uint)oldCContext,16)
+	//		   .arg((uint)d->defaultStyle.charStyle().context(),16);
+	//	d->defaultStyle.charStyle().setContext( oldCContext );
 	invalidateAll();
 }
 
@@ -1003,19 +1004,19 @@ void StoryText::applyCharStyle(int pos, uint len, const CharStyle& style )
 {
 	if (pos < 0)
 		pos += length();
-
-/* Why do we use an assert here instead of a gracefully return doing nothing ????? */
-//	assert(pos >= 0);
-//	assert(pos + signed(len) <= length());
+	
+	/* Why do we use an assert here instead of a gracefully return doing nothing ????? */
+	//	assert(pos >= 0);
+	//	assert(pos + signed(len) <= length());
 	if (pos < 0)
 		return;
 	if (pos + signed(len) > length())
 		return;
-
+	
 	if (len == 0)
 		return;
-
-//	int lastParStart = pos == 0? 0 : -1;
+	
+	//	int lastParStart = pos == 0? 0 : -1;
 	ScText* itText;
 	for (uint i=pos; i < pos+len; ++i) {
 		itText = d->at(i);
@@ -1077,10 +1078,10 @@ void StoryText::applyStyle(int pos, const ParagraphStyle& style, bool rmDirectFo
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos <= length());
-
+	
 	int i = pos;
 	while (i < length() && d->at(i)->ch != SpecialChars::PARSEP) {
 		++i;
@@ -1090,16 +1091,16 @@ void StoryText::applyStyle(int pos, const ParagraphStyle& style, bool rmDirectFo
 			qDebug("PARSEP without style at pos %i", i);
 			d->at(i)->parstyle = new ParagraphStyle();
 			d->at(i)->parstyle->setContext( & d->pstyleContext);
-//			d->at(i)->parstyle->setName( "para(applyStyle)" ); // DONT TRANSLATE
-//			d->at(i)->parstyle->charStyle().setName( "cpara(applyStyle)" ); // DONT TRANSLATE
-//			d->at(i)->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
+			//			d->at(i)->parstyle->setName( "para(applyStyle)" ); // DONT TRANSLATE
+			//			d->at(i)->parstyle->charStyle().setName( "cpara(applyStyle)" ); // DONT TRANSLATE
+			//			d->at(i)->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext() );
 		}
-//		qDebug() << QString("applying parstyle %2 at %1 for %3").arg(i).arg(paragraphStyle(pos).name()).arg(pos);
+		//		qDebug() << QString("applying parstyle %2 at %1 for %3").arg(i).arg(paragraphStyle(pos).name()).arg(pos);
 		d->at(i)->parstyle->applyStyle(style);
 	}
 	else {
 		// not happy about this but inserting a new PARSEP makes more trouble
-//		qDebug() << QString("applying parstyle %1 as defaultstyle for %2").arg(paragraphStyle(pos).name()).arg(pos);
+		//		qDebug() << QString("applying parstyle %1 as defaultstyle for %2").arg(paragraphStyle(pos).name()).arg(pos);
 		d->trailingStyle.applyStyle(style);
 	}
 	if (rmDirectFormatting)
@@ -1121,7 +1122,7 @@ void StoryText::eraseStyle(int pos, const ParagraphStyle& style)
 	
 	assert(pos >= 0);
 	assert(pos <= length());
-		
+	
 	int i = pos;
 	while (i < length() && d->at(i)->ch != SpecialChars::PARSEP) {
 		++i;
@@ -1131,9 +1132,9 @@ void StoryText::eraseStyle(int pos, const ParagraphStyle& style)
 			qDebug("PARSEP without style at pos %i", i);
 			d->at(i)->parstyle = new ParagraphStyle();
 			d->at(i)->parstyle->setContext( & d->pstyleContext);
-//			d->at(i)->parstyle->setName( "para(eraseStyle)" ); // DONT TRANSLATE
-//			d->at(i)->parstyle->charStyle().setName( "cpara(eraseStyle)" ); // DONT TRANSLATE
-//			d->at(i)->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext());
+			//			d->at(i)->parstyle->setName( "para(eraseStyle)" ); // DONT TRANSLATE
+			//			d->at(i)->parstyle->charStyle().setName( "cpara(eraseStyle)" ); // DONT TRANSLATE
+			//			d->at(i)->parstyle->charStyle().setContext( d->defaultStyle.charStyleContext());
 		}
 		//		qDebug() << QString("applying parstyle %2 at %1 for %3").arg(i).arg(paragraphStyle(pos).name()).arg(pos);
 		d->at(i)->parstyle->eraseStyle(style);
@@ -1184,7 +1185,7 @@ void StoryText::getNamedResources(ResourceCollection& lists) const
 {
 	d->defaultStyle.getNamedResources(lists);
 	d->trailingStyle.getNamedResources(lists);
-
+	
 	for (int i=0; i < length(); ++i)
 	{
 		if (text(i) == SpecialChars::PARSEP)
@@ -1207,7 +1208,7 @@ void StoryText::replaceStyles(QMap<QString,QString> newNameForOld)
 void StoryText::replaceNamedResources(ResourceCollection& newNames)
 {
 	int len = length();
-
+	
 	d->defaultStyle.replaceNamedResources(newNames);
 	d->trailingStyle.replaceNamedResources(newNames);
 	
@@ -1238,7 +1239,7 @@ void StoryText::fixLegacyFormatting()
 {
 	if (length() == 0)
 		return;
-
+	
 	for (int i = 0; i < length(); ++ i)
 	{
 		if (d->at(i)->ch == SpecialChars::PARSEP)
@@ -1251,21 +1252,21 @@ void StoryText::fixLegacyFormatting(int pos)
 {
 	if (length() == 0)
 		return;
-
+	
 	if (pos < 0)
 		pos += length();
-
+	
 	assert(pos >= 0);
 	assert(pos <= length());
-
+	
 	int i = pos;
 	while (i > 0 && d->at(i - 1)->ch != SpecialChars::PARSEP) {
 		--i;
 	}
-
+	
 	const ParagraphStyle& parStyle = this->paragraphStyle(pos);
 	parStyle.validate();
-
+	
 	if (parStyle.hasParent())
 	{
 		int start = i;
@@ -1322,7 +1323,7 @@ int StoryText::startOfParagraph(uint index) const
 {
 	if (index == 0)
 		return 0;
-
+	
 	StoryText* that = const_cast<StoryText *>(this);
 	for (int i=0; i < length(); ++i)
 	{
@@ -1390,7 +1391,7 @@ int StoryText::firstWord()
 {
 	int len = length();
 	int pos = 0;
-
+	
 	while (pos < len)
 	{
 		if (text(pos).isLetter())
@@ -1407,10 +1408,10 @@ int StoryText::nextWord(int pos)
 		pos = qMin(len, pos+1);
 	else
 		pos = qMin(len, pos);
-
+	
 	//	while (pos < len  && wordBoundaries.indexOf(text(pos)) < 0)
 	//		++pos;
-
+	
 	while (pos < len)
 	{
 		if(text(pos).isLetter())
@@ -1479,7 +1480,7 @@ QString StoryText::wordAt(int pos) const
 		pos += length();
 	assert(pos >= 0);
 	assert(pos <= length());
-
+	
 	int len = length();
 	//Find the previous word position
 	int tmpPosStart = qMax(0, pos-1);
@@ -1529,7 +1530,7 @@ int StoryText::endOfLine(int pos)
 		const LineSpec & ls(m_lines.at(i));
 		if (ls.firstItem <= pos && pos <= ls.lastItem)
 			return text(ls.lastItem) == SpecialChars::PARSEP ? ls.lastItem : 
-				text(ls.lastItem) == ' ' ? ls.lastItem : ls.lastItem + 1;
+															   text(ls.lastItem) == ' ' ? ls.lastItem : ls.lastItem + 1;
 	}
 	return length();
 }
@@ -1638,15 +1639,15 @@ int StoryText::lengthOfSelection() const
 bool StoryText::selected(int pos) const
 {
 	return (m_selFirst <= pos && pos <= m_selLast) 
-//	       || (pos >= 0 && pos < length() && const_cast<StoryText*>(this)->d->at(pos)->cselect)
-	;
+			//	       || (pos >= 0 && pos < length() && const_cast<StoryText*>(this)->d->at(pos)->cselect)
+			;
 }
 
 
 int StoryText::selectWord(int pos)
 {
 	//Double click in a frame to select a word
-
+	
 	int a = pos;
 	while(a > 0)
 	{
@@ -1672,16 +1673,16 @@ void StoryText::select(int pos, uint len, bool on)
 {
 	if (pos < 0)
 		pos += length();
-
+	
 	assert( pos >= 0 );
 	assert( pos + signed(len) <= length() );
-
-//	qDebug("old selection: %d - %d", m_selFirst, m_selLast);
-
-//	StoryText* that = const_cast<StoryText *>(this);
-//	for (int i=pos; i < pos+signed(len); ++i)
-//		that->at(i)->cselect = on;
-
+	
+	//	qDebug("old selection: %d - %d", m_selFirst, m_selLast);
+	
+	//	StoryText* that = const_cast<StoryText *>(this);
+	//	for (int i=pos; i < pos+signed(len); ++i)
+	//		that->at(i)->cselect = on;
+	
 	if (on) {
 		// extend if possible
 		if (selected(pos - 1))
@@ -1706,7 +1707,7 @@ void StoryText::select(int pos, uint len, bool on)
 			m_selLast = pos - 1;
 	}
 	
-//	qDebug("new selection: %d - %d", m_selFirst, m_selLast);
+	//	qDebug("new selection: %d - %d", m_selFirst, m_selLast);
 }
 
 void StoryText::extendSelection(int oldPos, int newPos)
@@ -1741,7 +1742,7 @@ void StoryText::extendSelection(int oldPos, int newPos)
 
 void StoryText::selectAll()
 {
-/*	StoryText* that = const_cast<StoryText *>(this);
+	/*	StoryText* that = const_cast<StoryText *>(this);
 	that->at(0);
 	for (int i=0; i < length(); ++i) {
 		that->current()->cselect = true;
@@ -1754,7 +1755,7 @@ void StoryText::selectAll()
 
 void StoryText::deselectAll()
 {
-/*	StoryText* that = const_cast<StoryText *>(this);
+	/*	StoryText* that = const_cast<StoryText *>(this);
 	that->at(0);
 	for (int i=0; i < length(); ++i) {
 		that->current()->cselect = false;
@@ -1767,13 +1768,13 @@ void StoryText::deselectAll()
 
 void StoryText::removeSelection()
 {
-//	qDebug("removeSelection: %d - %d", m_selFirst, m_selLast);
+	//	qDebug("removeSelection: %d - %d", m_selFirst, m_selLast);
 	if (m_selFirst > m_selLast)
 		return;
-
+	
 	assert( m_selFirst >= 0 );
 	assert( m_selLast < length() );
-
+	
 	removeChars(m_selFirst, m_selLast - m_selFirst+1);
 	deselectAll();
 }
@@ -1791,7 +1792,7 @@ void StoryText::invalidateLayout()
 void StoryText::invalidateAll()
 {
 	d->pstyleContext.invalidate();
-    invalidate(0, length());
+	invalidate(0, length());
 }
 
 void StoryText::invalidate(int firstItem, int endItem)
@@ -1827,13 +1828,13 @@ int StoryText::screenToPosition(FPoint coord) const
 	for (unsigned int i=0; i < lines(); ++i)
 	{
 		LineSpec ls = line(i);
-//		qDebug() << QString("screenToPosition: (%1,%2) -> y %3 - %4 + %5").arg(coord.x()).arg(coord.y()).arg(ls.y).arg(ls.ascent).arg(ls.descent);
+		//		qDebug() << QString("screenToPosition: (%1,%2) -> y %3 - %4 + %5").arg(coord.x()).arg(coord.y()).arg(ls.y).arg(ls.ascent).arg(ls.descent);
 		if (ls.y + ls.descent < coord.y())
 			continue;
 		qreal xpos = ls.x;
 		for (int j = ls.firstItem; j <= ls.lastItem; ++j)
 		{
-//				qDebug() << QString("screenToPosition: (%1,%2) -> x %3 + %4").arg(coord.x()).arg(coord.y()).arg(xpos).arg(item(j)->glyph.wide());
+			//				qDebug() << QString("screenToPosition: (%1,%2) -> x %3 + %4").arg(coord.x()).arg(coord.y()).arg(xpos).arg(item(j)->glyph.wide());
 			qreal width = item(j)->glyph.wide();
 			xpos += width;
 			if (xpos >= coord.x())
@@ -1935,7 +1936,7 @@ const ScText*  StoryText::item(uint itm) const
 
 //const QString StoryText::itemText(uint itm) const
 //{
-	
+
 //	assert( static_cast<int>(itm) < length() );
 
 //	return text(itm, 1);
@@ -1948,7 +1949,7 @@ const ScText*  StoryText::item(uint itm) const
 
 //	return charStyle(itm);
 //}
-	
+
 
 //int StoryText::startOfItem(uint itm) const
 //{
@@ -1974,10 +1975,10 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	pageno.insert("name", "pgno");
 	Xml_attr pageco;
 	pageco.insert("name", "pgco");
-
+	
 	handler.begin(elemtag, empty);
 	defaultStyle().saxx(handler, "defaultstyle");
-
+	
 	CharStyle lastStyle(charStyle(0));
 	bool lastWasPar = true;
 	int lastPos = 0;
@@ -1991,24 +1992,24 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 		{
 			Mark* mrk = mark(i);
 			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType))
-			    || mrk->isType(MARKBullNumType))
+					|| mrk->isType(MARKBullNumType))
 				continue; //do not insert notes marks into notes frames and bullets marks anywhere
 		}
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));
 		
 		if (curr == SpecialChars::OBJECT ||
-			curr == SpecialChars::TAB ||
-			curr == SpecialChars::PARSEP ||
-			curr == SpecialChars::LINEBREAK ||
-			curr == SpecialChars::COLBREAK ||
-			curr == SpecialChars::FRAMEBREAK ||
-			curr == SpecialChars::PAGENUMBER ||
-			curr == SpecialChars::PAGECOUNT ||
-			curr.unicode() < 32 || 
-			(0xd800 <= curr.unicode() && curr.unicode() < 0xe000) ||
-			curr.unicode() == 0xfffe || curr.unicode() == 0xffff ||
-			style != lastStyle)
+				curr == SpecialChars::TAB ||
+				curr == SpecialChars::PARSEP ||
+				curr == SpecialChars::LINEBREAK ||
+				curr == SpecialChars::COLBREAK ||
+				curr == SpecialChars::FRAMEBREAK ||
+				curr == SpecialChars::PAGENUMBER ||
+				curr == SpecialChars::PAGECOUNT ||
+				curr.unicode() < 32 || 
+				(0xd800 <= curr.unicode() && curr.unicode() < 0xe000) ||
+				curr.unicode() == 0xfffe || curr.unicode() == 0xffff ||
+				style != lastStyle)
 		{
 			// something new, write pending chars
 			if  (i - lastPos > 0)
@@ -2017,7 +2018,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			}
 			lastPos = i;
 		}
-
+		
 		lastWasPar = (curr == SpecialChars::PARSEP);
 		if (lastWasPar)
 		{
@@ -2038,14 +2039,14 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			Xml_attr mark_attr;
 			mark_attr.insert("label", mrk->label);
 			mark_attr.insert("typ", QString::number((int )mrk->getType()));
-
+			
 			if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
 				mark_attr.insert("item", mrk->getItemPtr()->itemName());
 			else if (mrk->isType(MARK2MarkType))
 			{
 				QString l;
 				MarkType t;
-				mrk->getMark(l, t);
+				mrk->getTargetMark(l, t);
 				if (m_doc->getMarkDefinied(l,t) != NULL)
 				{
 					mark_attr.insert("mark_l", l);
@@ -2114,11 +2115,11 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	handler.end("span");
 	handler.end("p");
 	
-//	if (!lastWasPar)
-//		paragraphStyle(length()-1).saxx(handler);
+	//	if (!lastWasPar)
+	//		paragraphStyle(length()-1).saxx(handler);
 	
 	handler.end(elemtag);
-
+	
 }
 
 
@@ -2273,7 +2274,7 @@ public:
 					if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
 					{
 						Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
-						mrk->setMark(targetMark);
+						mrk->setTargetMark(targetMark);
 						if (targetMark == NULL)
 							mrk->setString("0");
 						else
@@ -2382,7 +2383,7 @@ public:
 		if (lastStyle)
 			delete lastStyle;
 	}
-
+	
 	virtual void reset()
 	{
 		numPara = 0;
@@ -2397,7 +2398,7 @@ public:
 		else if (tag == "p")
 		{
 			StoryText* story = this->dig->top<StoryText>();
-//			qDebug() << QString("startpar: %1->%2 %3->NULL").arg(lastPos).arg(story->length()).arg((ulong)lastStyle);
+			//			qDebug() << QString("startpar: %1->%2 %3->NULL").arg(lastPos).arg(story->length()).arg((ulong)lastStyle);
 			lastPos = story->length();
 			if (numPara > 0) {
 				story->insertChars(-1, SpecialChars::PARSEP);
@@ -2416,13 +2417,13 @@ public:
 			if (lastStyle)
 				delete lastStyle;
 			lastStyle = this->dig->top<ParagraphStyle>(0);
-//			qDebug() << QString("endstyle: %1 %2 %3").arg("?").arg(lastPos).arg((ulong)lastStyle);
+			//			qDebug() << QString("endstyle: %1 %2 %3").arg("?").arg(lastPos).arg((ulong)lastStyle);
 		}
 		else if (tag == "p")
 		{
 			StoryText* story = this->dig->top<StoryText>();
 			int len = story->length();
-//			qDebug() << QString("endpar: %1 %2 %3 %4").arg(len).arg(lastPos).arg((ulong)lastStyle).arg(lastStyle? lastStyle->parent() : QString());
+			//			qDebug() << QString("endpar: %1 %2 %3 %4").arg(len).arg(lastPos).arg((ulong)lastStyle).arg(lastStyle? lastStyle->parent() : QString());
 			if (len >= lastPos && lastStyle)
 			{
 				story->applyStyle(lastPos, *lastStyle);
@@ -2456,7 +2457,7 @@ public:
 	
 	void begin(const Xml_string& tag, Xml_attr attr)
 	{
-//		qDebug() << QString("spanaction: begin %1").arg(tag);
+		//		qDebug() << QString("spanaction: begin %1").arg(tag);
 		if (tag == "span")
 		{
 			StoryText* story = this->dig->top<StoryText>();
@@ -2470,7 +2471,7 @@ public:
 	void end(const Xml_string& tag) 
 	{
 		if (tag == CharStyle::saxxDefaultElem)
-//			qDebug() << QString("spanaction: end %1").arg(tag);
+			//			qDebug() << QString("spanaction: end %1").arg(tag);
 		{
 			if (lastStyle)
 				delete lastStyle;
@@ -2503,7 +2504,7 @@ void StoryText::desaxeRules(const Xml_string& prefixPattern, Digester& ruleset, 
 {
 	Xml_string storyPrefix(Digester::concat(prefixPattern, elemtag));
 	ruleset.addRule(storyPrefix, Factory<StoryText>());
-
+	
 	ParagraphStyle::desaxeRules(storyPrefix, ruleset, "defaultstyle");
 	ruleset.addRule(Digester::concat(storyPrefix, "defaultstyle"), SetterWithConversion<StoryText, const ParagraphStyle&, ParagraphStyle>( & StoryText::setDefaultStyle ));
 	
@@ -2519,7 +2520,7 @@ void StoryText::desaxeRules(const Xml_string& prefixPattern, Digester& ruleset, 
 	ruleset.addRule(spanPrefix, spanAction );
 	CharStyle::desaxeRules(spanPrefix, ruleset, CharStyle::saxxDefaultElem);
 	ruleset.addRule(Digester::concat(spanPrefix, CharStyle::saxxDefaultElem), spanAction );
-		
+	
 	ruleset.addRule(spanPrefix, AppendText());
 	
 	ruleset.addRule(Digester::concat(spanPrefix, "breakline"), AppendSpecial(SpecialChars::LINEBREAK) );

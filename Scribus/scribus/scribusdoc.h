@@ -1666,7 +1666,7 @@ public:
 	QList<NotesStyle*> ns2Update; //list of notes styles to update
 
 	//returns list of notesframes for given Notes Style
-	QList<PageItem_NoteFrame*> listNotesFrames(NotesStyle* NS);
+	QList<PageItem_NoteFrame*> listNotesFrames(const NotesStyle* const nStyle);
 
 	//flags used for indicating needs of updates
 	bool notesChanged() { return flag_notesChanged; }
@@ -1680,54 +1680,55 @@ public:
 	QStringList marksLabelsList(MarkType type);
 
 	//return mark definied with gioven label and given type
-	Mark* getMarkDefinied(QString label, MarkType type); //returns mark with label and type (labels are unique only for same type marks)
-	Mark* newMark(Mark* mrk = NULL);
-	TextNote* newNote(NotesStyle* NS);
+	Mark* getMarkDefinied(const QString &label, const MarkType type); //returns mark with label and type (labels are unique only for same type marks)
+	Mark* newMark(const Mark* const mrk = NULL);
+	TextNote* newNote(NotesStyle* nStyle);
 	
-	bool isMarkUsed(Mark* mrk, bool visible = false);
+	bool isMarkUsed(const Mark* const mrk, bool visible = false);
 	//set cursor in text where given mark will be found
-	void setCursor2MarkPos(Mark* mark);
+	void setCursor2MarkPos(const Mark* const mrk);
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
-	void setUndoDelMark(Mark* mrk);
+	void setUndoDelMark(const Mark* const mrk);
 	//invalidate all text frames where given mark will found
 	//usefull spacially for varaible text marks after changing its text definition
 	//if forceUpdate then found master frames are relayouted
-	bool invalidateVariableTextFrames(Mark* mrk, bool forceUpdate = false); //returns if any text was changed
+	bool invalidateVariableTextFrames(const Mark* const mrk, bool forceUpdate = false); //returns if any text was changed
 
 	//for foot/endnotes
-	NotesStyle* newNotesStyle(NotesStyle NS);
-	void renameNotesStyle(NotesStyle* NS, QString newName);
+	NotesStyle* newNotesStyle(const NotesStyle &nStyle);
+	void renameNotesStyle(const NotesStyle* const nStyle, const QString &newName);
 	//delete whole notes style with its notesframes and notes
-	void deleteNotesStyle(QString nsName);
-	void undoSetNotesStyle(SimpleState* ss, NotesStyle* ns);
-	NotesStyle* getNotesStyle(QString nsName);
+	void deleteNotesStyle(const QString &nsName);
+	void undoSetNotesStyle(SimpleState* ss, const NotesStyle* const nStyle);
+	NotesStyle* getNotesStyle(const QString &nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note);
-	void setUndoDelNote(TextNote* note);
-	PageItem_NoteFrame* createNoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle, int index = -1);
-	PageItem_NoteFrame* createNoteFrame(NotesStyle *nStyle, double x, double y, double w, double h, double w2, QString fill, QString outline);
+	void setUndoDelNote(const TextNote* const note);
+	PageItem_NoteFrame* createNoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle, int index = -1);
+	PageItem_NoteFrame* createNoteFrame(const NotesStyle* const nStyle, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	//delete noteframe
 	void delNoteFrame(PageItem_NoteFrame *nF, bool removeMarks=true, bool forceDeletion = true);
 	//renumber notes for given notes style
 	//return true if doc needs update after changing numbers of notes
-	bool updateNotesNums(NotesStyle* nStyle);
+	bool updateNotesNums(const NotesStyle* const nStyle);
 	//set new text styles for notes marks
 	void updateNotesFramesStyles(NotesStyle* nStyle);
 	//check conflicts beetween notes styles
-	bool validateNSet(NotesStyle NS, QString newName = "");
+	bool isValidNotesSet(const NotesStyle &nStyle, QString &errStr);
+	bool isValidNotesSet(const NotesStyle &nStyle);
 	//update layout remove empty notesframes
 	bool notesFramesUpdate();
 	//update notesframes after changing automatic features of notes style
-	void updateNotesFramesSettings(NotesStyle* NS);
+	void updateNotesFramesSettings(const NotesStyle* const nStyle);
 
 	//search for endnotesframe for given notes style and item holding master mark
-	PageItem_NoteFrame* endNoteFrame(NotesStyle* nStyle, PageItem_TextFrame* master);
+	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, PageItem_TextFrame* master);
 	//
 	void setEndNoteFrame(PageItem_NoteFrame* nF, void* ptr)   { rangeItem rI={ptr}; m_docEndNotesFramesMap.insert(nF,rI); }
 	void setEndNoteFrame(PageItem_NoteFrame* nF, int section)   { rangeItem rI; rI.sectionIndex = section; m_docEndNotesFramesMap.insert(nF, rI); }
 	//update all endnotesframes content for given notes style
-	void updateEndnotesFrames(NotesStyle* nStyle = NULL, bool invalidate = false);
+	void updateEndnotesFrames(const NotesStyle* const nStyle = NULL, bool invalidate = false);
 	//update endnotesframe content
 	void updateEndNotesFrameContent(PageItem_NoteFrame* nF, bool invalidate = false);
 	//insert noteframe into list of changed
@@ -1737,27 +1738,27 @@ public:
 	//finds mark position in text
 	//return true if mark was found, CPos is set for mark`s position
 	//if item==NULL then search in all items and if mark is found than item is set
-	int findMarkCPos(Mark* mrk, PageItem* &item, int Start = 0);
+	int findMarkCPos(const Mark* const mrk, PageItem* item, int Start = 0);
 	QList<PageItem_NoteFrame*> m_docEndNotesFramesChanged;
 
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
-	PageItem* findMarkItem(Mark* mrk, int &lastItem);
+	PageItem* findMarkItem(const Mark* const mrk, int &lastItem);
 	
 private:
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
 	NotesInFrameMap m_docNotesInFrameMap;
 
-	PageItem* findFirstMarkItem(Mark* mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
+	PageItem* findFirstMarkItem(const Mark* const mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
 
 	//search for endnotesframe for given notes style and item holding master mark or section number
-	PageItem_NoteFrame* endNoteFrame(NotesStyle* nStyle, void* item = NULL);
-	PageItem_NoteFrame* endNoteFrame(NotesStyle* nStyle, int sectIndex);
+	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, void* item = NULL);
+	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, int sectIndex);
 	//clear list of notes for given notesframe
 	void clearNotesInFrameList(PageItem_NoteFrame* nF) { m_docNotesInFrameMap.insert(nF, QList<TextNote*>()); }
 	//renumber notes with given notes style for given frame starting from number num
-	void updateItemNotesNums(PageItem_TextFrame *frame, NotesStyle* nStyle, int &num);
+	void updateItemNotesNums(PageItem_TextFrame *frame, const NotesStyle* const nStyle, int &num);
 	//update notesframes text styles
-	void updateItemNotesFramesStyles(PageItem *item, ParagraphStyle newStyle);
+	void updateItemNotesFramesStyles(PageItem *item, const ParagraphStyle &newStyle);
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
@@ -1780,12 +1781,12 @@ public:
 	QMap<QString, NumStruct*> numerations;
 	QStringList orgNumNames; //orgNumerations keeps original settings read from paragraph styles for reset settings overrided localy
 	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
-	QString getNumberStr(QString numName, int level, bool reset, ParagraphStyle &style);
-	void setNumerationCounter(QString numName, int level, int number);
+	QString getNumberStr(const QString &numName, int level, bool reset, const ParagraphStyle &style);
+	void setNumerationCounter(const QString &numName, int level, int number);
 	bool flag_Renumber;
 	bool flag_NumUpdateRequest;
 	// for local numeration of paragraphs
-	bool updateLocalListNumbers(StoryText& itemText); //return true if any num strings were updated and item need s invalidation
+	bool updateLocalListNumbers(const StoryText& itemText); //return true if any num strings were updated and item need s invalidation
 	bool updateListNumbers(bool updateNumerations = false);
 	void itemSelection_ClearBulNumStrings(Selection *customSelection);
 /* Functions for PDF Form Actions */

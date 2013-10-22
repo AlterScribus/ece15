@@ -11307,7 +11307,7 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 				{
 					QString dName;
 					MarkType dType;
-					mrk->getMark(dName, dType);
+					mrk->getTargetMark(dName, dType);
 					is->set("dName", dName);
 					is->set("dType", (int) dType);
 				}
@@ -11356,7 +11356,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 			editMDialog = (MarkInsert*) new Mark2Mark(doc->marksList(), mrk, this);
 				QString l;
 				MarkType t;
-				mrk->getMark(l,t);
+				mrk->getTargetMark(l,t);
 				Mark* m = doc->getMarkDefinied(l,t);
 				editMDialog->setValues(mrk->label, m);
 			}
@@ -11492,7 +11492,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					MarkType destType = mrkPtr->getType();
 					if (d.destmarkName != destLabel || d.destmarkType != destType)
 					{
-						mrk->setMark(mrkPtr);
+						mrk->setTargetMark(mrkPtr);
 						mrk->setString(QString("%1").arg(mrkPtr->OwnPage +1));
 						docWasChanged = true;
 					}
@@ -11536,7 +11536,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				{
 					QString dName;
 					MarkType dType;
-					mrk->getMark(dName, dType);
+					mrk->getTargetMark(dName, dType);
 					is->set("dName", dName);
 					is->set("dType", (int) dType);
 				}
@@ -11567,10 +11567,10 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				{
 					QString dNameOLD;
 					MarkType dTypeOLD;
-					oldMark.getMark(dNameOLD, dTypeOLD);
+					oldMark.getTargetMark(dNameOLD, dTypeOLD);
 					QString dName;
 					MarkType dType;
-					mrk->getMark(dName, dType);
+					mrk->getTargetMark(dName, dType);
 					if (dName != dNameOLD || dType != dTypeOLD)
 					{
 						is->set("dNameOLD", dNameOLD);

@@ -3415,7 +3415,7 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 					MarkType mark2Type = (MarkType) attrs.valueAsInt("MARKtype");
 					Mark* mark2 = doc->getMarkDefinied(mark2Label, mark2Type);
 					if (mark2 != NULL) //mark is not defined yet, insert into temp list for update to pointers later
-						mark->setMark(mark2);
+						mark->setTargetMark(mark2);
 					else
 					{
 						QMap<QString, MarkType> mark2map;
@@ -6488,7 +6488,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			Mark* mark2 = m_Doc->getMarkDefinied(label2, type2);
 			if (mark2 != NULL)
 			{
-				mark->setMark(mark2);
+				mark->setTargetMark(mark2);
 			}
 			else
 			{
@@ -6513,7 +6513,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 				PageItem* item = LinkID.value(eF.myID);
 				if ((item != NULL) && item->isNoteFrame())
 				{
-					item->asNoteFrame()->setNS(NS);
+					item->asNoteFrame()->setNotesStyle(NS);
 					if (NS->isEndNotes())
 					{
 						if (eF.NSrange == NSRdocument)
