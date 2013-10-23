@@ -3476,12 +3476,13 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		}
 		while (doc->flag_Renumber)
 			updateEnd = doc->updateListNumbers();
-		if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+		if ((m_marksCount != doc->marksList().count()) || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 		{
 			if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
 				emit UpdateRequest(reqMarksListViewUpdate);
 			m_marksCount = doc->marksList().count();
-			updateEnd = updateEnd && doc->updateMarks(doc->notesChanged());
+			if (!doc->updateMarks(doc->notesChanged()))
+				updateEnd = false;
 			doc->updateChangedEndNotesFrames();
 			doc->setNotesChanged(false);
 			doc->flag_updateEndNotes = false;

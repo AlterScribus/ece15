@@ -273,11 +273,11 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 	m_currentPage(NULL),
 	m_updateManager(),
 	m_docUpdater(NULL),
-	flag_notesChanged(false),
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true),
+	flag_notesChanged(false),
 	flag_Renumber(false),
 	flag_NumUpdateRequest(false)
 {
@@ -389,11 +389,11 @@ ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pa
 	m_currentPage(NULL),
 	m_updateManager(),
 	m_docUpdater(NULL),
-	flag_notesChanged(false),
 	flag_restartMarksRenumbering(false),
 	flag_updateMarksLabels(false),
 	flag_updateEndNotes(false),
 	flag_layoutNotesFrames(true),
+	flag_notesChanged(false),
 	flag_Renumber(false),
 	flag_NumUpdateRequest(false)
 {
@@ -17187,7 +17187,7 @@ bool ScribusDoc::updateListNumbers(bool updateNumerations)
 	return (flag_Renumber);
 }
 
-QStringList ScribusDoc::marksLabelsList(MarkType type)
+QStringList ScribusDoc::marksLabelsList(const MarkType type)
 {
 	QStringList nameList;
 	for (int a=0; a < m_docMarksList.count(); ++a)
@@ -18197,22 +18197,22 @@ QList<PageItem_NoteFrame *> ScribusDoc::listNotesFrames(const NotesStyle * const
 	return list;
 }
 
-const ScPage *ScribusDoc::page4EndNotes(NotesStyle *NS, PageItem* item)
+const ScPage *ScribusDoc::page4EndNotes(const NotesStyle * const nStyle, PageItem* item)
 {
 	ScPage* scP = NULL;
-	if ((NS->range() == NSRdocument) || ((NS->range() == NSRsection) && docPrefsData.docSectionMap.isEmpty()))
+	if ((nStyle->range() == NSRdocument) || ((nStyle->range() == NSRsection) && docPrefsData.docSectionMap.isEmpty()))
 		scP = DocPages.last();
 	else if (item != NULL)
 	{
-		if (NS->range() == NSRpage)
+		if (nStyle->range() == NSRpage)
 			scP = DocPages.at(item->OwnPage);
-		else if (NS->range() == NSRsection)
+		else if (nStyle->range() == NSRsection)
 		{
 			int section = getSectionKeyForPageIndex(item->OwnPage);
 			DocumentSection sec = sections().find(section).value();
 			scP = DocPages.at(sec.toindex);
 		}
-		else if (NS->range() == NSRstory)
+		else if (nStyle->range() == NSRstory)
 			scP = DocPages.at(item->lastInChain()->OwnPage);
 	}
 	
@@ -18511,13 +18511,13 @@ bool ScribusDoc::isValidNotesSet(const NotesStyle &nStyle)
 	return true;
 }
 
-void ScribusDoc::invalidateNoteFrames(NotesStyle *nStyle)
+void ScribusDoc::invalidateNoteFrames(const NotesStyle * const nStyle)
 {
 	foreach (PageItem_NoteFrame* nF, listNotesFrames(nStyle))
 		nF->invalid = true;
 }
 
-void ScribusDoc::invalidateMasterFrames(NotesStyle *nStyle)
+void ScribusDoc::invalidateMasterFrames(const NotesStyle * const nStyle)
 {
 	QList<PageItem*> toInvalidate;
 	foreach (TextNote* note, m_docNotesList)

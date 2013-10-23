@@ -1648,26 +1648,11 @@ public:
 	 * master & note mark - master is mark in "master" text, note mark is at begining of note in noteframe
 	 */
 	
-	//return page where endnotesframe should be located depending of notes style range and location of master mark
-	const ScPage* page4EndNotes(NotesStyle* NS, PageItem* item);
-
-	//data handling structures
-private:
-	QList<Mark*> m_docMarksList;
-	QList<TextNote*> m_docNotesList;
-	//flags used for indicating needs of updates
-	bool flag_notesChanged;
-
-public:
 	const QList<Mark*> marksList() { return m_docMarksList; }
 	const QList<TextNote*> notesList() { return m_docNotesList; }
 	QList<NotesStyle*> m_docNotesStylesList;
 	QMap<PageItem_NoteFrame*, rangeItem> m_docEndNotesFramesMap;
 	QList<NotesStyle*> ns2Update; //list of notes styles to update
-
-	//returns list of notesframes for given Notes Style
-	QList<PageItem_NoteFrame*> listNotesFrames(const NotesStyle* const nStyle);
-
 	//flags used for indicating needs of updates
 	bool notesChanged() { return flag_notesChanged; }
 	void setNotesChanged(bool on) { flag_notesChanged = on; }
@@ -1677,7 +1662,9 @@ public:
 	bool flag_layoutNotesFrames;
 
 	//returns list of marks labels for given mark type
-	QStringList marksLabelsList(MarkType type);
+	QStringList marksLabelsList(const MarkType type);
+	//returns list of notesframes for given Notes Style
+	QList<PageItem_NoteFrame*> listNotesFrames(const NotesStyle* const nStyle);
 
 	//return mark definied with gioven label and given type
 	Mark* getMarkDefinied(const QString &label, const MarkType type); //returns mark with label and type (labels are unique only for same type marks)
@@ -1690,10 +1677,6 @@ public:
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
 	void setUndoDelMark(const Mark* const mrk);
-	//invalidate all text frames where given mark will found
-	//usefull spacially for varaible text marks after changing its text definition
-	//if forceUpdate then found master frames are relayouted
-	bool invalidateVariableTextFrames(const Mark* const mrk, bool forceUpdate = false); //returns if any text was changed
 
 	//for foot/endnotes
 	NotesStyle* newNotesStyle(const NotesStyle &nStyle);
@@ -1724,29 +1707,37 @@ public:
 
 	//search for endnotesframe for given notes style and item holding master mark
 	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, PageItem_TextFrame* master);
-	//
 	void setEndNoteFrame(PageItem_NoteFrame* nF, void* ptr)   { rangeItem rI={ptr}; m_docEndNotesFramesMap.insert(nF,rI); }
 	void setEndNoteFrame(PageItem_NoteFrame* nF, int section)   { rangeItem rI; rI.sectionIndex = section; m_docEndNotesFramesMap.insert(nF, rI); }
 	//update all endnotesframes content for given notes style
 	void updateEndnotesFrames(const NotesStyle* const nStyle = NULL, bool invalidate = false);
 	//update endnotesframe content
 	void updateEndNotesFrameContent(PageItem_NoteFrame* nF, bool invalidate = false);
-	//insert noteframe into list of changed
-	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNotesFramesChanged.append(nF); }
 	//update content for changed endnotesframes
 	void updateChangedEndNotesFrames();
+	//return page where endnotesframe should be located depending of notes style range and location of master mark
+	const ScPage* page4EndNotes(const NotesStyle* const nStyle, PageItem* item);
+
+private:
+	QList<Mark*> m_docMarksList;
+	QList<TextNote*> m_docNotesList;
+	NotesInFrameMap m_docNotesInFrameMap;
+	QList<PageItem_NoteFrame*> m_docEndNotesFramesChanged;
+	//flags used for indicating needs of updates
+	bool flag_notesChanged;
+	//invalidate all text frames where given mark will found
+	//usefull spacially for varaible text marks after changing its text definition
+	//if forceUpdate then found master frames are relayouted
+	bool invalidateVariableTextFrames(const Mark* const mrk, bool forceUpdate = false); //returns if any text was changed
+	//insert noteframe into list of changed
+	void endNoteFrameChanged(PageItem_NoteFrame* nF) { m_docEndNotesFramesChanged.append(nF); }
 	//finds mark position in text
 	//return true if mark was found, CPos is set for mark`s position
 	//if item==NULL then search in all items and if mark is found than item is set
 	int findMarkCPos(const Mark* const mrk, PageItem* item, int Start = 0);
-	QList<PageItem_NoteFrame*> m_docEndNotesFramesChanged;
-
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(const Mark* const mrk, int &lastItem);
-	
-private:
 	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
-	NotesInFrameMap m_docNotesInFrameMap;
 
 	PageItem* findFirstMarkItem(const Mark* const mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
 
@@ -1762,8 +1753,8 @@ private:
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
-	void invalidateNoteFrames(NotesStyle* nStyle);
-	void invalidateMasterFrames(NotesStyle* nStyle);
+	void invalidateNoteFrames(const NotesStyle* const nStyle);
+	void invalidateMasterFrames(const NotesStyle* const nStyle);
 
 public slots:
 	//update strings (page numbers) for marks
@@ -1778,19 +1769,20 @@ public slots:
 
 //auto-numerations
 public:
-	QMap<QString, NumStruct*> numerations;
-	QStringList orgNumNames; //orgNumerations keeps original settings read from paragraph styles for reset settings overrided localy
-	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
-	QString getNumberStr(const QString &numName, int level, bool reset, const ParagraphStyle &style);
-	void setNumerationCounter(const QString &numName, int level, int number);
 	bool flag_Renumber;
 	bool flag_NumUpdateRequest;
-	// for local numeration of paragraphs
-	bool updateLocalListNumbers(const StoryText& itemText); //return true if any num strings were updated and item need s invalidation
+	QMap<QString, NumStruct*> numerations;
+	void setupNumerations(); //read styles for used auto-numerations, initialize numCounters
 	bool updateListNumbers(bool updateNumerations = false);
 	void itemSelection_ClearBulNumStrings(Selection *customSelection);
+private:
+	QStringList orgNumNames; //orgNumerations keeps original settings read from paragraph styles for reset settings overrided localy
+	QString getNumberStr(const QString &numName, int level, bool reset, const ParagraphStyle &style);
+	void setNumerationCounter(const QString &numName, int level, int number);
+	// for local numeration of paragraphs
+	bool updateLocalListNumbers(const StoryText& itemText); //return true if any num strings were updated and item need s invalidation
+	
 /* Functions for PDF Form Actions */
-
 public:
 	void SubmitForm();
 	void ImportData();

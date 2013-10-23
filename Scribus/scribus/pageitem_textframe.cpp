@@ -1630,7 +1630,7 @@ Start:
 			//set style for paragraph effects
 			if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
 			{
-				if (style.hasDropCap() || style.hasBullet() || style.hasNum())
+				if ((!isNoteFrame() && style.hasDropCap()) || style.hasBullet() || style.hasNum())
 				{
 					const QString& curParent(style.hasParent() ? style.parent() : style.name());
 					CharStyle newStyle;
@@ -1686,20 +1686,20 @@ Start:
 			}
 
 			// find out about par gap and dropcap
-			if (a == firstInFrame())
-			{
-				if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
-				{
-					if (currentCh != SpecialChars::PARSEP)
-					{
-						DropCmode = style.hasDropCap();
-						if (DropCmode)
-							DropLines = style.dropCapLines();
-					}
-					else
-						DropCmode = false;
-				}
-			}
+//			if (a == firstInFrame())
+//			{
+//				if (a == 0 || itemText.text(a-1) == SpecialChars::PARSEP)
+//				{
+//					if (currentCh != SpecialChars::PARSEP)
+//					{
+//						DropCmode = style.hasDropCap();
+//						if (DropCmode)
+//							DropLines = style.dropCapLines();
+//					}
+//					else
+//						DropCmode = false;
+//				}
+//			}
 
 			const ScFace font = charStyle.font();
 
@@ -1755,16 +1755,19 @@ Start:
 				{
 					if (!current.afterOverflow && current.recalculateY && !current.startOfCol)
 						current.yPos += style.gapBefore();
-					DropCapDrop = 0;
-					if (chstr[0] != SpecialChars::PARSEP)
-						DropCmode = style.hasDropCap();
-					else
-						DropCmode = false;
-					if (DropCmode && !current.afterOverflow)
-					{
-						DropLines = style.dropCapLines();
-						DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
-//						qDebug() << QString("dropcapdrop: y=%1+%2").arg(current.yPos).arg(DropCapDrop);
+					if (!isNoteFrame())
+					{ //no dropcap in notes frames for now
+						DropCapDrop = 0;
+						if (chstr[0] != SpecialChars::PARSEP)
+							DropCmode = style.hasDropCap();
+						else
+							DropCmode = false;
+						if (DropCmode && !current.afterOverflow)
+						{
+							DropLines = style.dropCapLines();
+							DropCapDrop = calculateLineSpacing (style, this) * (DropLines - 1);
+							//						qDebug() << QString("dropcapdrop: y=%1+%2").arg(current.yPos).arg(DropCapDrop);
+						}
 					}
 				}
 			}
