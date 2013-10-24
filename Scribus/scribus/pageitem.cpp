@@ -10229,6 +10229,12 @@ void PageItem::addWelded(PageItem* iPt)
 //welded frames
 void PageItem::weldTo(PageItem* pIt)
 {
+	//don`t weld to autoremovable notes frames created by other frame
+	if (pIt->isAutoNoteFrame() && !this->asTextFrame()->notesFramesList().contains(pIt->asNoteFrame()))
+		return;
+	if (this->isAutoNoteFrame() && !pIt->asTextFrame()->notesFramesList().contains(this->asNoteFrame()))
+		return;
+		
 	for (int i = 0 ; i <  weldList.count(); i++)
 	{
 		PageItem::weldingInfo wInf = weldList.at(i);
@@ -10370,7 +10376,7 @@ void PageItem::unWeld()
 			if (pIt2 == this)
 			{
 				pIt->weldList.removeAt(b);
-				if(undoManager->undoEnabled())
+				if(undoManager->undoEnabled() && !pIt->isAutoNoteFrame())
 				{
 					ScItemState<PageItem*> *is = new ScItemState<PageItem*>(Um::WeldItems,"",Um::IGroup);
 					is->set("UNWELD_ITEM", "unweld_item");
