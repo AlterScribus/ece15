@@ -11471,18 +11471,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 			}
 		}
 		if(currItem->textFlowMode() != PageItem::TextFlowDisabled)
-		{
-			int id = Items->indexOf(currItem) - 1;
-			for(int tIdx = id; tIdx >= 0; --tIdx)
-			{
-				if( (Items->at(tIdx)->asTextFrame())
-						&& (!itemSelection->containsItem(Items->at(tIdx)))
-						&& (currItem->getBoundingRect().intersects(Items->at(tIdx)->getBoundingRect())) )
-				{
-					textInteractionItems.insert( Items->at(tIdx)->asTextFrame() );
-				}
-			}
-		}
+			textInteractionItems = currItem->textFlowInteractionsItems();
 		if (selectedItemCount <= Um::ItemsInvolvedLimit)
 			tooltip += "\t" + currItem->getUName() + "\n";
 		delItems.append(itemSelection->takeItem(offs));
@@ -11535,7 +11524,9 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			if (currItem->asTextFrame())
 			{
-				if (currItem->nextInChain())
+				if (currItem->prevInChain())
+					textInteractionItems.insert(currItem->prevInChain()->asTextFrame());
+				else if (currItem->nextInChain())
 					textInteractionItems.insert(currItem->nextInChain()->asTextFrame());
 				currItem->dropLinks();
 				if (currItem->itemText.length() > 0)

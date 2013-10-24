@@ -4428,53 +4428,31 @@ void PageItem::checkTextFlowInteractions(bool allItems)
 {	
 	if(!m_Doc->isLoading())
 	{
-		QRectF baseRect(getBoundingRect());
-		QList<PageItem*>* items = OnMasterPage.isEmpty() ? &m_Doc->DocItems : &m_Doc->MasterItems;
-		if (!allItems)
-		{
-			int ids = items->indexOf(this) - 1;
-			for(int idx = ids; idx >= 0 ; --idx)
-			{
-				if(items->at(idx)->asTextFrame()) // do not bother with no text frames
-				{
-					QRectF uRect(items->at(idx)->getBoundingRect());
-					if(baseRect.intersects(uRect))
-					{
-						items->at(idx)->update();
-					}
-				}
-			}
-		}
-		else
-		{
-			for(int idx = items->count() - 1; idx >= 0 ; --idx)
-			{
-				if(items->at(idx) != this) // avoids itself
-				{
-					if(items->at(idx)->asTextFrame()) // do not bother with no text frames
-					{
-						QRectF uRect(items->at(idx)->getBoundingRect());
-						if(baseRect.intersects(uRect))
-						{
-							items->at(idx)->update();
-						}
-					}
-				}
-			}
-		}
+		QSet<PageItem_TextFrame *> itemsSet = textFlowInteractionsItems(allItems);
+		foreach (PageItem_TextFrame* item, itemsSet)
+			item->update();
 	}
 }
 
-QSet<PageItem_TextFrame *> PageItem::textFlowInteractionsItems()
+QSet<PageItem_TextFrame *> PageItem::textFlowInteractionsItems(bool allItems)
 {
 	QSet<PageItem_TextFrame *> itemsSet;
 	QRectF baseRect(getBoundingRect());
+	//expand checked region of notesFrames
+	if (isTextFrame() && !asTextFrame()->notesFramesList().isEmpty())
+	{
+		foreach(PageItem_NoteFrame* nF, asTextFrame()->notesFramesList())
+		{
+			if (nF->textFlowMode() != PageItem::TextFlowDisabled)
+				baseRect = baseRect.united(nF->getBoundingRect());
+		}
+	}
 	QList<PageItem*>* items = OnMasterPage.isEmpty() ? &m_Doc->DocItems : &m_Doc->MasterItems;
-	int ids = items->indexOf(this) - 1;
+	int ids = (allItems) ? items->count() : items->indexOf(this) - 1;
 	for(int idx = ids; idx >= 0 ; --idx)
 	{
-		PageItem_TextFrame * item = items->at(idx)->asTextFrame();
-		if(item) // do not bother with no text frames
+		PageItem_TextFrame * item;
+		if(item = items->at(idx)->asTextFrame()) // do not bother with no text frames
 		{
 			QRectF uRect(item->getBoundingRect());
 			if(baseRect.intersects(uRect))
