@@ -127,7 +127,8 @@ public:
 	//for footnotes/endnotes
 	bool hasNoteMark(const NotesStyle* const nStyle = NULL);
 	bool hasNoteFrame(const NotesStyle* const nStyle, bool inChain = false);
-	void delAllNoteFrames(bool doUpdate = false);
+	//return set of items in interaction with deleted noteframe
+	QSet<PageItem_TextFrame *> delAllNoteFrames();
 	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	void notesFramesLayout();
 	//removing all marsk from text, returns number of removed marks

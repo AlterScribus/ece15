@@ -116,6 +116,7 @@ public:
 	void setMasterMark(Mark* m) { Q_ASSERT(m); m_noteMasterMark = m; }
 	Mark* noteMark() const { return m_noteFrameMark; }
 	void setNoteMark(Mark* m) { Q_ASSERT(m); m_noteFrameMark = m; }
+	void clearNoteMark() { m_noteFrameMark = NULL; }
 	const QString saxedText() const { return m_noteSaxedText; }
 	void setSaxedText(const QString &string) { m_noteSaxedText = string; }
 	bool isEndNote() const { return m_notesStyle->isEndNotes(); }

@@ -5699,29 +5699,22 @@ bool PageItem_TextFrame::hasNoteFrame(const NotesStyle* const nStyle, bool inCha
 	return false;
 }
 
-void PageItem_TextFrame::delAllNoteFrames(bool doUpdate)
+QSet<PageItem_TextFrame *> PageItem_TextFrame::delAllNoteFrames()
 {
-	int oldItemsCount = m_Doc->Items->count();
-
+	QSet<PageItem_TextFrame *> textInteractionSet;
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->notesList().isEmpty() && !nF->isAutoNoteFrame())
+		if (nF->isAutoNoteFrame())
 			delList.append(nF);
 	}
 	while (!delList.isEmpty())
 	{
 		PageItem_NoteFrame* nF = delList.takeFirst();
+		textInteractionSet.unite(nF->textFlowInteractionsItems());
 		m_Doc->delNoteFrame(nF);
 	}
-
-	//check if doc need update
-	if (doUpdate && (oldItemsCount != m_Doc->Items->count()))
-	{
-		m_Doc->changed();
-		m_Doc->regionsChanged()->update(QRectF());
-	}
-	m_Doc->setNotesChanged(true);
+	return textInteractionSet;
 }
 
 Mark* PageItem_TextFrame::selectedMark(bool onlySelection)

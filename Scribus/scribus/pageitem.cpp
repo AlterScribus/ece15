@@ -4465,6 +4465,25 @@ void PageItem::checkTextFlowInteractions(bool allItems)
 	}
 }
 
+QSet<PageItem_TextFrame *> PageItem::textFlowInteractionsItems()
+{
+	QSet<PageItem_TextFrame *> itemsSet;
+	QRectF baseRect(getBoundingRect());
+	QList<PageItem*>* items = OnMasterPage.isEmpty() ? &m_Doc->DocItems : &m_Doc->MasterItems;
+	int ids = items->indexOf(this) - 1;
+	for(int idx = ids; idx >= 0 ; --idx)
+	{
+		PageItem_TextFrame * item = items->at(idx)->asTextFrame();
+		if(item) // do not bother with no text frames
+		{
+			QRectF uRect(item->getBoundingRect());
+			if(baseRect.intersects(uRect))
+				itemsSet.insert(item);
+		}
+	}
+	return itemsSet;
+}
+
 void PageItem::convertTo(ItemType newType)
 {
 	if (m_ItemType == newType)

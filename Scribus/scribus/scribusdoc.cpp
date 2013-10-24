@@ -11429,7 +11429,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 	if (selectedItemCount == 0)
 		return;
 	QList<PageItem*> delItems;
-	QList<PageItem*> textInteractionItems;// text frames possibly interested in removal of selected items
+	QSet<PageItem_TextFrame*> textInteractionItems;// text frames possibly interested in removal of selected items
 	PageItem *currItem;
 	QList<PageItem*>* itemList = Items;
 	uint offs = 0;
@@ -11477,10 +11477,9 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 			{
 				if( (Items->at(tIdx)->asTextFrame())
 						&& (!itemSelection->containsItem(Items->at(tIdx)))
-						&& (currItem->getBoundingRect().intersects(Items->at(tIdx)->getBoundingRect()))
-						&& (!textInteractionItems.contains(Items->at(tIdx))) )
+						&& (currItem->getBoundingRect().intersects(Items->at(tIdx)->getBoundingRect())) )
 				{
-					textInteractionItems.append( Items->at(tIdx) );
+					textInteractionItems.insert( Items->at(tIdx)->asTextFrame() );
 				}
 			}
 		}
@@ -11536,13 +11535,15 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			if (currItem->asTextFrame())
 			{
+				if (currItem->nextInChain())
+					textInteractionItems.insert(currItem->nextInChain()->asTextFrame());
 				currItem->dropLinks();
 				if (currItem->itemText.length() > 0)
 				{
 					currItem->itemText.selectAll();
 					currItem->asTextFrame()->removeMarksFromText(true);
-					currItem->asTextFrame()->delAllNoteFrames(false);
 				}
+				textInteractionItems.unite(currItem->asTextFrame()->delAllNoteFrames());
 			}
 		}
 		if (currItem->isWelded())
@@ -11574,7 +11575,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 	// JG resetting ElemToLink fixes #5629
 	ElemToLink = NULL;
 	
-	foreach(PageItem* tii, textInteractionItems)
+	foreach(PageItem_TextFrame* tii, textInteractionItems)
 	{
 		tii->update();
 	}
@@ -18422,7 +18423,10 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	
 	//for all notes in noteFrame set notes marks to null
 	foreach(TextNote* n, nF->notesList())
-		n->setNoteMark(NULL);
+	{
+		eraseMark(n->noteMark(),true, nF, true);
+		n->clearNoteMark();
+	}
 	
 	if (nF->itemText.length() > 0 && removeMarks)
 		nF->removeMarksFromText(false);
@@ -18474,7 +18478,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 			m_Selection->addItem(nF->masterFrame());
 	}
 	m_Selection->delaySignalsOff();
-	
+	regionsChanged()->update(nF->getVisualBoundingRect());
 	Items->removeOne(nF);
 	setNotesChanged(true);
 	if (forceDeletion)
