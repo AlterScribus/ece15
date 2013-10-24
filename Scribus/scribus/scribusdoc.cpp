@@ -11536,10 +11536,13 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			if (currItem->asTextFrame())
 			{
-				currItem->itemText.selectAll();
-				currItem->asTextFrame()->removeMarksFromText(true);
-				currItem->asTextFrame()->delAllNoteFrames(false);
 				currItem->dropLinks();
+				if (currItem->itemText.length() > 0)
+				{
+					currItem->itemText.selectAll();
+					currItem->asTextFrame()->removeMarksFromText(true);
+					currItem->asTextFrame()->delAllNoteFrames(false);
+				}
 			}
 		}
 		if (currItem->isWelded())
@@ -17492,7 +17495,6 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 							if (item->itemText.hasMark(i) && item->itemText.mark(i)->isNoteType())
 							{
 								TextNote * note = item->itemText.mark(i)->getNotePtr();
-								note->setNoteMark(NULL);
 								note->masterMark()->setItemPtr(item);
 								note->masterMark()->setItemName(item->itemName());
 							}
@@ -17809,7 +17811,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 	for (int pos = frame->firstInFrame(); pos <= frame->lastInFrame(); ++pos)
 	{
 		Mark* mark = frame->itemText.mark(pos);
-		if (frame->itemText.hasMark(pos) && mark->isType(MARKNoteMasterType))
+		if (mark && mark->isType(MARKNoteMasterType))
 		{
 			if (mark->getNotePtr() == NULL)
 				continue;
@@ -17840,6 +17842,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 				TextNote* note = mark->getNotePtr();
 				note->setNum(noteNum);
 				note->masterMark()->setItemPtr(frame);
+				
 				if (note->noteMark() != NULL)
 				{
 					note->noteMark()->setString(numStr);
