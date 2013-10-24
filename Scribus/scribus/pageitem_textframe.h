@@ -127,10 +127,8 @@ public:
 	//for footnotes/endnotes
 	bool hasNoteMark(const NotesStyle* const nStyle = NULL);
 	bool hasNoteFrame(const NotesStyle* const nStyle, bool inChain = false);
-	//bool hasNoteFrame(PageItem_NoteFrame* nF) { return m_notesFramesMap.contains(nF); }
 	void delAllNoteFrames(bool doUpdate = false);
 	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
-	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
 	void notesFramesLayout();
 	//removing all marsk from text, returns number of removed marks
 	int removeMarksFromText(bool doUndo);
@@ -146,8 +144,8 @@ public:
 
 private:
 	NotesInFrameMap m_notesFramesMap;
-	void updateAllMyNotes(QMap<int, Mark*> &notesMarksPositions);
-	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> &noteMarksPosMap); //update notes frames content
+	void updateItemNotes(QMap<int, Mark*> &notesMarksPositions);
+	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> &noteMarksPosistions); //update notes frames content
 	void updateNotesMarks(NotesInFrameMap &notesMap);
 	Mark* selectedMark(bool onlySelection = true);
     TextNote* noteFromSelectedNoteMark(int& foundPos, bool onlySelection = true);

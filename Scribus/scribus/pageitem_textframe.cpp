@@ -3080,7 +3080,7 @@ Start:
 	MaxChars = itemText.length();
 	invalid = false;
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-		updateAllMyNotes(noteMarksPosMap);
+		updateItemNotes(noteMarksPosMap);
 	if (invalid)
 		goto Start;
 	if (NextBox != NULL)
@@ -3099,7 +3099,7 @@ NoRoom:
 	adjustParagraphEndings ();
 
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-		updateAllMyNotes(noteMarksPosMap);
+		updateItemNotes(noteMarksPosMap);
 	if (invalid)
 		goto Start;
 
@@ -5810,7 +5810,7 @@ TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(bool onlySelection)
 	return noteFromSelectedNoteMark(dummy, onlySelection);
 }
 
-void PageItem_TextFrame::updateAllMyNotes(QMap<int, Mark*> &notesMarksPositions)
+void PageItem_TextFrame::updateItemNotes(QMap<int, Mark*> &notesMarksPositions)
 {
 	UndoManager::instance()->setUndoEnabled(false);
 	NotesInFrameMap notesMap = updateNotesFrames(notesMarksPositions);
@@ -5903,11 +5903,11 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 	}
 }
 
-NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMarksPosMap)
+NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMarksPosistions)
 {
 	NotesInFrameMap notesMap; //= m_notesFramesMap;
-	QMap<int, Mark*>::Iterator it = noteMarksPosMap.begin();
-	QMap<int, Mark*>::Iterator end = noteMarksPosMap.end();
+	QMap<int, Mark*>::Iterator it = noteMarksPosistions.begin();
+	QMap<int, Mark*>::Iterator end = noteMarksPosistions.end();
 	PageItem* lastItem = this;
 	while (it != end)
 	{
@@ -6020,6 +6020,29 @@ void PageItem_TextFrame::notesFramesLayout()
 
 int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 {
+	//remove and delete lists marks
+	int end = itemText.endOfSelection();
+	for (int i = itemText.startOfSelection(); i < end; ++i)
+	{
+		if (isNoteFrame() && itemText.hasMarkType(i,MARKNoteFrameType))
+			continue;
+		if (itemText.hasMarkType(i,MARKBullNumType))
+		{
+			if (itemText.paragraphStyle(i).hasNum())
+				m_Doc->flag_Renumber = true;
+//				ParagraphStyle newStyle;
+//				newStyle.setHasBullet(false);
+//				newStyle.setHasNum(false);
+//				itemText.applyStyle(i,newStyle);
+			delete (BulNumMark*) itemText.mark(i);
+			itemText.removeChars(i,1);
+			--end;
+			--i;
+			continue;
+		}
+		i = itemText.nextParagraph(i);
+	}
+	
 	int num = 0;
 	if (!isNoteFrame())
 	{
@@ -6036,20 +6059,6 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		}
 	}
 
-	//remove lists property from paragraph style
-	for (int i = itemText.startOfSelection(); i < itemText.endOfSelection(); ++i)
-	{
-		if (itemText.hasMarkType(i,MARKBullNumType))
-		{
-			if (itemText.paragraphStyle(i).hasNum())
-				m_Doc->flag_Renumber = true;
-			ParagraphStyle newStyle;
-			newStyle.setHasBullet(false);
-			newStyle.setHasNum(false);
-			itemText.applyStyle(i,newStyle);
-		}
-		i = itemText.nextParagraph(i);
-	}
 	Mark* mrk = selectedMark(true);
 	while (mrk != NULL)
 	{
