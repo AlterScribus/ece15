@@ -258,6 +258,7 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 		getUniqueName(mrk->label, m_Doc->marksLabelsList(MARKNoteFrameType), "_");
 		const_cast<TextNote*>(note)->setNoteMark(mrk);
 	}
+	mrk->OwnPage = OwnPage;
 	mrk->setItemPtr(this);
 	mrk->setString(getNotesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
 	
