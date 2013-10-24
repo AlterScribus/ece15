@@ -113,9 +113,9 @@ public:
 	void setNum(const int i) { m_number = i; }
 	const QString numString() const { return notesStyle()->numString(m_number); }
 	Mark* masterMark() const { return m_noteMasterMark; }
-	void setMasterMark(Mark* m) { m_noteMasterMark = m; }
+	void setMasterMark(Mark* m) { Q_ASSERT(m); m_noteMasterMark = m; }
 	Mark* noteMark() const { return m_noteFrameMark; }
-	void setNoteMark(Mark* m) { m_noteFrameMark = m; }
+	void setNoteMark(Mark* m) { Q_ASSERT(m); m_noteFrameMark = m; }
 	const QString saxedText() const { return m_noteSaxedText; }
 	void setSaxedText(const QString &string) { m_noteSaxedText = string; }
 	bool isEndNote() const { return m_notesStyle->isEndNotes(); }
