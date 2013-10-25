@@ -995,7 +995,7 @@ bool PDFLibCore::PDF_Begin_Doc(const QString& fn, SCFonts &AllFonts, QMap<QStrin
 	for (uint ax = 0; ax < ar; ++ax)
 		ind2PDFabr[ax] = tmpf[ax];
 	QList<PageItem*> allItems;
-	for (QHash<int, PageItem*>::iterator itf = doc.FrameItems.begin(); itf != doc.FrameItems.end(); ++itf)
+	for (QHash<short, PageItem*>::iterator itf = doc.FrameItems.begin(); itf != doc.FrameItems.end(); ++itf)
 	{
 		pgit = itf.value();
 		if (pgit->isGroup())

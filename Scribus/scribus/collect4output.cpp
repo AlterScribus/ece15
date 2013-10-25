@@ -232,7 +232,7 @@ bool CollectForOutput::collectItems()
 				emit itemsCollected(c++);
 		}
 	}
-	for (QHash<int, PageItem*>::iterator itf = m_Doc->FrameItems.begin(); itf != m_Doc->FrameItems.end(); ++itf)
+	for (QHash<short, PageItem*>::iterator itf = m_Doc->FrameItems.begin(); itf != m_Doc->FrameItems.end(); ++itf)
 	{
 		PageItem *it = itf.value();
 		if (it->isGroup())

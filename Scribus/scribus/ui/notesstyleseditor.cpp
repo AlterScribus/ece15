@@ -266,7 +266,8 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 	{
 		QString newName = NSlistBox->currentText();
 		NotesStyle newNS = changesMap.value(newName);
-		if (m_Doc->validateNSet(newNS))
+		QString errStr;
+		if (m_Doc->isValidNotesSet(newNS, errStr))
 		{
 			addNewNsMode = false;
 			OKButton->setText(tr("OK"));
@@ -277,7 +278,10 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 			NSlistBox->setCurrentIndex(NSlistBox->findText(newNS.name()));
 		}
 		else
+		{
+			QMessageBox::warning(m_Doc->scMW(), QObject::tr("Unacceptable settings for note style"), "<qt>"+ errStr +"</qt>", QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
 			return;
+		}
 	}
 	else
 	{
@@ -290,8 +294,10 @@ void NotesStylesEditor::on_ApplyButton_clicked()
 			NotesStyle n = changesMap.value(nsName);
 			
 			//validate settings
-			if (!m_Doc->validateNSet(n))
+			QString errStr;
+			if (!m_Doc->isValidNotesSet(n, errStr))
 			{
+				QMessageBox::warning(m_Doc->scMW(), QObject::tr("Unacceptable settings for note style"), "<qt>"+ errStr +"</qt>", QMessageBox::Ok, QMessageBox::Abort | QMessageBox::Default);
 				NSlistBox->setCurrentIndex(NSlistBox->findText(n.name()));
 				break;
 			}

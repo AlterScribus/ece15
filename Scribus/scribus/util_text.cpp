@@ -52,7 +52,7 @@ int findParagraphStyle(ScribusDoc* doc, const QString &name)
 	return -1;
 }
 
-StoryText desaxeStoryFromString(ScribusDoc* doc, QString saxedString)
+StoryText desaxeStoryFromString(ScribusDoc* doc, const QString &saxedString)
 {
 	assert(!saxedString.isEmpty());
 
@@ -62,7 +62,7 @@ StoryText desaxeStoryFromString(ScribusDoc* doc, QString saxedString)
 	StoryText * story = dig->result<StoryText>();
 	if (story == NULL)
 	{
-		qWarning();
+		qWarning() << "Error on desaxing story from string: " << saxedString;
 		return StoryText(doc);
 	}
 

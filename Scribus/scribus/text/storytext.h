@@ -125,11 +125,11 @@ public:
 	// Insert chars ar specific position
 	void insertChars(int pos, QString txt, bool applyNeighbourStyle = false);
 	// Insert inline object at current cursor position
-	void insertObject(int obj);
+	void insertObject(short obj);
 	// Insert object at specific position
-	void insertObject(int pos, int obj);
+	void insertObject(int pos, short obj);
 	// Insert mark at cursor or specific position
-	void insertMark(Mark* Mark, int pos = -1);
+	void insertMark(const Mark* const mrk, int pos = -1);
 	void replaceChar(int pos, QChar ch);
 	// Replaced a word, and return the difference in length between old and new
 	int replaceWord(int pos, QString newWord);
@@ -159,10 +159,10 @@ public:
 	
 	bool hasObject(int pos) const;
 	PageItem* object(int pos) const;
-	bool hasMark(int pos, Mark* mrk = NULL) const;
+	bool hasMark(int pos, const Mark* const mrk = NULL) const;
 	bool hasMarkType(int pos, MarkType mt) const;
 	Mark* mark(int pos) const;
-	void replaceMark(int pos, Mark* mrk);
+	void replaceMark(int pos, const Mark* const mrk);
 	
 	// Get charstyle at current cursor position
 	const CharStyle& charStyle() const;

@@ -47,8 +47,10 @@ for which a new license (GPL+exception) is in place.
 #include "scmimedata.h"
 #include "scpaths.h"
 #include "scribus.h"
+#include "scribusdoc.h"
 #include "scribusXml.h"
 #include "scribuscore.h"
+#include "scribusview.h"
 #include "sctextstream.h"
 #include "selection.h"
 #include "undomanager.h"
@@ -851,7 +853,7 @@ void VivaPlug::parseTextChainsXML(const QDomElement& obNode)
 					PageItem *next = GElements[a];
 					first->link(next);
 					next->setColumns(first->columns());
-					next->setColumnGap(first->columnGap());
+					next->setColumnsGap(first->columnGap());
 					first = next;
 				}
 			}
@@ -1554,7 +1556,7 @@ PageItem* VivaPlug::parseObjectDetailsXML(const QDomElement& obNode, int baseTyp
 		{
 			item->setTextToFrameDist(textMarginLeft, textMarginRight, textMarginTop, textMarginBottom);
 			item->setColumns(textColumnCount);
-			item->setColumnGap(textColumnGap);
+			item->setColumnsGap(textColumnGap);
 			if (itemText.length() > 0)
 				item->itemText.append(itemText);
 		}

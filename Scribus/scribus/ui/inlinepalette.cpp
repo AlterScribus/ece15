@@ -251,7 +251,7 @@ void InlinePalette::updateItemList()
 {
 	InlineViewWidget->clear();
 	InlineViewWidget->setWordWrap(true);
-	for (QHash<int, PageItem*>::iterator it = m_doc->FrameItems.begin(); it != m_doc->FrameItems.end(); ++it)
+	for (QHash<short, PageItem*>::iterator it = m_doc->FrameItems.begin(); it != m_doc->FrameItems.end(); ++it)
 	{
 		PageItem *currItem = it.value();
 		QPixmap pm = QPixmap::fromImage(currItem->DrawObj_toImage(48));

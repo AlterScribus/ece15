@@ -389,6 +389,9 @@ void StoryText::removeParSep(int pos)
 		++nextParEnd;
 	ScText* it = item_p(pos);
 	if (it->parstyle) {
+		//		const CharStyle* oldP = & it->parstyle->charStyle();
+		//		const CharStyle* newP = & that->paragraphStyle(pos+1).charStyle();
+		//		d->replaceParentStyle(pos, oldP, newP);
 		delete it->parstyle;
 		it->parstyle = 0;
 	}
@@ -420,13 +423,13 @@ void StoryText::removeChars(int pos, uint len)
 		//No avox, mark must be deleted by ScribusDoc
 		//because it is "owner" of the pointer and there is many dependencies
 		//when mark can be deleted and what should be done if it is deleted
-//        if (it->mark != NULL)
-//        {
-//            delete it->mark;
-//            it->mark = NULL;
-//        }
-
-//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
+		//        if (it->mark != NULL)
+		//        {
+		//            delete it->mark;
+		//            it->mark = NULL;
+		//        }
+		
+		//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
 		d->takeAt(i);
 		d->len--;
 		delete it;
@@ -640,12 +643,12 @@ void StoryText::hyphenateWord(int pos, uint len, char* hyphens)
 	invalidate(pos, pos + len);
 }
 
-void StoryText::insertObject(int ob)
+void StoryText::insertObject(short ob)
 {
 	insertObject(d->cursorPosition, ob);
 }
 
-void StoryText::insertObject(int pos, int ob)
+void StoryText::insertObject(int pos, short ob)
 {
 	if (pos < 0)
 		pos += length()+1;
@@ -656,15 +659,15 @@ void StoryText::insertObject(int pos, int ob)
 	m_doc->FrameItems[ob]->OwnPage = -1; // #10379: OwnPage is not meaningful for inline object
 }
 
-void StoryText::insertMark(Mark* Mark, int pos)
+void StoryText::insertMark(const Mark* const mrk, int pos)
 {
-	if (Mark == NULL)
+	if (mrk == NULL)
 		return;
 	if (pos < 0)
 		pos = d->cursorPosition;
 	
 	insertChars(pos, SpecialChars::OBJECT, false);
-	const_cast<StoryText *>(this)->d->at(pos)->mark = Mark;
+	const_cast<StoryText *>(this)->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
 void StoryText::replaceObject(int pos, int ob)
@@ -692,7 +695,8 @@ QString StoryText::plainText() const
 	QChar   ch;
 	QString result;
 	
-	result.reserve(length());
+	int len = length();
+	result.reserve(len);
 	
 	StoryText* that(const_cast<StoryText*>(this));
 	for (int i = 0; i < length(); ++i) {
@@ -821,7 +825,7 @@ PageItem* StoryText::object(int pos) const
 	return that->d->at(pos)->getItem(m_doc);
 }
 
-bool StoryText::hasMark(int pos, Mark* mrk) const
+bool StoryText::hasMark(int pos, const Mark* const mrk) const
 {
 	if (pos < 0)
 		pos += length();
@@ -835,7 +839,14 @@ bool StoryText::hasMark(int pos, Mark* mrk) const
 
 bool StoryText::hasMarkType(int pos, MarkType mt) const
 {
-	return (hasMark(pos) && mark(pos)->isType(mt));
+	if (pos < 0)
+		pos += length();
+	
+	assert(pos >= 0);
+	assert(pos < length());
+	
+	StoryText* that = const_cast<StoryText *>(this);
+	return that->d->at(pos)->hasMarkType(mt);
 }
 
 Mark* StoryText::mark(int pos) const
@@ -851,7 +862,7 @@ Mark* StoryText::mark(int pos) const
 }
 
 
-void StoryText::replaceMark(int pos, Mark* mrk)
+void StoryText::replaceMark(int pos, const Mark* const mrk)
 {
 	if (pos < 0)
 		pos += length();
@@ -859,7 +870,8 @@ void StoryText::replaceMark(int pos, Mark* mrk)
 	assert(pos >= 0);
 	assert(pos < length());
 	
-	this->d->at(pos)->mark = mrk;
+	StoryText* that = const_cast<StoryText *>(this);
+	that->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
 
@@ -2035,7 +2047,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 		{
 			Mark* mrk = mark(i);
 			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType))
-			    || mrk->isType(MARKBullNumType))
+					|| mrk->isType(MARKBullNumType))
 				continue; //do not insert notes marks into notes frames and bullets marks anywhere
 		}
 		const QChar curr(text(i));
@@ -2086,33 +2098,14 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			Xml_attr mark_attr;
 			mark_attr.insert("label", mrk->label);
 			mark_attr.insert("typ", QString::number((int )mrk->getType()));
-			//			if (!mrk->isType(MARKBullNumType))
-			//			{
-			//				mark_attr.insert("strtxt", mrk->getString());
-			//				ParagraphStyle pstyle = this->paragraphStyle(i);
-			//				mark_attr.insert("style_peoffset", QString::number(pstyle.parEffectOffset(),'f',2));
-			//				mark_attr.insert("style_peindent", QString::number(pstyle.parEffectIndent(),'f',2));
-			//				mark_attr.insert("style_pecharstyle", pstyle.peCharStyleName());
-			//				mark_attr.insert("style_hasbul", pstyle.hasBullet() ? "1" : "0");
-			//				mark_attr.insert("style_bulletstr", pstyle.bulletStr());
-			//				mark_attr.insert("style_hasnum", pstyle.hasNum() ? "1" : "0");
-			//				mark_attr.insert("style_numname", pstyle.numName());
-			//				mark_attr.insert("style_numformat", QString::number( (int)pstyle.numFormat()));
-			//				mark_attr.insert("style_numprefix", pstyle.numPrefix());
-			//				mark_attr.insert("style_numsuffix", pstyle.numSuffix());
-			//				mark_attr.insert("style_numlevel", QString::number(pstyle.numLevel()));
-			//				mark_attr.insert("style_numstart", QString::number(pstyle.numStart()));
-			//				mark_attr.insert("style_numrestart", QString::number((int) pstyle.numRestart()));
-			//				mark_attr.insert("style_numother", pstyle.numOther() ? "1" : "0");
-			//				mark_attr.insert("style_numhigher", pstyle.numHigher() ? "1" : "0");
-			//			}
+			
 			if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
 				mark_attr.insert("item", mrk->getItemPtr()->itemName());
 			else if (mrk->isType(MARK2MarkType))
 			{
 				QString l;
 				MarkType t;
-				mrk->getMark(l, t);
+				mrk->getTargetMark(l, t);
 				if (m_doc->getMarkDefinied(l,t) != NULL)
 				{
 					mark_attr.insert("mark_l", l);
@@ -2356,7 +2349,7 @@ public:
 					if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
 					{
 						Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
-						mrk->setMark(targetMark);
+						mrk->setTargetMark(targetMark);
 						if (targetMark == NULL)
 							mrk->setString("0");
 						else

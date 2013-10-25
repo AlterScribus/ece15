@@ -1022,6 +1022,7 @@ public: // Start public functions
 	 * @param allItems While you generally want to check for items below, it can happen that you want to update full range of text frames (e.g. when shuffle items order). Default to false.
 	 */
 	void checkTextFlowInteractions(bool allItems = false);
+	QSet<PageItem_TextFrame *> textFlowInteractionsItems(bool allItems = false);
 
 	/** @brief Get the frame type
 	 *
