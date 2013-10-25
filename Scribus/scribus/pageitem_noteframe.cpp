@@ -211,9 +211,10 @@ void PageItem_NoteFrame::layout()
 	
 	if ((m_Doc->appMode == modeEdit) && isSelected())
 		updateNotesText();
-	
+
 	PageItem_TextFrame::layout();
 	int oldH = m_height;
+	QRectF oldBox = getBoundingRect();
 	if (getNotesStyle()->isAutoNotesHeight())
 		setTextFrameHeight();
 	if (oldH != height() && masterFrame() != NULL)
@@ -250,7 +251,7 @@ void PageItem_NoteFrame::layout()
 		}
 	}
 	invalid = false;
-	m_Doc->regionsChanged()->update(getBoundingRect());
+	m_Doc->regionsChanged()->update(getBoundingRect().united(oldBox));
 	UndoManager::instance()->setUndoEnabled(true);
 }
 

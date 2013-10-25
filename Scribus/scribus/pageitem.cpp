@@ -6588,19 +6588,33 @@ void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
 
 void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 {
-	ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
-	QString text = is->get("TEXT_STR");
-	int start = is->getInt("START");
-	if (isUndo){
-		itemText.insertChars(start,text);
-		itemText.applyCharStyle(start, text.length(), is->getItem());
-		invalid = true;
-		invalidateLayout();
-	} else {
+	QString text;
+	int start = ss->getInt("START");
+	if (ScItemState<ParagraphStyle> *is = dynamic_cast<ScItemState<ParagraphStyle> *>(ss))
+	{
+		if (isUndo)
+		{
+			if (start < itemText.length())
+				itemText.applyStyle(start, is->getItem());
+			else
+				itemText.setDefaultStyle(is->getItem());
+		}
+	}
+	else if (ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss))
+	{
+		text = is->get("TEXT_STR");
+		if (isUndo){
+			itemText.insertChars(start,text);
+			itemText.applyCharStyle(start, text.length(), is->getItem());
+		}
+	}
+	if (!isUndo)
+	{
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
-	update();
+	invalid = true;
+	//	update();
 }
 
 void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo)
@@ -10488,6 +10502,7 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 {
 	if ((DX == 0) && (DY == 0))
 		return;
+	UndoManager::instance()->setUndoEnabled(false);
 	weldingInfo wInf = weldList.at(weld);
 	PageItem *pIt = wInf.weldItem;
 	Q_ASSERT(pIt != NULL);
@@ -10495,6 +10510,7 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 	pIt->setYPos(pIt->yPos() + DY);
 	pIt->update();
 	pIt->moveWelded(DX, DY, this);
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
@@ -10590,6 +10606,7 @@ void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
 void PageItem::unWeld()
 {
 	UndoTransaction* activeTransaction = NULL;
+	bool undoStateSaved = false;
 	if (undoManager->undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::WeldItems + "/" + Um::Selection, Um::IGroup,
 																			  Um::WeldItems, "", Um::IDelete));
@@ -10626,12 +10643,13 @@ void PageItem::unWeld()
 					is->set("Point_y", wInf2.weldPoint.y());
 					is->set("ID", wInf2.weldID);
 					undoManager->action(this, is, getUPixmap());
+					undoStateSaved = true;
 				}
 				break;
 			}
 		}
 	}
-	if (activeTransaction)
+	if (undoStateSaved)
 	{
 		activeTransaction->commit();
 		delete activeTransaction;
