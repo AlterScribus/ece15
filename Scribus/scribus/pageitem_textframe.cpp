@@ -4783,6 +4783,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	}
 	int start = itemText.startOfSelection();
 	int stop = itemText.endOfSelection();
+	//check if whole paragraph with list marker is going to delete
+	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.find))
+		--start;
 	int marksNum = 0;
 	if(UndoManager::undoEnabled()) {
 		int lastPos = start;
@@ -4815,41 +4818,65 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			}
 		}
 		else
-		{
 			//delete marks from selected text (with undo)
 			marksNum = removeMarksFromText(true);
-			stop -= marksNum;
+
+		//delete selected notes from notes frame
+		//remove marks from notes
+		for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
+		{
+			TextNote* note = notes2DEL.at(ii).first;
+			Q_ASSERT(note != NULL);
+			if (!note->saxedText().isEmpty())
+			{
+				itemText.deselectAll();
+				itemText.select(notes2DEL.at(ii).second + 1, desaxeStoryFromString(m_Doc,note->saxedText()).length());
+				removeMarksFromText(true);
+			}
 		}
+		if (isNoteFrame())
+			asNoteFrame()->updateNotesText();
+		for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
+		{
+			TextNote* note = notes2DEL.at(ii).first;
+			Q_ASSERT(note != NULL);
+			m_Doc->setUndoDelNote(note);
+			if (note->isEndNote())
+				m_Doc->flag_updateEndNotes = true;
+			m_Doc->deleteNote(note);
+		}
+		UndoObject * undoTarget;
+		undoTarget = isNoteFrame() ? (UndoObject*) m_Doc : (UndoObject*) this;
 		//delete text
+		stop = itemText.endOfSelection();
 		for (int i=start; i <= stop; ++i)
 		{
+			//save paragraph style saved in parsep
 			Mark* mark =( i < itemText.length() && itemText.hasMark(i))? itemText.mark(i) : NULL;
 			const CharStyle& curParent = itemText.charStyle(i);
-			if (i==stop || !curParent.equiv(lastParent) || (mark!=NULL && mark->isType(MARKNoteFrameType)))
+			if (i == stop || !curParent.equiv(lastParent) || (mark!=NULL && mark->isType(MARKNoteFrameType)) || (itemText.text(i) == SpecialChars::PARSEP))
 			{
 				added = false;
 				lastIsDelete = false;
-				if (is && ts && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext" && lastPos<is->getInt("START"))
+				if (is && ts && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0)) && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext")
 				{
 					if (is->getItem().equiv(lastParent))
 					{
-						is->set("START",start);
-						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos) + is->get("TEXT_STR"));
+						if (lastPos < is->getInt("START"))
+						{
+							is->set("START",start);
+							is->set("TEXT_STR",itemText.text(lastPos,i - lastPos) + is->get("TEXT_STR"));
+						}
+						else // lastPos >= is->getInt("START")
+						{
+							is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos,i - lastPos));
+						}
 						added = true;
 					}
 					lastIsDelete = true;
 				}
-				else if (is && ts && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext"  && lastPos>=is->getInt("START"))
+				if (!added || (i < itemText.length() && itemText.text(i) == SpecialChars::PARSEP))
 				{
-					if (is->getItem().equiv(lastParent)){
-						is->set("TEXT_STR",is->get("TEXT_STR") + itemText.text(lastPos,i - lastPos));
-						added = true;
-					}
-					lastIsDelete = true;
-				}
-				if (!added)
-				{
-					UndoObject * undoTarget = this;
 					is = NULL;
 					if (i - lastPos > 0)
 					{
@@ -4858,46 +4885,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 						is->set("ETEA", QString("delete_frametext"));
 						is->set("TEXT_STR",itemText.text(lastPos,i - lastPos));
 						is->set("START", start);
-						is->setItem(lastParent);
-					}
-					//delete selected notes from notes frame
-					if (isNoteFrame())
-					{
-						undoTarget = m_Doc; //undo target is doc for notes as after deleting last note notesframe can be deleted
-						if (is)
+						if (isNoteFrame())
 							is->set("noteframeName", getUName());
-						//remove marks from notes
-						for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
-						{
-							TextNote* note = notes2DEL.at(ii).first;
-							Q_ASSERT(note != NULL);
-							if (!note->saxedText().isEmpty())
-							{
-								itemText.deselectAll();
-								itemText.select(notes2DEL.at(ii).second + 1, desaxeStoryFromString(m_Doc,note->saxedText()).length());
-								removeMarksFromText(true);
-							}
-						}
-						asNoteFrame()->updateNotesText();
-						for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
-						{
-							TextNote* note = notes2DEL.at(ii).first;
-							Q_ASSERT(note != NULL);
-							m_Doc->setUndoDelNote(note);
-							if (note->isEndNote())
-								m_Doc->flag_updateEndNotes = true;
-							m_Doc->deleteNote(note);
-						}
-						if(is)
-						{
-							if (!ts || !lastIsDelete){
-								undoManager->action(undoTarget, is);
-								ts = NULL;
-							}
-							else
-								ts->pushBack(undoTarget,is);
-						}
-						break;
+						is->setItem(lastParent);
 					}
 					if (is)
 					{
@@ -4907,6 +4897,22 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 						}
 						else
 							ts->pushBack(undoTarget,is);
+					}
+					if ((i >= itemText.length()) || (itemText.text(i) == SpecialChars::PARSEP))
+					{
+						ScItemState<ParagraphStyle> * is2 = new ScItemState<ParagraphStyle>(Um::DeleteText,"",Um::IDelete);
+						is2->set("DELETE_FRAMETEXT", "delete_frametext");
+						is2->set("ETEA", QString("delete_frametext"));
+						is2->set("START", start);
+						if (isNoteFrame())
+							is2->set("noteframeName", getUName());
+						is2->setItem( (i < itemText.length()) ? itemText.paragraphStyle(i) : itemText.defaultStyle());
+						if (!ts || !lastIsDelete){
+							undoManager->action(undoTarget, is2);
+							ts = NULL;
+						}
+						else
+							ts->pushBack(undoTarget,is2);
 					}
 				}
 				lastPos = i;
@@ -4927,6 +4933,10 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	itemText.select(start, stop - start - marksNum);
 	itemText.removeSelection();
 	HasSel = false;
+	if (m_Doc->flag_Renumber)
+		m_Doc->updateListNumbers();
+	if (m_Doc->notesChanged())
+		m_Doc->updateMarks();
 //	m_Doc->updateFrameItems();
 	m_Doc->scMW()->DisableTxEdit();
 }

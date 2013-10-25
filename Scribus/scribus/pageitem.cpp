@@ -6368,19 +6368,33 @@ void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
 
 void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 {
-	ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
-	QString text = is->get("TEXT_STR");
-	int start = is->getInt("START");
-	if (isUndo){
-		itemText.insertChars(start,text);
-		itemText.applyCharStyle(start, text.length(), is->getItem());
-		invalid = true;
-		invalidateLayout();
-	} else {
+	QString text;
+	int start = ss->getInt("START");
+	if (ScItemState<ParagraphStyle> *is = dynamic_cast<ScItemState<ParagraphStyle> *>(ss))
+	{
+		if (isUndo)
+		{
+			if (start < itemText.length())
+				itemText.applyStyle(start, is->getItem());
+			else
+				itemText.setDefaultStyle(is->getItem());
+		}
+	}
+	else if (ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss))
+	{
+		text = is->get("TEXT_STR");
+		if (isUndo){
+			itemText.insertChars(start,text);
+			itemText.applyCharStyle(start, text.length(), is->getItem());
+		}
+	}
+	if (!isUndo)
+	{
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
-	update();
+	invalid = true;
+	//	update();
 }
 
 void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo)
