@@ -10256,12 +10256,14 @@ void PageItem::weldTo(PageItem* pIt)
 
 void PageItem::moveWelded(double DX, double DY, int weld)
 {
+	UndoManager::instance()->setUndoEnabled(false);
 	weldingInfo wInf = weldList.at(weld);
 	PageItem *pIt = wInf.weldItem;
 	pIt->setXPos(pIt->xPos() + DX);
 	pIt->setYPos(pIt->yPos() + DY);
 	pIt->update();
 	pIt->moveWelded(DX, DY, this);
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
@@ -10354,6 +10356,7 @@ void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
 void PageItem::unWeld()
 {
 	UndoTransaction* activeTransaction = NULL;
+	bool undoStateSaved = false;
 	if (undoManager->undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::WeldItems + "/" + Um::Selection, Um::IGroup,
 																			  Um::WeldItems, "", Um::IDelete));
@@ -10385,12 +10388,13 @@ void PageItem::unWeld()
 					is->set("Point_y", wInf2.weldPoint.y());
 					is->set("ID", wInf2.weldID);
 					undoManager->action(this, is, getUPixmap());
+					undoStateSaved = true;
 				}
 				break;
 			}
 		}
 	}
-	if (activeTransaction)
+	if (undoStateSaved)
 	{
 		activeTransaction->commit();
 		delete activeTransaction;
