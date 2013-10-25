@@ -42,19 +42,19 @@ bool ScText::hasObject(ScribusDoc *doc) const
 	return false;
 }
 
-bool ScText::hasMark(Mark* MRK) const
+bool ScText::hasMark(const Mark* const mrk) const
 {
 	if (this->ch == SpecialChars::OBJECT)
 	{
-		if (MRK == NULL)
+		if (mrk == NULL)
 			return mark != NULL;
 		else
-			return mark == MRK;
+			return mark == mrk;
 	}
 	return false;
 }
 
-bool ScText::hasMarkType(MarkType mt)
+bool ScText::hasMarkType(MarkType mt) const
 {
 	if (mark == NULL)
 		return false;

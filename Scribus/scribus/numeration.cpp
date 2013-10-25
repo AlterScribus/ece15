@@ -43,7 +43,7 @@ const QStringList getFormatList()
 	return list;
 }
 
-const QString Numeration::numString(const int num)
+const QString Numeration::numString(const int num) const
 {
 	if (numFormat == Type_asterix)
 		return getAsterixStringFromNum(num, asterix, lead, len);

@@ -35,47 +35,55 @@ public:
 		autoNotesHeight(true), autoNotesWidth(true), autoRemoveEmptyNotesFrames(true), autoWeldNotesFrames(true),
 		superscriptInNote(true), superscriptInMaster(true), marksCharStyle(""), notesParaStyle(""), m_topLineStyle(""), m_topLineWidth(0.0) {}
 	~NotesStyle() {}
-	bool operator!=(const NotesStyle& n2);
 
-	const QString name() { return nameStr; }
-	void setName(const QString s) { nameStr = s; }
-	const int start() { return startNum; }
+	const QString name() const { return nameStr; }
+	void setName(const QString &str) { nameStr = str; }
+	const int start() const { return startNum; }
 	void setStart(const int i) { startNum = i; }
 	void setRange(NumerationRange ns) { numRange = ns; }
-	const NumerationRange range() { return numRange; }
-	const QString prefix() { return prefixStr; }
-	void setPrefix (const QString str) { prefixStr = str; }
-	const QString suffix() { return suffixStr; }
-	void setSuffix (const QString str) { suffixStr = str; }
-	const QString numString(const int num) { return numeration.numString(num); }
-	
-	void setFormat(const NumFormat format) { numeration.numFormat = format; }
-	const NumFormat getFormat() { return numeration.numFormat; }
+	const NumerationRange range() const { return numRange; }
+	const QString prefix() const { return prefixStr; }
+	void setPrefix (const QString &str) { prefixStr = str; }
+	const QString suffix() const { return suffixStr; }
+	void setSuffix (const QString &str) { suffixStr = str; }
 
-	bool isEndNotes() { return m_endNotesStyle; }
-	bool isAutoNotesHeight() { return autoNotesHeight; }
+	const QString numString(const int num) const { return numeration.numString(num); }
+	void setFormat(const NumFormat type) { numeration.numFormat = type; }
+	const NumFormat getFormat() const { return numeration.numFormat; }
+
+	bool isEndNotes() const { return m_endNotesStyle; }
+	bool isAutoNotesHeight() const { return autoNotesHeight; }
 	void setAutoNotesHeight(const bool set) { autoNotesHeight = set; }
-	bool isAutoNotesWidth() { return autoNotesWidth; }
+	bool isAutoNotesWidth() const { return autoNotesWidth; }
 	void setAutoNotesWidth(const bool set) { autoNotesWidth = set; }
-	bool isAutoRemoveEmptyNotesFrames() { return autoRemoveEmptyNotesFrames; }
+	bool isAutoRemoveEmptyNotesFrames() const { return autoRemoveEmptyNotesFrames; }
 	void setAutoRemoveEmptyNotesFrames(const bool set) { autoRemoveEmptyNotesFrames = set; }
-	bool isAutoWeldNotesFrames() { return autoWeldNotesFrames; }
+	bool isAutoWeldNotesFrames() const { return autoWeldNotesFrames; }
 	void setAutoWeldNotesFrames(const bool set) { autoWeldNotesFrames = set; }
-	bool isSuperscriptInNote() { return superscriptInNote; }
+	bool isSuperscriptInNote() const { return superscriptInNote; }
 	void setSuperscriptInNote(const bool set) { superscriptInNote = set; }
-	bool isSuperscriptInMaster() { return superscriptInMaster; }
+	bool isSuperscriptInMaster() const { return superscriptInMaster; }
 	void setSuperscriptInMaster(const bool set) { superscriptInMaster = set; }
-	const QString marksChStyle() { return marksCharStyle; }
-	void setMarksCharStyle(const QString styleName) { marksCharStyle = styleName; }
-	const QString notesParStyle() { return notesParaStyle; }
-	void setNotesParStyle(const QString styleName) { notesParaStyle = styleName; }
+	const QString marksChStyle() const { return marksCharStyle; }
+	void setMarksCharStyle(const QString &styleName) { marksCharStyle = styleName; }
+	const QString notesParStyle() const { return notesParaStyle; }
+	void setNotesParStyle(const QString &styleName) { notesParaStyle = styleName; }
 	QString topLineStyle() { return m_topLineStyle; }
-	void setTopLineStyle(const QString styleName) { m_topLineStyle = styleName; }
+	void setTopLineStyle(const QString &styleName) { m_topLineStyle = styleName; }
 	double topLineWidth() { return m_topLineWidth; }
 	void setTopLineWidth(const double w) { m_topLineWidth = w; }
-
-	void setEndNotes(bool);
-
+	void setEndNotes(bool setendnotes) { m_endNotesStyle = setendnotes; }
+	bool operator !=(const NotesStyle &n2)
+	{
+		return ((nameStr != n2.nameStr) || (startNum != n2.startNum) || (m_endNotesStyle != n2.m_endNotesStyle) ||
+				(getFormat() != static_cast<NotesStyle>(n2).getFormat()) || (numRange != n2.numRange) ||
+				(prefixStr != n2.prefixStr) || (suffixStr != n2.suffixStr) ||
+				(autoNotesHeight != n2.autoNotesHeight) || (autoNotesWidth != n2.autoNotesWidth) ||
+				(autoRemoveEmptyNotesFrames != n2.autoRemoveEmptyNotesFrames) || (autoWeldNotesFrames != n2.autoWeldNotesFrames) ||
+				(superscriptInMaster != n2.superscriptInMaster) || (superscriptInNote != n2.superscriptInNote) ||
+				(marksCharStyle != n2.marksCharStyle) || (notesParaStyle != n2.notesParaStyle)
+				);
+	}
 private:
 	QString nameStr;		//unique name of notes style
 	int startNum;			//numeration starts with that number
@@ -104,27 +112,27 @@ class SCRIBUS_API TextNote : public QObject
 
 private:
 	//only ScribusDoc can create and delete notes
-	TextNote(NotesStyle *nStyle) : m_notesStyle(nStyle), m_noteSaxedText(""), m_noteMasterMark(NULL), m_noteFrameMark(NULL), m_number(0) { }
+	TextNote(NotesStyle * nStyle) : m_notesStyle(nStyle), m_noteSaxedText(""), m_noteMasterMark(NULL), m_noteFrameMark(NULL), m_number(0) { }
 	~TextNote() {}
 public:
-	void setNotesStyle (NotesStyle* ns) { m_notesStyle = ns; }
-	NotesStyle* notesStyle() { return m_notesStyle; }
-	const int num() { return  m_number; }
+	void setNotesStyle (NotesStyle* nStyle) { m_notesStyle = nStyle; }
+	NotesStyle* notesStyle() const { return m_notesStyle; }
+	const int num() const { return  m_number; }
 	void setNum(const int i) { m_number = i; }
-	const QString numString() { return m_notesStyle->numString(m_number); }
-	Mark* masterMark() { return m_noteMasterMark; }
-	void setMasterMark(Mark* m) { m_noteMasterMark = m; }
-	Mark* noteMark() { return m_noteFrameMark; }
-	void setNoteMark(Mark* m) { m_noteFrameMark = m; }
-	const QString saxedText() { return m_noteSaxedText; }
-	void setSaxedText(const QString string) { m_noteSaxedText = string; }
-	bool isEndNote() { return m_notesStyle->isEndNotes(); }
+	const QString numString() const { return notesStyle()->numString(m_number); }
+	Mark* masterMark() const { return m_noteMasterMark; }
+	void setMasterMark(Mark* m) { Q_ASSERT(m); m_noteMasterMark = m; }
+	Mark* noteMark() const { return m_noteFrameMark; }
+	void setNoteMark(Mark* m) { Q_ASSERT(m); m_noteFrameMark = m; }
+	void clearNoteMark() { m_noteFrameMark = NULL; }
+	const QString saxedText() const { return m_noteSaxedText; }
+	void setSaxedText(const QString &string) { m_noteSaxedText = string; }
+	bool isEndNote() const { return m_notesStyle->isEndNotes(); }
 
-	CharStyle getCharStyleNoteMark() const;
-	void setCharStyleNoteMark(const CharStyle &value);
-	
-	CharStyle getCharStyleMasterMark() const;
-	void setCharStyleMasterMark(const CharStyle &value);
+	CharStyle getCharStyleNoteMark() const { return charStyleNoteMark; }
+	void setCharStyleNoteMark(const CharStyle &value) { charStyleNoteMark = value; }
+	CharStyle getCharStyleMasterMark() const { return charStyleMasterMark; }
+	void setCharStyleMasterMark(const CharStyle &value) { charStyleMasterMark = value; }
 	
 protected:
 	NotesStyle *m_notesStyle;

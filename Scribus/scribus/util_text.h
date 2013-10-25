@@ -23,7 +23,7 @@ int SCRIBUS_API findParagraphStyle(ScribusDoc* doc, const QString &name);
 #endif
 
 // returns StoryText from saxed string
-StoryText SCRIBUS_API desaxeStoryFromString(ScribusDoc* doc, QString saxedString);
+StoryText SCRIBUS_API desaxeStoryFromString(ScribusDoc* doc,const QString &saxedString);
 
 //returns string with saxed story
 QString SCRIBUS_API saxedTextFromStory(StoryText const &story);

@@ -1253,7 +1253,6 @@ SOURCES += scribus/actionmanager.cpp \
            scribus/nftrcreader.cpp \
            scribus/nftsettings.cpp \
            scribus/nfttemplate.cpp \
-           scribus/notesstyles.cpp \
            scribus/numeration.cpp \
            scribus/observable.cpp \
            scribus/openpalettemanager.cpp \

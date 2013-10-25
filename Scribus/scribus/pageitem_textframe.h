@@ -136,17 +136,16 @@ private slots:
 
 public:
 	//for footnotes/endnotes
-	bool hasNoteMark(NotesStyle* NS = NULL);
-	bool hasNoteFrame(NotesStyle* NS, bool inChain = false);
-	//bool hasNoteFrame(PageItem_NoteFrame* nF) { return m_notesFramesMap.contains(nF); }
-	void delAllNoteFrames(bool doUpdate = false);
+	bool hasNoteMark(const NotesStyle* const nStyle = NULL);
+	bool hasNoteFrame(const NotesStyle* const nStyle, bool inChain = false);
+	//return set of items in interaction with deleted noteframe
+	QSet<PageItem_TextFrame *> delAllNoteFrames();
 	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
-	//layout notes frames /updates endnotes frames content if m_Doc->flag_updateEndNotes is set/
 	void notesFramesLayout();
 	//removing all marsk from text, returns number of removed marks
 	int removeMarksFromText(bool doUndo);
 	//return note frame for given notes style if current text frame has notes marks with this style
-	PageItem_NoteFrame* itemNoteFrame(NotesStyle* nStyle);
+	PageItem_NoteFrame* itemNoteFrame(const NotesStyle* const nStyle);
 	//list all notes frames for current text frame /with endnotes frames if endnotes marks are in that frame/
 	QList<PageItem_NoteFrame*> notesFramesList() { return m_notesFramesMap.keys(); }
 	//list of notes inserted by current text frame into given noteframe
@@ -157,9 +156,9 @@ public:
 
 private:
 	NotesInFrameMap m_notesFramesMap;
-	void updateAllMyMarks(QMap<int, Mark*> notesMarksPositions);
-	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> noteMarksPosMap); //update notes frames content
-	void updateNotesMarks(NotesInFrameMap notesMap);
+	void updateItemNotes(QMap<int, Mark*> &notesMarksPositions);
+	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> &noteMarksPosistions); //update notes frames content
+	void updateNotesMarks(NotesInFrameMap &notesMap);
 	Mark* selectedMark(bool onlySelection = true);
     TextNote* noteFromSelectedNoteMark(int& foundPos, bool onlySelection = true);
 	TextNote* noteFromSelectedNoteMark(bool onlySelection = true);

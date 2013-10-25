@@ -1161,7 +1161,7 @@ bool convertOldTable(ScribusDoc *m_Doc, PageItem* gItem, QList<PageItem*> &gpL, 
 	}
 	else
 	{
-		int ind = m_Doc->FrameItems.key(gItem);
+		short ind = m_Doc->FrameItems.key(gItem);
 		m_Doc->FrameItems.remove(ind);
 		m_Doc->FrameItems.insert(ind, currItem);
 	}

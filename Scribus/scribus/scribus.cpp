@@ -1831,7 +1831,7 @@ void ScribusMainWindow::closeEvent(QCloseEvent *ce)
 				newActWin(windows.at(i));
 				tw = ActWin;
 				slotSelect();
-				ActWin->close();
+				tws->close();
 				if (tw == ActWin)
 				{
 					ce->ignore();
@@ -3504,12 +3504,13 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 		}
 		while (doc->flag_Renumber)
 			updateEnd = doc->updateListNumbers();
-		if (m_marksCount != doc->marksList().count() || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
+		if ((m_marksCount != doc->marksList().count()) || doc->notesChanged() || doc->flag_updateEndNotes || doc->flag_updateMarksLabels)
 		{
 			if (m_marksCount != doc->marksList().count() || doc->flag_updateMarksLabels)
 				emit UpdateRequest(reqMarksListViewUpdate);
 			m_marksCount = doc->marksList().count();
-			updateEnd = updateEnd && doc->updateMarks(doc->notesChanged());
+			if (!doc->updateMarks(doc->notesChanged()))
+				updateEnd = false;
 			doc->updateChangedEndNotesFrames();
 			doc->setNotesChanged(false);
 			doc->flag_updateEndNotes = false;
@@ -4360,7 +4361,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			if((ite->nextInChain() == NULL) && !ite->isNoteFrame())  //do not layout notes frames
 				ite->layout();
 		}
-		for (QHash<int, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
+		for (QHash<short, PageItem*>::iterator itf = doc->FrameItems.begin(); itf != doc->FrameItems.end(); ++itf)
 		{
 			PageItem *ite = itf.value();
 //			qDebug() << QString("load F: %1 %2 %3").arg(azz).arg((uint)ite).arg(ite->itemType());
@@ -5217,14 +5218,21 @@ bool ScribusMainWindow::doPrint(PrintOptions &options, QString& error)
 
 void ScribusMainWindow::slotFileQuit()
 {
-	propertiesPalette->unsetDoc();
+	// #11803 : Not necessary, done via closeEvent() if required.
+	// Unsetting doc from palette is premature if doc is in a 
+	// special mode, eg. symbol edition or inline fram edition
+	// Disconnection of toolbar signals is also done by closeEvent()
+	// whean appropriate, ie only if all docs have been closed. 
+	/*propertiesPalette->unsetDoc();
 	symbolPalette->unsetDoc();
 	inlinePalette->unsetDoc();
-	ScCore->pluginManager->savePreferences();
 	fileToolBar->connectPrefsSlot(false);
 	editToolBar->connectPrefsSlot(false);
 	modeToolBar->connectPrefsSlot(false);
-	pdfToolBar->connectPrefsSlot(false);
+	pdfToolBar->connectPrefsSlot(false);*/
+
+	ScCore->pluginManager->savePreferences();
+
 	close();
 }
 
@@ -11441,7 +11449,7 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 				{
 					QString dName;
 					MarkType dType;
-					mrk->getMark(dName, dType);
+					mrk->getTargetMark(dName, dType);
 					is->set("dName", dName);
 					is->set("dType", (int) dType);
 				}
@@ -11509,7 +11517,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 			editMDialog = (MarkInsert*) new Mark2Mark(doc->marksList(), mrk, this);
 				QString l;
 				MarkType t;
-				mrk->getMark(l,t);
+				mrk->getTargetMark(l,t);
 				Mark* m = doc->getMarkDefinied(l,t);
 				editMDialog->setValues(mrk->label, m);
 			}
@@ -11666,7 +11674,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					MarkType destType = mrkPtr->getType();
 					if (d.destmarkName != destLabel || d.destmarkType != destType)
 					{
-						mrk->setMark(mrkPtr);
+						mrk->setTargetMark(mrkPtr);
 						mrk->setString(QString("%1").arg(mrkPtr->OwnPage +1));
 						docWasChanged = true;
 					}
@@ -11710,7 +11718,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				{
 					QString dName;
 					MarkType dType;
-					mrk->getMark(dName, dType);
+					mrk->getTargetMark(dName, dType);
 					is->set("dName", dName);
 					is->set("dType", (int) dType);
 				}
@@ -11741,10 +11749,10 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				{
 					QString dNameOLD;
 					MarkType dTypeOLD;
-					oldMark.getMark(dNameOLD, dTypeOLD);
+					oldMark.getTargetMark(dNameOLD, dTypeOLD);
 					QString dName;
 					MarkType dType;
-					mrk->getMark(dName, dType);
+					mrk->getTargetMark(dName, dType);
 					if (dName != dNameOLD || dType != dTypeOLD)
 					{
 						is->set("dNameOLD", dNameOLD);

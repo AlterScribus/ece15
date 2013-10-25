@@ -4645,41 +4645,38 @@ void PageItem::checkTextFlowInteractions(bool allItems)
 {	
 	if(!m_Doc->isLoading())
 	{
-		QRectF baseRect(getBoundingRect());
-		QList<PageItem*>* items = OnMasterPage.isEmpty() ? &m_Doc->DocItems : &m_Doc->MasterItems;
-		if (!allItems)
+		QSet<PageItem_TextFrame *> itemsSet = textFlowInteractionsItems(allItems);
+		foreach (PageItem_TextFrame* item, itemsSet)
+			item->update();
+	}
+}
+
+QSet<PageItem_TextFrame *> PageItem::textFlowInteractionsItems(bool allItems)
+{
+	QSet<PageItem_TextFrame *> itemsSet;
+	QRectF baseRect(getBoundingRect());
+	//expand checked region of notesFrames
+	if (isTextFrame() && !asTextFrame()->notesFramesList().isEmpty())
+	{
+		foreach(PageItem_NoteFrame* nF, asTextFrame()->notesFramesList())
 		{
-			int ids = items->indexOf(this) - 1;
-			for(int idx = ids; idx >= 0 ; --idx)
-			{
-				if(items->at(idx)->asTextFrame()) // do not bother with no text frames
-				{
-					QRectF uRect(items->at(idx)->getBoundingRect());
-					if(baseRect.intersects(uRect))
-					{
-						items->at(idx)->update();
-					}
-				}
-			}
-		}
-		else
-		{
-			for(int idx = items->count() - 1; idx >= 0 ; --idx)
-			{
-				if(items->at(idx) != this) // avoids itself
-				{
-					if(items->at(idx)->asTextFrame()) // do not bother with no text frames
-					{
-						QRectF uRect(items->at(idx)->getBoundingRect());
-						if(baseRect.intersects(uRect))
-						{
-							items->at(idx)->update();
-						}
-					}
-				}
-			}
+			if (nF->textFlowMode() != PageItem::TextFlowDisabled)
+				baseRect = baseRect.united(nF->getBoundingRect());
 		}
 	}
+	QList<PageItem*>* items = OnMasterPage.isEmpty() ? &m_Doc->DocItems : &m_Doc->MasterItems;
+	int ids = (allItems) ? items->count() : items->indexOf(this) - 1;
+	for(int idx = ids; idx >= 0 ; --idx)
+	{
+		PageItem_TextFrame * item;
+		if(item = items->at(idx)->asTextFrame()) // do not bother with no text frames
+		{
+			QRectF uRect(item->getBoundingRect());
+			if(baseRect.intersects(uRect))
+				itemsSet.insert(item);
+		}
+	}
+	return itemsSet;
 }
 
 void PageItem::convertTo(ItemType newType)
@@ -6591,19 +6588,33 @@ void PageItem::restoreLoremIpsum(SimpleState *ss, bool isUndo)
 
 void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 {
-	ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
-	QString text = is->get("TEXT_STR");
-	int start = is->getInt("START");
-	if (isUndo){
-		itemText.insertChars(start,text);
-		itemText.applyCharStyle(start, text.length(), is->getItem());
-		invalid = true;
-		invalidateLayout();
-	} else {
+	QString text;
+	int start = ss->getInt("START");
+	if (ScItemState<ParagraphStyle> *is = dynamic_cast<ScItemState<ParagraphStyle> *>(ss))
+	{
+		if (isUndo)
+		{
+			if (start < itemText.length())
+				itemText.applyStyle(start, is->getItem());
+			else
+				itemText.setDefaultStyle(is->getItem());
+		}
+	}
+	else if (ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss))
+	{
+		text = is->get("TEXT_STR");
+		if (isUndo){
+			itemText.insertChars(start,text);
+			itemText.applyCharStyle(start, text.length(), is->getItem());
+		}
+	}
+	if (!isUndo)
+	{
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
-	update();
+	invalid = true;
+	//	update();
 }
 
 void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo)
@@ -10189,9 +10200,9 @@ void PageItem::updateClip(bool updateWelded)
 						if (wInf.weldItem->isNoteFrame())
 						{
 							PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-							if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
+							if (noteFrame->getNotesStyle()->isAutoWeldNotesFrames())
 							{
-								if (noteFrame->notesStyle()->isAutoNotesWidth())
+								if (noteFrame->getNotesStyle()->isAutoNotesWidth())
 								{
 									if (noteFrame->width() != width())
 									{
@@ -10327,9 +10338,9 @@ void PageItem::updateClip(bool updateWelded)
 					if (wInf.weldItem->isNoteFrame())
 					{
 						PageItem_NoteFrame* noteFrame = wInf.weldItem->asNoteFrame();
-						if (noteFrame->notesStyle()->isAutoWeldNotesFrames())
+						if (noteFrame->getNotesStyle()->isAutoWeldNotesFrames())
 						{
-							if (noteFrame->notesStyle()->isAutoNotesWidth())
+							if (noteFrame->getNotesStyle()->isAutoNotesWidth())
 							{
 								if (noteFrame->width() != width())
 								{
@@ -10459,10 +10470,21 @@ void PageItem::addWelded(PageItem* iPt)
 //welded frames
 void PageItem::weldTo(PageItem* pIt)
 {
-	Q_ASSERT(pIt != NULL);
-	if (itemsWeldedTo().contains(pIt) || pIt->itemsWeldedTo().contains(this))
-		return; //items already welded
-
+	//don`t weld to autoremovable notes frames created by other frame
+	if (pIt->isAutoNoteFrame() && !this->asTextFrame()->notesFramesList().contains(pIt->asNoteFrame()))
+		return;
+	if (this->isAutoNoteFrame() && !pIt->asTextFrame()->notesFramesList().contains(this->asNoteFrame()))
+		return;
+		
+	for (int i = 0 ; i <  weldList.count(); i++)
+	{
+		PageItem::weldingInfo wInf = weldList.at(i);
+		if (wInf.weldItem == pIt)
+			return;
+	}
+	QList<PageItem*> ret = pIt->itemsWeldedTo();
+	if (ret.contains(this))
+		return;
 	addWelded(pIt);
 	pIt->addWelded(this);
 	if(!pIt->isNoteFrame() && undoManager->undoEnabled())
@@ -10480,6 +10502,7 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 {
 	if ((DX == 0) && (DY == 0))
 		return;
+	UndoManager::instance()->setUndoEnabled(false);
 	weldingInfo wInf = weldList.at(weld);
 	PageItem *pIt = wInf.weldItem;
 	Q_ASSERT(pIt != NULL);
@@ -10487,6 +10510,7 @@ void PageItem::moveWelded(double DX, double DY, int weld)
 	pIt->setYPos(pIt->yPos() + DY);
 	pIt->update();
 	pIt->moveWelded(DX, DY, this);
+	UndoManager::instance()->setUndoEnabled(true);
 }
 
 void PageItem::moveWelded(double DX, double DY, PageItem* except)
@@ -10582,6 +10606,7 @@ void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
 void PageItem::unWeld()
 {
 	UndoTransaction* activeTransaction = NULL;
+	bool undoStateSaved = false;
 	if (undoManager->undoEnabled())
 		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::WeldItems + "/" + Um::Selection, Um::IGroup,
 																			  Um::WeldItems, "", Um::IDelete));
@@ -10618,12 +10643,13 @@ void PageItem::unWeld()
 					is->set("Point_y", wInf2.weldPoint.y());
 					is->set("ID", wInf2.weldID);
 					undoManager->action(this, is, getUPixmap());
+					undoStateSaved = true;
 				}
 				break;
 			}
 		}
 	}
-	if (activeTransaction)
+	if (undoStateSaved)
 	{
 		activeTransaction->commit();
 		delete activeTransaction;

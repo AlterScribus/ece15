@@ -599,8 +599,6 @@ SET(SCRIBUS_SOURCES
   nftrcreader.cpp
   nftsettings.cpp
   nfttemplate.cpp
-  notesstyles.cpp
-  numeration.cpp
   pageitem.cpp
   pageitem_arc.cpp
   pageitem_group.cpp

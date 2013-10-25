@@ -1302,7 +1302,7 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 		{
 			QString label;
 			MarkType type;
-			mrk->getMark(label, type);
+			mrk->getTargetMark(label, type);
 			docu.writeAttribute("MARKlabel", label);
 			docu.writeAttribute("MARKtype", type);
 		}
@@ -1375,7 +1375,7 @@ void Scribus150Format::writeNotesFrames(ScXmlStreamWriter &docu)
 	for (int it = 0; it < NFList.count(); ++it)
 	{
 		PageItem_NoteFrame* nF = NFList.at(it);
-		NotesStyle* NS = nF->notesStyle();
+		NotesStyle* NS = nF->getNotesStyle();
 		if (NS->isEndNotes())
 		{
 			docu.writeEmptyElement("ENDNOTEFRAME");

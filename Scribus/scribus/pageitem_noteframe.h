@@ -13,9 +13,9 @@ class SCRIBUS_API PageItem_NoteFrame : public PageItem_TextFrame
 	friend class ScribusDoc;
 
 private:
-	PageItem_NoteFrame(NotesStyle *nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
+	PageItem_NoteFrame(const NotesStyle* const nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
-	PageItem_NoteFrame(PageItem_TextFrame* inFrame, NotesStyle *nStyle);
+	PageItem_NoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle);
 	~PageItem_NoteFrame();
 public:
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
@@ -29,12 +29,14 @@ public:
 	bool deleteIt;
 
 	//used while reading SLA file
-	void setNS(NotesStyle* nStyle, PageItem_TextFrame* master = NULL);
+	void setNotesStyle(const NotesStyle* const nStyle, PageItem_TextFrame* master = NULL);
 	//returns Notes Style
-	NotesStyle* notesStyle() const { return m_nstyle; }
+	NotesStyle* getNotesStyle() const { return m_nstyle; }
 
 	//insert notes content into notesframe
-	void updateNotes(QList<TextNote*> nList, bool clear = true);
+	void updateNotes(QList<TextNote*> &nList, bool clear = true);
+	//clear notesList and update
+	void updateNotes();
 	//read notes text from notesframe itemText and store it in notes`s saxed text field
 	void updateNotesText();
 
@@ -48,9 +50,9 @@ public:
 	PageItem_Line * getTopLine() const  { return m_topLine; }
 
 	//return list of notes in noteframe
-	QList<TextNote*> notesList() { return l_notes; }
+	const QList<TextNote*> notesList() { return m_notesList; }
 	//remove note from list
-	void removeNote(TextNote* note) { l_notes.removeOne(note); }
+	void removeNoteFromList(TextNote* const note) { m_notesList.removeOne(note); }
 
 	void restoreDeleteNoteText(SimpleState *state, bool isUndo);
 	void restoreInsertNoteText(SimpleState *state, bool isUndo);
@@ -58,19 +60,19 @@ public:
 	void unWeld(bool doUndo=true);
 	
 private:
-	QList<TextNote*> l_notes;
+	QList<TextNote*> m_notesList;
 	NotesStyle* m_nstyle;
 	PageItem_TextFrame* m_masterFrame;
 	PageItem_Line* m_topLine;
 
 	//insert note at end of text in noteframe
-	void insertNote(TextNote* note);
+	void insertNote(const TextNote* const note);
 	//create top line object
 	void updateTopLine();
 
 //not used???
 	//find position of note marker in text
-	int findNoteCpos(TextNote* note);
+	int findNoteCpos(const TextNote* const note) const;
 protected:
 	virtual void DrawObj_Item(ScPainter *p, QRectF e);
 };
