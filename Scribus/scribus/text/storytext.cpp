@@ -2277,9 +2277,9 @@ public:
 						PageItem* item = doc->getItemFromName(Xml_data(iIt));
 						mrk->setItemPtr(item);
 						if (item == NULL)
-							mrk->setString("0");
+							mrk->setString("?");
 						else
-							mrk->setString(QString::number(item->OwnPage));
+							mrk->setString(doc->getFormattedSectionPageNumber(item->OwnPage));
 						mrk->setItemName(Xml_data(iIt));
 					}
 					if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
@@ -2287,9 +2287,9 @@ public:
 						Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
 						mrk->setTargetMark(targetMark);
 						if (targetMark == NULL)
-							mrk->setString("0");
+							mrk->setString("?");
 						else
-							mrk->setString(QString::number(targetMark->OwnPage));
+							mrk->setString(doc->getFormattedSectionPageNumber(targetMark->OwnPage));
 						mrk->setItemName(Xml_data(m_lIt));
 					}
 					if (mrk->isType(MARKNoteMasterType))

@@ -952,6 +952,7 @@ public:
 	 * @brief Gets the page number fill character to be printed based on the section it is in.
 	 * Returns QString::null on failure to find the pageIndex
 	 */
+	const QString getFormattedSectionPageNumber(uint pageNumber);
 	const QChar getSectionPageNumberFillCharForPageIndex(const uint) const;
 	/**
 	 * @brief Gets the page number fill character to be printed based on the section it is in.

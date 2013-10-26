@@ -11478,7 +11478,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				if (d.itemPtr != mrk->getItemPtr())
 				{
 					mrk->setItemPtr(d.itemPtr);
-					mrk->setString(QString("%1").arg(d.itemPtr->OwnPage +1));
+					mrk->setString(doc->getFormattedSectionPageNumber(d.itemPtr->OwnPage));
 					docWasChanged = true;
 				}
 				if (mrk->label != label)
@@ -11501,7 +11501,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					if (d.destmarkName != destLabel || d.destmarkType != destType)
 					{
 						mrk->setTargetMark(mrkPtr);
-						mrk->setString(QString("%1").arg(mrkPtr->OwnPage +1));
+						mrk->setString(doc->getFormattedSectionPageNumber(mrkPtr->OwnPage));
 						docWasChanged = true;
 					}
 					if (mrk->label != label)

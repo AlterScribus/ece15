@@ -4551,9 +4551,7 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 				else if (lc!=0) //If not on a master page just get the page number for the page and the text
 				{
 					//					pageNumberText=getSectionPageNumberForPageIndex(it->OwnPage);
-					pageNumberText = QString("%1").arg(getSectionPageNumberForPageIndex(it->OwnPage),
-													   getSectionPageNumberWidthForPageIndex(it->OwnPage),
-													   getSectionPageNumberFillCharForPageIndex(it->OwnPage));
+					pageNumberText = getFormattedSectionPageNumber(it->OwnPage);
 				}
 				else
 				{
@@ -4568,9 +4566,7 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 						if (DocPages.at(a)->MPageNam == it->OnMasterPage)
 						{
 							//								newText=getSectionPageNumberForPageIndex(a);
-							newText = QString("%1").arg(getSectionPageNumberForPageIndex(a),
-														getSectionPageNumberWidthForPageIndex(a),
-														getSectionPageNumberFillCharForPageIndex(a));
+							newText = getFormattedSectionPageNumber(a);
 							for (int nti=0;nti<newText.length();++nti)
 								if (pageNumberText.indexOf(newText[nti])==-1)
 									pageNumberText+=newText[nti];
@@ -6992,6 +6988,11 @@ const QString ScribusDoc::getSectionPageNumberForPageIndex(const uint pageIndex)
 	uint sectionIndexOffset=pageIndex-docPrefsData.docSectionMap[key].fromindex+docPrefsData.docSectionMap[key].sectionstartindex;
 	retVal=getStringFromSequence(docPrefsData.docSectionMap[key].type, sectionIndexOffset);
 	return retVal;
+}
+
+const QString ScribusDoc::getFormattedSectionPageNumber(uint pageNumber)
+{
+	return QString("%1").arg(getSectionPageNumberForPageIndex(pageNumber), getSectionPageNumberWidthForPageIndex(pageNumber), getSectionPageNumberFillCharForPageIndex(pageNumber));
 }
 
 const QChar ScribusDoc::getSectionPageNumberFillCharForPageIndex(const uint pageIndex) const
@@ -17560,10 +17561,10 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 		{
 			if (mrk->getItemPtr() != NULL)
 			{
-				int page = mrk->getItemPtr()->OwnPage +1;
-				if (mrk->getString().toInt() != page)
+				QString pageStr = getFormattedSectionPageNumber(mrk->getItemPtr()->OwnPage);
+				if (mrk->getString() != pageStr)
 				{
-					mrk->setString(QString("%1").arg(page));
+					mrk->setString(pageStr);
 					if (mItem != NULL)
 					{
 						mItem->asTextFrame()->invalidateLayout(false);
@@ -17592,10 +17593,10 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 				else
 				{
 					destMark->OwnPage = dItem->OwnPage;
-					int page = destMark->OwnPage +1;
-					if (mrk->getString().toInt() != page)
+					QString pageStr = getFormattedSectionPageNumber(destMark->OwnPage);
+					if (mrk->getString() != pageStr)
 					{
-						mrk->setString(QString("%1").arg(page));
+						mrk->setString(pageStr);
 						if (mItem != NULL)
 						{
 							mItem->asTextFrame()->invalidateLayout(false);

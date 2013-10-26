@@ -2242,9 +2242,7 @@ QString PageItem::ExpandToken(uint base)
 		{
 			//CB Section numbering
 			//chstr = out.arg(m_Doc->getSectionPageNumberForPageIndex(OwnPage), -(int)zae);
-			chstr = QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(OwnPage),
-							m_Doc->getSectionPageNumberWidthForPageIndex(OwnPage),
-							m_Doc->getSectionPageNumberFillCharForPageIndex(OwnPage));
+			chstr = m_Doc->getFormattedSectionPageNumber(OwnPage);
 		}
 		else
 			return "#";

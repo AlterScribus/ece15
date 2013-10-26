@@ -6464,7 +6464,7 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			if (LinkID.contains(ItemID))
 			{
 				mrk->setItemPtr(LinkID[ItemID]);
-				mrk->setString(QString("%1").arg(mrk->getItemPtr()->OwnPage +1));
+				mrk->setString(m_Doc->getFormattedSectionPageNumber(mrk->getItemPtr()->OwnPage));
 			}
 			else
 			{
