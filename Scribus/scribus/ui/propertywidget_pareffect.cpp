@@ -145,10 +145,9 @@ void PropertyWidget_ParEffect::displayCharStyle(const QString& name)
 void PropertyWidget_ParEffect::enableDropCap(bool enable)
 {
 //	dropCapRadio_->setChecked(enable);
-	dropCapLines->setEnabled(enable);
+	dropCapLines->setVisible(enable);
 	if (enable)
 	{
-		dropCapsGroup->show();
 		enableBullet(false);
 		enableNum(false);
 	}
@@ -223,7 +222,7 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 	}
 	else
 		enablePE = false;
-
+	
 	QString numName = numComboBox->currentText();
 	int nFormat = 0;
 	dropCapLines->setValue(newPStyle.dropCapLines());
@@ -337,7 +336,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	enableParEffect(peCombo->currentIndex() != 0);
 	if (peCombo->currentIndex() == 1)
 	{
-		enableDropCap(true);
 		newStyle.setDropCapLines(dropCapLines->value());
 		newStyle.setHasDropCap(true);
 		newStyle.setHasBullet(false);
@@ -345,7 +343,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	}
 	else if (peCombo->currentIndex() == 2)
 	{
-		enableBullet(true);
 		newStyle.setHasBullet(true);
 		QString bStr = bulletStrEdit->currentText();
 		if (bStr.isEmpty())
@@ -356,7 +353,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	}
 	else if (peCombo->currentIndex() == 3)
 	{
-		enableNum(true);
 		newStyle.setHasDropCap(false);
 		newStyle.setHasBullet(false);
 		newStyle.setHasNum(true);
@@ -371,12 +367,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 			newStyle.setNumOther(true);
 			newStyle.setNumHigher(true);
 		}
-	}
-	else
-	{
-		newStyle.setHasDropCap(false);
-		newStyle.setHasBullet(false);
-		newStyle.setHasNum(false);
 	}
 	newStyle.setParEffectOffset(peOffset->value() / m_unitRatio);
 	newStyle.setParEffectIndent(peIndent->isChecked());

@@ -501,6 +501,13 @@ void PropertiesPalette_Text::updateStyle(const ParagraphStyle& newCurrent)
 	optMargins->updateStyle(newCurrent);
 	orphanBox->updateStyle (newCurrent);
 	parEffectWidgets->updateStyle(newCurrent);
+	if (parEffectItem->isExpanded())
+	{
+		//FIX ME: how to update height to current content?
+		//this is only ugly hack emulating user action
+		parEffectItem->setExpanded(false);
+		parEffectItem->setExpanded(true);
+	}
 
 	displayFontFace(charStyle.font().scName());
 	displayFontSize(charStyle.fontSize());
