@@ -198,6 +198,7 @@ public:
 	int startOfParagraph(uint index) const;
 	int endOfParagraph() const;
 	int endOfParagraph(uint index) const;
+	int findParagraphStart(int currentPos) const;
 	int findParagraphEnd(int currentPos) const;
 	uint nrOfParagraph() const;
 	uint nrOfParagraph(int pos) const;

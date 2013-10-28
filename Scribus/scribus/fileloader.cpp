@@ -320,6 +320,7 @@ void FileLoader::readParagraphStyle(ParagraphStyle& vg, const QDomElement& pg, S
 		vg.setHasDropCap(static_cast<bool>(pg.attribute("DROP", "0").toInt()));
 		vg.setPeCharStyleName(pg.attribute("DROPCHSTYLE", ""));
 		vg.setPeCharStyleName(pg.attribute("PECHSTYLE", ""));
+		vg.setPeFontName(pg.attribute("PEFONT", ""));
 		vg.setDropCapLines(pg.attribute("DROPLIN", "2").toInt());
 		vg.setParEffectOffset(ScCLocale::toDoubleC(pg.attribute("DROPDIST"), 0.0));
 		vg.setParEffectOffset(ScCLocale::toDoubleC(pg.attribute("PEDIST"), 0.0));

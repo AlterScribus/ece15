@@ -876,6 +876,7 @@ void SMParagraphStyle::slotDropCap(bool isOn)
 		{
 			m_selection[i]->setHasBullet(false);
 			m_selection[i]->setHasNum(false);
+			m_selection[i]->setPeFontName(QString());
 		}
 	}
 	
@@ -986,6 +987,9 @@ void SMParagraphStyle::slotBullet(bool isOn)
 			m_selection[i]->setHasDropCap(false);
 			m_selection[i]->setHasNum(false);
 		}
+		else
+			m_selection[i]->setPeFontName(QString());
+
 	}
 	
 	if (!m_selectionIsDirty)
@@ -1004,8 +1008,11 @@ void SMParagraphStyle::slotBulletStr(const QString &str)
 		m_pwidget->bulletStrEdit->setEditText(bstr);
 	}
 	for (int i = 0; i < m_selection.count(); ++i)
+	{
 		m_selection[i]->setBulletStr(bstr);
-
+		m_selection[i]->setPeFontName(m_pwidget->bulletFont());
+	}
+	
 	if (!m_selectionIsDirty)
 	{
 		m_selectionIsDirty = true;
@@ -1022,6 +1029,7 @@ void SMParagraphStyle::slotNumeration(bool isOn)
 		{
 			m_selection[i]->setHasDropCap(false);
 			m_selection[i]->setHasBullet(false);
+			m_selection[i]->setPeFontName(QString());
 		}
 	}
 	

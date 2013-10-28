@@ -222,6 +222,16 @@ void SMPStyleWidget::setDoc(ScribusDoc *doc)
 		fillNumerationsCombo();
 	}
 }
+QString SMPStyleWidget::bulletFont() const
+{
+	return m_bulletFont;
+}
+
+void SMPStyleWidget::setBulletFont(const QString &bulletFont)
+{
+	m_bulletFont = bulletFont;
+}
+
 
 void SMPStyleWidget::fillBulletStrEditCombo()
 {
@@ -698,6 +708,7 @@ void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyl
 			chStr = pstyles[i]->bulletStr();
 	}
 	bulletStrEdit->setEditText(chStr);
+	m_bulletFont = pstyles[0]->peFontName();
 
 	connectPESignals();
 	bulletCharTableButton->setEnabled(true);
@@ -1084,6 +1095,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 
 void SMPStyleWidget::insertSpecialChars(const QString &chars)
 {
+	m_bulletFont = m_enhanced->getUsedFont();
 	bulletStrEdit->lineEdit()->setText(chars);
 }
 
@@ -1146,14 +1158,18 @@ void SMPStyleWidget::openEnhanced()
 	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
 	m_enhanced->setDoc(m_Doc);
 	m_enhanced->setEnabled(true);
-	QString styleName = parEffectCharStyleCombo->currentText();
-	if (styleName != tr("No Style") && !styleName.isEmpty())
+	QString peFont;
+	if (currPStyle && currPStyle->peFontName() != "")
+		peFont = currPStyle->peFontName();
+	else
 	{
-		CharStyle chStyle = m_Doc->charStyle(styleName);
-		setCurrentComboItem(m_enhanced->fontSelector, chStyle.font().scName());
+		QString styleName = parEffectCharStyleCombo->currentText();
+		if (styleName != tr("No Style") && !styleName.isEmpty())
+			peFont = m_Doc->charStyle(styleName).font().scName();
+		else if (currPStyle)
+			peFont = currPStyle->charStyle().font().scName();
 	}
-	else if (currPStyle)
-		setCurrentComboItem(m_enhanced->fontSelector, currPStyle->charStyle().font().scName());
+	setCurrentComboItem(m_enhanced->fontSelector, peFont);
 	m_enhanced->newFont(m_enhanced->fontSelector->currentIndex());
 	m_enhanced->show();
 	QApplication::restoreOverrideCursor();

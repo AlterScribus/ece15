@@ -646,6 +646,8 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("NACH", style.gapAfter());
 	if ( ! style.isInhPeCharStyleName())
 		docu.writeAttribute("ParagraphEffectCharStyle", style.peCharStyleName());
+	if ( ! style.isInhPeFontName())
+		docu.writeAttribute("ParagraphEffectFont", style.peFontName());
 	if ( ! style.isInhParEffectOffset())
 		docu.writeAttribute("ParagraphEffectOffset", style.parEffectOffset());
 	if ( ! style.isInhParEffectIndent())
@@ -1597,11 +1599,11 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
         else if (ch == SpecialChars::OBJECT && item->itemText.hasMark(k))
 		{
             Mark* mark = item->itemText.mark(k);
-			if (!mark->isType(MARKBullNumType))
-			{ //dont save marks for bullets and numbering
+			{
 				docu.writeEmptyElement("MARK");
 				docu.writeAttribute("label", mark->label);
 				docu.writeAttribute("type", mark->getType());
+				putCStyle(docu, lastStyle);
 			}
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
@@ -2593,6 +2595,8 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 			docu.writeAttribute("LANGUAGE", dStyle.charStyle().language());
 		if ( ! dStyle.isInhPeCharStyleName())
 			docu.writeAttribute("ParagraphEffectCharStyle", dStyle.peCharStyleName());
+		if ( ! dStyle.isInhPeFontName())
+			docu.writeAttribute("ParagraphEffectFont", dStyle.peFontName());
 		if ( ! dStyle.isInhParEffectOffset())
 			docu.writeAttribute("ParagraphEffectOffset", dStyle.parEffectOffset());
 		if ( ! dStyle.isInhParEffectIndent())

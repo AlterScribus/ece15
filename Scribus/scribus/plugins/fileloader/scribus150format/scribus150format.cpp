@@ -2584,6 +2584,10 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	if (attrs.hasAttribute(ParagraphEffectCharStyle))
 		newStyle.setPeCharStyleName(attrs.valueAsString(ParagraphEffectCharStyle));
 
+	static const QString ParagraphEffectFont("ParagraphEffectFont");
+	if (attrs.hasAttribute(ParagraphEffectFont))
+		newStyle.setPeFontName(attrs.valueAsString(ParagraphEffectFont));
+
 	static const QString ParagraphEffectOffset("ParagraphEffectOffset");
 	if (attrs.hasAttribute(ParagraphEffectOffset))
 		newStyle.setParEffectOffset(attrs.valueAsDouble(ParagraphEffectOffset));
@@ -3903,41 +3907,50 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 		{
 			if (newItem->asTextFrame())
 			{
+				CharStyle newStyle;
+				readCharacterStyleAttrs(doc, tAtt, newStyle);
+				fixLegacyCharStyle(newStyle);
+				
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
 				Mark* mark = NULL;
-				if (m_Doc->isLoading())
-				{
-					mark = m_Doc->getMarkDefinied(l, t);
-				}
+				if (t == MARKBullNumType)
+					mark = new BulNumMark();
 				else
-				{	//doc is not loading so it is copy/paste task
-					if (t == MARKVariableTextType)
-						mark = m_Doc->getMarkDefinied(l, t);
-					else
+				{
+					if (m_Doc->isLoading())
 					{
-						//create copy of mark
-						Mark* oldMark = m_Doc->getMarkDefinied(l, t);
-						if (oldMark == NULL)
-						{
-							qWarning() << "wrong copy of oldMark";
-							mark = m_Doc->newMark();
-							mark->setType(t);
-						}
+						mark = m_Doc->getMarkDefinied(l, t);
+					}
+					else
+					{	//doc is not loading so it is copy/paste task
+						if (t == MARKVariableTextType)
+							mark = m_Doc->getMarkDefinied(l, t);
 						else
 						{
-							mark = m_Doc->newMark(oldMark);
-							getUniqueName(l,doc->marksLabelsList(t), "_");
-						}
-						mark->label = l;
-						if (t == MARKNoteMasterType)
-						{  //create copy of note
-							TextNote* old = mark->getNotePtr();
-							TextNote* note = m_Doc->newNote(old->notesStyle());
-							mark->setNotePtr(note);
-							note->setMasterMark(mark);
-							note->setSaxedText(old->saxedText());
-							m_Doc->setNotesChanged(true);
+							//create copy of mark
+							Mark* oldMark = m_Doc->getMarkDefinied(l, t);
+							if (oldMark == NULL)
+							{
+								qWarning() << "wrong copy of oldMark";
+								mark = m_Doc->newMark();
+								mark->setType(t);
+							}
+							else
+							{
+								mark = m_Doc->newMark(oldMark);
+								getUniqueName(l,doc->marksLabelsList(t), "_");
+							}
+							mark->label = l;
+							if (t == MARKNoteMasterType)
+							{  //create copy of note
+								TextNote* old = mark->getNotePtr();
+								TextNote* note = m_Doc->newNote(old->notesStyle());
+								mark->setNotePtr(note);
+								note->setMasterMark(mark);
+								note->setSaxedText(old->saxedText());
+								m_Doc->setNotesChanged(true);
+							}
 						}
 					}
 				}
@@ -3945,11 +3958,27 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
 				else
 				{
+					int pos = newItem->itemText.length();
 					//set pointer to item holds mark in his text
 					if (t == MARKAnchorType)
 						mark->setItemPtr(newItem);
 					mark->OwnPage = newItem->OwnPage;
-					newItem->itemText.insertMark(mark, newItem->itemText.length());
+					newItem->itemText.insertMark(mark, pos);
+
+					if (newStyle != lastStyle->Style)
+					{
+						newItem->itemText.setCharStyle(lastStyle->StyleStart, pos - lastStyle->StyleStart, lastStyle->Style);
+						lastStyle->Style = newStyle;
+						lastStyle->StyleStart = pos;
+					}
+				}
+			
+				newItem->itemText.setCharStyle(lastStyle->StyleStart, newItem->itemText.length()-lastStyle->StyleStart, lastStyle->Style);
+				lastStyle->StyleStart = newItem->itemText.length();
+				ParagraphStyle pstyle;
+				if (!lastStyle->ParaStyle.isEmpty()) {
+					pstyle.setParent( lastStyle->ParaStyle );
+					newItem->itemText.applyStyle(newItem->itemText.length()-1, pstyle);
 				}
 			}
 		}
@@ -4719,6 +4748,8 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		pstyle.setKeepTogether(attrs.valueAsBool("keepTogether"));
 	if (attrs.hasAttribute("ParagraphEffectCharStyle"))
 		pstyle.setPeCharStyleName(attrs.valueAsString("ParagraphEffectCharStyle"));
+	if (attrs.hasAttribute("ParagraphEffectFont"))
+		pstyle.setPeFontName(attrs.valueAsString("ParagraphEffectFont"));
 	if (attrs.hasAttribute("ParagraphEffectOffset"))
 		pstyle.setParEffectOffset(attrs.valueAsDouble("ParagraphEffectOffset"));
 	if (attrs.hasAttribute("ParagraphEffectIndent"))

@@ -1640,6 +1640,8 @@ Start:
 						newStyle.setParent(m_Doc->charStyle(style.peCharStyleName()).name());
 					newStyle.applyCharStyle(charStyle);
 					charStyle.setStyle(newStyle);
+					if (style.hasBullet() && style.peFontName() != "")
+						charStyle.setFont(m_Doc->AllFonts->value(style.peFontName()));
 					itemText.setCharStyle(a, 1 , charStyle);
 				}
 				else if (style.peCharStyleName() != tr("No Style") && !style.peCharStyleName().isEmpty())

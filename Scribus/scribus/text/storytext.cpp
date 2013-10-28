@@ -1332,6 +1332,19 @@ int StoryText::startOfParagraph(uint index) const
 	}
 	return length();
 }
+
+int StoryText::findParagraphStart(int currentPos) const
+{
+	StoryText* that = const_cast<StoryText *>(this);
+	while (currentPos > 0)
+	{
+		if (that->d->at(currentPos-1)->ch == SpecialChars::PARSEP)
+			break;
+		--currentPos;
+	}
+	return currentPos;
+}
+
 int StoryText::findParagraphEnd(int currentPos) const
 {
 	StoryText* that = const_cast<StoryText *>(this);

@@ -32,6 +32,9 @@ public:
 	void unitChange(double oldRatio, double newRatio, int unitIndex);
 	void setDoc(ScribusDoc* doc);
 
+	QString bulletFont() const;
+	void setBulletFont(const QString &bulletFont);
+	
 private:
 	bool hasParent_;
 	//bool parentParEffects_;
@@ -40,6 +43,7 @@ private:
 	ScribusDoc * m_Doc;
 	QString currFontName;
 	ParagraphStyle* currPStyle;
+	QString m_bulletFont;
 
 	void fillBulletStrEditCombo();
 	void fillNumFormatCombo();
