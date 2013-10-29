@@ -2004,7 +2004,6 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	defaultStyle().saxx(handler, "defaultstyle");
 	
 	CharStyle lastStyle(charStyle(0));
-	bool lastWasPar = true;
 	int lastPos = 0;
 	handler.begin("p", empty);
 	paragraphStyle(0).saxx(handler);
@@ -2012,13 +2011,9 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	lastStyle.saxx(handler);
 	for (int i=0; i < length(); ++i)
 	{
-		if (hasMark(i))
-		{
-			Mark* mrk = mark(i);
-			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType))
-					|| mrk->isType(MARKBullNumType))
-				continue; //do not insert notes marks into notes frames and bullets marks anywhere
-		}
+		if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && hasMarkType(i, MARKNoteFrameType)))
+			continue; //do not insert notes marks into notes frames
+
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));
 		
@@ -2042,9 +2037,15 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			}
 			lastPos = i;
 		}
+		if (lastStyle != style)
+		{
+			handler.end("span");
+			handler.begin("span", empty);
+			style.saxx(handler);
+			lastStyle = style;
+		}
 		
-		lastWasPar = (curr == SpecialChars::PARSEP);
-		if (lastWasPar)
+		if (curr == SpecialChars::PARSEP)
 		{
 			handler.end("span");
 			handler.end("p");
@@ -2061,33 +2062,36 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 		{
 			Mark* mrk = mark(i);
 			Xml_attr mark_attr;
-			mark_attr.insert("label", mrk->label);
 			mark_attr.insert("typ", QString::number((int )mrk->getType()));
-			
-			if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
-				mark_attr.insert("item", mrk->getItemPtr()->itemName());
-			else if (mrk->isType(MARK2MarkType))
+			if (!mrk->isType(MARKBullNumType))
 			{
-				QString l;
-				MarkType t;
-				mrk->getTargetMark(l, t);
-				if (m_doc->getMarkDefinied(l,t) != NULL)
+				mark_attr.insert("label", mrk->label);
+				if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
+					mark_attr.insert("item", mrk->getItemPtr()->itemName());
+				else if (mrk->isType(MARK2MarkType))
 				{
-					mark_attr.insert("mark_l", l);
-					mark_attr.insert("mark_t", QString::number((int) t));
+					QString l;
+					MarkType t;
+					mrk->getTargetMark(l, t);
+					if (m_doc->getMarkDefinied(l,t) != NULL)
+					{
+						mark_attr.insert("mark_l", l);
+						mark_attr.insert("mark_t", QString::number((int) t));
+					}
+				}
+				else if (mrk->isType(MARKNoteMasterType))
+				{
+					TextNote * const note = mrk->getNotePtr();
+					assert(note != null);
+					mark_attr.insert("nStyle", note->notesStyle()->name());
+					mark_attr.insert("note",note->saxedText());
+					//store noteframe name for inserting into note if it is non-auto-removable
+					if (note->noteMark() && note->noteMark()->getItemPtr() && !note->noteMark()->getItemPtr()->isAutoNoteFrame())
+						mark_attr.insert("noteframe", note->noteMark()->getItemPtr()->getUName());
 				}
 			}
-			else if (mrk->isType(MARKNoteMasterType))
-			{
-				TextNote * const note = mrk->getNotePtr();
-				assert(note != null);
-				mark_attr.insert("nStyle", note->notesStyle()->name());
-				mark_attr.insert("note",note->saxedText());
-				//store noteframe name for inserting into note if it is non-auto-removable
-				if (note->noteMark() && note->noteMark()->getItemPtr() && !note->noteMark()->getItemPtr()->isAutoNoteFrame())
-					mark_attr.insert("noteframe", note->noteMark()->getItemPtr()->getUName());
-			}
 			handler.beginEnd("mark", mark_attr);
+			
 		}
 		else if (curr == SpecialChars::TAB)
 		{
@@ -2121,14 +2125,14 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			unic.insert("code", toXMLString(curr.unicode()));
 			handler.beginEnd("unicode", unic);
 		}
-		else if (lastStyle != style)
-		{
-			handler.end("span");
-			handler.begin("span", empty);
-			style.saxx(handler);
-			lastStyle = style;
-			continue;
-		}
+//		else if (lastStyle != style)
+//		{
+//			handler.end("span");
+//			handler.begin("span", empty);
+//			style.saxx(handler);
+//			lastStyle = style;
+//			continue;
+//		}
 		else
 			continue;
 		lastPos = i+1;
@@ -2269,62 +2273,60 @@ public:
 				l = Xml_data(lIt);
 			if (tIt != attr.end())
 				t = (MarkType) parseInt(Xml_data(tIt));
-			if (t != MARKBullNumType)
+			ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
+			//				ParagraphStyle* pstyle = NULL;
+			if (t == MARKVariableTextType)
+				mrk = doc->getMarkDefinied(l,t);
+			else if (t == MARKBullNumType)
+				mrk = new BulNumMark();
+			else
 			{
-				ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
-				//				ParagraphStyle* pstyle = NULL;
-				if (t == MARKVariableTextType)
-					mrk = doc->getMarkDefinied(l,t);
-				else
+				mrk = doc->newMark();
+				mrk->setType(t);
+				getUniqueName(l,doc->marksLabelsList(t), "_");
+				mrk->label = l;
+				mrk->OwnPage = doc->currentPage()->pageNr();
+				Xml_attr::iterator iIt = attr.find("item");
+				Xml_attr::iterator m_lIt = attr.find("mark_l");
+				Xml_attr::iterator m_tIt = attr.find("mark_t");
+				if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
 				{
-					mrk = doc->newMark();
-					getUniqueName(l,doc->marksLabelsList(t), "_");
-					mrk->label = l;
-					mrk->OwnPage = doc->currentPage()->pageNr();
-					mrk->setType(t);
-					Xml_attr::iterator iIt = attr.find("item");
-					Xml_attr::iterator m_lIt = attr.find("mark_l");
-					Xml_attr::iterator m_tIt = attr.find("mark_t");
-					if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
-					{
-						PageItem* item = doc->getItemFromName(Xml_data(iIt));
-						mrk->setItemPtr(item);
-						if (item == NULL)
-							mrk->setString("?");
-						else
-							mrk->setString(doc->getFormattedSectionPageNumber(item->OwnPage));
-						mrk->setItemName(Xml_data(iIt));
-					}
-					if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
-					{
-						Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
-						mrk->setTargetMark(targetMark);
-						if (targetMark == NULL)
-							mrk->setString("?");
-						else
-							mrk->setString(doc->getFormattedSectionPageNumber(targetMark->OwnPage));
-						mrk->setItemName(Xml_data(m_lIt));
-					}
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						Xml_attr::iterator nIt = attr.find("note");
-						Xml_attr::iterator nsIt = attr.find("nStyle");
-						NotesStyle* NS;
-						if (nsIt == attr.end())
-							NS = doc->m_docNotesStylesList.at(0);
-						else
-							NS = doc->getNotesStyle(Xml_data(nsIt));
-						TextNote* note = doc->newNote(NS);
-						note->setMasterMark(mrk);
-						if (nIt != attr.end())
-							note->setSaxedText(Xml_data(nIt));
-						mrk->setNotePtr(note);
-						doc->setNotesChanged(true);
-					}
-					doc->newMark(mrk);
+					PageItem* item = doc->getItemFromName(Xml_data(iIt));
+					mrk->setItemPtr(item);
+					if (item == NULL)
+						mrk->setString("?");
+					else
+						mrk->setString(doc->getFormattedSectionPageNumber(item->OwnPage));
+					mrk->setItemName(Xml_data(iIt));
 				}
-				story->insertMark(mrk);
+				if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
+				{
+					Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
+					mrk->setTargetMark(targetMark);
+					if (targetMark == NULL)
+						mrk->setString("?");
+					else
+						mrk->setString(doc->getFormattedSectionPageNumber(targetMark->OwnPage));
+					mrk->setItemName(Xml_data(m_lIt));
+				}
+				if (mrk->isType(MARKNoteMasterType))
+				{
+					Xml_attr::iterator nIt = attr.find("note");
+					Xml_attr::iterator nsIt = attr.find("nStyle");
+					NotesStyle* NS;
+					if (nsIt == attr.end())
+						NS = doc->m_docNotesStylesList.at(0);
+					else
+						NS = doc->getNotesStyle(Xml_data(nsIt));
+					TextNote* note = doc->newNote(NS);
+					note->setMasterMark(mrk);
+					if (nIt != attr.end())
+						note->setSaxedText(Xml_data(nIt));
+					mrk->setNotePtr(note);
+					doc->setNotesChanged(true);
+				}
 			}
+			story->insertMark(mrk);
 		}
 	}
 };
