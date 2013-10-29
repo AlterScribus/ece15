@@ -1677,7 +1677,9 @@ public:
 	void setCursor2MarkPos(const Mark* const mrk);
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
+	void eraseMark(Mark* mrk, PageItem* item, int pos); //force is used only for deleting non-unique marks by MarksManager
 	void setUndoDelMark(const Mark* const mrk);
+	void setUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
 
 	//for foot/endnotes
 	NotesStyle* newNotesStyle(const NotesStyle &nStyle);

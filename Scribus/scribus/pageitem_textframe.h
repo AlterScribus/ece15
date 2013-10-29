@@ -148,7 +148,7 @@ private:
 	void updateItemNotes(QMap<int, Mark*> &notesMarksPositions);
 	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> &noteMarksPosistions); //update notes frames content
 	void updateNotesMarks(NotesInFrameMap &notesMap);
-	Mark* selectedMark(bool onlySelection = true);
+	Mark* selectedMark(int &pos, bool onlySelection = true);
     TextNote* noteFromSelectedNoteMark(int& foundPos, bool onlySelection = true);
 	TextNote* noteFromSelectedNoteMark(bool onlySelection = true);
 protected:

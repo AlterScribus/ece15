@@ -17338,17 +17338,26 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 	bool found = false;
 	if (fromText)
 	{
+		int start = 0;
+		int stop = item->itemText.length();
+		if (!mrk->isUnique())
+		{
+			start = item->itemText.startOfSelection();
+			stop = item->itemText.endOfSelection();
+		}
 		if (item != NULL)
 		{
-			int MPos = findMarkCPos(mrk, item);
-			while (MPos > -1)
+			int MPos = findMarkCPos(mrk, item, start);
+			while (MPos > -1 && MPos < stop)
 			{
 				if (mrk->isType(MARKNoteFrameType) && MPos > 1 && item->itemText.text(MPos -1) == SpecialChars::PARSEP)
 					item->itemText.removeChars(MPos-1,2);
 				else
 					item->itemText.removeChars(MPos,1);
 				found = true;
-				MPos = findMarkCPos(mrk, item);
+				if (item->itemText.endOfSelection() < 0)
+					break;
+				MPos = findMarkCPos(mrk, item, MPos);
 			}
 		}
 		else
@@ -17363,7 +17372,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 				while (MPos > -1)
 				{
 					item->itemText.removeChars(MPos,1);
-					MPos = findMarkCPos(mrk, item);
+					MPos = findMarkCPos(mrk, item, MPos);
 				}
 				found = true;
 				item->asTextFrame()->invalidateLayout(false);
@@ -17371,31 +17380,63 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 			}
 		}
 	}
-	//remove mark references
-	for (int a=0; a < m_docMarksList.count(); ++a)
-	{
-		Mark* m = m_docMarksList.at(a);
-		if (m == NULL)
-			continue;
-		if (m->isType(MARK2MarkType))
-		{
-			QString l;
-			MarkType t;
-			m->getTargetMark(l, t);
-			if (mrk == getMarkDefinied(l, t))
-			{
-				setUndoDelMark(m);
-				eraseMark(m, true, NULL, true);
-			}
-		}
-	}
 	//erase mark from marksMap
 	if (mrk->isUnique() || force)
 	{
+		//remove mark references
+		for (int a=0; a < m_docMarksList.count(); ++a)
+		{
+			Mark* m = m_docMarksList.at(a);
+			if (m == NULL)
+				continue;
+			if (m->isType(MARK2MarkType))
+			{
+				QString l;
+				MarkType t;
+				m->getTargetMark(l, t);
+				if (mrk == getMarkDefinied(l, t))
+				{
+					setUndoDelMark(m);
+					eraseMark(m, true, NULL, true);
+				}
+			}
+		}
 		m_docMarksList.removeOne(mrk);
 		delete mrk;
 	}
 	return found;
+}
+
+void ScribusDoc::eraseMark(Mark *mrk, PageItem *item, int pos)
+{
+	if (mrk->isUnique())
+		setUndoDelMark(mrk);
+	else
+		setUndoDelNotUniqueMarkAtPos(mrk,item,pos);
+	item->itemText.removeChars(pos,1);
+	if (mrk->isUnique())
+	{
+		//remove mark references
+		for (int a=0; a < m_docMarksList.count(); ++a)
+		{
+			Mark* m = m_docMarksList.at(a);
+			if (m == NULL)
+				continue;
+			if (m->isType(MARK2MarkType))
+			{
+				QString l;
+				MarkType t;
+				m->getTargetMark(l, t);
+				if (mrk == getMarkDefinied(l, t))
+				{
+					setUndoDelMark(m);
+					eraseMark(m, true, NULL, true);
+				}
+			}
+		}
+		m_docMarksList.removeOne(mrk);
+		delete mrk;
+	}
 }
 
 void ScribusDoc::setUndoDelMark(const Mark* const mrk)
@@ -17447,6 +17488,21 @@ void ScribusDoc::setUndoDelMark(const Mark* const mrk)
 		ims->set("label", mrk->label);
 		ims->set("type", (int) mrk->getType());
 		ims->set("strtxt", mrk->getString());
+		undoManager->action(this, ims);
+	}
+}
+
+void ScribusDoc::setUndoDelNotUniqueMarkAtPos(const Mark * const mrk, PageItem *item, int pos)
+{
+	if (UndoManager::undoEnabled())
+	{
+		ScItemsState * ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
+		ims->set("MARK", QString("eraseFromText"));
+		ims->set("at", pos);
+		ims->insertItem("inItem",item);
+		ims->set("ETEA", mrk->label);
+		ims->set("label", mrk->label);
+		ims->set("type", (int) mrk->getType());
 		undoManager->action(this, ims);
 	}
 }

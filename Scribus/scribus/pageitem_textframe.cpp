@@ -1523,7 +1523,7 @@ Start:
 				if (!mark->isType(MARK2ItemType))
 				{
 					mark->setItemPtr(this);
-					mark->setItemName(itemName());
+					mark->setItemName(AnName);
 				}
 				//anchors and indexes has no visible inserts in text
 				if (mark->isType(MARKAnchorType) || mark->isType(MARKIndexType))
@@ -4932,8 +4932,11 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		marksNum =removeMarksFromText(false);
 	itemText.setCursorPosition( start );
 	//for sure text is still selected
-	itemText.select(start, stop - start - marksNum);
-	itemText.removeSelection();
+	if (stop - start - marksNum > 0)
+	{
+		itemText.select(start, stop - start - marksNum);
+		itemText.removeSelection();
+	}
 	HasSel = false;
 	if (m_Doc->flag_Renumber)
 		m_Doc->updateListNumbers();
@@ -5729,7 +5732,7 @@ QSet<PageItem_TextFrame *> PageItem_TextFrame::delAllNoteFrames()
 	return textInteractionSet;
 }
 
-Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
+Mark* PageItem_TextFrame::selectedMark(int &pos, bool onlySelection)
 { //return pointer to first mark in selected (or whole) text
 
 	bool omitNotes = true; //do not return notes marks (for searching notes use selectedNotesMark()
@@ -5767,7 +5770,7 @@ Mark* PageItem_TextFrame::selectedMark(bool onlySelection)
 	else //in whole text
 		stop = itemText.length();
 
-	for (int pos = start; pos < stop; ++pos)
+	for (pos = start; pos < stop; ++pos)
 	{
 		if (itemText.hasMark(pos))
 		{
@@ -5920,7 +5923,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMark
 		{
 			Mark* mark = it.value();
 			mark->setItemPtr(this);
-			mark->setItemName(itemName());
+			mark->setItemName(AnName);
 
 			TextNote* note = mark->getNotePtr();
 			Q_ASSERT(note != NULL);
@@ -6064,17 +6067,28 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 		}
 	}
 
-	Mark* mrk = selectedMark(true);
+	int pos;
+	Mark* mrk = selectedMark(pos, true);
 	while (mrk != NULL)
 	{
 		if (!mrk->isType(MARKBullNumType))
 		{
 			if (doUndo)
-				m_Doc->setUndoDelMark(mrk);
-			m_Doc->eraseMark(mrk, true, this);
+			{
+				if (mrk->isUnique())
+				{
+					m_Doc->setUndoDelMark(mrk);
+					m_Doc->eraseMark(mrk, true, this);
+				}
+				else
+				{
+					m_Doc->setUndoDelNotUniqueMarkAtPos(mrk, this, pos);
+					m_Doc->eraseMark(mrk, this, pos);
+				}
+			}
 			++num;
 		}
-		mrk = selectedMark(true);
+		mrk = selectedMark(pos, true);
 	}
 	return num;
 }
