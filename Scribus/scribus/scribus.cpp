@@ -11320,15 +11320,15 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 					is->set("dType", (int) dType);
 				}
 				if (mrk->isType(MARK2ItemType))
-					is->set("targetItem", mrk->getTargetPtr()->itemName());
+					is->set("targetItem", mrk->getTargetPtr()->getUName());
 				if (mrk->isType(MARKNoteMasterType))
 					is->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
 			}
 			is->set("at", currItem->itemText.cursorPosition() -1);
 			if (currItem->isNoteFrame())
-				is->set("noteframeName", currItem->itemName());
+				is->set("noteframeName", currItem->getUName());
 			else
-				is->set("inItem", currItem->itemName());
+				is->set("inItem", currItem->getUName());
 			undoManager->action(doc, is);
 			docWasChanged = true;
 		}
@@ -11530,9 +11530,9 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 			{
 				is->set("at", currItem->itemText.cursorPosition()-1);
 				if (currItem->isNoteFrame())
-					is->set("noteframeName", currItem->itemName());
+					is->set("noteframeName", currItem->getUName());
 				else
-					is->set("inItem", currItem->itemName());
+					is->set("inItem", currItem->getUName());
 			}
 			is->set("label", mrk->label);
 			is->set("type", (int) mrk->getType());
@@ -11549,7 +11549,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 					is->set("dType", (int) dType);
 				}
 				if (mrk->isType(MARK2ItemType))
-					is->set("targetName", mrk->getTargetPtr()->itemName());
+					is->set("targetName", mrk->getTargetPtr()->getUName());
 				if (mrk->isType(MARKNoteMasterType))
 					is->set("nStyle", mrk->getNotePtr()->notesStyle()->name());
 				doc->flag_updateMarksLabels = true;
@@ -11589,8 +11589,8 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 				}
 				if (mrk->isType(MARK2ItemType) && mrk->getTargetPtr() != oldMark.getTargetPtr())
 				{
-					is->set("targetNameOLD", oldMark.getTargetPtr()->itemName());
-					is->set("tagetNameNEW", mrk->getTargetPtr()->itemName());
+					is->set("targetNameOLD", oldMark.getTargetPtr()->getUName());
+					is->set("tagetNameNEW", mrk->getTargetPtr()->getUName());
 				}
 			}
 			undoManager->action(doc, is);

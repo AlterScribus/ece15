@@ -17460,7 +17460,7 @@ SimpleState* ScribusDoc::getUndoDelUniqueMark(const Mark* const mrk)
 	ss->set("MARK", QString("delete"));
 	PageItem* master = getItemFromName(mrk->getHolderName());
 	if (master->isNoteFrame())
-		ss->set("noteframeName", master->itemName());
+		ss->set("noteframeName", master->getUName());
 	else
 		ss->set("inItem", mrk->getHolderName());
 	ss->set("at", mrk->cPos);
@@ -17473,7 +17473,7 @@ SimpleState* ScribusDoc::getUndoDelUniqueMark(const Mark* const mrk)
 		ss->set("dType", (int) dType);
 	}
 	if (mrk->isType(MARK2ItemType))
-		ss->set("targetItemName", mrk->getTargetPtr()->itemName());
+		ss->set("targetItemName", mrk->getTargetPtr()->getUName());
 	ss->set("ETEA", mrk->label);
 	ss->set("label", mrk->label);
 	ss->set("type", (int) mrk->getType());
@@ -17495,7 +17495,7 @@ ScItemsState *ScribusDoc::getUndoDelNonUniqueMark(const Mark * const mrk)
 		MPos = findMarkCPos(mrk, item);
 		while (MPos > -1)
 		{
-			ims->insertItemPos.append(QPair<QString, int>(item->itemName(), MPos - num)); //-num as while undo text will be shorter (without marks)
+			ims->insertItemPos.append(QPair<QString, int>(item->getUName(), MPos - num)); //-num as while undo text will be shorter (without marks)
 			//++num;
 			MPos = findMarkCPos(mrk, item, MPos+1);
 		}
@@ -17567,7 +17567,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 							{
 								TextNote * note = item->itemText.mark(i)->getNotePtr();
 								note->masterMark()->setTargetPtr(item);
-								note->masterMark()->setHolderName(item->itemName());
+								note->masterMark()->setHolderName(item->getUName());
 							}
 						}
 					}
@@ -17846,12 +17846,12 @@ void ScribusDoc::setUndoDelNote(const TextNote * const note)
 		int pos = findMarkCPos(note->masterMark(), master);
 		Q_ASSERT(pos > -1);
 		Q_ASSERT(master);
-		ims->set("inItem", master->itemName());
+		ims->set("inItem", master->getUName());
 		ims->set("at", pos);
 		ims->set("noteTXT", note->saxedText());
 		ims->set("nStyle", note->notesStyle()->name());
 		if (!note->notesStyle()->isAutoRemoveEmptyNotesFrames())
-			ims->set("noteframe", note->noteMark()->getTargetPtr()->itemName());
+			ims->set("noteframe", note->noteMark()->getTargetPtr()->getUName());
 		undoManager->action(this, ims);
 	}
 }
