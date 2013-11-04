@@ -16941,6 +16941,8 @@ void ScribusDoc::setCursor2MarkPos(const Mark* const mrk)
 	if (CPos > -1)
 	{
 		scMW()->deselectAll();
+		if (mrk->isType(MARKNoteFrameType))
+			++CPos;
 		scMW()->selectItemFromOutlines(item, true, CPos);
 	}
 }
@@ -18139,6 +18141,8 @@ void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
 			{
 				//used if non-unique mark is deleted only from text
 				Q_ASSERT(pos >= 0);
+				if (ss->getInt("type") == MARKBullNumType)
+					mrk = new BulNumMark();
 				Q_ASSERT(mrk != NULL);
 				Q_ASSERT(currItem != NULL);
 				currItem->itemText.insertMark(mrk, pos);
