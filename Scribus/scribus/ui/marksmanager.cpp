@@ -227,7 +227,12 @@ void MarksManager::on_listView_doubleClicked(const QModelIndex &index)
 {
 	Mark* mrk = getMarkFromListView();
 	if (mrk != NULL)
-		m_Doc->setCursor2MarkPos(mrk);
+	{
+		if (mrk->isUnique())
+			m_Doc->setCursor2MarkPos(mrk);
+		else
+			on_EditButton_clicked();
+	}
 }
 
 void MarksManager::on_listView_itemSelectionChanged()
