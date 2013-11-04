@@ -20,7 +20,7 @@ enum MarkType
 	MARKNoteMasterType = 4,  //mark contain footnote reference
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
 	MARKIndexType = 6, // index entry
-	MARKBullNumType = 7
+	MARKListType = 7
 };
 
 struct MarkData
@@ -41,7 +41,7 @@ class SCRIBUS_API Mark
 {
 	friend class ScribusDoc;
 	friend class ScribusMainWindow;
-	friend class BulNumMark;
+	friend class ListMark;
 
 	//URGENT for anyone who want to edit this class!!!
 	//only ScribusDoc && ScribusMainWindow can create and delete marks
@@ -52,10 +52,6 @@ private:
 	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), cPos(other.cPos), typ(other.typ), data(other.data) {}
 	virtual ~Mark() {}
 public:
-	QString label;
-	int OwnPage;
-	int cPos;
-
 	void setValues(const QString &l, const int p, const MarkType t, const MarkData d) { label = l; OwnPage = p; typ = t; data = d; }
 	const MarkType getType() const { return typ; }
 	void setType(const MarkType t) { typ = t; }
@@ -93,7 +89,7 @@ public:
 	bool hasItemPtr() const { return data.destItemPtr != NULL; }
 	bool hasString() const { return !data.strtxt.isEmpty(); }
 	bool hasMark() const { return data.destmarkName != ""; }
-	bool isUnique() const { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
+	bool isUnique() const { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKListType)); }
 	bool isNoteType() const { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) const { return t==typ; }
 //No avox - this cannot be public because
@@ -101,16 +97,28 @@ public:
 //except is BulNumMark as that one is not maintained by ScribusDoc
 //    virtual ~Mark() {}
 
+	int getCPos() const { return cPos; }
+	void setCPos(int value) { cPos = value; }
+	
+	QString getLabel() const { return label; }
+	void setLabel(const QString &value) { label = value; }
+	
+	int getOwnPage() const { return OwnPage; }
+	void setOwnPage(int value) { OwnPage = value; }
+	
 protected:
+	QString label;
+	int OwnPage;
+	int cPos;
 	MarkType typ;
 	MarkData data;
 };
 
-class SCRIBUS_API BulNumMark : public Mark
+class SCRIBUS_API ListMark : public Mark
 {
 public:
-	BulNumMark() : Mark() { label = "BullNumMark"; typ = MARKBullNumType; }
-	~BulNumMark() {}
+	ListMark() : Mark() { label = "BulNumMark"; typ = MARKListType; }
+	~ListMark() {}
 };
 
 #endif // MARKS_H

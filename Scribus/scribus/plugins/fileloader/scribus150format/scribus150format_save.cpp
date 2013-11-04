@@ -1250,14 +1250,14 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 		if (mrk->isType(MARKNoteFrameType))
 			continue;
 		docu.writeEmptyElement("Mark");
-		docu.writeAttribute("label", mrk->label);
+		docu.writeAttribute("label", mrk->getLabel());
 		docu.writeAttribute("type", mrk->getType());
+		docu.writeAttribute("holder", mrk->getHolderName());
 		if (mrk->isType(MARK2ItemType) && mrk->hasItemPtr())
 		{
 			const PageItem* item = mrk->getTargetPtr();
 			assert(item != NULL);
-			docu.writeAttribute("ItemID", qHash(item));
-			//docu.writeAttribute("itemName", item->itemName());
+			docu.writeAttribute("target", item->itemName());
 		}
 		else if (mrk->isType(MARKVariableTextType) && mrk->hasString())
 			docu.writeAttribute("str", mrk->getString());
@@ -1381,7 +1381,7 @@ void Scribus150Format::writeNotes(ScXmlStreamWriter & docu)
 		if (TN->masterMark() == NULL)
 			continue;
 		docu.writeEmptyElement("Note");
-		docu.writeAttribute("Master", TN->masterMark()->label);
+		docu.writeAttribute("Master", TN->masterMark()->getLabel());
 		docu.writeAttribute("NStyle", TN->notesStyle()->name());
 		docu.writeAttribute("Text", TN->saxedText());
 		//store charstyle for note number (not stored with note text)
@@ -1601,7 +1601,7 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
             Mark* mark = item->itemText.mark(k);
 			{
 				docu.writeEmptyElement("MARK");
-				docu.writeAttribute("label", mark->label);
+				docu.writeAttribute("label", mark->getLabel());
 				docu.writeAttribute("type", mark->getType());
 				putCStyle(docu, lastStyle);
 			}

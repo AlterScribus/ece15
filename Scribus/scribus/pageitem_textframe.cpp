@@ -1353,7 +1353,7 @@ Start:
 	QList<ParagraphStyle::TabRecord> tTabValues;
 	tTabValues.clear();
 
-	bool BulNumMode = false; //when bullet or counter should be inserted
+	bool ListMode = false; //when bullet or counter should be inserted
 	bool   DropCmode = false, FlopBaseline = false;
 	double desc=0, asce=0, realAsce=0, realDesc = 0, offset = 0;
 	double maxDY=0, maxDX=0;
@@ -1518,8 +1518,8 @@ Start:
 				//show control characters for marks
 				glyphs->glyph = SpecialChars::OBJECT.unicode() + ScFace::CONTROL_GLYPHS;
 
-				mark->OwnPage = OwnPage;
-				mark->cPos = a;
+				mark->setOwnPage(OwnPage);
+				mark->setCPos(a);
 				mark->setHolderName(AnName);
 				//anchors and indexes has no visible inserts in text
 				if (mark->isType(MARKAnchorType) || mark->isType(MARKIndexType))
@@ -1529,14 +1529,16 @@ Start:
 				}
 				//store mark pointer and position in text
 				if (mark->isType(MARKNoteMasterType))
+				{
+					Q_ASSERT(mark->getNotePtr());
 					noteMarksPosMap.insert(a, mark);
+				}
 				//set note marker charstyle
 				if (mark->isNoteType())
 				{
 					TextNote* note = mark->getNotePtr();
 					if (note == NULL)
 						continue;
-					mark->setTargetPtr(this);
 					NotesStyle* nStyle = note->notesStyle();
 						Q_ASSERT(nStyle != NULL);
 					CharStyle currStyle(itemText.charStyle(a));
@@ -1574,7 +1576,7 @@ Start:
 					}
 				}
 			}
-			BulNumMode = false;
+			ListMode = false;
 			if (isNoteFrame())
 				qDebug();
 			if ((a==0 || itemText.text(a-1) == SpecialChars::PARSEP || itemText.hasMarkType(a-1,MARKNoteFrameType)) 
@@ -1585,11 +1587,10 @@ Start:
 				style = itemText.paragraphStyle(a);
 				if (style.hasBullet() || style.hasNum()) 
 				{
-					BulNumMode = true;
-					if (mark == NULL ||	!(mark->isType(MARKBullNumType) || mark->isType(MARKNoteFrameType)))
+					ListMode = true;
+					if (mark == NULL ||	!(mark->isType(MARKListType) || mark->isType(MARKNoteFrameType)))
 					{
-						BulNumMark* bnMark = new BulNumMark();
-						itemText.insertMark(bnMark,a);
+						itemText.insertMark(new ListMark(),a);
 						a--;
 						itLen = itemText.length();
 						continue;
@@ -1598,7 +1599,7 @@ Start:
 						mark->setString(style.bulletStr());
 					else if (style.hasNum())
 					{
-						if (mark->getString().isEmpty())
+						if (!mark->hasString())
 						{
 							mark->setString("?");
 							m_Doc->flag_Renumber = true;
@@ -1606,9 +1607,9 @@ Start:
 					}
 				}
 			}
-			if (!BulNumMode && mark && mark->isType(MARKBullNumType))
+			if (!ListMode && mark && mark->isType(MARKListType))
 			{
-				delete (BulNumMark*) mark;
+				delete (ListMark*) mark;
 				itemText.removeChars(a,1);
 				a--;
 				itLen = itemText.length();
@@ -1985,7 +1986,7 @@ Start:
 				else
 				{
 					asce = font.ascent(hlcsize10);
-					if (HasMark && !BulNumMode)
+					if (HasMark && !ListMode)
 						realAsce = asce * scaleV + offset;
 					else
 					{
@@ -2054,13 +2055,13 @@ Start:
 				}
 				//set left indentation
 				current.leftIndent = 0.0;
-				if (current.addLeftIndent && (maxDX == 0 || DropCmode || BulNumMode))
+				if (current.addLeftIndent && (maxDX == 0 || DropCmode || ListMode))
 				{
 					current.leftIndent = style.leftMargin() + autoLeftIndent;
 					if (a==0 || (a > 0 && (itemText.text(a-1) == SpecialChars::PARSEP)))
 					{
 						current.leftIndent += style.firstIndent();
-						if (BulNumMode || DropCmode)
+						if (ListMode || DropCmode)
 						{
 							if(style.parEffectIndent())
 							{
@@ -2665,7 +2666,7 @@ Start:
 					tabs.status = TabNONE;
 				}
 			}
-			if ((DropCmode || BulNumMode) && !outs)
+			if ((DropCmode || ListMode) && !outs)
 			{
 				current.xPos += style.parEffectOffset();
 				glyphs->last()->xadvance += style.parEffectOffset();
@@ -3080,7 +3081,10 @@ Start:
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
 		updateItemNotes(noteMarksPosMap);
 	if (invalid)
+	{
+		m_Doc->setNotesChanged(false);
 		goto Start;
+	}
 	if (NextBox != NULL)
 	{
 		PageItem_TextFrame * nextFrame = dynamic_cast<PageItem_TextFrame*>(NextBox);
@@ -4613,7 +4617,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		break;
 	default:
 			if (isNoteFrame() && (itemText.lengthOfSelection() == 0) && (itemText.cursorPosition() < itemText.length())
-					&& (itemText.hasMarkType(itemText.cursorPosition(),MARKNoteFrameType) || itemText.hasMarkType(itemText.cursorPosition(),MARKBullNumType)))
+					&& (itemText.hasMarkType(itemText.cursorPosition(),MARKNoteFrameType) || itemText.hasMarkType(itemText.cursorPosition(),MARKListType)))
 		{
 			QApplication::beep();
 			break; //avoid inserting chars before notes and bullets marks
@@ -4781,9 +4785,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	}
 	int start = itemText.startOfSelection();
 	int stop = itemText.endOfSelection();
-	//check if whole paragraph with list marker is going to delete
-	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
-		--start;
+//	//check if whole paragraph with list marker is going to delete
+//	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
+//		--start;
 	if(UndoManager::undoEnabled()) {
 		int lastPos = start;
 		CharStyle lastParent = itemText.charStyle(start);
@@ -4810,7 +4814,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 				if (i == itemText.length())
 					break;
 				Mark* mark = itemText.mark(i);
-				if (itemText.hasMark(i) && mark->isType(MARKNoteFrameType))
+				if (itemText.hasMarkType(i, MARKNoteFrameType))
 					notes2DEL.append(QPair<TextNote*, int>(mark->getNotePtr(), i));
 			}
 		}
@@ -5787,7 +5791,7 @@ Mark* PageItem_TextFrame::selectedMark(int &pos, bool onlySelection)
 			Mark* mark = itemText.mark(pos);
 			if (omitNotes && (mark->isType(MARKNoteMasterType) || mark->isType(MARKNoteFrameType)))
 				continue;
-			if (mark->isType(MARKBullNumType))
+			if (mark->isType(MARKListType))
 				continue;
 			return mark;
 		}
@@ -5813,7 +5817,7 @@ TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(int &foundPos, bool onlyS
 	MarkType typ = isNoteFrame()? MARKNoteFrameType : MARKNoteMasterType;
 	for (int pos = start; pos < stop; ++pos)
 	{
-		if (itemText.hasMark(pos) && itemText.mark(pos)->isType(typ))
+		if (itemText.hasMarkType(pos, typ))
 		{
 			foundPos = pos;
 			return itemText.mark(pos)->getNotePtr();
@@ -5932,7 +5936,6 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMark
 		if (it.key() <= lastInFrame())
 		{
 			Mark* mark = it.value();
-			mark->setTargetPtr(this);
 			mark->setHolderName(AnName);
 
 			TextNote* note = mark->getNotePtr();
@@ -6038,29 +6041,6 @@ void PageItem_TextFrame::notesFramesLayout()
 
 int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 {
-	//remove and delete lists marks
-	int end = itemText.endOfSelection();
-	for (int i = itemText.startOfSelection(); i < end; ++i)
-	{
-		if (isNoteFrame() && itemText.hasMarkType(i,MARKNoteFrameType))
-			continue;
-		if (itemText.hasMarkType(i,MARKBullNumType))
-		{
-			if (itemText.paragraphStyle(i).hasNum())
-				m_Doc->flag_Renumber = true;
-//				ParagraphStyle newStyle;
-//				newStyle.setHasBullet(false);
-//				newStyle.setHasNum(false);
-//				itemText.applyStyle(i,newStyle);
-			delete (BulNumMark*) itemText.mark(i);
-			itemText.removeChars(i,1);
-			--end;
-			--i;
-			continue;
-		}
-		i = itemText.nextParagraph(i);
-	}
-	
 	int num = 0;
 	if (!isNoteFrame())
 	{
@@ -6081,7 +6061,7 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	Mark* mrk = selectedMark(pos, true);
 	while (mrk != NULL)
 	{
-		if (!mrk->isType(MARKBullNumType))
+		if (!mrk->isType(MARKListType))
 		{
 			if (mrk->isUnique())
 				m_Doc->eraseMark(mrk, true, this);

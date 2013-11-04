@@ -2063,11 +2063,11 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			Mark* mrk = mark(i);
 			Xml_attr mark_attr;
 			mark_attr.insert("typ", QString::number((int )mrk->getType()));
-			if (!mrk->isType(MARKBullNumType))
+			if (!mrk->isType(MARKListType))
 			{
-				mark_attr.insert("label", mrk->label);
+				mark_attr.insert("label", mrk->getLabel());
 				if (mrk->isType(MARK2ItemType) && (mrk->getTargetPtr() != NULL))
-					mark_attr.insert("item", mrk->getTargetPtr()->itemName());
+					mark_attr.insert("target", mrk->getTargetPtr()->itemName());
 				else if (mrk->isType(MARK2MarkType))
 				{
 					QString l;
@@ -2086,8 +2086,8 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 					mark_attr.insert("nStyle", note->notesStyle()->name());
 					mark_attr.insert("note",note->saxedText());
 					//store noteframe name for inserting into note if it is non-auto-removable
-					if (note->noteMark() && note->noteMark()->getTargetPtr() && !note->noteMark()->getTargetPtr()->isAutoNoteFrame())
-						mark_attr.insert("noteframe", note->noteMark()->getTargetPtr()->getUName());
+					if (note->noteMark() && !m_doc->getItemFromName(note->noteMark()->getHolderName())->isAutoNoteFrame())
+						mark_attr.insert("noteframe", note->noteMark()->getHolderName());
 				}
 			}
 			handler.beginEnd("mark", mark_attr);
@@ -2277,16 +2277,16 @@ public:
 			//				ParagraphStyle* pstyle = NULL;
 			if (t == MARKVariableTextType)
 				mrk = doc->getMarkDefinied(l,t);
-			else if (t == MARKBullNumType)
-				mrk = new BulNumMark();
+			else if (t == MARKListType)
+				mrk = new ListMark();
 			else
 			{
 				mrk = doc->newMark();
 				mrk->setType(t);
 				getUniqueName(l,doc->marksLabelsList(t), "_");
-				mrk->label = l;
-				mrk->OwnPage = doc->currentPage()->pageNr();
-				Xml_attr::iterator iIt = attr.find("item");
+				mrk->setLabel(l);
+				mrk->setOwnPage(doc->currentPage()->pageNr());
+				Xml_attr::iterator iIt = attr.find("target");
 				Xml_attr::iterator m_lIt = attr.find("mark_l");
 				Xml_attr::iterator m_tIt = attr.find("mark_t");
 				if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
@@ -2306,7 +2306,7 @@ public:
 					if (targetMark == NULL)
 						mrk->setString("?");
 					else
-						mrk->setString(doc->getFormattedSectionPageNumber(targetMark->OwnPage));
+						mrk->setString(doc->getFormattedSectionPageNumber(targetMark->getOwnPage()));
 					mrk->setHolderName(Xml_data(m_lIt));
 				}
 				if (mrk->isType(MARKNoteMasterType))

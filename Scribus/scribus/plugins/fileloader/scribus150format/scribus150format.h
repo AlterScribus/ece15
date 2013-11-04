@@ -134,7 +134,7 @@ class PLUGIN_API Scribus150Format : public LoadSavePlugin
 		bool readMarks(ScribusDoc* doc, ScXmlStreamReader& reader);
 
 		//lists of items and marks with names only, which need update to pointers
-		QMap<Mark*, int> markeredItemsMap;
+		QMap<Mark*, QString> markeredItemsMap;
 		QMap<Mark*, QMap<QString, MarkType> > markeredMarksMap;
 		QMap<QString, int> nsetRangeItemNamesMap;
 		QMap<QString, TextNote*> notesMasterMarks;

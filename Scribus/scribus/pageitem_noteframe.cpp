@@ -247,20 +247,21 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 		mrk->setType(MARKNoteFrameType);
 		QString label = "NoteFrameMark_" + getNotesStyle()->name();
 		if (getNotesStyle()->range() == NSRsection)
-			label += " in section " + m_Doc->getSectionNameForPageIndex(note->masterMark()->OwnPage) + " page " + QString::number(note->masterMark()->OwnPage +1);
+			label += " in section " + m_Doc->getSectionNameForPageIndex(note->masterMark()->getOwnPage()) + " page " + QString::number(note->masterMark()->getOwnPage() +1);
 		else if (getNotesStyle()->range() == NSRpage)
-			label += " on page " + QString::number(note->masterMark()->OwnPage +1);
+			label += " on page " + QString::number(note->masterMark()->getOwnPage() +1);
 		else if (getNotesStyle()->range() == NSRstory)
-			label += " in " + note->masterMark()->getTargetPtr()->firstInChain()->itemName();
+			label += " in " + m_Doc->getItemFromName(note->masterMark()->getHolderName())->firstInChain()->itemName();
 		else if (getNotesStyle()->range() == NSRframe)
 			label += " in frame " + note->masterMark()->getHolderName();
-		mrk->label = label + "_" + note->numString();
+		label += "_" + note->numString();
+		getUniqueName(label, m_Doc->marksLabelsList(MARKNoteFrameType), "_");
+		mrk->setLabel(label);
 		mrk->setNotePtr(const_cast<TextNote*>(note));
-		getUniqueName(mrk->label, m_Doc->marksLabelsList(MARKNoteFrameType), "_");
 		const_cast<TextNote*>(note)->setNoteMark(mrk);
 	}
-	mrk->OwnPage = OwnPage;
-	mrk->setTargetPtr(this);
+	mrk->setOwnPage(OwnPage);
+	mrk->setHolderName(AnName);
 	mrk->setString(getNotesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
 	
 	StoryText story;
@@ -428,7 +429,7 @@ int PageItem_NoteFrame::findNoteCpos(const TextNote* const note) const
 	for (int pos=0; pos < itemText.length(); ++pos)
 	{
 		Mark* mark = itemText.mark(pos);
-		if (itemText.hasMark(pos) && mark->isType(MARKNoteFrameType))
+		if (itemText.hasMarkType(pos,MARKNoteFrameType))
 		{
 			if (mark->getNotePtr() == note)
 				return (pos);

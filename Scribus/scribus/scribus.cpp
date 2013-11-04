@@ -11415,7 +11415,6 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 		if (currItem != NULL)
 			d.holderName = currItem->itemName();
 		QString label = "", text = "";
-		QString oldStr = mrk->getString();
 		bool newMark = false;
 		bool replaceMark = false;
 		switch (mrk->getType())
@@ -11452,7 +11451,7 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 						mrk->label = label;
 						emit UpdateRequest(reqMarksListViewUpdate);
 					}
-					if (text != oldStr)
+					if (text != mrk->getString())
 					{
 						mrk->setString(text);
 						docWasChanged = true;

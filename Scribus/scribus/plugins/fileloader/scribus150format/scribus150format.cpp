@@ -3403,15 +3403,16 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 			if (label != "" && type != MARKNoType)
 			{
 				Mark* mark = doc->newMark();
-				mark->label=attrs.valueAsString("label");
+				mark->setLabel(attrs.valueAsString("label"));
 				mark->setType(type);
+				mark->setHolderName(attrs.valueAsString("holder"));
 
 				if (type == MARKVariableTextType && attrs.hasAttribute("str"))
 					mark->setString(attrs.valueAsString("str"));
-				if (type == MARK2ItemType && attrs.hasAttribute("ItemID"))
+				if (type == MARK2ItemType && attrs.hasAttribute("target"))
 				{
 					//QString itemName = attrs.valueAsString("itemName");
-					markeredItemsMap.insert(mark, attrs.valueAsInt("ItemID"));
+					markeredItemsMap.insert(mark, attrs.valueAsString("target"));
 				}
 				if (type == MARK2MarkType && attrs.hasAttribute("MARKlabel"))
 				{
@@ -3914,8 +3915,8 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
 				Mark* mark = NULL;
-				if (t == MARKBullNumType)
-					mark = new BulNumMark();
+				if (t == MARKListType)
+					mark = new ListMark();
 				else
 				{
 					if (m_Doc->isLoading())
@@ -3941,7 +3942,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 								mark = m_Doc->newMark(oldMark);
 								getUniqueName(l,doc->marksLabelsList(t), "_");
 							}
-							mark->label = l;
+							mark->setLabel(l);
 							if (t == MARKNoteMasterType)
 							{  //create copy of note
 								TextNote* old = mark->getNotePtr();
@@ -3959,10 +3960,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 				else
 				{
 					int pos = newItem->itemText.length();
-					//set pointer to item holds mark in his text
-					if (t == MARKAnchorType)
-						mark->setTargetPtr(newItem);
-					mark->OwnPage = newItem->OwnPage;
+					mark->setOwnPage(newItem->OwnPage);
 					newItem->itemText.insertMark(mark, pos);
 
 					if (newStyle != lastStyle->Style)
@@ -6486,22 +6484,22 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 {
 	if (!markeredItemsMap.isEmpty())
 	{
-		QMap<Mark*, int>::Iterator markIt;
-		QMap<Mark*, int>::Iterator end = markeredItemsMap.end();
+		QMap<Mark*, QString>::Iterator markIt;
+		QMap<Mark*, QString>::Iterator end = markeredItemsMap.end();
 		for (markIt = markeredItemsMap.begin(); markIt != end; ++markIt)
 		{
 			Mark* mrk = markIt.key();
-			int ItemID = markIt.value();
-			if (LinkID.contains(ItemID))
+			PageItem* target = m_Doc->getItemFromName(markIt.value());
+			if (target != NULL)
 			{
-				mrk->setTargetPtr(LinkID[ItemID]);
-				mrk->setString(m_Doc->getFormattedSectionPageNumber(mrk->getTargetPtr()->OwnPage));
+				mrk->setTargetPtr(target);
+				mrk->setString(m_Doc->getFormattedSectionPageNumber(target->OwnPage));
 			}
 			else
 			{
-				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mrk->label << "] data - item [" << ItemID << "] not exists - DELETING MARK";
+				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mrk->getLabel() << "] data - item [" << markIt.value() << "] not exists - DELETING MARK";
 				if (!m_Doc->eraseMark(mrk, true))
-					qWarning() << "Erase mark [" << mrk->label << "] failed - was it definied?";
+					qWarning() << "Erase mark [" << mrk->getLabel() << "] failed - was it definied?";
 			}
 		}
 		markeredItemsMap.clear();
@@ -6523,9 +6521,9 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			}
 			else
 			{
-				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mark->label << "] data - pointed mark name [" << label2 << "] not exists - DELETING MARK";
+				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mark->getLabel() << "] data - pointed mark name [" << label2 << "] not exists - DELETING MARK";
 				if (!m_Doc->eraseMark(mark, true))
-					qWarning() << "Erase mark [" << mark->label << "] failed - was it definied?";
+					qWarning() << "Erase mark [" << mark->getLabel() << "] failed - was it definied?";
 
 			}
 		}

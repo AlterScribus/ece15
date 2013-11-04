@@ -8795,7 +8795,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 				if (currItem->itemText.hasMark(pos))
 				{
 					Mark* mark = currItem->itemText.mark(pos);
-					if (mark->isType(MARKBullNumType))
+					if (mark->isType(MARKListType))
 					{
 						if (UndoManager::undoEnabled())
 						{
@@ -8826,7 +8826,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 				if (currItem->itemText.hasMark(pos))
 				{
 					Mark* mark = currItem->itemText.mark(pos);
-					if (mark->isType(MARKBullNumType))
+					if (mark->isType(MARKListType))
 					{
 						if (UndoManager::undoEnabled())
 						{
@@ -16588,7 +16588,7 @@ bool ScribusDoc::updateLocalListNumbers(const StoryText& itemText)
 			continue;
 		if (itemText.hasMarkType(pos, MARKNoteFrameType))
 			continue;
-		if (itemText.hasMarkType(pos, MARKBullNumType) && itemText.paragraphStyle(pos).hasNum())
+		if (itemText.hasMarkType(pos, MARKListType) && itemText.paragraphStyle(pos).hasNum())
 		{
 			ParagraphStyle style = itemText.paragraphStyle(pos);
 			if (style.numName() == "<local block>")
@@ -16746,7 +16746,7 @@ bool ScribusDoc::updateListNumbers(bool updateNumerations)
 							numerations.value(style.numName())->m_lastlevel = style.numLevel();
 							if (mark == NULL)
 							{
-								BulNumMark* bnMark = new BulNumMark;
+								ListMark* bnMark = new ListMark;
 								item->itemText.insertMark(bnMark,pos);
 								//								hl = item->itemText.item(pos);
 								//								hl->applyCharStyle(item->itemText.paragraphStyle(pos).charStyle());
@@ -17179,7 +17179,6 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 							if (item->itemText.hasMark(i) && item->itemText.mark(i)->isNoteType())
 							{
 								TextNote * note = item->itemText.mark(i)->getNotePtr();
-								note->masterMark()->setTargetPtr(item);
 								note->masterMark()->setHolderName(item->getUName());
 							}
 						}
@@ -17418,13 +17417,8 @@ void ScribusDoc::deleteNote(TextNote* note)
 		return;
 	PageItem_NoteFrame* nF = NULL;
 	if (note->noteMark() != NULL)
-	{
-		if (note->noteMark()->getTargetPtr() != NULL)
-			nF = note->noteMark()->getTargetPtr()->asNoteFrame();
-		if (nF == NULL)
-			nF = getItemFromName(note->noteMark()->getHolderName())->asNoteFrame();
-	}
-	PageItem* master = note->masterMark()->getTargetPtr();
+		nF = getItemFromName(note->noteMark()->getHolderName())->asNoteFrame();
+	PageItem* master = getItemFromName(note->masterMark()->getHolderName());
 	if (nF != NULL)
 	{
 		nF->removeNoteFromList(note);
@@ -17455,7 +17449,7 @@ void ScribusDoc::setUndoDelNote(const TextNote * const note)
 		SimpleState* ims = new SimpleState(Um::DeleteNote,"",Um::IDelete);
 		ims->set("DELETE_NOTE", QString("delete_note"));
 		ims->set("ETEA", note->masterMark()->label);
-		PageItem* master = note->masterMark()->getTargetPtr();
+		PageItem* master = getItemFromName(note->masterMark()->getHolderName());
 		int pos = findMarkCPos(note->masterMark(), master);
 		Q_ASSERT(pos > -1);
 		Q_ASSERT(master);
@@ -17464,7 +17458,7 @@ void ScribusDoc::setUndoDelNote(const TextNote * const note)
 		ims->set("noteTXT", note->saxedText());
 		ims->set("nStyle", note->notesStyle()->name());
 		if (!note->notesStyle()->isAutoRemoveEmptyNotesFrames())
-			ims->set("noteframe", note->noteMark()->getTargetPtr()->getUName());
+			ims->set("noteframe", note->noteMark()->getHolderName());
 		undoManager->action(this, ims);
 	}
 }
@@ -17511,8 +17505,6 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 				}
 				TextNote* note = mark->getNotePtr();
 				note->setNum(noteNum);
-				note->masterMark()->setTargetPtr(frame);
-				
 				if (note->noteMark() != NULL)
 				{
 					note->noteMark()->setString(numStr);
@@ -18141,8 +18133,8 @@ void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
 			{
 				//used if non-unique mark is deleted only from text
 				Q_ASSERT(pos >= 0);
-				if (ss->getInt("type") == MARKBullNumType)
-					mrk = new BulNumMark();
+				if (ss->getInt("type") == MARKListType)
+					mrk = new ListMark();
 				Q_ASSERT(mrk != NULL);
 				Q_ASSERT(currItem != NULL);
 				currItem->itemText.insertMark(mrk, pos);
@@ -18513,8 +18505,8 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 		m_docEndNotesFramesChanged.removeAll(nF);
 		foreach (TextNote* note, nF->notesList())
 		{
-			note->masterMark()->getTargetPtr()->asTextFrame()->removeNoteFrame(nF);
-			note->masterMark()->getTargetPtr()->invalid = true;
+			getItemFromName(note->masterMark()->getHolderName())->asTextFrame()->removeNoteFrame(nF);
+			getItemFromName(note->masterMark()->getHolderName())->invalid = true;
 		}
 	}
 	else if (nF->masterFrame() != NULL)
@@ -18532,7 +18524,7 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	{
 		Mark* m = m_docMarksList.at(a);
 		Q_ASSERT(m != NULL);
-		if (m->isType(MARK2ItemType) && (m->getTargetPtr() == nF))
+		if (m->isType(MARK2ItemType) && (getItemFromName(m->getHolderName()) == nF))
 		{
 			setUndoDelUniqueMark(m);
 			eraseMark(m,true);
@@ -18600,7 +18592,7 @@ void ScribusDoc::invalidateMasterFrames(const NotesStyle * const nStyle)
 	foreach (TextNote* note, m_docNotesList)
 	{
 		if (note->notesStyle() == nStyle)
-			toInvalidate.append(note->masterMark()->getTargetPtr());
+			toInvalidate.append(getItemFromName(note->masterMark()->getHolderName()));
 	}
 	while (!toInvalidate.isEmpty())
 		toInvalidate.takeFirst()->invalid = true;

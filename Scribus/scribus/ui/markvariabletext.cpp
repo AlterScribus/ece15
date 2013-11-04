@@ -12,7 +12,7 @@ MarkVariableText::MarkVariableText(const QList<Mark*>& marks, QWidget *parent) :
 	for (int i = 0; i < marks.size(); ++i)
 	{
 		if (marks[i]->isType(MARKVariableTextType))
-			((QComboBox*) labelEditWidget)->addItem(marks[i]->label, QVariant::fromValue((void*) marks[i]));
+			((QComboBox*) labelEditWidget)->addItem(marks[i]->getLabel(), QVariant::fromValue((void*) marks[i]));
 	}
 	((QComboBox*) labelEditWidget)->setEditable(true);
 	((QComboBox*) labelEditWidget)->lineEdit()->setToolTip(tr("Edit selected Mark`s label. To create new Mark select \"New Mark\" in drop list and input new label"));

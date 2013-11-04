@@ -171,7 +171,7 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 			else
 				label = label + "_1";
 			Mark* mrk = it->m_Doc->newMark();
-			mrk->label = label;
+			mrk->setLabel(label);
 			mrk->setType(MARKNoteMasterType);
 			mrk->setNotePtr(note);
 			note->setMasterMark(mrk);
@@ -179,14 +179,14 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 				noteStory->removeChars(noteStory->length() -1, 1);
 			note->setSaxedText(saxedTextFromStory(*noteStory));
 			mrk->setString("");
-			mrk->OwnPage = it->OwnPage;
+			mrk->setOwnPage(it->OwnPage);
 			it->itemText.insertMark(mrk);
 			if (UndoManager::undoEnabled())
 			{
 				SimpleState* is = new SimpleState(UndoManager::InsertNote);
-				is->set("ETEA", mrk->label);
+				is->set("ETEA", mrk->getLabel());
 				is->set("MARK", QString("new"));
-				is->set("label", mrk->label);
+				is->set("label", mrk->getLabel());
 				is->set("type", (int) MARKNoteMasterType);
 				is->set("strtxt", QString(""));
 				is->set("nStyle", nStyle->name());
@@ -328,12 +328,12 @@ void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 			else
 				label = label + "_1";
 			Mark* mrk = it->m_Doc->newMark();
-			mrk->label = label;
+			mrk->setLabel(label);
 			mrk->setType(MARKNoteMasterType);
 			mrk->setNotePtr(note);
 			note->setMasterMark(mrk);
 			mrk->setString("");
-			mrk->OwnPage = it->OwnPage;
+			mrk->setOwnPage(it->OwnPage);
 			it->itemText.insertMark(mrk);
 			story->applyCharStyle(lastStyleStart, story->length()-lastStyleStart, lastStyle);
 			if (paraStyle.hasName())

@@ -45,7 +45,7 @@ void MarksManager::addListItem(MarkType typeMrk, QString typeStr, const QList<Ma
 		if (marks[i]->isType(typeMrk))
 		{
 			QTreeWidgetItem *listItem2 = new QTreeWidgetItem(listItem);
-			listItem2->setText(0, marks[i]->label);
+			listItem2->setText(0, marks[i]->getLabel());
 			listItem2->setData(1, Qt::UserRole,QVariant::fromValue<void*>(marks[i]));
 			index++;
 			noSuchMarks = false;
@@ -173,7 +173,7 @@ void MarksManager::on_UpdateButton_clicked()
 	for (int a=0; a < m_Doc->marksList().count(); ++a)
 	{
 		Mark* mrk = m_Doc->marksList().at(a);
-		if (mrk->isUnique() && !mrk->label.startsWith("UNVISIBLE*") && !m_Doc->isMarkUsed(mrk, true))
+		if (mrk->isUnique() && !mrk->getLabel().startsWith("UNVISIBLE*") && !m_Doc->isMarkUsed(mrk, true))
 			notUsed.append(mrk);
 	}
 	if (!notUsed.isEmpty())
@@ -181,9 +181,9 @@ void MarksManager::on_UpdateButton_clicked()
 		for (int a=0; a<notUsed.count(); ++a)
 		{
 			Mark* mrk = notUsed.at(a);
-			QString l = "UNVISIBLE*" + mrk->label;
+			QString l = "UNVISIBLE*" + mrk->getLabel();
 			getUniqueName(l,m_Doc->marksLabelsList(mrk->getType()),"_");
-			mrk->label = l;
+			mrk->setLabel(l);
 		}
 		updateListView();
 	}
@@ -220,13 +220,13 @@ void MarksManager::on_DeleteButton_clicked()
 		{
 			UndoTransaction*  trans = NULL;
 			if(UndoManager::undoEnabled())
-				trans = new UndoTransaction(UndoManager::instance()->beginTransaction(Um::DeleteMark, Um::IGroup, tr("Delete ") + mrk->label));
+				trans = new UndoTransaction(UndoManager::instance()->beginTransaction(Um::DeleteMark, Um::IGroup, tr("Delete ") + mrk->getLabel()));
 			foreach (ScItemState<CharStyle>* is, m_Doc->getUndosDelNonUniqueMark(mrk))
 				UndoManager::instance()->action(m_Doc->getItemFromName(is->get("inItem")), is);
 			SimpleState* ss = new SimpleState(Um::DeleteMark,"",Um::IDelete);
 			ss->set("MARK", QString("delNonUnique"));
-			ss->set("ETEA", mrk->label);
-			ss->set("label", mrk->label);
+			ss->set("ETEA", mrk->getLabel());
+			ss->set("label", mrk->getLabel());
 			ss->set("type", (int) mrk->getType());
 			ss->set("strtxt", mrk->getString());
 			UndoManager::instance()->action(m_Doc, ss);
@@ -236,9 +236,11 @@ void MarksManager::on_DeleteButton_clicked()
 				delete trans;
 			}
 		}
-		m_Doc->eraseMark(mrk, true, NULL, true);
-		m_Doc->changed();
-		m_Doc->regionsChanged()->update(QRectF());
+		if (m_Doc->eraseMark(mrk, true, NULL, true))
+		{
+			m_Doc->changed();
+			m_Doc->regionsChanged()->update(QRectF());
+		}
 		updateListView();
 	}
 }

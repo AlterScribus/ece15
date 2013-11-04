@@ -20,7 +20,7 @@ Mark2Mark::Mark2Mark(const QList<Mark*>& marks, Mark* omitMark, QWidget *parent)
 	{
 		if (marks[i]->isType(typeMrk))
 		{
-			LabelList->addItem(marks[i]->label, QVariant::fromValue((void*) marks[i]));
+			LabelList->addItem(marks[i]->getLabel(), QVariant::fromValue((void*) marks[i]));
 			index++;
 		}
 	}
@@ -31,7 +31,7 @@ Mark2Mark::Mark2Mark(const QList<Mark*>& marks, Mark* omitMark, QWidget *parent)
 	{
 		if (marks[i]->isType(typeMrk) && marks[i] != omitMark)
 		{
-			LabelList->addItem(marks[i]->label, QVariant::fromValue((void*) marks[i]));
+			LabelList->addItem(marks[i]->getLabel(), QVariant::fromValue((void*) marks[i]));
 			index++;
 		}
 	}
@@ -42,7 +42,7 @@ Mark2Mark::Mark2Mark(const QList<Mark*>& marks, Mark* omitMark, QWidget *parent)
 	{
 		if (marks[i]->isType(typeMrk))
 		{
-			LabelList->addItem(marks[i]->label, QVariant::fromValue((void*) marks[i]));
+			LabelList->addItem(marks[i]->getLabel(), QVariant::fromValue((void*) marks[i]));
 			index++;
 		}
 	}
@@ -53,7 +53,7 @@ Mark2Mark::Mark2Mark(const QList<Mark*>& marks, Mark* omitMark, QWidget *parent)
 	{
 		if (marks[i]->isType(typeMrk))
 		{
-			LabelList->addItem(marks[i]->label, QVariant::fromValue((void*) marks[i]));
+			LabelList->addItem(marks[i]->getLabel(), QVariant::fromValue((void*) marks[i]));
 			index++;
 		}
 	}
@@ -83,7 +83,7 @@ void Mark2Mark::values(QString& label, Mark* &mrk)
 
 void Mark2Mark::setValues(const QString label, const Mark* mrk)
 {
-	int index = (mrk == NULL)? -1:LabelList->findText(mrk->label);
+	int index = (mrk == NULL)? -1:LabelList->findText(mrk->getLabel());
 	LabelList->setCurrentIndex(index);
 	labelEdit->setText(label);
 }
