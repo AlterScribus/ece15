@@ -4851,13 +4851,13 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			//save paragraph style saved in parsep
 			const CharStyle& curParent = itemText.charStyle(i);
 			Mark* mark =( i < itemText.length() && (itemText.hasMark(i))? itemText.mark(i) : NULL);
-			if (i == stop || !curParent.equiv(lastParent) || (mark!=NULL && mark->isType(MARKNoteFrameType)) || (itemText.text(i) == SpecialChars::PARSEP))
+			if (i == stop || !curParent.equiv(lastParent) || (mark!=NULL) || (itemText.text(i) == SpecialChars::PARSEP))
 			{
 				added = false;
 				lastIsDelete = false;
 				if (is && ts && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0)) && dynamic_cast<ScItemState<CharStyle>*>(ts->at(0))->get("ETEA") == "delete_frametext")
 				{
-					if (is->getItem().equiv(lastParent))
+					if (is->getItem().equiv(lastParent) && !mark)
 					{
 						if (lastPos < is->getInt("START"))
 						{
@@ -4895,6 +4895,21 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 						else
 							ts->pushBack(undoTarget,is);
 					}
+					if (mark)
+					{
+						if (mark->isUnique())
+							is = m_Doc->getUndoDelUniqueMark(mark);
+						else
+							is = m_Doc->getUndoDelNotUniqueMarkAtPos(mark, this,i);
+						lastParent = curParent;
+						is->setItem(lastParent);
+						is->set("at", start);
+						undoManager->action(m_Doc, is);
+						ts = NULL;
+						is = NULL;
+						lastPos = i+1;
+						continue;
+					}
 					if ((i >= itemText.length()) || (itemText.text(i) == SpecialChars::PARSEP))
 					{
 						ScItemState<ParagraphStyle> * is2 = new ScItemState<ParagraphStyle>(Um::DeleteText,"",Um::IDelete);
@@ -4911,21 +4926,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 						else
 							ts->pushBack(undoTarget,is2);
 					}
-					if (mark)
-					{
-						ScItemState<CharStyle>* ims = NULL;
-						if (mark->isUnique())
-							ims = (ScItemState<CharStyle>*) m_Doc->getUndoDelUniqueMark(mark);
-						else
-							ims = (ScItemState<CharStyle>*) m_Doc->getUndoDelNotUniqueMarkAtPos(mark, this,i);
-						if (!curParent.equiv(lastParent))
-							ims->setItem(curParent);
-						undoManager->action(m_Doc, ims);
-						ts = NULL;
-					}
+					lastPos = i;
+					lastParent = curParent;
 				}
-				lastPos = i;
-				lastParent = curParent;
 			}
 		}
 		if (trans)

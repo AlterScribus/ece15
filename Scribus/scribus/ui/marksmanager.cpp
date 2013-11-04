@@ -214,8 +214,28 @@ void MarksManager::on_DeleteButton_clicked()
 	{
 		if (mrk->isType(MARKNoteMasterType))
 			m_Doc->setUndoDelNote(mrk->getNotePtr());
+		else if (mrk->isUnique())
+			m_Doc->setUndoDelUniqueMark(mrk);
 		else
-			m_Doc->setUndoDelMark(mrk);
+		{
+			UndoTransaction*  trans = NULL;
+			if(UndoManager::undoEnabled())
+				trans = new UndoTransaction(UndoManager::instance()->beginTransaction(Um::DeleteMark, Um::IGroup, tr("Delete ") + mrk->label));
+			foreach (ScItemState<CharStyle>* is, m_Doc->getUndosDelNonUniqueMark(mrk))
+				UndoManager::instance()->action(m_Doc->getItemFromName(is->get("inItem")), is);
+			SimpleState* ss = new SimpleState(Um::DeleteMark,"",Um::IDelete);
+			ss->set("MARK", QString("delNonUnique"));
+			ss->set("ETEA", mrk->label);
+			ss->set("label", mrk->label);
+			ss->set("type", (int) mrk->getType());
+			ss->set("strtxt", mrk->getString());
+			UndoManager::instance()->action(m_Doc, ss);
+			if (trans)
+			{
+				trans->commit();
+				delete trans;
+			}
+		}
 		m_Doc->eraseMark(mrk, true, NULL, true);
 		m_Doc->changed();
 		m_Doc->regionsChanged()->update(QRectF());

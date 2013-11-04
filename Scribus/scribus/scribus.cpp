@@ -10995,10 +10995,10 @@ void ScribusMainWindow::insertMark(MarkType mType)
 			//inserting mark replace some selected text
 			currItem->asTextFrame()->deleteSelectedTextFromFrame();
 		}
-		ScItemsState* is = NULL;
+		SimpleState* is = NULL;
 		if (insertMarkDialog(currItem->asTextFrame(), mType, is))
 		{
-            Mark* mrk = currItem->itemText.mark(currItem->itemText.cursorPosition() -1);
+			Mark* mrk = currItem->itemText.mark(currItem->itemText.cursorPosition() -1);
 			view->updatesOn(false);
 			currItem->invalidateLayout();
 			currItem->layout();
@@ -11138,7 +11138,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 		insertMark(MARKNoteMasterType);
 }
 
-bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType mrkType, ScItemsState* &is)
+bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType mrkType, SimpleState* &is)
 {
 	if (doc->masterPageMode() && (mrkType != MARKVariableTextType))
 		//avoid inserting in master pages other marks than Variable Text
@@ -11284,11 +11284,11 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		if (UndoManager::undoEnabled())
 		{
 			if (mrk->isType(MARKNoteMasterType))
-				is = new ScItemsState(UndoManager::InsertNote);
+				is = new SimpleState(UndoManager::InsertNote);
 			else if (insertExistedMark && ((oldMark.label != mrk->label) || (oldMark.getString() != mrk->getString())))
-				is = new ScItemsState(UndoManager::EditMark);
+				is = new SimpleState(UndoManager::EditMark);
 			else
-				is = new ScItemsState(UndoManager::InsertMark);
+				is = new SimpleState(UndoManager::InsertMark);
 			is->set("ETEA", mrk->label);
 			is->set("label", mrk->label);
 			is->set("type", (int) mrk->getType());
@@ -11520,11 +11520,11 @@ bool ScribusMainWindow::editMarkDlg(Mark *mrk, PageItem_TextFrame* currItem)
 		}
 		if (UndoManager::undoEnabled())
 		{
-			ScItemsState* is = NULL;
+			SimpleState* is = NULL;
 			if (newMark || replaceMark)
-				is = new ScItemsState(UndoManager::InsertMark);
+				is = new SimpleState(UndoManager::InsertMark);
 			else
-				is = new ScItemsState(UndoManager::EditMark);
+				is = new SimpleState(UndoManager::EditMark);
 			is->set("ETEA", mrk->label);
 			if (currItem != NULL)
 			{

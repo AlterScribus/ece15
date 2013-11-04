@@ -1678,11 +1678,11 @@ public:
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
 	void eraseMark(Mark* mrk, PageItem* item, int pos); //force is used only for deleting non-unique marks by MarksManager
-	void setUndoDelMark(const Mark* const mrk);
-	SimpleState* getUndoDelUniqueMark(const Mark* const mrk);
-	ScItemsState* getUndoDelNonUniqueMark(const Mark* const mrk);
+	void setUndoDelUniqueMark(const Mark* const mrk);
+	ScItemState<CharStyle>* getUndoDelUniqueMark(const Mark* const mrk);
+	QList< ScItemState<CharStyle>* > getUndosDelNonUniqueMark(const Mark* const mrk);
 	void setUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
-	SimpleState* getUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
+	ScItemState<CharStyle>* getUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
 
 	//for foot/endnotes
 	NotesStyle* newNotesStyle(const NotesStyle &nStyle);
@@ -1752,11 +1752,15 @@ private:
 	void updateItemNotesNums(PageItem_TextFrame *frame, const NotesStyle* const nStyle, int &num);
 	//update notesframes text styles
 	void updateItemNotesFramesStyles(PageItem *item, const ParagraphStyle &newStyle);
+	void invalidateMasterFrames(const NotesStyle* const nStyle);
+	//UNDO
+	void restoreNotesStyle(SimpleState* ss, bool isUndo);
+	void restoreDeleteNote(SimpleState* ss, bool isUndo);
+	void restoreMark(SimpleState* ss, bool isUndo);
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
 	void invalidateNoteFrames(const NotesStyle* const nStyle);
-	void invalidateMasterFrames(const NotesStyle* const nStyle);
 
 public slots:
 	//update strings (page numbers) for marks
