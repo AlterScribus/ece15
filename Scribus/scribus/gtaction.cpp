@@ -183,7 +183,7 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 			it->itemText.insertMark(mrk);
 			if (UndoManager::undoEnabled())
 			{
-				ScItemsState* is = new ScItemsState(UndoManager::InsertNote);
+				SimpleState* is = new SimpleState(UndoManager::InsertNote);
 				is->set("ETEA", mrk->label);
 				is->set("MARK", QString("new"));
 				is->set("label", mrk->label);
@@ -191,7 +191,7 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 				is->set("strtxt", QString(""));
 				is->set("nStyle", nStyle->name());
 				is->set("at", it->itemText.cursorPosition() -1);
-				is->insertItem("inItem", it);
+				is->set("inItem", it->itemName());
 				undoManager->action(it->m_Doc, is);
 			}
 			note = NULL;

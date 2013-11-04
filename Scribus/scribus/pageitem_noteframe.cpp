@@ -251,16 +251,16 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 		else if (getNotesStyle()->range() == NSRpage)
 			label += " on page " + QString::number(note->masterMark()->OwnPage +1);
 		else if (getNotesStyle()->range() == NSRstory)
-			label += " in " + note->masterMark()->getItemPtr()->firstInChain()->itemName();
+			label += " in " + note->masterMark()->getTargetPtr()->firstInChain()->itemName();
 		else if (getNotesStyle()->range() == NSRframe)
-			label += " in frame " + note->masterMark()->getItemName();
+			label += " in frame " + note->masterMark()->getHolderName();
 		mrk->label = label + "_" + note->numString();
 		mrk->setNotePtr(const_cast<TextNote*>(note));
 		getUniqueName(mrk->label, m_Doc->marksLabelsList(MARKNoteFrameType), "_");
 		const_cast<TextNote*>(note)->setNoteMark(mrk);
 	}
 	mrk->OwnPage = OwnPage;
-	mrk->setItemPtr(this);
+	mrk->setTargetPtr(this);
 	mrk->setString(getNotesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
 	
 	StoryText story;

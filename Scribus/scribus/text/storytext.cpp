@@ -2066,8 +2066,8 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			if (!mrk->isType(MARKBullNumType))
 			{
 				mark_attr.insert("label", mrk->label);
-				if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
-					mark_attr.insert("item", mrk->getItemPtr()->itemName());
+				if (mrk->isType(MARK2ItemType) && (mrk->getTargetPtr() != NULL))
+					mark_attr.insert("item", mrk->getTargetPtr()->itemName());
 				else if (mrk->isType(MARK2MarkType))
 				{
 					QString l;
@@ -2086,8 +2086,8 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 					mark_attr.insert("nStyle", note->notesStyle()->name());
 					mark_attr.insert("note",note->saxedText());
 					//store noteframe name for inserting into note if it is non-auto-removable
-					if (note->noteMark() && note->noteMark()->getItemPtr() && !note->noteMark()->getItemPtr()->isAutoNoteFrame())
-						mark_attr.insert("noteframe", note->noteMark()->getItemPtr()->getUName());
+					if (note->noteMark() && note->noteMark()->getTargetPtr() && !note->noteMark()->getTargetPtr()->isAutoNoteFrame())
+						mark_attr.insert("noteframe", note->noteMark()->getTargetPtr()->getUName());
 				}
 			}
 			handler.beginEnd("mark", mark_attr);
@@ -2292,12 +2292,12 @@ public:
 				if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
 				{
 					PageItem* item = doc->getItemFromName(Xml_data(iIt));
-					mrk->setItemPtr(item);
+					mrk->setTargetPtr(item);
 					if (item == NULL)
 						mrk->setString("?");
 					else
 						mrk->setString(doc->getFormattedSectionPageNumber(item->OwnPage));
-					mrk->setItemName(Xml_data(iIt));
+					mrk->setHolderName(Xml_data(iIt));
 				}
 				if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
 				{
@@ -2307,7 +2307,7 @@ public:
 						mrk->setString("?");
 					else
 						mrk->setString(doc->getFormattedSectionPageNumber(targetMark->OwnPage));
-					mrk->setItemName(Xml_data(m_lIt));
+					mrk->setHolderName(Xml_data(m_lIt));
 				}
 				if (mrk->isType(MARKNoteMasterType))
 				{

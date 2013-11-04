@@ -3961,7 +3961,7 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 					int pos = newItem->itemText.length();
 					//set pointer to item holds mark in his text
 					if (t == MARKAnchorType)
-						mark->setItemPtr(newItem);
+						mark->setTargetPtr(newItem);
 					mark->OwnPage = newItem->OwnPage;
 					newItem->itemText.insertMark(mark, pos);
 
@@ -6494,8 +6494,8 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			int ItemID = markIt.value();
 			if (LinkID.contains(ItemID))
 			{
-				mrk->setItemPtr(LinkID[ItemID]);
-				mrk->setString(m_Doc->getFormattedSectionPageNumber(mrk->getItemPtr()->OwnPage));
+				mrk->setTargetPtr(LinkID[ItemID]);
+				mrk->setString(m_Doc->getFormattedSectionPageNumber(mrk->getTargetPtr()->OwnPage));
 			}
 			else
 			{

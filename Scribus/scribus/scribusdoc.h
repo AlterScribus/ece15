@@ -1679,7 +1679,10 @@ public:
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
 	void eraseMark(Mark* mrk, PageItem* item, int pos); //force is used only for deleting non-unique marks by MarksManager
 	void setUndoDelMark(const Mark* const mrk);
+	SimpleState* getUndoDelUniqueMark(const Mark* const mrk);
+	ScItemsState* getUndoDelNonUniqueMark(const Mark* const mrk);
 	void setUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
+	SimpleState* getUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
 
 	//for foot/endnotes
 	NotesStyle* newNotesStyle(const NotesStyle &nStyle);
@@ -1740,10 +1743,6 @@ private:
 	int findMarkCPos(const Mark* const mrk, PageItem* item, int Start = 0);
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(const Mark* const mrk, int &lastItem);
-	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
-
-	PageItem* findFirstMarkItem(const Mark* const mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
-
 	//search for endnotesframe for given notes style and item holding master mark or section number
 	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, void* item = NULL);
 	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, int sectIndex);

@@ -26,15 +26,15 @@ enum MarkType
 struct MarkData
 {
 	QString strtxt;
-	PageItem* itemPtr;
+	PageItem* destItemPtr;
 	QString destmarkName;
 	MarkType destmarkType;
 	TextNote* notePtr;
 	//fields used for resolving to pointers for load and copy
-	QString itemName;
+	QString holderName;
 	MarkType markTyp;
 	
-	MarkData() : strtxt(""), itemPtr(NULL), destmarkName(""), destmarkType(MARKNoType), notePtr(NULL), itemName(""), markTyp(MARKNoType) {}
+	MarkData() : strtxt(""), destItemPtr(NULL), destmarkName(""), destmarkType(MARKNoType), notePtr(NULL), holderName(""), markTyp(MARKNoType) {}
 };
 
 class SCRIBUS_API Mark
@@ -48,22 +48,23 @@ class SCRIBUS_API Mark
 	//ScribusDoc is owner of MARK pointers created in document
 	//ScribusMainWindow create temporary MARK instance (not a pointer) only for undo purposes on case of editing mark
 private:
-	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
-	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), typ(other.typ), data(other.data) {}
+	Mark() : label(""), OwnPage(-1), cPos(-1), typ(MARKNoType), data() {}
+	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), cPos(other.cPos), typ(other.typ), data(other.data) {}
 	virtual ~Mark() {}
 public:
 	QString label;
 	int OwnPage;
+	int cPos;
 
 	void setValues(const QString &l, const int p, const MarkType t, const MarkData d) { label = l; OwnPage = p; typ = t; data = d; }
 	const MarkType getType() const { return typ; }
 	void setType(const MarkType t) { typ = t; }
 	const MarkData getData() const { return data; }
 	void setData(const MarkData d) { data = d; }
-	PageItem* getItemPtr() const { return data.itemPtr; }
-	void setItemPtr(PageItem* const ptr ) { data.itemPtr = ptr; }
-	const QString getItemName() const { return data.itemName; }
-	void setItemName( const QString &name ) { data.itemName = name; }
+	PageItem* getTargetPtr() const { return data.destItemPtr; }
+	void setTargetPtr(PageItem* const ptr ) { data.destItemPtr = ptr; }
+	const QString getHolderName() const { return data.holderName; }
+	void setHolderName( const QString &name ) { data.holderName = name; }
 
 	//for marks to marks - return label and type of target mark by reference
 	const void getTargetMark(QString &l, MarkType &t) const { l = data.destmarkName; t = data.destmarkType; }
@@ -89,7 +90,7 @@ public:
 	TextNote* getNotePtr() const { return data.notePtr; }
 	void setNotePtr(TextNote * const note) { data.notePtr = note; }
 
-	bool hasItemPtr() const { return data.itemPtr != NULL; }
+	bool hasItemPtr() const { return data.destItemPtr != NULL; }
 	bool hasString() const { return !data.strtxt.isEmpty(); }
 	bool hasMark() const { return data.destmarkName != ""; }
 	bool isUnique() const { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }

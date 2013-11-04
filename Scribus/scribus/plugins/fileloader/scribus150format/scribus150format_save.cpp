@@ -1254,7 +1254,7 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 		docu.writeAttribute("type", mrk->getType());
 		if (mrk->isType(MARK2ItemType) && mrk->hasItemPtr())
 		{
-			const PageItem* item = mrk->getItemPtr();
+			const PageItem* item = mrk->getTargetPtr();
 			assert(item != NULL);
 			docu.writeAttribute("ItemID", qHash(item));
 			//docu.writeAttribute("itemName", item->itemName());

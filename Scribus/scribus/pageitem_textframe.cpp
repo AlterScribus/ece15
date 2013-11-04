@@ -1519,12 +1519,8 @@ Start:
 				glyphs->glyph = SpecialChars::OBJECT.unicode() + ScFace::CONTROL_GLYPHS;
 
 				mark->OwnPage = OwnPage;
-				//itemPtr and itemName set to this frame only if mark type is different than MARK2ItemType
-				if (!mark->isType(MARK2ItemType))
-				{
-					mark->setItemPtr(this);
-					mark->setItemName(AnName);
-				}
+				mark->cPos = a;
+				mark->setHolderName(AnName);
 				//anchors and indexes has no visible inserts in text
 				if (mark->isType(MARKAnchorType) || mark->isType(MARKIndexType))
 				{
@@ -1540,7 +1536,7 @@ Start:
 					TextNote* note = mark->getNotePtr();
 					if (note == NULL)
 						continue;
-					mark->setItemPtr(this);
+					mark->setTargetPtr(this);
 					NotesStyle* nStyle = note->notesStyle();
 						Q_ASSERT(nStyle != NULL);
 					CharStyle currStyle(itemText.charStyle(a));
@@ -4788,7 +4784,6 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	//check if whole paragraph with list marker is going to delete
 	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
 		--start;
-	int marksNum = 0;
 	if(UndoManager::undoEnabled()) {
 		int lastPos = start;
 		CharStyle lastParent = itemText.charStyle(start);
@@ -4819,9 +4814,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					notes2DEL.append(QPair<TextNote*, int>(mark->getNotePtr(), i));
 			}
 		}
-		else
-			//delete marks from selected text (with undo)
-			marksNum = removeMarksFromText(true);
+//		else
+//			//delete marks from selected text (with undo)
+//			marksNum = removeMarksFromText(true);
 
 		//delete selected notes from notes frame
 		//remove marks from notes
@@ -4854,8 +4849,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		for (int i=start; i <= stop; ++i)
 		{
 			//save paragraph style saved in parsep
-			Mark* mark =( i < itemText.length() && itemText.hasMark(i))? itemText.mark(i) : NULL;
 			const CharStyle& curParent = itemText.charStyle(i);
+			Mark* mark =( i < itemText.length() && (itemText.hasMark(i))? itemText.mark(i) : NULL);
 			if (i == stop || !curParent.equiv(lastParent) || (mark!=NULL && mark->isType(MARKNoteFrameType)) || (itemText.text(i) == SpecialChars::PARSEP))
 			{
 				added = false;
@@ -4877,7 +4872,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					}
 					lastIsDelete = true;
 				}
-				if (!added || (i < itemText.length() && itemText.text(i) == SpecialChars::PARSEP))
+				if (!added || (i < itemText.length() && itemText.text(i) == SpecialChars::PARSEP) || mark)
 				{
 					is = NULL;
 					if (i - lastPos > 0)
@@ -4916,6 +4911,18 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 						else
 							ts->pushBack(undoTarget,is2);
 					}
+					if (mark)
+					{
+						ScItemState<CharStyle>* ims = NULL;
+						if (mark->isUnique())
+							ims = (ScItemState<CharStyle>*) m_Doc->getUndoDelUniqueMark(mark);
+						else
+							ims = (ScItemState<CharStyle>*) m_Doc->getUndoDelNotUniqueMarkAtPos(mark, this,i);
+						if (!curParent.equiv(lastParent))
+							ims->setItem(curParent);
+						undoManager->action(m_Doc, ims);
+						ts = NULL;
+					}
 				}
 				lastPos = i;
 				lastParent = curParent;
@@ -4928,8 +4935,8 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			trans = NULL;
 		}
 	}
-	else //remove marks without undo
-		marksNum =removeMarksFromText(false);
+	//remove marks without undo
+	int marksNum =removeMarksFromText(false);
 	itemText.setCursorPosition( start );
 	//for sure text is still selected
 	if (stop - start - marksNum > 0)
@@ -5922,8 +5929,8 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMark
 		if (it.key() <= lastInFrame())
 		{
 			Mark* mark = it.value();
-			mark->setItemPtr(this);
-			mark->setItemName(AnName);
+			mark->setTargetPtr(this);
+			mark->setHolderName(AnName);
 
 			TextNote* note = mark->getNotePtr();
 			Q_ASSERT(note != NULL);
@@ -6073,19 +6080,10 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	{
 		if (!mrk->isType(MARKBullNumType))
 		{
-			if (doUndo)
-			{
-				if (mrk->isUnique())
-				{
-					m_Doc->setUndoDelMark(mrk);
-					m_Doc->eraseMark(mrk, true, this);
-				}
-				else
-				{
-					m_Doc->setUndoDelNotUniqueMarkAtPos(mrk, this, pos);
-					m_Doc->eraseMark(mrk, this, pos);
-				}
-			}
+			if (mrk->isUnique())
+				m_Doc->eraseMark(mrk, true, this);
+			else
+				m_Doc->eraseMark(mrk, this, pos);
 			++num;
 		}
 		mrk = selectedMark(pos, true);
