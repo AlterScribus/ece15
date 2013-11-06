@@ -17481,33 +17481,34 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 			{
 				QString numStr = nStyle->prefix() + nStyle->numString(noteNum) + nStyle->suffix();
 				QString mStr = mark->getString();
-				QString label = mark->label;
-				if ((mStr != numStr) || flag_updateMarksLabels || flag_updateEndNotes)
+				QString label;
+				label = "NoteMark_" + nStyle->name();
+				if (nStyle->range() != NSRdocument)
+				{
+					if (nStyle->range() == NSRsection)
+						label += " in section " + getSectionNameForPageIndex(frame->OwnPage) + " page " + QString::number(frame->OwnPage +1);
+					else if (nStyle->range() == NSRpage)
+						label += " on page " + QString::number(frame->OwnPage +1);
+					else if (nStyle->range() == NSRstory)
+						label += " in " + frame->firstInChain()->itemName();
+					else if (nStyle->range() == NSRframe)
+						label += " in frame " + frame->itemName();
+				}
+				label += "_" + QString::number(noteNum);
+				
+				if ((mStr != numStr) || label != mark->label || flag_updateMarksLabels || flag_updateEndNotes)
 				{
 					doUpdate = true;
 					mark->setString(numStr);
-					label = "NoteMark_" + nStyle->name();
-					if (nStyle->range() != NSRdocument)
-					{
-						if (nStyle->range() == NSRsection)
-							label += " in section " + getSectionNameForPageIndex(frame->OwnPage) + " page " + QString::number(frame->OwnPage +1);
-						else if (nStyle->range() == NSRpage)
-							label += " on page " + QString::number(frame->OwnPage +1);
-						else if (nStyle->range() == NSRstory)
-							label += " in " + frame->firstInChain()->itemName();
-						else if (nStyle->range() == NSRframe)
-							label += " in frame " + frame->itemName();
-					}
-					label += "_" + QString::number(noteNum);
 					mark->label = label;
-				}
-				TextNote* note = mark->getNotePtr();
-				note->setNum(noteNum);
-				if (note->noteMark() != NULL)
-				{
-					note->noteMark()->setString(numStr);
-					label = label.replace("NoteMark","NoteFrameMark");
-					note->noteMark()->label = label;
+					TextNote* note = mark->getNotePtr();
+					note->setNum(noteNum);
+					if (note->noteMark() != NULL)
+					{
+						note->noteMark()->setString(numStr);
+						label = label.replace("NoteMark","NoteFrameMark");
+						note->noteMark()->label = label;
+					}
 				}
 				++index;
 				++noteNum;

@@ -247,7 +247,6 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 		mrk->setType(MARKNoteFrameType);
 		Q_ASSERT(note->masterMark());
 		QString label = note->masterMark()->getLabel().replace("NoteMark", "NoteFrameMark");
-		Q_ASSERT(!m_Doc->marksLabelsList(MARKNoteFrameType).contains(label));
 		mrk->setLabel(label);
 		mrk->setNotePtr(const_cast<TextNote*>(note));
 		const_cast<TextNote*>(note)->setNoteMark(mrk);
