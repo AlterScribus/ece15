@@ -1577,8 +1577,6 @@ Start:
 				}
 			}
 			ListMode = false;
-			if (isNoteFrame())
-				qDebug();
 			if ((a==0 || itemText.text(a-1) == SpecialChars::PARSEP || itemText.hasMarkType(a-1,MARKNoteFrameType)) 
 					//list number or bullet after note number, not before
 					&& !(mark && mark->isType(MARKNoteFrameType)))
@@ -4803,49 +4801,38 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		}
 		UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
 
-		//find and delete notes and marks in selected text
-		QList<QPair<TextNote*, int> > notes2DEL;
 		if (isNoteFrame()/* && findNotes*/)
-		{
-			//find and delete notes
-			//if marks are in notes then they will be deleted further while note is physicaly deleted
-			for (int i=start; i < stop; ++i)
-			{
-				if (i == itemText.length())
-					break;
-				Mark* mark = itemText.mark(i);
-				if (itemText.hasMarkType(i, MARKNoteFrameType))
-					notes2DEL.append(QPair<TextNote*, int>(mark->getNotePtr(), i));
-			}
-		}
-//		else
-//			//delete marks from selected text (with undo)
-//			marksNum = removeMarksFromText(true);
-
-		//delete selected notes from notes frame
-		//remove marks from notes
-		for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
-		{
-			TextNote* note = notes2DEL.at(ii).first;
-			Q_ASSERT(note != NULL);
-			if (!note->saxedText().isEmpty())
-			{
-				itemText.deselectAll();
-				itemText.select(notes2DEL.at(ii).second + 1, desaxeStoryFromString(m_Doc,note->saxedText()).length());
-				removeMarksFromText(true);
-			}
-		}
-		if (isNoteFrame())
 			asNoteFrame()->updateNotesText();
-		for (int ii = notes2DEL.count() -1; ii >= 0; --ii)
+		for (int i= stop -1; i >= start; --i)
 		{
-			TextNote* note = notes2DEL.at(ii).first;
-			Q_ASSERT(note != NULL);
-			m_Doc->setUndoDelNote(note);
-			if (note->isEndNote())
-				m_Doc->flag_updateEndNotes = true;
-			m_Doc->deleteNote(note);
+			if (itemText.hasMark(i))
+			{
+				if (TextNote* note = itemText.mark(i)->getNotePtr())
+				{
+					m_Doc->setUndoDelNote(note);
+					
+					//delete marks placed in note text
+					PageItem_NoteFrame* nF = (PageItem_NoteFrame*) m_Doc->getItemFromName(note->noteMark()->getHolderName());
+					Q_ASSERT(nF);
+					nF->itemText.deselectAll();
+					nF->itemText.select(note->noteMark()->getCPos() + 1, desaxeStoryFromString(m_Doc,note->saxedText()).length());
+					nF->removeMarksFromText(false);
+					nF->itemText.removeSelection();
+					
+					m_Doc->deleteNote(note);
+				}
+			}
+			//if only notes were deleted
+			if (itemText.lengthOfSelection() == 0)
+			{
+				trans->commit();
+				delete trans;
+				m_Doc->updateListNumbers();
+				m_Doc->updateMarks();
+				return;
+			}
 		}
+
 		UndoObject * undoTarget;
 		undoTarget = isNoteFrame() ? (UndoObject*) m_Doc : (UndoObject*) this;
 		//delete text
@@ -4957,7 +4944,6 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	if (m_Doc->notesChanged())
 		m_Doc->updateMarks();
 //	m_Doc->updateFrameItems();
-	m_Doc->scMW()->DisableTxEdit();
 }
 
 
@@ -5802,18 +5788,20 @@ Mark* PageItem_TextFrame::selectedMark(int &pos, bool onlySelection)
 TextNote* PageItem_TextFrame::noteFromSelectedNoteMark(int &foundPos, bool onlySelection)
 {
 	//return pointer to note from first mark found in text
-	int start = 0;
+	int start = foundPos;
 	int stop = itemText.length();
 	if (onlySelection)
 	{
 		if (itemText.lengthOfSelection() > 0)
 		{
-			start = itemText.startOfSelection();
+			start = qMax(foundPos, itemText.startOfSelection());
 			stop = start + itemText.lengthOfSelection();
 		}
 		else
-			return NULL;
+			stop = start +1;
 	}
+	if (start >= itemText.length())
+		return NULL;
 	MarkType typ = isNoteFrame()? MARKNoteFrameType : MARKNoteMasterType;
 	for (int pos = start; pos < stop; ++pos)
 	{
@@ -5896,9 +5884,9 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 		else
 		{
 			QList<TextNote*> nList = notesMap.value(nF);
-			if (nList != nF->notesList() || m_Doc->notesChanged())
+			if (nList != nF->notesList())
 			{
-				nF->updateNotes(nList, (!nF->isEndNotesFrame() && !nF->notesList().isEmpty()));
+				nF->updateNotes(nList);
 				docWasChanged = true;
 			}
 		}
@@ -6042,34 +6030,45 @@ void PageItem_TextFrame::notesFramesLayout()
 int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 {
 	int num = 0;
+	int start = (itemText.lengthOfSelection() > 0) ? itemText.startOfSelection() : 0;
+	int stop = (itemText.lengthOfSelection() > 0) ? itemText.endOfSelection() : itemText.length();
+	doUndo == doUndo && UndoManager::undoEnabled();
 	if (!isNoteFrame())
 	{
-		TextNote* note = noteFromSelectedNoteMark(true);
-		while (note != NULL)
+		for (int pos = stop -1; pos >= start; --pos)
 		{
-			if (doUndo && UndoManager::undoEnabled())
-				m_Doc->setUndoDelNote(note);
-			if (note->isEndNote())
-				m_Doc->flag_updateEndNotes = true;
-			m_Doc->deleteNote(note);
-			note = noteFromSelectedNoteMark(true);
-			++num;
+			if (itemText.hasMarkType(pos, MARKNoteMasterType))
+			{
+				TextNote* note = itemText.mark(pos)->getNotePtr();
+				Q_ASSERT(note);
+				if (doUndo)
+					m_Doc->setUndoDelNote(note);
+				m_Doc->deleteNote(note);
+				++num;
+			}
 		}
 	}
 
-	int pos;
-	Mark* mrk = selectedMark(pos, true);
-	while (mrk != NULL)
+	stop = (itemText.lengthOfSelection() > 0) ? itemText.endOfSelection() : itemText.length();
+	for (int pos = stop -1; pos >= start; --pos)
 	{
-		if (!mrk->isType(MARKListType))
+		Mark* mrk = itemText.mark(pos);
+		if (mrk && !mrk->isType(MARKListType))
 		{
 			if (mrk->isUnique())
+			{
+				if (doUndo)
+					m_Doc->setUndoDelUniqueMark(mrk);
 				m_Doc->eraseMark(mrk, true, this);
+			}
 			else
+			{
+				if (doUndo)
+					m_Doc->setUndoDelNotUniqueMarkAtPos(mrk, this, pos);
 				m_Doc->eraseMark(mrk, this, pos);
+			}
 			++num;
 		}
-		mrk = selectedMark(pos, true);
 	}
 	return num;
 }

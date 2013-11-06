@@ -245,17 +245,9 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 	{
 		mrk = m_Doc->newMark();
 		mrk->setType(MARKNoteFrameType);
-		QString label = "NoteFrameMark_" + getNotesStyle()->name();
-		if (getNotesStyle()->range() == NSRsection)
-			label += " in section " + m_Doc->getSectionNameForPageIndex(note->masterMark()->getOwnPage()) + " page " + QString::number(note->masterMark()->getOwnPage() +1);
-		else if (getNotesStyle()->range() == NSRpage)
-			label += " on page " + QString::number(note->masterMark()->getOwnPage() +1);
-		else if (getNotesStyle()->range() == NSRstory)
-			label += " in " + m_Doc->getItemFromName(note->masterMark()->getHolderName())->firstInChain()->itemName();
-		else if (getNotesStyle()->range() == NSRframe)
-			label += " in frame " + note->masterMark()->getHolderName();
-		label += "_" + note->numString();
-		getUniqueName(label, m_Doc->marksLabelsList(MARKNoteFrameType), "_");
+		Q_ASSERT(note->masterMark());
+		QString label = note->masterMark()->getLabel().replace("NoteMark", "NoteFrameMark");
+		Q_ASSERT(!m_Doc->marksLabelsList(MARKNoteFrameType).contains(label));
 		mrk->setLabel(label);
 		mrk->setNotePtr(const_cast<TextNote*>(note));
 		const_cast<TextNote*>(note)->setNoteMark(mrk);
@@ -264,62 +256,34 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 	mrk->setHolderName(AnName);
 	mrk->setString(getNotesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
 	
-	StoryText story;
+	StoryText* story = new StoryText(m_Doc);
 	if (!note->saxedText().isEmpty())
-		story = desaxeStoryFromString(m_Doc, note->saxedText());
-	story.insertMark(mrk, 0);
-	story.setDefaultStyle(itemText.defaultStyle());
-	story.applyCharStyle(0,1,note->getCharStyleNoteMark());
+		story->insert(desaxeStoryFromString(m_Doc, note->saxedText()));
+	story->insertMark(mrk, 0);
+	story->setDefaultStyle(itemText.defaultStyle());
+	story->applyCharStyle(0,1,note->getCharStyleNoteMark());
 	//	story.applyCharStyle(0, story.length(), itemText.charStyle());
 	if (itemText.length() > 0)
 		itemText.insertChars(itemText.length(), SpecialChars::PARSEP);
-	itemText.insert(itemText.length(), story);
+	mrk->setCPos(itemText.length());
+	itemText.insert(itemText.length(), *story);
+	delete story;
 }
 
-void PageItem_NoteFrame::updateNotes(QList<TextNote*> &nList, bool clear)
+void PageItem_NoteFrame::updateNotes(QList<TextNote*> &nList)
 {
-	if (nList == m_notesList && !clear)
+	if (nList == m_notesList)
 		return;
-	UndoManager::instance()->setUndoEnabled(false);
 	m_Doc->setNotesChanged(true);
-	//itemText.blockSignals(true);
-	
-	if (clear)
-	{
-		itemText.selectAll();
-		deleteSelectedTextFromFrame();
-		m_notesList = nList;
-		for (int a=0; a < m_notesList.count(); ++a)
-			insertNote(m_notesList.at(a));
-	}
-	else
-	{
-		//just insert new notes into frame notes list
-		int count = nList.count();
-		if (count > 0)
-		{
-			for (int i=0; i< count; ++i)
-			{
-				TextNote* note = nList.at(i);
-				if (!m_notesList.contains(note))
-				{
-					m_notesList.append(note);
-					insertNote(note);
-				}
-			}
-		}
-	}
-	UndoManager::instance()->setUndoEnabled(true);
-	//itemText.blockSignals(false);
-	invalid = true;
+	m_notesList = nList;
+	updateNotes();
 }
 
 void PageItem_NoteFrame::updateNotes()
 {
 	UndoManager::instance()->setUndoEnabled(false);
-	m_Doc->setNotesChanged(true);
 	itemText.selectAll();
-	deleteSelectedTextFromFrame();
+	itemText.removeSelection();
 	for (int a=0; a < m_notesList.count(); ++a)
 		insertNote(m_notesList.at(a));
 	UndoManager::instance()->setUndoEnabled(true);

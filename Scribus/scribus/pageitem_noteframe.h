@@ -31,8 +31,8 @@ public:
 	//returns Notes Style
 	NotesStyle* getNotesStyle() const { return m_nstyle; }
 
-	//insert notes content into notesframe
-	void updateNotes(QList<TextNote*> &nList, bool clear = true);
+	//upadate noteframe witn new notes list
+	void updateNotes(QList<TextNote*> &nList);
 	//clear notesList and update
 	void updateNotes();
 	//read notes text from notesframe itemText and store it in notes`s saxed text field

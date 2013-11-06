@@ -58,6 +58,8 @@ StoryText desaxeStoryFromString(ScribusDoc* doc, const QString &saxedString)
 
 	Serializer* dig = doc->textSerializer();
 	dig->reset();
+	dig->store<ScribusDoc>("<scribusdoc>", doc);
+	
 
 	dig->parseMemory(saxedString.toUtf8(), saxedString.toUtf8().length());
 	StoryText * story = dig->result<StoryText>();

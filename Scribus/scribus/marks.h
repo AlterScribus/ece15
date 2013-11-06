@@ -23,18 +23,19 @@ enum MarkType
 	MARKListType = 7
 };
 
+typedef union {
+	PageItem* destItemPtr;
+	TextNote* notePtr;
+	Mark* destMark;
+} References;
+
 struct MarkData
 {
 	QString strtxt;
-	PageItem* destItemPtr;
-	QString destmarkName;
-	MarkType destmarkType;
-	TextNote* notePtr;
-	//fields used for resolving to pointers for load and copy
 	QString holderName;
 	MarkType markTyp;
-	
-	MarkData() : strtxt(""), destItemPtr(NULL), destmarkName(""), destmarkType(MARKNoType), notePtr(NULL), holderName(""), markTyp(MARKNoType) {}
+	References ref;
+	MarkData() : strtxt(""), holderName(""), markTyp(MARKNoType), ref() {}
 };
 
 class SCRIBUS_API Mark
@@ -50,45 +51,28 @@ class SCRIBUS_API Mark
 private:
 	Mark() : label(""), OwnPage(-1), cPos(-1), typ(MARKNoType), data() {}
 	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), cPos(other.cPos), typ(other.typ), data(other.data) {}
-	virtual ~Mark() {}
+	virtual ~Mark() { }
 public:
 	void setValues(const QString &l, const int p, const MarkType t, const MarkData d) { label = l; OwnPage = p; typ = t; data = d; }
 	const MarkType getType() const { return typ; }
 	void setType(const MarkType t) { typ = t; }
-	const MarkData getData() const { return data; }
-	void setData(const MarkData d) { data = d; }
-	PageItem* getTargetPtr() const { return data.destItemPtr; }
-	void setTargetPtr(PageItem* const ptr ) { data.destItemPtr = ptr; }
 	const QString getHolderName() const { return data.holderName; }
 	void setHolderName( const QString &name ) { data.holderName = name; }
-
-	//for marks to marks - return label and type of target mark by reference
-	const void getTargetMark(QString &l, MarkType &t) const { l = data.destmarkName; t = data.destmarkType; }
-	//for marks to marks - set label and type of target mark from mark pointer
-	void setTargetMark(Mark* mP)
-	{
-		if (mP == NULL)
-		{
-			data.destmarkName = "";
-			data.destmarkType = MARKNoType;
-		}
-		else
-		{
-			data.destmarkName = mP->label;
-			data.destmarkType = mP->getType();
-		}
-	}
-	void setTargetMark(const QString l, const MarkType t) { data.destmarkName = l; data.destmarkType = t; }
 	const MarkType getMarkType() const { return data.markTyp; }
 	void setMarkType(const MarkType t) { data.markTyp = t; }
 	const QString getString() const { return data.strtxt; }
 	void setString( const QString &str ) { data.strtxt = str; }
-	TextNote* getNotePtr() const { return data.notePtr; }
-	void setNotePtr(TextNote * const note) { data.notePtr = note; }
 
-	bool hasItemPtr() const { return data.destItemPtr != NULL; }
+	PageItem* getTargetPtr() const { return (typ == MARK2ItemType ? data.ref.destItemPtr : NULL); }
+	void setTargetPtr(PageItem* const ptr ) { data.ref.destItemPtr = ptr; }
+	const Mark* getTargetMark() const { return (typ == MARK2MarkType ? data.ref.destMark : NULL); }
+	void setTargetMark(Mark* m) { data.ref.destMark = m; }
+	TextNote* getNotePtr() const { return (isNoteType() ? data.ref.notePtr : NULL); }
+	void setNotePtr(TextNote * const note) { data.ref.notePtr = note; }
+
+	bool hasTargetPtr() const { return (typ == MARK2ItemType &&  data.ref.destItemPtr); }
 	bool hasString() const { return !data.strtxt.isEmpty(); }
-	bool hasMark() const { return data.destmarkName != ""; }
+	bool hasTargetMark() const { return (typ == MARK2MarkType &&  data.ref.destMark); }
 	bool isUnique() const { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKListType)); }
 	bool isNoteType() const { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) const { return t==typ; }
@@ -117,7 +101,7 @@ protected:
 class SCRIBUS_API ListMark : public Mark
 {
 public:
-	ListMark() : Mark() { label = "BulNumMark"; typ = MARKListType; }
+	ListMark() : Mark() { label = "ListMark"; typ = MARKListType; }
 	~ListMark() {}
 };
 

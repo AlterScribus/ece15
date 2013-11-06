@@ -424,7 +424,6 @@ void StoryText::removeChars(int pos, uint len)
 		//            delete it->mark;
 		//            it->mark = NULL;
 		//        }
-		
 		//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
 		d->takeAt(i);
 		d->len--;
@@ -925,7 +924,7 @@ const CharStyle & StoryText::charStyle(int pos) const
 		return defaultStyle().charStyle();
 	}
 	else if (pos == length()) {
-		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
+//		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
 	if (text(pos) == SpecialChars::PARSEP)
@@ -2066,18 +2065,12 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			if (!mrk->isType(MARKListType))
 			{
 				mark_attr.insert("label", mrk->getLabel());
-				if (mrk->isType(MARK2ItemType) && (mrk->getTargetPtr() != NULL))
+				if (mrk->hasTargetPtr())
 					mark_attr.insert("target", mrk->getTargetPtr()->itemName());
-				else if (mrk->isType(MARK2MarkType))
+				else if (mrk->hasTargetMark())
 				{
-					QString l;
-					MarkType t;
-					mrk->getTargetMark(l, t);
-					if (m_doc->getMarkDefinied(l,t) != NULL)
-					{
-						mark_attr.insert("mark_l", l);
-						mark_attr.insert("mark_t", QString::number((int) t));
-					}
+						mark_attr.insert("mark_l", mrk->getTargetMark()->getLabel());
+						mark_attr.insert("mark_t", QString::number(mrk->getTargetMark()->getType()));
 				}
 				else if (mrk->isType(MARKNoteMasterType))
 				{
@@ -2274,6 +2267,7 @@ public:
 			if (tIt != attr.end())
 				t = (MarkType) parseInt(Xml_data(tIt));
 			ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
+			Q_ASSERT(doc);
 			//				ParagraphStyle* pstyle = NULL;
 			if (t == MARKVariableTextType)
 				mrk = doc->getMarkDefinied(l,t);

@@ -1253,7 +1253,7 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 		docu.writeAttribute("label", mrk->getLabel());
 		docu.writeAttribute("type", mrk->getType());
 		docu.writeAttribute("holder", mrk->getHolderName());
-		if (mrk->isType(MARK2ItemType) && mrk->hasItemPtr())
+		if (mrk->hasTargetPtr())
 		{
 			const PageItem* item = mrk->getTargetPtr();
 			assert(item != NULL);
@@ -1261,13 +1261,10 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 		}
 		else if (mrk->isType(MARKVariableTextType) && mrk->hasString())
 			docu.writeAttribute("str", mrk->getString());
-		else if (mrk->isType(MARK2MarkType) && mrk->hasMark())
+		else if (mrk->hasTargetMark())
 		{
-			QString label;
-			MarkType type;
-			mrk->getTargetMark(label, type);
-			docu.writeAttribute("MARKlabel", label);
-			docu.writeAttribute("MARKtype", type);
+			docu.writeAttribute("MARKlabel", mrk->getTargetMark()->getLabel());
+			docu.writeAttribute("MARKtype", mrk->getTargetMark()->getType());
 		}
 	}
 	docu.writeEndElement();
