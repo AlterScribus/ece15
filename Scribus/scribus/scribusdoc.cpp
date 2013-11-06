@@ -14796,7 +14796,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 		QList<PageItem*> *list = Items;
 		list = parentGroup(currItem, Items);
 		int d = list->indexOf(currItem);
-		list->removeAt(d);
+		if (d >= 0)
+			list->removeAt(d);
 		itemSelection->removeItem(currItem);
 		int gcount = currItem->groupItemList.count();
 		for (int c = 0; c < gcount; c++)
@@ -14858,7 +14859,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 	itemSelection->connectItemToGUI();
 	itemSelection->getGroupRect(&x, &y, &w, &h);
 	emit docChanged();
-	m_ScMW->HaveNewSel(itemSelection->itemAt(0)->itemType());
+	if (itemSelection->count() > 0)
+		m_ScMW->HaveNewSel(itemSelection->itemAt(0)->itemType());
 	regionsChanged()->update(QRectF(x-5, y-5, w+10, h+10));
 }
 
