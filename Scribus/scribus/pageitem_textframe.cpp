@@ -5071,10 +5071,16 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	int stop = itemText.endOfSelection();
 	//if whole paragraph is selected then delete PARSEP too
 	if ((stop < itemText.length()) && (itemText.text(stop) == SpecialChars::PARSEP) && (start == 0 || itemText.text(start-1)==SpecialChars::PARSEP))
+	{
+		itemText.select(stop,1);
 		++stop;
+	}
 	//check if whole paragraph with list marker is going to delete
 	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
+	{
 		--start;
+		itemText.select(start,1);
+	}
 	int marksNum = 0;
 	if(UndoManager::undoEnabled()) {
 		int lastPos = start;
