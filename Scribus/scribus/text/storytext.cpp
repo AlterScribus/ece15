@@ -2010,8 +2010,7 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	lastStyle.saxx(handler);
 	for (int i=0; i < length(); ++i)
 	{
-		if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && hasMarkType(i, MARKNoteFrameType)))
-			continue; //do not insert notes marks into notes frames
+		Q_ASSERT(!hasMarkType(i, MARKNoteFrameType));
 
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));

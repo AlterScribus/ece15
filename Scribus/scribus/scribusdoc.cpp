@@ -11111,7 +11111,7 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			Mark* m = m_docMarksList.at(a);
 			Q_ASSERT(m != NULL);
-			if (m->isType(MARK2ItemType) && (m->getTargetPtr() == currItem))
+			if (m->getTargetPtr() == currItem)
 			{
 				setUndoDelUniqueMark(m);
 				eraseMark(m, true, NULL, true);
@@ -11121,15 +11121,14 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			if (currItem->itemText.length() >0)
 			{
-				currItem->itemText.selectAll();
-				currItem->asTextFrame()->deleteSelectedTextFromFrame();
+				currItem->asNoteFrame()->deleteAllNotes();
 				if (currItem->asNoteFrame()->masterFrame())
 					currItem->asNoteFrame()->masterFrame()->invalid = true;
 			}
 			if (!UndoManager::undoEnabled() || forceDeletion || currItem->isAutoNoteFrame())
 			{
-				itemList->removeAll(currItem);
 				delNoteFrame(currItem->asNoteFrame(), false, false);
+				itemList->removeAll(currItem);
 				continue;
 			}
 		}
