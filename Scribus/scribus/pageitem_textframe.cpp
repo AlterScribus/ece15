@@ -3077,11 +3077,11 @@ Start:
 	MaxChars = itemText.length();
 	invalid = false;
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
-		updateItemNotes(noteMarksPosMap);
-	if (invalid)
 	{
 		m_Doc->setNotesChanged(false);
-		goto Start;
+		updateItemNotes(noteMarksPosMap);
+		if (invalid || m_Doc->notesChanged())
+			m_Doc->changed();
 	}
 	if (NextBox != NULL)
 	{
@@ -5824,11 +5824,9 @@ void PageItem_TextFrame::updateItemNotes(QMap<int, Mark*> &notesMarksPositions)
 {
 	UndoManager::instance()->setUndoEnabled(false);
 	NotesInFrameMap notesMap = updateNotesFrames(notesMarksPositions);
-	if (notesMap != m_notesFramesMap || m_Doc->flag_layoutNotesFrames || m_Doc->flag_Renumber)
+	if (notesMap != m_notesFramesMap || m_Doc->flag_layoutNotesFrames)
 	{
 		updateNotesMarks(notesMap);
-		if (m_Doc->flag_Renumber)
-			m_Doc->updateListNumbers();
 		if (m_Doc->flag_layoutNotesFrames)
 			notesFramesLayout();
 	}
@@ -5839,40 +5837,6 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 {
 	bool docWasChanged = false;
 
-//	QList<PageItem_NoteFrame*> curr_footNotesList;
-//	QList<PageItem_NoteFrame*> old_footNotesList;
-//	QList<PageItem_NoteFrame*> curr_endNotesList;
-//	QList<PageItem_NoteFrame*> old_endNotesList;
-
-
-//	foreach(PageItem_NoteFrame* nF, notesMap.keys())
-//	{
-//		if (nF->isEndNotesFrame())
-//			curr_endNotesList.append(nF);
-//		else if (!notesMap.value(nF).isEmpty())
-//			curr_footNotesList.append(nF);
-//	}
-//	foreach(PageItem_NoteFrame* nF, m_notesFramesMap.keys())
-//	{
-//		if (nF->isEndNotesFrame())
-//			old_endNotesList.append(nF);
-//		else
-//			old_footNotesList.append(nF);
-//	}
-//	//check for endnotes marks change in current frame
-//	foreach (PageItem_NoteFrame* nF, old_endNotesList)
-//	{
-//		if (nF->deleteIt)
-//		{
-//			m_Doc->delNoteFrame(nF,true);
-//			docWasChanged = true;
-//		}
-//		else if (!notesMap.contains(nF) || (m_notesFramesMap.value(nF) != notesMap.value(nF)))
-//		{
-//			m_Doc->endNoteFrameChanged(nF);
-//			docWasChanged = true;
-//		}
-//	}
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
