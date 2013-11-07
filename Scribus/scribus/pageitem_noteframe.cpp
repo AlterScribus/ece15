@@ -347,6 +347,35 @@ void PageItem_NoteFrame::updateNotesText()
 		itemText.select(oldSelStart, oldSelLen);
 }
 
+void PageItem_NoteFrame::deleteAllNotes()
+{
+	if (itemText.length() == 0)
+		return;
+
+	UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
+
+	updateNotesText();
+	for (int i= itemText.length() -1; i >= 0; --i)
+	{
+		if (itemText.hasMark(i))
+		{
+			if (TextNote* note = itemText.mark(i)->getNotePtr())
+			{
+				m_Doc->setUndoDelNote(note);
+				itemText.deselectAll();
+				itemText.select(note->noteMark()->getCPos() + 1, desaxeStoryFromString(m_Doc,note->saxedText()).length());
+				removeMarksFromText(false);
+				itemText.removeSelection();
+				m_Doc->deleteNote(note);
+			}
+		}
+	}
+	trans->commit();
+	delete trans;
+	m_Doc->updateListNumbers();
+	m_Doc->updateMarks();
+}
+
 void PageItem_NoteFrame::restoreDeleteNoteText(SimpleState *state, bool isUndo)
 {
 	PageItem::restoreDeleteFrameText(state, isUndo);

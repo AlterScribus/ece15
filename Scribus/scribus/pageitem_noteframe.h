@@ -37,6 +37,7 @@ public:
 	void updateNotes();
 	//read notes text from notesframe itemText and store it in notes`s saxed text field
 	void updateNotesText();
+	void deleteAllNotes();
 
 	PageItem_TextFrame* masterFrame() const { return m_masterFrame; }
 	void setMaster(PageItem* frame) { m_masterFrame = frame->asTextFrame(); }
