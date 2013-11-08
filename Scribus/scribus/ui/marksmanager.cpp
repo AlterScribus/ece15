@@ -106,8 +106,6 @@ void MarksManager::updateListView()
 		listView->sortByColumn(0);
 	}
 	restoreColaption();
-	m_Doc->flag_updateMarksLabels = false;
-	m_Doc->flag_updateEndNotes = false;
 }
 
 void MarksManager::setDoc(ScribusDoc *doc)
@@ -144,7 +142,6 @@ void MarksManager::handleUpdateRequest(int updateFlags)
 	if (updateFlags & reqMarksListViewUpdate) {
 		updateListView();
 	}
-	m_Doc->flag_updateMarksLabels = false;
 }
 
 Mark* MarksManager::getMarkFromListView()
