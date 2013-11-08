@@ -412,12 +412,12 @@ void PageItem_NoteFrame::unWeld(bool doUndo)
 }
 bool PageItem_NoteFrame::isMarkedForDelete() const
 {
-    return deleteIt;
+	return deleteIt;
 }
 
 void PageItem_NoteFrame::setMarkedForDelete(bool value)
 {
-    deleteIt = value;
+	deleteIt = value;
 }
 
 

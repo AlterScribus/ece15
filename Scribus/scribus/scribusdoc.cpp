@@ -17414,17 +17414,16 @@ void ScribusDoc::deleteNote(TextNote* note)
 	if (note->noteMark() != NULL)
 		nF = getItemFromName(note->noteMark()->getHolderName())->asNoteFrame();
 	PageItem* master = getItemFromName(note->masterMark()->getHolderName());
+	master->invalid = true;
 	if (nF != NULL)
 	{
 		nF->removeNoteFromList(note);
-		master->invalid = true;
 		if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
 			nF->setMarkedForDelete();
 		else
 			nF->invalid = true;
 	}
-	if (note->masterMark() != NULL)
-		eraseMark(note->masterMark(), true, master, true);
+	eraseMark(note->masterMark(), true, master, true);
 	if (note->noteMark() != NULL)
 		eraseMark(note->noteMark(), true, nF);
 	m_docNotesList.removeOne(note);
