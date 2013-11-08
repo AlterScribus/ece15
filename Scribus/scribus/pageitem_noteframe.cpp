@@ -410,11 +410,21 @@ void PageItem_NoteFrame::unWeld(bool doUndo)
 		weldList.clear();
 	}
 }
+bool PageItem_NoteFrame::isMarkedForDelete() const
+{
+    return deleteIt;
+}
+
+void PageItem_NoteFrame::setMarkedForDelete(bool value)
+{
+    deleteIt = value;
+}
+
 
 int PageItem_NoteFrame::findNoteCpos(const TextNote* const note) const
 {
-	//find position of note in note`s frame
-	if (itemText.length() == 0)
+    //find position of note in note`s frame
+    if (itemText.length() == 0)
 		return -1;
 	for (int pos=0; pos < itemText.length(); ++pos)
 	{

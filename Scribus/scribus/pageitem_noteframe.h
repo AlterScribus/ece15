@@ -23,9 +23,6 @@ public:
 	//overloaded text frame layouting
 	void layout();
 
-	//indicate if noteframe should be deleted
-	bool deleteIt;
-
 	//used while reading SLA file
 	void setNotesStyle(const NotesStyle* const nStyle, PageItem_TextFrame* master = NULL);
 	//returns Notes Style
@@ -56,10 +53,16 @@ public:
 	//overloaded PageItem::unWeld()
 	void unWeld(bool doUndo=true);
 	
+	bool isMarkedForDelete() const;
+	void setMarkedForDelete(bool value = true);
+	
 private:
 	QList<TextNote*> m_notesList;
 	NotesStyle* m_nstyle;
 	PageItem_TextFrame *m_masterFrame;
+
+	//indicate if noteframe should be deleted
+	bool deleteIt;
 
 	//insert note at end of text in noteframe
 	void insertNote(const TextNote* const note);

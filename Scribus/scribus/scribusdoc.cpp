@@ -17419,7 +17419,7 @@ void ScribusDoc::deleteNote(TextNote* note)
 		nF->removeNoteFromList(note);
 		master->invalid = true;
 		if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
-			nF->deleteIt = true;
+			nF->setMarkedForDelete();
 		else
 			nF->invalid = true;
 	}
@@ -17520,7 +17520,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 	if (doUpdate)
 	{
 		frame->invalidateLayout(false);
-		if ((nF != NULL) && !nF->deleteIt)
+		if ((nF != NULL) && !nF->isMarkedForDelete())
 		{
 			if (nStyle->isEndNotes())
 				m_docEndNotesFramesChanged.append(nF);
@@ -17530,7 +17530,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 	}
 	num = noteNum;
 	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL) && nF->isAutoNoteFrame())
-		nF->deleteIt = true;
+		nF->setMarkedForDelete();
 }
 
 bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
@@ -17592,7 +17592,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 		{
 			PageItem_NoteFrame* nF = endNoteFrame(nStyle);
 			if (nF != NULL && nF->isAutoNoteFrame())
-				nF->deleteIt = true;
+				nF->setMarkedForDelete();
 		}
 	}
 	else if (nStyle->range() == NSRsection)
@@ -17648,7 +17648,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 				{
 					PageItem_NoteFrame* nF = endNoteFrame(nStyle);
 					if (nF != NULL && nF->isAutoNoteFrame())
-						nF->deleteIt = true;
+						nF->setMarkedForDelete();
 				}
 			}
 		}
@@ -17766,7 +17766,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 			{
 				PageItem_NoteFrame* nF = endNoteFrame(nStyle);
 				if (nF != NULL && nF->isAutoNoteFrame())
-					nF->deleteIt = true;
+					nF->setMarkedForDelete();
 			}
 		}
 	}
@@ -17793,7 +17793,7 @@ void ScribusDoc::updateNotesFramesStyles(NotesStyle *nStyle)
 	for (int i=0; i<Items->count(); ++i)
 	{
 		PageItem* item = Items->at(i);
-		if (item->isNoteFrame() && (item->asNoteFrame()->getNotesStyle() == nStyle) && !item->asNoteFrame()->deleteIt)
+		if (item->isNoteFrame() && (item->asNoteFrame()->getNotesStyle() == nStyle) && !item->asNoteFrame()->isMarkedForDelete())
 		{
 			ParagraphStyle newStyle;
 			if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
@@ -18296,7 +18296,7 @@ bool ScribusDoc::notesFramesUpdate()
 				if (item->asNoteFrame()->notesList().isEmpty())
 				{
 					if (item->isAutoNoteFrame())
-						item->asNoteFrame()->deleteIt = true;
+						item->asNoteFrame()->setMarkedForDelete();
 				}
 				else
 				{
@@ -18310,7 +18310,7 @@ bool ScribusDoc::notesFramesUpdate()
 						item->layout();
 					}
 				}
-				if (item->asNoteFrame()->deleteIt)
+				if (item->asNoteFrame()->isMarkedForDelete())
 					removeEmptyNF = true;
 			}
 			if (end != Items->count())
@@ -18331,7 +18331,7 @@ bool ScribusDoc::notesFramesUpdate()
 		for (int i = 0; i < end; ++i)
 		{
 			PageItem* item = Items->at(i);
-			if (item->isAutoNoteFrame() && item->asNoteFrame()->deleteIt)
+			if (item->isAutoNoteFrame() && item->asNoteFrame()->isMarkedForDelete())
 				tmplist.append(item);
 		}
 		foreach (PageItem* item, tmplist)
@@ -18409,7 +18409,7 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF, bool invalid
 	{
 		if (nF->isAutoNoteFrame())
 		{
-			nF->deleteIt = true;
+			nF->setMarkedForDelete();
 			m_docNotesInFrameMap.remove(nF);
 			delNoteFrame(nF);
 		}
@@ -18444,7 +18444,7 @@ void ScribusDoc::updateChangedEndNotesFrames()
 		PageItem_NoteFrame* nF = m_docEndNotesFramesChanged.first();
 		m_docEndNotesFramesChanged.removeAll(nF);
 		updateEndNotesFrameContent(nF);
-		if (nF->deleteIt && nF->isAutoNoteFrame())
+		if (nF->isMarkedForDelete() && nF->isAutoNoteFrame())
 			delNoteFrame(nF);
 	}
 }

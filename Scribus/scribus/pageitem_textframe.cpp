@@ -3177,7 +3177,7 @@ void PageItem_TextFrame::DrawObj_Item(ScPainter *p, QRectF cullingArea)
 {
 	if(invalid)
 	{
-		if (isNoteFrame() && asNoteFrame()->deleteIt)
+		if (isNoteFrame() && asNoteFrame()->isMarkedForDelete())
 		//do not layout notes frames which should be deleted
 			return;
 		layout();
@@ -5840,7 +5840,7 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 	//check if some notes frames are not used anymore
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
-		if (nF->deleteIt || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
+		if (nF->isMarkedForDelete() || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
 		{
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
@@ -5983,7 +5983,7 @@ void PageItem_TextFrame::notesFramesLayout()
 	{
 		if (nF == NULL)
 			continue;
-		if (nF->deleteIt)
+		if (nF->isMarkedForDelete())
 			continue;
 		if (nF->isEndNotesFrame() && m_Doc->flag_updateEndNotes)
 			m_Doc->updateEndNotesFrameContent(nF);
