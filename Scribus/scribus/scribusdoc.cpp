@@ -18019,8 +18019,7 @@ void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 			flag_updateEndNotes = true;
 		deleteNote(note);
 	}
-	master->invalidateLayout();
-	//		master->updateLayout();
+	changed();
 }
 
 void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)

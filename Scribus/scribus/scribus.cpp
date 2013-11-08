@@ -3490,6 +3490,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 			doc->flag_updateMarksLabels = false;
 		}
 	} while (!updateEnd);
+	doc->regionsChanged()->update(QRectF());
 }
 
 void ScribusMainWindow::updateRecent(QString fn)
