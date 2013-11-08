@@ -3490,7 +3490,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 			doc->flag_updateMarksLabels = false;
 		}
 	} while (!updateEnd);
-	doc->regionsChanged()->update(QRectF());
+//	doc->regionsChanged()->update(QRectF());
 }
 
 void ScribusMainWindow::updateRecent(QString fn)
@@ -10072,12 +10072,11 @@ void ScribusMainWindow::updateDocument()
 {
 	if (HaveDoc)
 	{
-		doc->updateListNumbers(true);
-		if (doc->updateMarks(true) || doc->flag_layoutNotesFrames || doc->flag_Renumber || doc->flag_restartMarksRenumbering || doc->flag_updateEndNotes)
-		{
-			slotDocCh();
-			doc->regionsChanged()->update(QRect());
-		}
+		doc->flag_NumUpdateRequest = true;
+		doc->flag_Renumber = true;
+		doc->flag_updateMarksLabels = true;
+		slotDocCh();
+		doc->regionsChanged()->update(QRect());
 	}
 }
 

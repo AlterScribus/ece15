@@ -1329,7 +1329,6 @@ void PageItem_TextFrame::layout()
 		firstChar = 0;
 
 //	qDebug() << QString("textframe(%1,%2): len=%3, start relayout at %4").arg(Xpos).arg(Ypos).arg(itemText.length()).arg(firstInFrame());
-Start:
 	QPoint pt1, pt2;
 	QRect pt;
 	double chs, chsd = 0;
@@ -3099,9 +3098,12 @@ NoRoom:
 	adjustParagraphEndings ();
 
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
+	{
+		m_Doc->setNotesChanged(false);
 		updateItemNotes(noteMarksPosMap);
-	if (invalid)
-		goto Start;
+		if (invalid || m_Doc->notesChanged())
+			m_Doc->changed();
+	}
 
 	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (next != NULL)
@@ -4822,15 +4824,15 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 					m_Doc->deleteNote(note);
 				}
 			}
-			//if only notes were deleted
-			if (itemText.lengthOfSelection() == 0)
-			{
-				trans->commit();
-				delete trans;
-				m_Doc->updateListNumbers();
-				m_Doc->updateMarks();
-				return;
-			}
+		}
+
+		//if only notes were deleted
+		if (itemText.lengthOfSelection() == 0)
+		{
+			trans->commit();
+			delete trans;
+			m_Doc->updateMarks();
+			return;
 		}
 
 		UndoObject * undoTarget;

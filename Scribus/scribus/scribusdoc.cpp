@@ -18023,33 +18023,231 @@ void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 			flag_updateEndNotes = true;
 		deleteNote(note);
 	}
-	changed();
+	updateNotesNums(nStyle);
 }
 
 void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
 {
-	if (ss)
+	Mark* mrk = getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type"));
+	if (mrk == NULL && ss->contains("labelOLD"))
+		mrk = getMarkDefinied(ss->get("labelOLD"), (MarkType) ss->getInt("type"));
+	int pos = ss->getInt("at");
+	bool isAutoNoteFrame = false;
+	PageItem* currItem = NULL;
+	if (ss->contains("noteframeName"))
 	{
-		Mark* mrk = getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type"));
-		if (mrk == NULL && ss->contains("labelOLD"))
-			mrk = getMarkDefinied(ss->get("labelOLD"), (MarkType) ss->getInt("type"));
-		int pos = ss->getInt("at");
-		bool isAutoNoteFrame = false;
-		PageItem* currItem = NULL;
-		if (ss->contains("noteframeName"))
+		currItem = getItemFromName(ss->get("noteframeName"));
+		if (currItem != NULL)
+			isAutoNoteFrame = currItem->asNoteFrame()->isAutoFrame();
+	}
+	else
+		currItem = getItemFromName(ss->get("inItem"));
+	if (isUndo)
+	{
+		if (ss->get("MARK") == "new")
 		{
-			currItem = getItemFromName(ss->get("noteframeName"));
-			if (currItem != NULL)
-				isAutoNoteFrame = currItem->asNoteFrame()->isAutoFrame();
+			Q_ASSERT(mrk != NULL);
+			if (mrk->isNoteType())
+			{
+				TextNote* note = mrk->getNotePtr();
+				NotesStyle* nStyle = note->notesStyle();
+				if (note->isEndNote())
+					flag_updateEndNotes = true;
+				deleteNote(note);
+				updateNotesNums(nStyle);
+			}
+			else
+				eraseMark(mrk, true, currItem, true);
+		}
+		else if (ss->get("MARK") == "replace")
+		{
+			Q_ASSERT(pos >= 0);
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(mrk != NULL);
+			Mark* mrk = getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type"));
+			currItem->itemText.replaceMark(pos, mrk);
+			if (ss->contains("strtxtOLD"))
+			{
+				mrk->setString(ss->get("strtxtOLD"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelOLD"))
+				mrk->label = ss->get("labelOLD");
+		}
+		else if (ss->get("MARK") == "edit")
+		{
+			Q_ASSERT(mrk != NULL);
+			if (ss->contains("labelOLD"))
+				mrk->label = ss->get("labelOLD");
+			if (ss->contains("strtxtOLD"))
+			{
+				mrk->setString(ss->get("strtxtOLD"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("dNameOLD"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dNameOLD"), (MarkType) ss->getInt("dTypeOLD")));
+			if (ss->get("itemNameOLD") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("itemNameOLD")));
+		}
+		else if (ss->get("MARK") == "insert_existing")
+		{
+			Q_ASSERT(pos >= 0);
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(mrk != NULL);
+			currItem->itemText.removeChars(pos,1);
+			if (ss->contains("strOLD"))
+			{
+				mrk->setString(ss->get("strOLD"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelOLD"))
+				mrk->label = ss->get("labelOLD");
+		}
+		else if (ss->get("MARK") == "delete")
+		{
+			mrk = newMark();
+			mrk->label = ss->get("label");
+			mrk->setType((MarkType) ss->getInt("type"));
+			Q_ASSERT(pos >= 0);
+			Q_ASSERT(currItem != NULL);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			if (ss->contains("strtxt"))
+			{
+				mrk->setString(ss->get("strtxt"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("dName"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dName"), (MarkType) ss->getInt("dType")));
+			if (ss->get("targetName") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("targetNameOLD")));
+		}
+		else if (ss->get("MARK") == "eraseFromText")
+		{
+			//used if non-unique mark is deleted only from text
+			Q_ASSERT(pos >= 0);
+			if (ss->getInt("type") == MARKListType)
+				mrk = new ListMark();
+			Q_ASSERT(mrk != NULL);
+			Q_ASSERT(currItem != NULL);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+		}
+		else if (ss->get("MARK") == "delNonUnique")
+		{
+			//used if deleting non-unique mark by MarksManager
+			mrk = newMark();
+			mrk->label = ss->get("label");
+			mrk->setType((MarkType) ss->getInt("type"));
+			mrk->setString(ss->get("strtxt"));
+			PageItem* item = getItemFromName(ss->get("inItem"));
+			Q_ASSERT(item);
+			item->itemText.insertMark(mrk, ss->getInt("at"));
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			item->invalid = true;
 		}
 		else
-			currItem = getItemFromName(ss->get("inItem"));
-		if (isUndo)
 		{
-			if (ss->get("MARK") == "new")
+			Q_ASSERT(false);
+			qDebug() << "MARK undo - unhandled " << ss->get("MARK");
+		}
+	}
+	else  //REDO
+	{
+		if (ss->get("MARK") == "new")
+		{
+			if (currItem == NULL)
 			{
-				Q_ASSERT(mrk != NULL);
-				if (mrk->isNoteType())
+				qDebug() << "Wrong inItem in undo step for mark";
+				return;
+			}
+			mrk = newMark();
+			mrk->label = ss->get("label");
+			mrk->setType((MarkType) ss->getInt("type"));
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			if (ss->contains("strtxt"))
+				mrk->setString(ss->get("strtxt"));
+			if (ss->contains("dName"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dName"), (MarkType) ss->getInt("dType")));
+			if (ss->get("targetName") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("targetNameOLD")));
+			if (mrk->isType(MARKNoteMasterType))
+			{
+				NotesStyle* nStyle = getNotesStyle(ss->get("nStyle"));;
+				TextNote* note = newNote(nStyle);
+				mrk->setNotePtr(note);
+				note->setMasterMark(mrk);
+				if (nStyle->isEndNotes())
+					flag_updateEndNotes = true;
+				updateNotesNums(nStyle);
+			}
+		}
+		else if (ss->get("MARK") == "replace")
+		{
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.replaceMark(pos, getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type")));
+			if (ss->contains("strtxtNEW"))
+			{
+				mrk->setString(ss->get("strtxtNEW"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelNEW"))
+				mrk->label = ss->get("labelNEW");
+		}
+		else if (ss->get("MARK") == "edit")
+		{
+			if (ss->contains("labelNEW"))
+				mrk->label = ss->get("labelNEW");
+			if (ss->contains("strtxtNEW"))
+			{
+				mrk->setString(ss->get("strtxtNEW"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("dNameNEW"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dNameNEW"), (MarkType) ss->getInt("dTypeNEW")));
+			if (ss->get("itemNameNEW") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("itemNameNEW")));
+		}
+		else if (ss->get("MARK") == "insert_existing")
+		{
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			if (ss->contains("strNew"))
+			{
+				mrk->setString(ss->get("strNEW"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelNEW"))
+				mrk->label = ss->get("labelNEW");
+		}
+		else if (ss->get("MARK") == "eraseFromText") //for non-unique marks
+		{
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.removeChars(pos,1);
+		}
+		else if (ss->get("MARK") == "delete")
+		{
+			if (!mrk->isUnique())
+			{
+				Q_ASSERT(currItem != NULL);
+				Q_ASSERT(pos >= 0);
+				currItem->itemText.removeChars(pos,1);
+			}
+			else
+			{
+				if (mrk->isType(MARKNoteMasterType))
 				{
 					TextNote* note = mrk->getNotePtr();
 					NotesStyle* nStyle = note->notesStyle();
@@ -18059,226 +18257,26 @@ void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
 					updateNotesNums(nStyle);
 				}
 				else
-					eraseMark(mrk, true, currItem, true);
-			}
-			else if (ss->get("MARK") == "replace")
-			{
-				Q_ASSERT(pos >= 0);
-				Q_ASSERT(currItem != NULL);
-				Q_ASSERT(mrk != NULL);
-				Mark* mrk = getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type"));
-				currItem->itemText.replaceMark(pos, mrk);
-				if (ss->contains("strtxtOLD"))
-				{
-					mrk->setString(ss->get("strtxtOLD"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("labelOLD"))
-					mrk->label = ss->get("labelOLD");
-			}
-			else if (ss->get("MARK") == "edit")
-			{
-				Q_ASSERT(mrk != NULL);
-				if (ss->contains("labelOLD"))
-					mrk->label = ss->get("labelOLD");
-				if (ss->contains("strtxtOLD"))
-				{
-					mrk->setString(ss->get("strtxtOLD"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("dNameOLD"))
-					mrk->setTargetMark(getMarkDefinied(ss->get("dNameOLD"), (MarkType) ss->getInt("dTypeOLD")));
-				if (ss->get("itemNameOLD") != "")
-					mrk->setTargetPtr(getItemFromName(ss->get("itemNameOLD")));
-			}
-			else if (ss->get("MARK") == "insert_existing")
-			{
-				Q_ASSERT(pos >= 0);
-				Q_ASSERT(currItem != NULL);
-				Q_ASSERT(mrk != NULL);
-				currItem->itemText.removeChars(pos,1);
-				if (ss->contains("strOLD"))
-				{
-					mrk->setString(ss->get("strOLD"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("labelOLD"))
-					mrk->label = ss->get("labelOLD");
-			}
-			else if (ss->get("MARK") == "delete")
-			{
-				mrk = newMark();
-				mrk->label = ss->get("label");
-				mrk->setType((MarkType) ss->getInt("type"));
-				Q_ASSERT(pos >= 0);
-				Q_ASSERT(currItem != NULL);
-				currItem->itemText.insertMark(mrk, pos);
-				if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
-					currItem->itemText.applyCharStyle(pos,1, is->getItem());
-				if (ss->contains("strtxt"))
-				{
-					mrk->setString(ss->get("strtxt"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("dName"))
-					mrk->setTargetMark(getMarkDefinied(ss->get("dName"), (MarkType) ss->getInt("dType")));
-				if (ss->get("targetName") != "")
-					mrk->setTargetPtr(getItemFromName(ss->get("targetNameOLD")));
-			}
-			else if (ss->get("MARK") == "eraseFromText")
-			{
-				//used if non-unique mark is deleted only from text
-				Q_ASSERT(pos >= 0);
-				if (ss->getInt("type") == MARKListType)
-					mrk = new ListMark();
-				Q_ASSERT(mrk != NULL);
-				Q_ASSERT(currItem != NULL);
-				currItem->itemText.insertMark(mrk, pos);
-				if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
-					currItem->itemText.applyCharStyle(pos,1, is->getItem());
-			}
-			else if (ss->get("MARK") == "delNonUnique")
-			{
-				//used if deleting non-unique mark by MarksManager
-				mrk = newMark();
-				mrk->label = ss->get("label");
-				mrk->setType((MarkType) ss->getInt("type"));
-				mrk->setString(ss->get("strtxt"));
-				PageItem* item = getItemFromName(ss->get("inItem"));
-				Q_ASSERT(item);
-				item->itemText.insertMark(mrk, ss->getInt("at"));
-				if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
-					currItem->itemText.applyCharStyle(pos,1, is->getItem());
-				item->invalid = true;
-			}
-			else
-			{
-				Q_ASSERT(false);
-				qDebug() << "MARK undo - unhandled " << ss->get("MARK");
+					eraseMark(mrk, true);
 			}
 		}
-		else  //REDO
+		else if (ss->get("MARK") == "delNonUnique")
 		{
-			if (ss->get("MARK") == "new")
-			{
-				if (currItem == NULL)
-				{
-					qDebug() << "Wrong inItem in undo step for mark";
-					return;
-				}
-				mrk = newMark();
-				mrk->label = ss->get("label");
-				mrk->setType((MarkType) ss->getInt("type"));
-				Q_ASSERT(currItem != NULL);
-				Q_ASSERT(pos >= 0);
-				currItem->itemText.insertMark(mrk, pos);
-				if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
-					currItem->itemText.applyCharStyle(pos,1, is->getItem());
-				if (ss->contains("strtxt"))
-					mrk->setString(ss->get("strtxt"));
-				if (ss->contains("dName"))
-					mrk->setTargetMark(getMarkDefinied(ss->get("dName"), (MarkType) ss->getInt("dType")));
-				if (ss->get("targetName") != "")
-					mrk->setTargetPtr(getItemFromName(ss->get("targetNameOLD")));
-				if (mrk->isType(MARKNoteMasterType))
-				{
-					NotesStyle* nStyle = getNotesStyle(ss->get("nStyle"));;
-					TextNote* note = newNote(nStyle);
-					mrk->setNotePtr(note);
-					note->setMasterMark(mrk);
-					if (nStyle->isEndNotes())
-						flag_updateEndNotes = true;
-					updateNotesNums(nStyle);
-				}
-			}
-			else if (ss->get("MARK") == "replace")
-			{
-				Q_ASSERT(currItem != NULL);
-				Q_ASSERT(pos >= 0);
-				currItem->itemText.replaceMark(pos, getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type")));
-				if (ss->contains("strtxtNEW"))
-				{
-					mrk->setString(ss->get("strtxtNEW"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("labelNEW"))
-					mrk->label = ss->get("labelNEW");
-			}
-			else if (ss->get("MARK") == "edit")
-			{
-				if (ss->contains("labelNEW"))
-					mrk->label = ss->get("labelNEW");
-				if (ss->contains("strtxtNEW"))
-				{
-					mrk->setString(ss->get("strtxtNEW"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("dNameNEW"))
-					mrk->setTargetMark(getMarkDefinied(ss->get("dNameNEW"), (MarkType) ss->getInt("dTypeNEW")));
-				if (ss->get("itemNameNEW") != "")
-					mrk->setTargetPtr(getItemFromName(ss->get("itemNameNEW")));
-			}
-			else if (ss->get("MARK") == "insert_existing")
-			{
-				Q_ASSERT(currItem != NULL);
-				Q_ASSERT(pos >= 0);
-				currItem->itemText.insertMark(mrk, pos);
-				if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
-					currItem->itemText.applyCharStyle(pos,1, is->getItem());
-				if (ss->contains("strNew"))
-				{
-					mrk->setString(ss->get("strNEW"));
-					invalidateVariableTextFrames(mrk, false);
-				}
-				if (ss->contains("labelNEW"))
-					mrk->label = ss->get("labelNEW");
-			}
-			else if (ss->get("MARK") == "eraseFromText") //for non-unique marks
-			{
-				Q_ASSERT(currItem != NULL);
-				Q_ASSERT(pos >= 0);
-				currItem->itemText.removeChars(pos,1);
-			}
-			else if (ss->get("MARK") == "delete")
-			{
-				if (!mrk->isUnique())
-				{
-					Q_ASSERT(currItem != NULL);
-					Q_ASSERT(pos >= 0);
-					currItem->itemText.removeChars(pos,1);
-				}
-				else
-				{
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						TextNote* note = mrk->getNotePtr();
-						NotesStyle* nStyle = note->notesStyle();
-						if (note->isEndNote())
-							flag_updateEndNotes = true;
-						deleteNote(note);
-						updateNotesNums(nStyle);
-					}
-					else
-						eraseMark(mrk, true);
-				}
-			}
-			else if (ss->get("MARK") == "delNonUnique")
-			{
-				//used if deleting non-unique marks by MarksManager
-				eraseMark(mrk, true, NULL, true);
-			}
-			else
-			{
-				qDebug() << "MARK redo - unhandled " << ss->get("MARK");
-			}
+			//used if deleting non-unique marks by MarksManager
+			eraseMark(mrk, true, NULL, true);
 		}
-		scMW()->emitUpdateRequest(reqMarksListViewUpdate);
-		if (currItem != NULL && !isAutoNoteFrame)
+		else
 		{
-			currItem->invalidateLayout();
-//			currItem->updateLayout();
+			qDebug() << "MARK redo - unhandled " << ss->get("MARK");
 		}
 	}
+	scMW()->emitUpdateRequest(reqMarksListViewUpdate);
+	if (currItem != NULL && !isAutoNoteFrame)
+	{
+		currItem->invalidateLayout();
+		//			currItem->updateLayout();
+	}
+	changed();
 }
 
 bool ScribusDoc::notesFramesUpdate()
