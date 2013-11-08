@@ -16963,6 +16963,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 				item->itemText.removeChars(mrk->cPos-1,2);
 			else
 				item->itemText.removeChars(mrk->cPos,1);
+			found = true;
 		}
 		else
 		{
@@ -16984,6 +16985,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 						break;
 					MPos = findMarkCPos(mrk, item, MPos);
 				}
+				item->invalid = true;
 			}
 			else
 			{
@@ -16993,6 +16995,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 				item = findMarkItem(mrk, itemIndex);
 				while (item != NULL)
 				{
+					item->invalid = true;
 					MPos = findMarkCPos(mrk, item);
 					while (MPos > -1)
 					{
@@ -17027,6 +17030,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 		m_docMarksList.removeOne(mrk);
 		delete mrk;
 	}
+	item->invalid = true;
 	return found;
 }
 
@@ -17057,6 +17061,7 @@ void ScribusDoc::eraseMark(Mark *mrk, PageItem *item, int pos)
 		m_docMarksList.removeOne(mrk);
 		delete mrk;
 	}
+	item->invalid = true;
 }
 
 void ScribusDoc::setUndoDelUniqueMark(const Mark* const mrk)
