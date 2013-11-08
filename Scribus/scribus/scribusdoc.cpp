@@ -17419,10 +17419,7 @@ void ScribusDoc::deleteNote(TextNote* note)
 		nF->removeNoteFromList(note);
 		master->invalid = true;
 		if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
-		{
 			nF->deleteIt = true;
-			master->asTextFrame()->removeNoteFrame(nF);
-		}
 		else
 			nF->invalid = true;
 	}
@@ -18501,13 +18498,13 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 		m_docEndNotesFramesChanged.removeAll(nF);
 		foreach (TextNote* note, nF->notesList())
 		{
-			getItemFromName(note->masterMark()->getHolderName())->asTextFrame()->removeNoteFrame(nF);
+			getItemFromName(note->masterMark()->getHolderName())->asTextFrame()->removeNoteFrameFromMap(nF);
 			getItemFromName(note->masterMark()->getHolderName())->invalid = true;
 		}
 	}
 	else if (nF->masterFrame() != NULL)
 	{
-		nF->masterFrame()->removeNoteFrame(nF);
+		nF->masterFrame()->removeNoteFrameFromMap(nF);
 		nF->masterFrame()->invalid = true;
 	}
 	m_docNotesInFrameMap.remove(nF);

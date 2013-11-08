@@ -129,7 +129,7 @@ public:
 	bool hasNoteFrame(const NotesStyle* const nStyle, bool inChain = false);
 	//return set of items in interaction with deleted noteframe
 	QSet<PageItem_TextFrame *> delAllNoteFrames();
-	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
+	void removeNoteFrameFromMap(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	void notesFramesLayout();
 	//removing all marsk from text, returns number of removed marks
 	int removeMarksFromText(bool doUndo);
