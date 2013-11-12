@@ -6370,13 +6370,17 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 	int start = ss->getInt("START");
 	if (ScItemState<ParagraphStyle> *is = dynamic_cast<ScItemState<ParagraphStyle> *>(ss))
 	{
+		const ParagraphStyle pstyle = is->getItem();
 		if (isUndo)
 		{
 			if (start < itemText.length())
-				itemText.applyStyle(start, is->getItem());
+				itemText.applyStyle(start, pstyle);
 			else
-				itemText.setDefaultStyle(is->getItem());
+				itemText.setDefaultStyle(pstyle);
 		}
+		if (pstyle.hasNum())
+			m_Doc->flag_Renumber = true;
+		
 	}
 	else if (ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss))
 	{

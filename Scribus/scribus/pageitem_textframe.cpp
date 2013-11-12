@@ -4523,8 +4523,6 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			return;
 		}
 		cr = itemText.text();
-		if (itemText.lengthOfSelection() == 0)
-			itemText.select(itemText.cursorPosition(), 1, true);
 		deleteSelectedTextFromFrame();
 		if (isAutoNoteFrame() && asNoteFrame()->notesList().isEmpty())
 		{
@@ -4784,7 +4782,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		HasSel = true;
 	}
 	int start = itemText.startOfSelection();
-	int stop = itemText.endOfSelection();
+	int stop = itemText.endOfSelection() -1;
 //	//check if whole paragraph with list marker is going to delete
 //	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
 //		--start;
@@ -4835,10 +4833,9 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			return;
 		}
 
-		UndoObject * undoTarget;
-		undoTarget = isNoteFrame() ? (UndoObject*) m_Doc : (UndoObject*) this;
+		UndoObject * undoTarget = isNoteFrame() ? (UndoObject*) m_Doc : (UndoObject*) this;
 		//delete text
-		stop = itemText.endOfSelection();
+		stop = itemText.endOfSelection()-1;
 		for (int i=start; i <= stop; ++i)
 		{
 			//save paragraph style saved in parsep
@@ -5874,6 +5871,8 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 	}
 	if (docWasChanged)
 	{
+		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
+			m_Doc->updateNotesNums(nF->getNotesStyle());
 		m_Doc->flag_restartMarksRenumbering = true;
 		m_Doc->setNotesChanged(true);
 	}
@@ -6019,21 +6018,26 @@ int PageItem_TextFrame::removeMarksFromText(bool doUndo)
 	for (int pos = stop -1; pos >= start; --pos)
 	{
 		Mark* mrk = itemText.mark(pos);
-		if (mrk && !mrk->isType(MARKListType))
+		if (mrk)
 		{
-			if (mrk->isUnique())
-			{
-				if (doUndo)
-					m_Doc->setUndoDelUniqueMark(mrk);
-				m_Doc->eraseMark(mrk, true, this);
-			}
+			if (mrk->isType(MARKListType))
+				m_Doc->flag_Renumber = true;
 			else
 			{
-				if (doUndo)
-					m_Doc->setUndoDelNotUniqueMarkAtPos(mrk, this, pos);
-				m_Doc->eraseMark(mrk, this, pos);
+				if (mrk->isUnique())
+				{
+					if (doUndo)
+						m_Doc->setUndoDelUniqueMark(mrk);
+					m_Doc->eraseMark(mrk, true, this);
+				}
+				else
+				{
+					if (doUndo)
+						m_Doc->setUndoDelNotUniqueMarkAtPos(mrk, this, pos);
+					m_Doc->eraseMark(mrk, this, pos);
+				}
+				++num;
 			}
-			++num;
 		}
 	}
 	return num;

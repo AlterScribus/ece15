@@ -281,8 +281,11 @@ void PageItem_NoteFrame::updateNotes(QList<TextNote*> &nList)
 void PageItem_NoteFrame::updateNotes()
 {
 	UndoManager::instance()->setUndoEnabled(false);
-	itemText.selectAll();
-	itemText.removeSelection();
+	if (itemText.length() > 0)
+	{
+		itemText.selectAll();
+		itemText.removeSelection();
+	}
 	for (int a=0; a < m_notesList.count(); ++a)
 		insertNote(m_notesList.at(a));
 	UndoManager::instance()->setUndoEnabled(true);
