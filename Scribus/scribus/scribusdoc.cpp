@@ -17167,9 +17167,10 @@ bool ScribusDoc::invalidateVariableTextFrames(const Mark* const mrk, bool forceU
 }
 
 //update strings (page number) for marks pointed to anchors and items
-//and update marks list in Marka Manager
+//and update marks list in Marks Manager
 bool ScribusDoc::updateMarks(bool updateNotesMarks)
 {
+	//set holderName to last frame in chain for notes ouside of visible text
 	if (updateNotesMarks && !notesList().isEmpty())
 	{
 		foreach (PageItem* item, DocItems)
@@ -17500,20 +17501,21 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 				}
 				label += "_" + QString::number(noteNum);
 				
-				if ((mStr != numStr) || label != mark->label || flag_updateMarksLabels || flag_updateEndNotes)
+				TextNote* note = mark->getNotePtr();
+				if ((mStr != numStr) || label != mark->getLabel() || flag_updateMarksLabels || flag_updateEndNotes)
 				{
 					doUpdate = true;
 					mark->setString(numStr);
-					mark->label = label;
-					TextNote* note = mark->getNotePtr();
+					mark->setLabel(label);
 					note->setNum(noteNum);
-					if (note->noteMark() != NULL)
-					{
-						note->noteMark()->setString(numStr);
-						label = label.replace("NoteMark","NoteFrameMark");
-						note->noteMark()->label = label;
-					}
 				}
+				if (note->noteMark() && note->noteMark()->getString() != numStr)
+				{
+					note->noteMark()->setString(numStr);
+					label = label.replace("NoteMark","NoteFrameMark");
+					note->noteMark()->setLabel(label);
+				}
+				
 				++index;
 				++noteNum;
 			}
