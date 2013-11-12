@@ -18485,10 +18485,13 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 {
 	Q_ASSERT(nF != NULL);
 	
-	//for all notes in noteFrame set notes marks to null
-	foreach(TextNote* n, nF->notesList())
+	//for all notes in noteFrame - delete notes marks
+	QListIterator<TextNote*> it(nF->notesList());
+	it.toBack();
+	while (it.hasPrevious())
 	{
-		eraseMark(n->noteMark(),true, nF, true);
+		TextNote* n = it.previous();
+		eraseMark(n->noteMark(),nF, n->noteMark()->getCPos());
 		n->clearNoteMark();
 	}
 	
