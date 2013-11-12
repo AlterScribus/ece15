@@ -16953,7 +16953,7 @@ void ScribusDoc::setCursor2MarkPos(const Mark* const mrk)
 
 bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 {
-	qDebug() << "Erase mark" << mrk->getLabel() << "from text" << fromText << "force" << force;
+//	qDebug() << "Erase mark" << mrk->getLabel() << "from text" << fromText << "force" << force;
 	Q_ASSERT(m_docMarksList.contains(mrk));
 	bool found = false;
 	if (fromText)
@@ -17041,7 +17041,7 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 
 void ScribusDoc::eraseMark(Mark *mrk, PageItem *item, int pos)
 {
-	qDebug() << "Erase mark" << mrk->getLabel() << "from item" << item->itemName()  << "at" << pos;
+//	qDebug() << "Erase mark" << mrk->getLabel() << "from item" << item->itemName()  << "at" << pos;
 	Q_ASSERT(m_docMarksList.contains(mrk));
 	Q_ASSERT(item->itemText.hasMark(pos, mrk));
 
@@ -17458,7 +17458,6 @@ void ScribusDoc::setUndoDelNote(const TextNote * const note)
 		ims->set("at", pos);
 		ims->set("label", note->masterMark()->getLabel());
 		ims->set("noteTXT", note->saxedText());
-qDebug() << "noteTXT" << note->saxedText();
 		ims->set("nStyle", note->notesStyle()->name());
 		if (!note->notesStyle()->isAutoRemoveEmptyNotesFrames())
 			ims->set("noteframe", note->noteMark()->getHolderName());
@@ -18000,6 +17999,7 @@ void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 		master = getItemFromName(ss->get("noteframeName"));
 	else
 		master = getItemFromName(ss->get("inItem"));
+	Q_ASSERT(master);
 	if (isUndo)
 	{
 		TextNote* note = newNote(nStyle);
@@ -18027,6 +18027,9 @@ void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 		if (note->isEndNote())
 			flag_updateEndNotes = true;
 		deleteNote(note);
+		PageItem_NoteFrame* nF = (PageItem_NoteFrame*) getItemFromName(note->noteMark()->getHolderName());
+		Q_ASSERT(nF);
+		nF->updateNotes();
 	}
 	updateNotesNums(nStyle);
 }
