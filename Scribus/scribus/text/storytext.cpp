@@ -430,9 +430,10 @@ void StoryText::removeChars(int pos, uint len)
 		delete it;
 		// #9592 : adjust m_selFirst and m_selLast, those values have to be
 		// consistent in functions such as select()
-		if (i <= m_selLast) --m_selLast;
+		if (i <= m_selLast)
+			--m_selLast;
 		if (i < m_selFirst) --m_selFirst;
-		if ((i + 1 ) <= d->cursorPosition && d->cursorPosition > 0) d->cursorPosition -= 1;
+		if ((i + 1 ) <= (signed) d->cursorPosition && d->cursorPosition > 0) d->cursorPosition -= 1;
 	}
 	
 	d->len = d->count();
@@ -442,6 +443,8 @@ void StoryText::removeChars(int pos, uint len)
 		m_selFirst =  0;
 		m_selLast  = -1;
 	}
+	//FIXME - ugly hack, but sometimes m_selLast has wrong value
+	m_selLast = qMin(m_selLast, length()-1);
 	invalidate(pos, length());
 }
 
@@ -481,7 +484,7 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 			//			qDebug() << QString("new PARSEP %2 at %1").arg(pos).arg(paragraphStyle(pos).name());
 			insertParSep(pos + i);
 		}
-		if (d->cursorPosition >= (pos + i)) {
+		if ((signed) d->cursorPosition >= (pos + i)) {
 			d->cursorPosition += 1;
 		}
 	}
@@ -1639,11 +1642,15 @@ int StoryText::endOfFrame(int pos)
 
 int StoryText::startOfSelection() const
 {
+	Q_ASSERT(m_selLast < length());
+	
 	return m_selFirst <= m_selLast? m_selFirst : 0;
 }
 
 int StoryText::endOfSelection() const
 {
+	Q_ASSERT(m_selLast < length());
+	
 	return m_selFirst <= m_selLast? m_selLast + 1 : -1;
 }
 
@@ -1655,6 +1662,7 @@ int StoryText::lengthOfSelection() const
 		return 0;
 	if (m_selLast >= length())
 		last = length() -1;
+	Q_ASSERT(last < length());
 	return m_selFirst <= last? last - m_selFirst + 1 : 0;
 }
 
@@ -1729,7 +1737,7 @@ void StoryText::select(int pos, uint len, bool on)
 			// Grr, deselection splits selection
 			m_selLast = pos - 1;
 	}
-	
+	Q_ASSERT(m_selLast < length());
 	//	qDebug("new selection: %d - %d", m_selFirst, m_selLast);
 }
 
@@ -1741,11 +1749,13 @@ void StoryText::extendSelection(int oldPos, int newPos)
 		if (m_selLast == oldPos - 1)
 		{
 			m_selLast = newPos - 1;
+			Q_ASSERT(m_selLast < length());
 			return;
 		}
 		else if (m_selFirst == oldPos)
 		{
 			m_selFirst = newPos;
+			Q_ASSERT(m_selLast < length());
 			return;
 		}
 		// can't extend, fall through
@@ -1761,6 +1771,7 @@ void StoryText::extendSelection(int oldPos, int newPos)
 		m_selFirst = newPos;
 		m_selLast = oldPos - 1;
 	}
+	Q_ASSERT(m_selLast < length());
 }
 
 void StoryText::selectAll()
