@@ -1678,22 +1678,15 @@ public:
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
 	void eraseMark(Mark* mrk, PageItem* item, int pos); //force is used only for deleting non-unique marks by MarksManager
-	void setUndoDelUniqueMark(const Mark* const mrk);
-	ScItemState<CharStyle>* getUndoDelUniqueMark(const Mark* const mrk);
-	QList< ScItemState<CharStyle>* > getUndosDelNonUniqueMark(const Mark* const mrk);
-	void setUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
-	ScItemState<CharStyle>* getUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
 
 	//for foot/endnotes
 	NotesStyle* newNotesStyle(const NotesStyle &nStyle);
 	void renameNotesStyle(const NotesStyle* const nStyle, const QString &newName);
 	//delete whole notes style with its notesframes and notes
 	void deleteNotesStyle(const QString &nsName);
-	void undoSetNotesStyle(SimpleState* ss, const NotesStyle* const nStyle);
 	NotesStyle* getNotesStyle(const QString &nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note);
-	void setUndoDelNote(const TextNote* const note);
 	PageItem_NoteFrame* createNoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle, int index = -1);
 	PageItem_NoteFrame* createNoteFrame(const NotesStyle* const nStyle, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	//delete noteframe
@@ -1724,6 +1717,14 @@ public:
 	//return page where endnotesframe should be located depending of notes style range and location of master mark
 	const ScPage* page4EndNotes(const NotesStyle* const nStyle, PageItem* item);
 
+	//UNDO
+	void undoSetNotesStyle(SimpleState* ss, const NotesStyle* const nStyle);
+	void setUndoDelNote(const TextNote* const note);
+	void setUndoDelUniqueMark(const Mark* const mrk);
+	ScItemState<CharStyle>* getUndoDelUniqueMark(const Mark* const mrk);
+	QList< ScItemState<CharStyle>* > getUndosDelNonUniqueMark(const Mark* const mrk);
+	void setUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
+	ScItemState<CharStyle>* getUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
 private:
 	QList<Mark*> m_docMarksList;
 	QList<TextNote*> m_docNotesList;
