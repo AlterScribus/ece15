@@ -1539,7 +1539,7 @@ void PageItem_TextFrame::layout()
 					if (note == NULL)
 						continue;
 					NotesStyle* nStyle = note->notesStyle();
-						Q_ASSERT(nStyle != NULL);
+					Q_ASSERT(nStyle);
 					CharStyle currStyle(itemText.charStyle(a));
 					QString chsName = nStyle->marksChStyle();
 					if ((chsName != "") && (chsName != tr("No Style")))
@@ -1569,9 +1569,8 @@ void PageItem_TextFrame::layout()
 					}
 					if (s != itemText.charStyle(a).effects())
 					{
-						CharStyle haveSuperscript;
-						haveSuperscript.setFeatures(s.featureList());
-						itemText.applyCharStyle(a, 1, haveSuperscript);
+						currStyle.setFeatures(s.featureList());
+						itemText.applyCharStyle(a, 1, currStyle);
 					}
 				}
 			}
@@ -3108,6 +3107,13 @@ NoRoom:
 	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (next != NULL)
 	{
+		//clear notes frames for next frame if text flow differently
+		if (next->firstChar != MaxChars)
+		{
+			QList<TextNote*> emptyList;
+			foreach (PageItem_NoteFrame* nF, next->notesFramesList())
+				nF->updateNotes(emptyList);
+		}
 		next->invalid = true;
 		next->firstChar = MaxChars;
 		if (itemText.cursorPosition() > signed(MaxChars))
@@ -4782,7 +4788,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		HasSel = true;
 	}
 	int start = itemText.startOfSelection();
-	int stop = itemText.endOfSelection() -1;
+	int stop = itemText.endOfSelection();
 //	//check if whole paragraph with list marker is going to delete
 //	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
 //		--start;
@@ -4803,7 +4809,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 
 		if (isNoteFrame()/* && findNotes*/)
 			asNoteFrame()->updateNotesText();
-		for (int i= stop -1; i >= start; --i)
+		for (int i= stop-1; i >= start; --i)
 		{
 			if (itemText.hasMark(i))
 			{
@@ -4835,7 +4841,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 
 		UndoObject * undoTarget = isNoteFrame() ? (UndoObject*) m_Doc : (UndoObject*) this;
 		//delete text
-		stop = itemText.endOfSelection()-1;
+		stop = itemText.endOfSelection();
 		for (int i=start; i <= stop; ++i)
 		{
 			//save paragraph style saved in parsep
@@ -5719,6 +5725,7 @@ QSet<PageItem_TextFrame *> PageItem_TextFrame::delAllNoteFrames()
 	QList<PageItem_NoteFrame*> delList;
 	foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 	{
+		nF->setMarkedForDelete();
 		if (nF->isAutoNoteFrame())
 			delList.append(nF);
 	}
@@ -5841,6 +5848,8 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 	{
 		if (nF->isMarkedForDelete() || (nF->isAutoNoteFrame() && !notesMap.keys().contains(nF)))
 		{
+			if (!nF->isMarkedForDelete())
+				nF->setMarkedForDelete();
 			m_Doc->delNoteFrame(nF,true);
 			docWasChanged = true;
 		}
@@ -5873,7 +5882,6 @@ void PageItem_TextFrame::updateNotesMarks(NotesInFrameMap &notesMap)
 	{
 		foreach (PageItem_NoteFrame* nF, m_notesFramesMap.keys())
 			m_Doc->updateNotesNums(nF->getNotesStyle());
-		m_Doc->flag_restartMarksRenumbering = true;
 		m_Doc->setNotesChanged(true);
 	}
 }

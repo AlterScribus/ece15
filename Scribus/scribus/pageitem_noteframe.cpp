@@ -256,10 +256,10 @@ void PageItem_NoteFrame::insertNote(const TextNote * const note)
 	mrk->setString(getNotesStyle()->prefix() + note->numString() + note->notesStyle()->suffix());
 	
 	StoryText* story = new StoryText(m_Doc);
+	story->setDefaultStyle(itemText.defaultStyle());
 	if (!note->saxedText().isEmpty())
 		story->insert(desaxeStoryFromString(m_Doc, note->saxedText()));
 	story->insertMark(mrk, 0);
-	story->setDefaultStyle(itemText.defaultStyle());
 	story->applyCharStyle(0,1,note->getCharStyleNoteMark());
 	//	story.applyCharStyle(0, story.length(), itemText.charStyle());
 	if (itemText.length() > 0)
@@ -413,14 +413,12 @@ void PageItem_NoteFrame::unWeld(bool doUndo)
 		weldList.clear();
 	}
 }
-bool PageItem_NoteFrame::isMarkedForDelete() const
-{
-	return deleteIt;
-}
 
 void PageItem_NoteFrame::setMarkedForDelete(bool value)
 {
-	deleteIt = value;
+	deleteIt = value && isAutoNoteFrame();
+	m_notesList.clear();
+	itemText.clear();
 }
 
 

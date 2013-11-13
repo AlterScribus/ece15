@@ -16962,13 +16962,15 @@ bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 		{
 			PageItem* it = getItemFromName(mrk->getHolderName());
 			Q_ASSERT(item == it);
-			Q_ASSERT(item->itemText.hasMark(mrk->getCPos(), mrk));
-
-			if (mrk->isType(MARKNoteFrameType) && mrk->cPos > 1 && item->itemText.text(mrk->cPos -1) == SpecialChars::PARSEP)
-				item->itemText.removeChars(mrk->cPos-1,2);
-			else
-				item->itemText.removeChars(mrk->cPos,1);
-			found = true;
+			if (it->itemText.length() > 0)
+			{
+				Q_ASSERT(item->itemText.hasMark(mrk->getCPos(), mrk));
+				if (mrk->isType(MARKNoteFrameType) && mrk->cPos > 1 && item->itemText.text(mrk->cPos -1) == SpecialChars::PARSEP)
+					item->itemText.removeChars(mrk->cPos-1,2);
+				else
+					item->itemText.removeChars(mrk->cPos,1);
+				found = true;
+			}
 		}
 		else
 		{
@@ -17421,22 +17423,22 @@ void ScribusDoc::deleteNote(TextNote* note)
 {
 	if (note == NULL)
 		return;
+
 	PageItem_NoteFrame* nF = NULL;
-	if (note->noteMark() != NULL)
+	if (note->noteMark())
 		nF = getItemFromName(note->noteMark()->getHolderName())->asNoteFrame();
+	if (nF)
+	{
+		if (note->noteMark())
+			eraseMark(note->noteMark(), true, nF);
+		nF->removeNoteFromList(note);
+		if (nF->notesList().isEmpty())
+			nF->setMarkedForDelete();
+	}
 	PageItem* master = getItemFromName(note->masterMark()->getHolderName());
 	master->invalid = true;
-	if (nF != NULL)
-	{
-		nF->removeNoteFromList(note);
-		if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
-			nF->setMarkedForDelete();
-		else
-			nF->invalid = true;
-	}
 	eraseMark(note->masterMark(), true, master, true);
-	if (note->noteMark() != NULL)
-		eraseMark(note->noteMark(), true, nF);
+
 	m_docNotesList.removeOne(note);
 	setNotesChanged(true);
 	if (note->isEndNote())
@@ -17448,18 +17450,19 @@ void ScribusDoc::setUndoDelNote(const TextNote * const note)
 {
 	if (UndoManager::undoEnabled())
 	{
-		SimpleState* ims = new SimpleState(Um::DeleteNote,"",Um::IDelete);
+		ScItemState< QPair<CharStyle, CharStyle> >* ims = new ScItemState< QPair<CharStyle, CharStyle> >(Um::DeleteNote,"",Um::IDelete);
 		ims->set("DELETE_NOTE", QString("delete_note"));
 		ims->set("ETEA", note->masterMark()->label);
 		PageItem* master = getItemFromName(note->masterMark()->getHolderName());
+		Q_ASSERT(master);
 		int pos = findMarkCPos(note->masterMark(), master);
 		Q_ASSERT(pos > -1);
-		Q_ASSERT(master);
 		ims->set("inItem", master->getUName());
 		ims->set("at", pos);
 		ims->set("label", note->masterMark()->getLabel());
 		ims->set("noteTXT", note->saxedText());
 		ims->set("nStyle", note->notesStyle()->name());
+		ims->setItem(qMakePair(note->getCharStyleMasterMark(), note->getCharStyleNoteMark()));
 		if (!note->notesStyle()->isAutoRemoveEmptyNotesFrames())
 			ims->set("noteframe", note->noteMark()->getHolderName());
 		undoManager->action(this, ims);
@@ -17539,7 +17542,7 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 		}
 	}
 	num = noteNum;
-	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL) && nF->isAutoNoteFrame())
+	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL))
 		nF->setMarkedForDelete();
 }
 
@@ -17572,7 +17575,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 					if (!currItem->asTextFrame()->isValidChainFromBegin())
 					{
 						currItem->layout();
-						if (flag_restartMarksRenumbering)
+						if (flag_restartMarksRenumbering || itemsCount != Items->count())
 						{
 							//restart whole update as items was changed
 							if (endNF != NULL)
@@ -17601,7 +17604,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 		if ((num == nStyle->start()) && nStyle->isEndNotes())
 		{
 			PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-			if (nF != NULL && nF->isAutoNoteFrame())
+			if (nF)
 				nF->setMarkedForDelete();
 		}
 	}
@@ -17656,8 +17659,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 				}
 				if ((i != -1) && (num == nStyle->start()) && nStyle->isEndNotes())
 				{
-					PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-					if (nF != NULL && nF->isAutoNoteFrame())
+					if (PageItem_NoteFrame* nF = endNoteFrame(nStyle))
 						nF->setMarkedForDelete();
 				}
 			}
@@ -17774,8 +17776,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 			}
 			if ((i != -1) && (num == nStyle->start()) && nStyle->isEndNotes())
 			{
-				PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-				if (nF != NULL && nF->isAutoNoteFrame())
+				if (PageItem_NoteFrame* nF = endNoteFrame(nStyle))
 					nF->setMarkedForDelete();
 			}
 		}
@@ -17995,6 +17996,8 @@ void ScribusDoc::restoreNotesStyle(SimpleState *ss, bool isUndo)
 
 void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 {
+	ScItemState< QPair<CharStyle, CharStyle> >* ims = (ScItemState< QPair<CharStyle, CharStyle> >*) ss;
+	Q_ASSERT(ims);
 	NotesStyle* nStyle = getNotesStyle(ss->get("nStyle"));
 	PageItem* master = NULL;
 	if (ss->contains("noteframeName"))
@@ -18011,6 +18014,8 @@ void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 		mrk->setLabel(ss->get("label"));
 		note->setMasterMark(mrk);
 		note->setSaxedText(ss->get("noteTXT"));
+		note->setCharStyleMasterMark(ims->getItem().first);
+		note->setCharStyleNoteMark(ims->getItem().second);
 		master->itemText.insertMark(mrk, ss->getInt("at"));
 		master->invalid = true;
 		if (!nStyle->isAutoRemoveEmptyNotesFrames())
@@ -18304,24 +18309,22 @@ bool ScribusDoc::notesFramesUpdate()
 				continue;
 			if (item->isNoteFrame())
 			{
-				if (item->asNoteFrame()->notesList().isEmpty())
-				{
-					if (item->isAutoNoteFrame())
-						item->asNoteFrame()->setMarkedForDelete();
-				}
+				PageItem_NoteFrame* nF = item->asNoteFrame();
+				if (nF->notesList().isEmpty())
+					nF->setMarkedForDelete();
 				else
 				{
-					if (item->asNoteFrame()->isEndNotesFrame())
-						updateEndNotesFrameContent(item->asNoteFrame());
+					if (nF->isEndNotesFrame())
+						updateEndNotesFrameContent(nF);
 					else
 					{
-						if (item->itemText.length() == 0 && !item->asNoteFrame()->notesList().isEmpty())
-							item->asNoteFrame()->updateNotes();
-						item->invalid = true;
-						item->layout();
+						if (item->itemText.length() == 0 && !nF->notesList().isEmpty())
+							nF->updateNotes();
+						nF->invalid = true;
+						nF->layout();
 					}
 				}
-				if (item->asNoteFrame()->isMarkedForDelete())
+				if (nF->isMarkedForDelete())
 					removeEmptyNF = true;
 			}
 			if (end != Items->count())
@@ -18418,9 +18421,9 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF, bool invalid
 	
 	if (nList.isEmpty())
 	{
-		if (nF->isAutoNoteFrame())
+		nF->setMarkedForDelete();
+		if (nF->isMarkedForDelete())
 		{
-			nF->setMarkedForDelete();
 			m_docNotesInFrameMap.remove(nF);
 			delNoteFrame(nF);
 		}
@@ -18537,19 +18540,21 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 			eraseMark(m,true);
 		}
 	}
-	m_Selection->delaySignalsOn();
 	if (m_Selection->findItem(nF)!=-1)
 	{
+		bool signalsBlocked = m_Selection->signalsBlocked();
+		m_Selection->blockSignals(true);
 		if (appMode == modeEdit)
 			view()->requestMode(modeNormal);
 		m_Selection->removeItem(nF);
 		if (m_Selection->isEmpty() && nF->masterFrame())
 			m_Selection->addItem(nF->masterFrame());
+		m_Selection->blockSignals(signalsBlocked);
 	}
-	m_Selection->delaySignalsOff();
-	regionsChanged()->update(nF->getVisualBoundingRect());
 	Items->removeOne(nF);
+	flag_restartMarksRenumbering = true;
 	setNotesChanged(true);
+	regionsChanged()->update(nF->getVisualBoundingRect());
 	if (forceDeletion)
 		delete nF;
 }

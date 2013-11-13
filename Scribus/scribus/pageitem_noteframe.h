@@ -53,7 +53,7 @@ public:
 	//overloaded PageItem::unWeld()
 	void unWeld(bool doUndo=true);
 	
-	bool isMarkedForDelete() const;
+	bool isMarkedForDelete() const { return deleteIt; }
 	void setMarkedForDelete(bool value = true);
 	
 private:
