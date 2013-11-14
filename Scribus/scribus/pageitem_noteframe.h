@@ -15,6 +15,7 @@ private:
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle);
 	~PageItem_NoteFrame() { }
+	void init();
 public:
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }

@@ -114,6 +114,7 @@ public:
 	const QString numString() const { return notesStyle()->numString(m_number); }
 	Mark* masterMark() const { return m_noteMasterMark; }
 	void setMasterMark(Mark* m) { Q_ASSERT(m); m_noteMasterMark = m; }
+	void clearMasterMark() { m_noteMasterMark = NULL; }
 	Mark* noteMark() const { return m_noteFrameMark; }
 	void setNoteMark(Mark* m) { Q_ASSERT(m); m_noteFrameMark = m; }
 	void clearNoteMark() { m_noteFrameMark = NULL; }

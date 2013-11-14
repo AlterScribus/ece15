@@ -12,50 +12,9 @@
 PageItem_NoteFrame::PageItem_NoteFrame(const NotesStyle* const nStyle, ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
 	: PageItem_TextFrame(doc, x, y, w, h, w2, fill, outline)
 {
-	m_nstyle = const_cast<NotesStyle*>(nStyle);
 	m_masterFrame = NULL;
-	itemText.clear();
-	
-	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
-	AutoName = false; //endnotes frame will saved with name
-	setUName(AnName);
-	
-	//set default style for note frame
-	ParagraphStyle newStyle;
-	if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
-	{
-		if (nStyle->isEndNotes())
-			//set default doc style
-			newStyle.setParent(m_Doc->paragraphStyles()[0].name());
-		else
-		{
-			newStyle.setParent(m_masterFrame->itemText.defaultStyle().parent());
-			newStyle.applyStyle(m_masterFrame->currentStyle());
-		}
-	}
-	else
-		newStyle.setParent(nStyle->notesParStyle());
-	itemText.blockSignals(true);
-	itemText.setDefaultStyle(newStyle);
-	itemText.blockSignals(false);
-	
-	textFlowModeVal = TextFlowUsesFrameShape;
-	setColumns(1);
-	
-	if (m_nstyle->isAutoNotesHeight())
-		m_SizeVLocked = true;
-	else
-		m_SizeVLocked = false;
-	if (m_nstyle->isAutoNotesWidth())
-		m_SizeHLocked = true;
-	else
-		m_SizeHLocked = false;
-	if (m_nstyle->isAutoNotesHeight() && m_nstyle->isAutoNotesWidth())
-		m_SizeLocked = true;
-	else
-		m_SizeLocked = false;
-	deleteIt = false;
-	m_notesList.empty();
+	m_nstyle = const_cast<NotesStyle*>(nStyle);
+	init();
 }
 
 PageItem_NoteFrame::PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline)
@@ -70,43 +29,18 @@ PageItem_NoteFrame::PageItem_NoteFrame(ScribusDoc *doc, double x, double y, doub
 
 PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle) : PageItem_TextFrame(inFrame->doc(),inFrame->xPos(), inFrame->yPos(),inFrame->width(), inFrame->height(),inFrame->lineWidth(), inFrame->fillColor(), inFrame->lineColor())
 {
-	m_nstyle = const_cast<NotesStyle*>(nStyle);
 	m_masterFrame = inFrame;
+	m_nstyle = const_cast<NotesStyle*>(nStyle);
+	init();
 	
-	AnName = generateUniqueCopyName(nStyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
-	AutoName = false;
-	setUName(AnName);
-	
-	//set default style for note frame
-	ParagraphStyle newStyle;
-	if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
-	{
-		if (nStyle->isEndNotes())
-			//set default doc style
-			newStyle.setParent(m_Doc->paragraphStyles()[0].name());
-		else
-		{
-			newStyle.setParent(m_masterFrame->itemText.defaultStyle().parent());
-			newStyle.applyStyle(m_masterFrame->currentStyle());
-		}
-	}
-	else
-		newStyle.setParent(nStyle->notesParStyle());
-	itemText.blockSignals(true);
-	itemText.setDefaultStyle(newStyle);
-	itemText.blockSignals(false);
-	
-	double frameHeight = calculateLineSpacing(newStyle, this);
+	double frameHeight = calculateLineSpacing(itemText.defaultStyle(), this);
 	if (frameHeight == 0.0 && !m_nstyle->isAutoNotesHeight())
-		frameHeight = newStyle.charStyle().fontSize()/10;
+		frameHeight = itemText.defaultStyle().charStyle().fontSize()/10;
 	m_height = oldHeight = frameHeight;
 	oldWidth = m_width;
 	oldRot = m_rotation;
 	oldXpos = m_xPos;
 	m_yPos = oldYpos =m_masterFrame->yPos() + m_masterFrame->height();
-	
-	textFlowModeVal = TextFlowUsesFrameShape;
-	setColumns(1);
 	
 	if (m_nstyle->isAutoWeldNotesFrames() && (m_masterFrame != NULL))
 	{
@@ -115,6 +49,38 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, const NotesS
 		m_masterFrame->setWeldPoint(0, m_masterFrame->height(), this);
 		setWeldPoint(0,0, m_masterFrame);
 	}
+}
+
+void PageItem_NoteFrame::init()
+{
+	itemText.clear();
+	
+	AnName = generateUniqueCopyName(m_nstyle->isEndNotes() ? tr("Endnote frame ") + m_nstyle->name() : tr("Footnote frame ") + m_nstyle->name(), false);
+	AutoName = false; //endnotes frame will saved with name
+	setUName(AnName);
+	
+	//set default style for note frame
+	ParagraphStyle newStyle;
+	if (m_nstyle->notesParStyle().isEmpty() || (m_nstyle->notesParStyle() == tr("No Style")))
+	{
+		if (m_nstyle->isEndNotes())
+			//set default doc style
+			newStyle.setParent(m_Doc->paragraphStyles()[0].name());
+		else
+		{
+			//newStyle.setParent(m_masterFrame->itemText.defaultStyle().parent());
+			newStyle.setStyle(m_masterFrame->itemText.defaultStyle());
+		}
+	}
+	else
+		newStyle.setParent(m_nstyle->notesParStyle());
+	itemText.blockSignals(true);
+	itemText.setDefaultStyle(newStyle);
+	itemText.blockSignals(false);
+	
+	textFlowModeVal = TextFlowUsesFrameShape;
+	setColumns(1);
+	
 	if (m_nstyle->isAutoNotesHeight())
 		m_SizeVLocked = true;
 	else

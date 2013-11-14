@@ -11107,6 +11107,7 @@ void ScribusMainWindow::slotInsertMarkNote()
 		mrk->setNotePtr(doc->newNote(nStyle));
 		mrk->getNotePtr()->setMasterMark(mrk);
 		mrk->getNotePtr()->setCharStyleNoteMark(currItem->itemText.defaultStyle().charStyle());
+		mrk->getNotePtr()->setCharStyleMasterMark(currItem->itemText.charStyle());
 		mrk->setString("");
 		mrk->OwnPage = currItem->OwnPage;
 		currItem->itemText.insertMark(mrk);

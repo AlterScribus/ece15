@@ -430,8 +430,7 @@ void StoryText::removeChars(int pos, uint len)
 		delete it;
 		// #9592 : adjust m_selFirst and m_selLast, those values have to be
 		// consistent in functions such as select()
-		if (i <= m_selLast)
-			--m_selLast;
+		if (i <= m_selLast) --m_selLast;
 		if (i < m_selFirst) --m_selFirst;
 		if ((i + 1 ) <= (signed) d->cursorPosition && d->cursorPosition > 0) d->cursorPosition -= 1;
 	}
@@ -653,7 +652,7 @@ void StoryText::insertMark(const Mark* const mrk, int pos)
 	if (pos < 0)
 		pos = d->cursorPosition;
 	
-	insertChars(pos, SpecialChars::OBJECT);
+	insertChars(pos, SpecialChars::OBJECT, true);
 	const_cast<StoryText *>(this)->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
@@ -1035,6 +1034,13 @@ void StoryText::applyCharStyle(int pos, uint len, const CharStyle& style )
 			lastParStart = i + 1;
 		}*/
 		itText->applyCharStyle(style);
+		if (itText->mark && itText->mark->getNotePtr())
+		{
+			if (itText->hasMarkType(MARKNoteMasterType))
+				itText->mark->getNotePtr()->setCharStyleMasterMark(*itText);
+			else if (itText->hasMarkType(MARKNoteFrameType))
+				itText->mark->getNotePtr()->setCharStyleNoteMark(*itText);
+		}
 	}
 	// Does not work well, do not reenable before checking #9337, #9376 and #9428
 	/*if (pos + signed(len) == length() && lastParStart >= 0)
@@ -1066,6 +1072,13 @@ void StoryText::eraseCharStyle(int pos, uint len, const CharStyle& style )
 		if (itText->ch == SpecialChars::PARSEP && itText->parstyle != NULL)
 			itText->parstyle->charStyle().eraseCharStyle(style);
 		itText->eraseCharStyle(style);
+		if (itText->mark && itText->mark->getNotePtr())
+		{
+			if (itText->hasMarkType(MARKNoteMasterType))
+				itText->mark->getNotePtr()->setCharStyleMasterMark(*itText);
+			else if (itText->hasMarkType(MARKNoteFrameType))
+				itText->mark->getNotePtr()->setCharStyleNoteMark(*itText);
+		}
 	}
 	// Does not work well, do not reenable before checking #9337, #9376 and #9428
 	/*if (pos + signed(len) == length())
@@ -1176,6 +1189,13 @@ void StoryText::setCharStyle(int pos, uint len, const CharStyle& style)
 		/*if (itText->ch == SpecialChars::PARSEP && itText->parstyle != NULL)
 			itText->parstyle->charStyle() = style;*/
 		itText->setStyle(style);
+		if (itText->mark && itText->mark->getNotePtr())
+		{
+			if (itText->hasMarkType(MARKNoteMasterType))
+				itText->mark->getNotePtr()->setCharStyleMasterMark(*itText);
+			else if (itText->hasMarkType(MARKNoteFrameType))
+				itText->mark->getNotePtr()->setCharStyleNoteMark(*itText);
+		}
 	}
 	
 	invalidate(pos, pos + len);
@@ -1726,16 +1746,21 @@ void StoryText::select(int pos, uint len, bool on)
 		}
 	}
 	else {
-		if (pos <= m_selFirst && m_selLast < pos + signed(len))
-			deselectAll();
-		// shrink
-		else if (!selected(pos - 1) && selected(pos + len - 1))
-			m_selFirst = pos + len;
-		else if (selected(pos) && !selected(pos + len))
-			m_selLast = pos - 1;
-		else if (selected(pos) || selected(pos + len - 1))
-			// Grr, deselection splits selection
-			m_selLast = pos - 1;
+		//FIX ME - dosn`t "on" mean extend selection?
+		//if so just KISS if "on" is false
+		deselectAll();
+		m_selFirst = pos;
+		m_selLast = pos + len -1;
+//		if (pos <= m_selFirst && m_selLast < pos + signed(len))
+//			deselectAll();
+//		// shrink
+//		else if (!selected(pos - 1) && selected(pos + len - 1))
+//			m_selFirst = pos + len;
+//		else if (selected(pos) && !selected(pos + len))
+//			m_selLast = pos - 1;
+//		else if (selected(pos) || selected(pos + len - 1))
+//			// Grr, deselection splits selection
+//			m_selLast = pos - 1;
 	}
 	Q_ASSERT(m_selLast < length());
 	//	qDebug("new selection: %d - %d", m_selFirst, m_selLast);
