@@ -5259,8 +5259,10 @@ void ScribusMainWindow::slotEditCut()
 				cItem->deleteSelectedTextFromFrame();
 				if (doc->appMode == modeEditTable)
 					currItem->asTable()->update();
-				else
-					cItem->update();
+				if (currItem->isAutoNoteFrame() && (currItem->asNoteFrame()->notesList().isEmpty()))
+					//empty note frame can be deleted so lets get pointer to master frame
+					cItem = currItem->asNoteFrame()->masterFrame();
+				cItem->update();
 			}
 		}
 		else

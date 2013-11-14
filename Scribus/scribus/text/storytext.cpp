@@ -2046,7 +2046,15 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	lastStyle.saxx(handler);
 	for (int i=0; i < length(); ++i)
 	{
-		Q_ASSERT(!hasMarkType(i, MARKNoteFrameType));
+		if (hasMarkType(i, MARKNoteFrameType))
+		{
+			if  (i -1 - lastPos > 0)
+			{
+				handler.chars(textWithSoftHyphens(lastPos, i -1 -lastPos));
+			}
+			lastPos = i +1;
+			continue;
+		}
 
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));
