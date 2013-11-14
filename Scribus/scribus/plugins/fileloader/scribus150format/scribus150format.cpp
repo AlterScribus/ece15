@@ -3363,10 +3363,19 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			newNote = m_Doc->newNote(NULL);
 			newNote->setSaxedText(attrs.valueAsString("Text"));
+
 			//temporaly insert names of master mark and notes style into maps with note pointer
 			//will be resolved to pointers by updateNames2Ptr() after all will read
 			notesMasterMarks.insert(attrs.valueAsString("Master"), newNote);
 			notesNSets.insert(newNote, attrs.valueAsString("NStyle"));
+		}
+		else if (newNote && reader.isStartElement() && reader.name() == "MasterMarkerCharStyle")
+		{
+			//read charstyle for note number in noteframe (it is not stored with note text)
+			CharStyle newStyle;
+			ScXmlStreamAttributes attrs = reader.scAttributes();
+			readCharacterStyleAttrs(doc,attrs,newStyle);
+			newNote->setCharStyleMasterMark(newStyle);
 		}
 		else if (newNote && reader.isStartElement() && reader.name() == "NoteMarkerCharStyle")
 		{

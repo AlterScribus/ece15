@@ -1511,6 +1511,7 @@ void PageItem_TextFrame::layout()
 			PageItem* currentObject = HasObject? itemText.object(a): NULL;
 			bool HasMark = itemText.hasMark(a);
 			Mark* mark = itemText.mark(a);
+			CharStyle charStyle = ((itemText.text(a) != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
 
 			if (HasMark)
 			{
@@ -1536,23 +1537,25 @@ void PageItem_TextFrame::layout()
 				if (mark->isNoteType())
 				{
 					TextNote* note = mark->getNotePtr();
-					if (note == NULL)
-						continue;
+					Q_ASSERT(note);
 					NotesStyle* nStyle = note->notesStyle();
 					Q_ASSERT(nStyle);
-					CharStyle currStyle(itemText.charStyle(a));
+					if (isNoteFrame())
+						note->setCharStyleNoteMark(charStyle);
+					else
+						note->setCharStyleMasterMark(charStyle);
 					QString chsName = nStyle->marksChStyle();
 					if ((chsName != "") && (chsName != tr("No Style")))
 					{
 						CharStyle marksStyle(m_Doc->charStyle(chsName));
-						if (!currStyle.equiv(marksStyle))
+						if (!charStyle.equiv(marksStyle))
 						{
-							currStyle.setParent(chsName);
-							itemText.applyCharStyle(a, 1, currStyle);
+							charStyle.setParent(chsName);
+							itemText.applyCharStyle(a, 1, charStyle);
 						}
 					}
 
-					StyleFlag s(itemText.charStyle(a).effects());
+					StyleFlag s(charStyle.effects());
 					if (mark->isType(MARKNoteMasterType))
 					{
 						if (nStyle->isSuperscriptInMaster())
@@ -1567,10 +1570,10 @@ void PageItem_TextFrame::layout()
 						else
 							s &= ~ScStyle_Superscript;
 					}
-					if (s != itemText.charStyle(a).effects())
+					if (s != charStyle.effects())
 					{
-						currStyle.setFeatures(s.featureList());
-						itemText.applyCharStyle(a, 1, currStyle);
+						charStyle.setFeatures(s.featureList());
+						itemText.applyCharStyle(a, 1, charStyle);
 					}
 				}
 			}
@@ -1613,7 +1616,6 @@ void PageItem_TextFrame::layout()
 			}
 			if (current.itemsInLine == 0)
 				opticalMargins = style.opticalMargins();
-			CharStyle charStyle = ((itemText.text(a) != SpecialChars::PARSEP) ? itemText.charStyle(a) : style.charStyle());
 			chstr = ExpandToken(a);
 			if (chstr.isEmpty())
 				chstr = SpecialChars::ZWNBSPACE;
@@ -5900,14 +5902,7 @@ NotesInFrameMap PageItem_TextFrame::updateNotesFrames(QMap<int, Mark*> &noteMark
 			mark->setHolderName(AnName);
 
 			TextNote* note = mark->getNotePtr();
-			Q_ASSERT(note != NULL);
-			if (note == NULL)
-			{
-				qWarning() << "note mark without valid note pointer";
-				note = m_Doc->newNote(m_Doc->m_docNotesStylesList.at(0));
-				note->setMasterMark(mark);
-				mark->setNotePtr(note);
-			}
+			Q_ASSERT(note);
 			NotesStyle* NS = note->notesStyle();
 			PageItem_NoteFrame* nF = NULL;
 			if (NS->isEndNotes())
