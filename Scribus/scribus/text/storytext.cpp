@@ -653,7 +653,7 @@ void StoryText::insertMark(const Mark* const mrk, int pos)
 	if (pos < 0)
 		pos = d->cursorPosition;
 	
-	insertChars(pos, SpecialChars::OBJECT, false);
+	insertChars(pos, SpecialChars::OBJECT);
 	const_cast<StoryText *>(this)->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
