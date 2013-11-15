@@ -3094,24 +3094,26 @@ NoRoom:
 
 	adjustParagraphEndings ();
 
+	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (!isNoteFrame() && (!m_Doc->notesList().isEmpty() || m_Doc->notesChanged()))
 	{
 		m_Doc->setNotesChanged(false);
 		updateItemNotes(noteMarksPosMap);
 		if (invalid || m_Doc->notesChanged())
+		{
+			if (next && next->firstChar != MaxChars)
+			//clear notes frames for next frame if text flow differently
+			{
+				QList<TextNote*> emptyList;
+				foreach (PageItem_NoteFrame* nF, next->notesFramesList())
+					nF->updateNotes(emptyList);
+			}
 			m_Doc->changed();
+		}
 	}
 
-	PageItem_TextFrame * next = dynamic_cast<PageItem_TextFrame*>(NextBox);
 	if (next != NULL)
 	{
-		//clear notes frames for next frame if text flow differently
-		if (next->firstChar != MaxChars)
-		{
-			QList<TextNote*> emptyList;
-			foreach (PageItem_NoteFrame* nF, next->notesFramesList())
-				nF->updateNotes(emptyList);
-		}
 		next->invalid = true;
 		next->firstChar = MaxChars;
 		if (itemText.cursorPosition() > signed(MaxChars))

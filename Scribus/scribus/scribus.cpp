@@ -5260,8 +5260,15 @@ void ScribusMainWindow::slotEditCut()
 				if (doc->appMode == modeEditTable)
 					currItem->asTable()->update();
 				if (currItem->isAutoNoteFrame() && (currItem->asNoteFrame()->notesList().isEmpty()))
-					//empty note frame can be deleted so lets get pointer to master frame
+				//empty note frame can be deleted so let get pointer to master frame
+				{
+					doc->m_Selection->delaySignalsOn();
+					doc->m_Selection->removeItem(cItem);
+					doc->regionsChanged()->update(QRect());
 					cItem = currItem->asNoteFrame()->masterFrame();
+					doc->m_Selection->addItem(cItem);
+					doc->m_Selection->delaySignalsOff();
+				}
 				cItem->update();
 			}
 		}

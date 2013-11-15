@@ -51,6 +51,11 @@ PageItem_NoteFrame::PageItem_NoteFrame(PageItem_TextFrame* inFrame, const NotesS
 	}
 }
 
+PageItem_NoteFrame::~PageItem_NoteFrame()
+{
+	Q_ASSERT(!m_masterFrame->notesFramesList().contains(this));
+}
+
 void PageItem_NoteFrame::init()
 {
 	itemText.clear();
@@ -144,9 +149,11 @@ void PageItem_NoteFrame::setNotesStyle(const NotesStyle* const nStyle, PageItem_
 
 void PageItem_NoteFrame::layout()
 {
-	if (!invalid || m_notesList.isEmpty())
+	if (deleteIt)
 		return;
-	if (!m_Doc->flag_layoutNotesFrames)
+	if (m_Doc->flag_layoutNotesFrames)
+		invalid = true;
+	if (!invalid || m_notesList.isEmpty())
 		return;
 	if (itemText.length() == 0)
 		return;
@@ -307,6 +314,8 @@ void PageItem_NoteFrame::updateNotesText()
 	}
 	if (oldSelLen > 0)
 		itemText.select(oldSelStart, oldSelLen, false);
+	else
+		itemText.deselectAll();
 }
 
 void PageItem_NoteFrame::deleteAllNotes()

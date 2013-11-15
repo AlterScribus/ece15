@@ -17523,33 +17523,23 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 					note->noteMark()->setString(numStr);
 					label = label.replace("NoteMark","NoteFrameMark");
 					note->noteMark()->setLabel(label);
+					PageItem_NoteFrame* nF = (PageItem_NoteFrame*) getItemFromName(note->noteMark()->getHolderName());
+					if (nF)
+					{
+						if (nStyle->isEndNotes())
+							m_docEndNotesFramesChanged.append(nF);
+						else
+							nF->invalid = true;
+					}
 				}
-				
 				++index;
 				++noteNum;
 			}
 		}
 	}
-	PageItem_NoteFrame * nF;
-	if (nStyle->isEndNotes())
-		nF = endNoteFrame(nStyle);
-	else
-		nF = frame->itemNoteFrame(nStyle);
-	
 	if (doUpdate)
-	{
 		frame->invalidateLayout(false);
-		if ((nF != NULL) && !nF->isMarkedForDelete())
-		{
-			if (nStyle->isEndNotes())
-				m_docEndNotesFramesChanged.append(nF);
-			else
-				nF->invalidateLayout(true);
-		}
-	}
 	num = noteNum;
-	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL))
-		nF->setMarkedForDelete();
 }
 
 bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
@@ -18044,9 +18034,14 @@ void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
 		PageItem_NoteFrame* nF = (PageItem_NoteFrame*) getItemFromName(note->noteMark()->getHolderName());
 		Q_ASSERT(nF);
 		deleteNote(note);
-		nF->updateNotes();
+		if (!nF->isMarkedForDelete())
+			nF->updateNotes();
+		else
+			updateNotesNums(nStyle);
 	}
-	updateNotesNums(nStyle);
+	flag_updateMarksLabels = true;
+	regionsChanged()->update(QRect());
+	changed();
 }
 
 void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
@@ -18277,6 +18272,7 @@ void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
 		currItem->invalidateLayout();
 		//			currItem->updateLayout();
 	}
+	regionsChanged()->update(QRect());
 	changed();
 }
 
