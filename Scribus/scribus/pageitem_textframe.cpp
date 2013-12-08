@@ -1544,7 +1544,7 @@ Start:
 		maxY = 0;
 		long maxYAsc = 0, maxYDesc = 0;
 		//double maxYAsc = 0.0, maxYDesc = 0.0;
-		int regionMinY = 0, regionMaxY= 0;
+//		int regionMinY = 0, regionMaxY= 0;
 		
 		//double breakPos = 0.0;
 		//double overflowWidth = 0.0;
@@ -2170,7 +2170,7 @@ Start:
 					addAsce = qMax(realAsce, asce + offset);
 				else
 					addAsce = asce + offset;
-				if ((style.lineSpacingMode() != ParagraphStyle::BaselineGridLineSpacing) && (firstLineOffset() != FLOPBaselineGrid))
+				if (firstLineOffset() != FLOPBaselineGrid)
 				{
 					if (firstLineOffset() == FLOPRealGlyphHeight)
 						addAsce = realAsce;
@@ -2183,13 +2183,13 @@ Start:
 				maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
 			maxYAsc = qMax(maxYAsc, static_cast<long>(0));
 			maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
-			int maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
+			int maxYAsc1000 = static_cast<int>(ceil(maxYAsc/1000.0));
 			int maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 			
-			maxYAsc = current.yPos - realAsce;
+//			maxYAsc = current.yPos - realAsce;
 			//fix for glyphs with negative realAsce value
-			maxYAsc = qMax(maxYAsc, (long) 0);
-			maxYDesc = current.yPos + realDesc;
+//			maxYAsc = qMax(maxYAsc, (long) 0);
+//			maxYDesc = current.yPos + realDesc;
 			
 //			if (true||style.lineSpacingMode() == ParagraphStyle::AutomaticLineSpacing)
 //			{
@@ -2269,13 +2269,11 @@ Start:
 						else
 							current.yPos++;
 						lastLineY = (double) maxYAsc / 1000.0;
-						if (current.startOfCol)
-							maxYAsc = static_cast<long>(floor((current.yPos - addAsce)*1000.0));
-						else
-							maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
+						maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
 						maxYAsc = qMax(maxYAsc, static_cast<long>(0));
 						maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
-						maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
+
+						maxYAsc1000 = static_cast<int>(ceil(maxYAsc/1000.0));
 						maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 //						maxYAsc = current.yPos - realAsce;
 //						maxYDesc = current.yPos + realDesc;
@@ -3107,7 +3105,7 @@ Start:
 				maxYAsc = static_cast<long>(floor((current.yPos - realAsce)*1000.0));
 			maxYAsc = qMax(maxYAsc, static_cast<long>(0));
 			maxYDesc = static_cast<long>(floor((current.yPos + realDesc)*1000.0));
-			int maxYAsc1000 = static_cast<int>(floor(maxYAsc/1000.0));
+			int maxYAsc1000 = static_cast<int>(ceil(maxYAsc/1000.0));
 			int maxYDesc1000 = static_cast<long>(floor(maxYDesc/1000.0));
 			
 			EndX = current.endOfLine(m_availableRegion, style.rightMargin(), maxYAsc1000, maxYDesc1000);
