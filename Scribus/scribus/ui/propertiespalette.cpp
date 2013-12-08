@@ -291,7 +291,7 @@ void PropertiesPalette::unsetItem()
 	Cpal->setCurrentItem(NULL);
 	Tpal->setCurrentItem(NULL);
 	tablePal->unsetItem();
-	handleSelectionChanged();
+//	handleSelectionChanged();
 }
 
 void PropertiesPalette::setTextFlowMode(PageItem::TextFlowMode mode)
@@ -633,8 +633,7 @@ void  PropertiesPalette::handleSelectionChanged()
 			TabStack->setCurrentIndex(currentTab);
 		connect(TabStack, SIGNAL(currentChanged2(int)), this, SLOT(SelTab(int)));
 	}
-	if (currItem)
-		setCurrentItem(currItem);
+	setCurrentItem(currItem);
 	updateGeometry();
 	repaint();
 }

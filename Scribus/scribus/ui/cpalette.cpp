@@ -227,9 +227,8 @@ void Cpalette::setCurrentItem(PageItem* item)
 		gradEditButton->setEnabled(true);
 	}
 
-	currentItem = item;
 	disconnectSignals();
-	
+	currentItem = item;
 	if (!currentItem)
 		return;
 
