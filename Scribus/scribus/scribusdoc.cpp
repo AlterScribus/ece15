@@ -15521,7 +15521,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 		QList<PageItem*> *list = Items;
 		list = parentGroup(currItem, Items);
 		int d = list->indexOf(currItem);
-		list->removeAt(d);
+		if (d >= 0)
+			list->removeAt(d);
 		itemSelection->removeItem(currItem);
 		int gcount = currItem->groupItemList.count();
 		for (int c = 0; c < gcount; c++)
@@ -15558,6 +15559,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 	for (int i = 0; i < toDelete.count(); i++)
 	{
 		currItem = toDelete.at(i);
+		if (currItem->isWelded())
+			currItem->unWeld();
 		delete currItem;
 	}
 	if(activeTransaction)
@@ -15581,7 +15584,8 @@ void ScribusDoc::itemSelection_UnGroupObjects(Selection* customSelection)
 	itemSelection->connectItemToGUI();
 	itemSelection->getGroupRect(&x, &y, &w, &h);
 	emit docChanged();
-	m_ScMW->HaveNewSel(itemSelection->itemAt(0)->itemType());
+	if (itemSelection->count() > 0)
+		m_ScMW->HaveNewSel(itemSelection->itemAt(0)->itemType());
 	regionsChanged()->update(QRectF(x-5, y-5, w+10, h+10));
 }
 
@@ -15689,8 +15693,25 @@ void ScribusDoc::removeFromGroup(PageItem* item)
 	item->setXYPos(nX, nY, true);
 	item->rotateBy(-gRot);
 	item->setLineWidth(item->lineWidth() * qMax(grScXi, grScYi));
-	item->setImageXScale(item->imageXScale() * grScXi);
-	item->setImageYScale(item->imageYScale() * grScYi);
+	if (!item->ScaleType)
+		item->AdjustPictScale();
+	else
+	{
+		item->setImageXScale(item->imageXScale() * grScXi);
+		item->setImageYScale(item->imageYScale() * grScYi);
+	}
+	if (item->GrType == 8)
+	{
+		double psx, psy, pox, poy, prot, pskx, psky;
+		item->patternTransform(psx, psy, pox, poy, prot, pskx, psky);
+		item->setPatternTransform(psx * grScXi, psy * grScYi, pox, poy, prot, pskx, psky);
+	}
+	if ((item->GrMask == 3) || (item->GrMask == 6) || (item->GrMask == 7) || (item->GrMask == 8))
+	{
+		double psx, psy, pox, poy, prot, pskx, psky;
+		item->maskTransform(psx, psy, pox, poy, prot, pskx, psky);
+		item->setMaskTransform(psx * grScXi, psy * grScYi, pox, poy, prot, pskx, psky);
+	}
 	if (item->asPathText())
 		item->updatePolyClip();
 	else

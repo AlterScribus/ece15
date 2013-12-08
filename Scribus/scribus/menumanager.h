@@ -50,7 +50,7 @@ class SCRIBUS_API MenuManager : public QObject
 		enum MenuType {Normal, DLL};
 
 		bool addMenuToWidgetOfAction(const QString &menuName, ScrAction *action);
-		bool createMenu(const QString &menuName, const QString &menuText = QString::null, const QString parent = QString::null, bool checkable = false);
+		bool createMenu(const QString &menuName, const QString &menuText = QString::null, const QString parent = QString::null, bool checkable = false, bool rememberMenu = false);
 		bool removeMenuItem(ScrAction *menuAction, const QString &parent);
 		void generateKeyManList(QStringList *actionNames);
 		void runMenuAtPos(const QString &, const QPoint);
@@ -60,7 +60,7 @@ class SCRIBUS_API MenuManager : public QObject
 
 
 		QMenu *getLocalPopupMenu(const QString &menuName);
-		bool addMenuStringToMenuBar(const QString &menuName);
+		bool addMenuStringToMenuBar(const QString &menuName, bool rememberMenu=false);
 		bool addMenuStringToMenuBarBefore(const QString &, const QString &beforeMenuName);
 		bool clearMenu(const QString &menuName);
 		bool empty();
@@ -68,8 +68,8 @@ class SCRIBUS_API MenuManager : public QObject
 		void addMenuItemString(const QString& s, const QString &parent);
 		void addMenuItemStringAfter(const QString &s, const QString &after, const QString &parent);
 		void addMenuItemStringstoMenu(const QString &menuName, QMenu *menuToAddTo, const QMap<QString, QPointer<ScrAction> > &menuActions);
+		void addMenuItemStringstoRememberedMenu(const QString &menuName, const QMap<QString, QPointer<ScrAction> > &menuActions);
 		void addMenuItemStringstoMenuBar(const QString &menuName, const QMap<QString, QPointer<ScrAction> > &menuActions);
-		void addMenuItemStringstoSpecialMenu(const QString &menuName, const QMap<QString, QPointer<ScrAction> > &menuActions);
 		void clearMenuStrings(const QString &menuName);
 		void dumpMenuStrings();
 		QMenu *undoMenu() {return m_undoMenu;}
@@ -84,11 +84,7 @@ private:
 	QMap<QString, QList<QString> > menuStrings;
 	QMap<QString, QString> menuStringTexts;
 	QMap<QString, QMenu*> menuBarMenus;
-	QMenu *recentFileMenu;
-	QMenu *editPasteRecentMenu;
-	QMenu *itemLayerMenu;
-	QMenu *itemSendtoScrapbookMenu;
-	QMenu *windowsMenu;
+	QMap<QString, QMenu*> rememberedMenus;
 	//some hacks to keep undo menu functioning for now
 	QMenu *m_undoMenu;
 	QMenu *m_redoMenu;

@@ -2560,6 +2560,7 @@ void ActionManager::setStartupActionsEnabled(bool enabled)
 	(*scrActions)["viewShowRulers"]->setEnabled(false);
 //	scrMenuMgr->setMenuEnabled("Insert", false);
 	(*scrActions)["insertFrame"]->setEnabled(false);
+	(*scrActions)["insertSampleText"]->setEnabled(false);
 	(*scrActions)["itemDuplicate"]->setEnabled(false);
 	(*scrActions)["itemMulDuplicate"]->setEnabled(false);
 	(*scrActions)["itemTransform"]->setEnabled(false);
@@ -2579,6 +2580,14 @@ void ActionManager::setStartupActionsEnabled(bool enabled)
 	(*scrActions)["itemPreviewNormal"]->setEnabled(false);
 	(*scrActions)["itemPreviewFull"]->setEnabled(false);
 	(*scrActions)["itemAttributes"]->setEnabled(false);
+	(*scrActions)["itemPDFAnnotationProps"]->setEnabled(false);
+	(*scrActions)["itemPDFFieldProps"]->setEnabled(false);
+	(*scrActions)["itemConvertToBezierCurve"]->setEnabled(false);
+	(*scrActions)["itemConvertToImageFrame"]->setEnabled(false);
+	(*scrActions)["itemConvertToOutlines"]->setEnabled(false);
+	(*scrActions)["itemConvertToPolygon"]->setEnabled(false);
+	(*scrActions)["itemConvertToTextFrame"]->setEnabled(false);
+	(*scrActions)["itemConvertToSymbolFrame"]->setEnabled(false);
 	(*scrActions)["toolsSelect"]->setEnabled(false);
 	(*scrActions)["toolsRotate"]->setEnabled(false);
 	(*scrActions)["toolsEditContents"]->setEnabled(false);
