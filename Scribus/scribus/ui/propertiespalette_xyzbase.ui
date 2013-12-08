@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
-    <height>325</height>
+    <width>200</width>
+    <height>287</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -327,25 +327,25 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NameWidget</class>
-   <extends>QLineEdit</extends>
-   <header>ui/propertiespalette_utils.h</header>
-  </customwidget>
-  <customwidget>
    <class>ScrSpinBox</class>
    <extends>QDoubleSpinBox</extends>
    <header>ui/scrspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LinkButton</class>
+   <extends>QToolButton</extends>
+   <header>ui/linkbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NameWidget</class>
+   <extends>QLineEdit</extends>
+   <header>ui/propertiespalette_utils.h</header>
   </customwidget>
   <customwidget>
    <class>BasePointWidget</class>
    <extends>QWidget</extends>
    <header>ui/basepointwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>LinkButton</class>
-   <extends>QToolButton</extends>
-   <header>ui/linkbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

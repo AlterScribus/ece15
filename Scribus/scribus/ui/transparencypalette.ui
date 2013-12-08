@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>236</width>
-    <height>373</height>
+    <width>226</width>
+    <height>343</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -100,13 +100,13 @@
             <string> %</string>
            </property>
            <property name="maximum">
-            <number>100</number>
+            <double>100.000000000000000</double>
            </property>
            <property name="singleStep">
-            <number>10</number>
+            <double>10.000000000000000</double>
            </property>
            <property name="value">
-            <number>100</number>
+            <double>100.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -254,13 +254,13 @@
                 <string> %</string>
                </property>
                <property name="maximum">
-                <number>100</number>
+                <double>100.000000000000000</double>
                </property>
                <property name="singleStep">
-                <number>10</number>
+                <double>10.000000000000000</double>
                </property>
                <property name="value">
-                <number>100</number>
+                <double>100.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -533,8 +533,8 @@
  <customwidgets>
   <customwidget>
    <class>ScrSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">ui/scrspinbox.h</header>
+   <extends>QDoubleSpinBox</extends>
+   <header>ui/scrspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>ScComboBox</class>
