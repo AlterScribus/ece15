@@ -17,6 +17,7 @@ private:
 	PageItem_NoteFrame(ScribusDoc *doc, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	PageItem_NoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle);
 	~PageItem_NoteFrame();
+	void init();
 public:
 	virtual PageItem_NoteFrame * asNoteFrame() { return this; }
 	virtual bool isNoteFrame() const { return true; }
@@ -25,20 +26,18 @@ public:
 	//overloaded text frame layouting
 	void layout();
 
-	//indicate if noteframe should be deleted
-	bool deleteIt;
-
 	//used while reading SLA file
 	void setNotesStyle(const NotesStyle* const nStyle, PageItem_TextFrame* master = NULL);
 	//returns Notes Style
 	NotesStyle* getNotesStyle() const { return m_nstyle; }
 
-	//insert notes content into notesframe
-	void updateNotes(QList<TextNote*> &nList, bool clear = true);
+	//upadate noteframe witn new notes list
+	void updateNotes(QList<TextNote*> &nList);
 	//clear notesList and update
 	void updateNotes();
 	//read notes text from notesframe itemText and store it in notes`s saxed text field
 	void updateNotesText();
+	void deleteAllNotes();
 
 	PageItem_TextFrame* masterFrame() const { return m_masterFrame; }
 	void setMaster(PageItem* frame) { m_masterFrame = frame->asTextFrame(); }
@@ -59,11 +58,17 @@ public:
 	//overloaded PageItem::unWeld()
 	void unWeld(bool doUndo=true);
 	
+	bool isMarkedForDelete() const { return deleteIt; }
+	void setMarkedForDelete(bool value = true);
+	
 private:
 	QList<TextNote*> m_notesList;
 	NotesStyle* m_nstyle;
 	PageItem_TextFrame* m_masterFrame;
 	PageItem_Line* m_topLine;
+
+	//indicate if noteframe should be deleted
+	bool deleteIt;
 
 	//insert note at end of text in noteframe
 	void insertNote(const TextNote* const note);

@@ -332,6 +332,7 @@ private: // Private attributes
 	bool _isGlobalMode;
 	bool linkAfterDraw;
 	bool ImageAfterDraw;
+	bool m_oldSnapToElem;
 
 	double oldItemX;
 	double oldItemY;

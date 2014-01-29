@@ -69,12 +69,15 @@ private slots:
 	void insertSpecialChars(const QString &chars);
 
 private:
+	QString m_bulletFont;
 	void openEnhanced();
 	void closeEnhanced(bool show = false);
 	void enableDropCap(bool);
 	void enableBullet(bool);
 	void enableNum(bool);
 	void enableParEffect(bool);
+	QString getBulletFontName();
+	void applyBulletFont();
 	void fillBulletStrEditCombo()
 	{
 		bulletStrEdit->clear();

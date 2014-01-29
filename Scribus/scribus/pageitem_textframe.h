@@ -140,7 +140,7 @@ public:
 	bool hasNoteFrame(const NotesStyle* const nStyle, bool inChain = false);
 	//return set of items in interaction with deleted noteframe
 	QSet<PageItem_TextFrame *> delAllNoteFrames();
-	void removeNoteFrame(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
+	void removeNoteFrameFromMap(PageItem_NoteFrame* nF) { m_notesFramesMap.remove(nF); }
 	void notesFramesLayout();
 	//removing all marsk from text, returns number of removed marks
 	int removeMarksFromText(bool doUndo);
@@ -157,9 +157,9 @@ public:
 private:
 	NotesInFrameMap m_notesFramesMap;
 	void updateItemNotes(QMap<int, Mark*> &notesMarksPositions);
-	NotesInFrameMap updateNotesFrames(QMap<int, Mark*> &noteMarksPosistions); //update notes frames content
+	NotesInFrameMap getUpdatedNotesMap(const QMap<int, Mark*> &noteMarksPosistions); //update notes frames content
 	void updateNotesMarks(NotesInFrameMap &notesMap);
-	Mark* selectedMark(bool onlySelection = true);
+	Mark* selectedMark(int &pos, bool onlySelection = true);
     TextNote* noteFromSelectedNoteMark(int& foundPos, bool onlySelection = true);
 	TextNote* noteFromSelectedNoteMark(bool onlySelection = true);
 protected:

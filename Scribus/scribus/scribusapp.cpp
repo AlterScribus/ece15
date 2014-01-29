@@ -40,6 +40,7 @@ for which a new license (GPL+exception) is in place.
 #include "scpaths.h"
 #include "prefsfile.h"
 #include "langmgr.h"
+#include "localemgr.h"
 #include "prefsmanager.h"
 #include "commonstrings.h"
 #include "upgradechecker.h"
@@ -99,15 +100,22 @@ ScribusQApp::ScribusQApp( int & argc, char ** argv ) : QApplication(argc, argv),
 	lang(""),
 	GUILang("")
 {
-	ScQApp=this;
-	ScCore=NULL;
-
+	ScQApp = this;
+	ScCore = 0;
+	m_scDLMgr = 0;
+	m_ScCore = NULL;
 	initDLMgr();
 }
 
 ScribusQApp::~ScribusQApp()
 {
+	if (m_ScCore)
+		delete m_ScCore;
+	if (m_scDLMgr)
+		delete m_scDLMgr;
 	PrefsManager::deleteInstance();
+	LocaleManager::deleteInstance();
+	LanguageManager::deleteInstance();
 }
 
 void ScribusQApp::initLang()
@@ -120,7 +128,7 @@ void ScribusQApp::initLang()
 
 void ScribusQApp::initDLMgr()
 {
-	m_scDLMgr=new ScDLManager(this);
+	m_scDLMgr = new ScDLManager(this);
 	connect(m_scDLMgr, SIGNAL(fileReceived(const QString&)), SLOT(downloadComplete(const QString&)));
 }
 

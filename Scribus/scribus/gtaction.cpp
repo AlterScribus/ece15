@@ -151,6 +151,8 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 		if (note == NULL)
 		{
 			note = it->m_Doc->newNote(it->m_Doc->m_docNotesStylesList.at(0));
+			note->setCharStyleMasterMark(it->itemText.charStyle());
+			note->setCharStyleNoteMark(it->itemText.charStyle());
 			Q_ASSERT(noteStory == NULL);
 			noteStory = new StoryText(it->m_Doc);
 		}
@@ -171,7 +173,7 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 			else
 				label = label + "_1";
 			Mark* mrk = it->m_Doc->newMark();
-			mrk->label = label;
+			mrk->setLabel(label);
 			mrk->setType(MARKNoteMasterType);
 			mrk->setNotePtr(note);
 			note->setMasterMark(mrk);
@@ -179,19 +181,19 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 				noteStory->removeChars(noteStory->length() -1, 1);
 			note->setSaxedText(saxedTextFromStory(*noteStory));
 			mrk->setString("");
-			mrk->OwnPage = it->OwnPage;
+			mrk->setOwnPage(it->OwnPage);
 			it->itemText.insertMark(mrk);
 			if (UndoManager::undoEnabled())
 			{
-				ScItemsState* is = new ScItemsState(UndoManager::InsertNote);
-				is->set("ETEA", mrk->label);
+				SimpleState* is = new SimpleState(UndoManager::InsertNote);
+				is->set("ETEA", mrk->getLabel());
 				is->set("MARK", QString("new"));
-				is->set("label", mrk->label);
+				is->set("label", mrk->getLabel());
 				is->set("type", (int) MARKNoteMasterType);
 				is->set("strtxt", QString(""));
 				is->set("nStyle", nStyle->name());
 				is->set("at", it->itemText.cursorPosition() -1);
-				is->insertItem("inItem", it);
+				is->set("inItem", it->itemName());
 				undoManager->action(it->m_Doc, is);
 			}
 			note = NULL;
@@ -294,6 +296,8 @@ void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 		if (noteStory == NULL)
 		{
 			note = it->m_Doc->newNote(it->m_Doc->m_docNotesStylesList.at(0));
+			note->setCharStyleMasterMark(it->itemText.charStyle());
+			note->setCharStyleNoteMark(it->itemText.charStyle());
 			noteStory = new StoryText(it->m_Doc);
 		}
 		story = noteStory;
@@ -328,12 +332,12 @@ void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 			else
 				label = label + "_1";
 			Mark* mrk = it->m_Doc->newMark();
-			mrk->label = label;
+			mrk->setLabel(label);
 			mrk->setType(MARKNoteMasterType);
 			mrk->setNotePtr(note);
 			note->setMasterMark(mrk);
 			mrk->setString("");
-			mrk->OwnPage = it->OwnPage;
+			mrk->setOwnPage(it->OwnPage);
 			it->itemText.insertMark(mrk);
 			story->applyCharStyle(lastStyleStart, story->length()-lastStyleStart, lastStyle);
 			if (paraStyle.hasName())

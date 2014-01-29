@@ -20,22 +20,23 @@ enum MarkType
 	MARKNoteMasterType = 4,  //mark contain footnote reference
 	MARKNoteFrameType = 5,  //mark used internally in note frame at beginning of note`s text
 	MARKIndexType = 6, // index entry
-	MARKBullNumType = 7,
+	MARKListType = 7,
 	MARKStyleVariableType = 8 //insert text from last occurence of selected style
 };
+
+typedef union {
+	PageItem* destItemPtr;
+	TextNote* notePtr;
+	Mark* destMark;
+} References;
 
 struct MarkData
 {
 	QString strtxt;
-	PageItem* itemPtr;
-	QString destmarkName;
-	MarkType destmarkType;
-	TextNote* notePtr;
-	//fields used for resolving to pointers for load and copy
-	QString itemName;
+	QString holderName;
 	MarkType markTyp;
-	
-	MarkData() : strtxt(""), itemPtr(NULL), destmarkName(""), destmarkType(MARKNoType), notePtr(NULL), itemName(""), markTyp(MARKNoType) {}
+	References ref;
+	MarkData() : strtxt(""), holderName(""), markTyp(MARKNoType), ref() {}
 };
 
 //searchingDirection
@@ -48,60 +49,39 @@ class SCRIBUS_API Mark
 {
 	friend class ScribusDoc;
 	friend class ScribusMainWindow;
-	friend class BulNumMark;
 	friend class StyleVariableMark;
-	
+	friend class ListMark;
 
 	//URGENT for anyone who want to edit this class!!!
 	//only ScribusDoc && ScribusMainWindow can create and delete marks
 	//ScribusDoc is owner of MARK pointers created in document
 	//ScribusMainWindow create temporary MARK instance (not a pointer) only for undo purposes on case of editing mark
 private:
-	Mark() : label(""), OwnPage(-1), typ(MARKNoType), data() {}
-	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), typ(other.typ), data(other.data) {}
-	virtual ~Mark() {}
+	Mark() : label(""), OwnPage(-1), cPos(-1), typ(MARKNoType), data() {}
+	Mark(const Mark& other) : label(other.label), OwnPage(other.OwnPage), cPos(other.cPos), typ(other.typ), data(other.data) {}
+	virtual ~Mark() { }
 public:
-	QString label;
-	int OwnPage;
-
 	void setValues(const QString &l, const int p, const MarkType t, const MarkData d) { label = l; OwnPage = p; typ = t; data = d; }
 	const MarkType getType() const { return typ; }
 	void setType(const MarkType t) { typ = t; }
-	const MarkData getData() const { return data; }
-	void setData(const MarkData d) { data = d; }
-	PageItem* getItemPtr() const { return data.itemPtr; }
-	void setItemPtr(PageItem* const ptr ) { data.itemPtr = ptr; }
-	const QString getItemName() const { return data.itemName; }
-	void setItemName( const QString &name ) { data.itemName = name; }
-
-	//for marks to marks - return label and type of target mark by reference
-	const void getTargetMark(QString &l, MarkType &t) const { l = data.destmarkName; t = data.destmarkType; }
-	//for marks to marks - set label and type of target mark from mark pointer
-	void setTargetMark(Mark* mP)
-	{
-		if (mP == NULL)
-		{
-			data.destmarkName = "";
-			data.destmarkType = MARKNoType;
-		}
-		else
-		{
-			data.destmarkName = mP->label;
-			data.destmarkType = mP->getType();
-		}
-	}
-	void setTargetMark(const QString l, const MarkType t) { data.destmarkName = l; data.destmarkType = t; }
+	const QString getHolderName() const { return data.holderName; }
+	void setHolderName( const QString &name ) { data.holderName = name; }
 	const MarkType getMarkType() const { return data.markTyp; }
 	void setMarkType(const MarkType t) { data.markTyp = t; }
 	const QString getString() const { return data.strtxt; }
 	void setString( const QString &str ) { data.strtxt = str; }
-	TextNote* getNotePtr() const { return data.notePtr; }
-	void setNotePtr(TextNote * const note) { data.notePtr = note; }
 
-	bool hasItemPtr() const { return data.itemPtr != NULL; }
+	PageItem* getTargetPtr() const { return (typ == MARK2ItemType ? data.ref.destItemPtr : NULL); }
+	void setTargetPtr(PageItem* const ptr ) { data.ref.destItemPtr = ptr; }
+	const Mark* getTargetMark() const { return (typ == MARK2MarkType ? data.ref.destMark : NULL); }
+	void setTargetMark(Mark* m) { data.ref.destMark = m; }
+	TextNote* getNotePtr() const { return (isNoteType() ? data.ref.notePtr : NULL); }
+	void setNotePtr(TextNote * const note) { data.ref.notePtr = note; }
+
+	bool hasTargetPtr() const { return (typ == MARK2ItemType &&  data.ref.destItemPtr); }
 	bool hasString() const { return !data.strtxt.isEmpty(); }
-	bool hasMark() const { return data.destmarkName != ""; }
-	bool isUnique() const { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKBullNumType)); }
+	bool hasTargetMark() const { return (typ == MARK2MarkType &&  data.ref.destMark); }
+	bool isUnique() const { return ((typ != MARKVariableTextType) && (typ != MARKIndexType) && (typ != MARKListType)); }
 	bool isNoteType() const { return ((typ == MARKNoteMasterType) || (typ==MARKNoteFrameType)); }
 	bool isType(const MarkType t) const { return t==typ; }
 //No avox - this cannot be public because
@@ -109,16 +89,28 @@ public:
 //except is BulNumMark as that one is not maintained by ScribusDoc
 //    virtual ~Mark() {}
 
+	int getCPos() const { return cPos; }
+	void setCPos(int value) { cPos = value; }
+	
+	QString getLabel() const { return label; }
+	void setLabel(const QString &value) { label = value; }
+	
+	int getOwnPage() const { return OwnPage; }
+	void setOwnPage(int value) { OwnPage = value; }
+	
 protected:
+	QString label;
+	int OwnPage;
+	int cPos;
 	MarkType typ;
 	MarkData data;
 };
 
-class SCRIBUS_API BulNumMark : public Mark
+class SCRIBUS_API ListMark : public Mark
 {
 public:
-	BulNumMark() : Mark() { label = "BullNumMark"; typ = MARKBullNumType; }
-	~BulNumMark() {}
+	ListMark() : Mark() { label = "ListMark"; typ = MARKListType; }
+	~ListMark() {}
 };
 
 class SCRIBUS_API StyleVariableMark : public Mark

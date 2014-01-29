@@ -1015,7 +1015,8 @@ HEADERS += scribus/actionmanager.h \
     scribus/selectionrubberband.h \
     scribus/ui/propertywidget_textmargins.h \
     scribus/ui/propertywidget_columns.h \
-    scribus/canvasgesture_textcolumnresize.h
+    scribus/canvasgesture_textcolumnresize.h \
+    scribus/plugins/xpsexport/xpsexplugin.h
 FORMS += scribus/ui/aboutplugins.ui \
          scribus/ui/aligndistribute.ui \
          scribus/ui/arcvectorbase.ui \
@@ -2136,7 +2137,8 @@ SOURCES += scribus/actionmanager.cpp \
     scribus/selectionrubberband.cpp \
     scribus/ui/propertywidget_textmargins.cpp \
     scribus/ui/propertywidget_columns.cpp \
-    scribus/canvasgesture_textcolumnresize.cpp
+    scribus/canvasgesture_textcolumnresize.cpp \
+    scribus/plugins/xpsexport/xpsexplugin.cpp
 RESOURCES += scribus/plugins/scripter/python/sceditor/dockwidget_icons.qrc
 TRANSLATIONS += resources/translations/scribus.af.ts \
                 resources/translations/scribus.ar.ts \
@@ -2182,3 +2184,7 @@ TRANSLATIONS += resources/translations/scribus.af.ts \
                 resources/translations/scribus.uk.ts \
                 resources/translations/scribus.zh_CN.ts \
                 resources/translations/scribus.zh_TW.ts
+
+OTHER_FILES += \
+    scribus/CMakeLists.txt \
+    scribus/plugins/CMakeLists.txt

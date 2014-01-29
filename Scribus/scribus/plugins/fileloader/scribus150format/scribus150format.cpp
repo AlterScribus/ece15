@@ -2596,7 +2596,11 @@ void Scribus150Format::readParagraphStyle(ScribusDoc *doc, ScXmlStreamReader& re
 	static const QString ParagraphEffectCharStyle("ParagraphEffectCharStyle");
 	if (attrs.hasAttribute(ParagraphEffectCharStyle))
 		newStyle.setPeCharStyleName(attrs.valueAsString(ParagraphEffectCharStyle));
-	
+
+	static const QString ParagraphEffectFont("ParagraphEffectFont");
+	if (attrs.hasAttribute(ParagraphEffectFont))
+		newStyle.setPeFontName(attrs.valueAsString(ParagraphEffectFont));
+
 	static const QString ParagraphEffectOffset("ParagraphEffectOffset");
 	if (attrs.hasAttribute(ParagraphEffectOffset))
 		newStyle.setParEffectOffset(attrs.valueAsDouble(ParagraphEffectOffset));
@@ -3446,10 +3450,19 @@ bool Scribus150Format::readNotes(ScribusDoc* doc, ScXmlStreamReader& reader)
 			ScXmlStreamAttributes attrs = reader.scAttributes();
 			newNote = m_Doc->newNote(NULL);
 			newNote->setSaxedText(attrs.valueAsString("Text"));
+
 			//temporaly insert names of master mark and notes style into maps with note pointer
 			//will be resolved to pointers by updateNames2Ptr() after all will read
 			notesMasterMarks.insert(attrs.valueAsString("Master"), newNote);
 			notesNSets.insert(newNote, attrs.valueAsString("NStyle"));
+		}
+		else if (newNote && reader.isStartElement() && reader.name() == "MasterMarkerCharStyle")
+		{
+			//read charstyle for note number in noteframe (it is not stored with note text)
+			CharStyle newStyle;
+			ScXmlStreamAttributes attrs = reader.scAttributes();
+			readCharacterStyleAttrs(doc,attrs,newStyle);
+			newNote->setCharStyleMasterMark(newStyle);
 		}
 		else if (newNote && reader.isStartElement() && reader.name() == "NoteMarkerCharStyle")
 		{
@@ -3489,20 +3502,21 @@ bool Scribus150Format::readMarks(ScribusDoc* doc, ScXmlStreamReader& reader)
 				svmrk->searchDirection = attrs.valueAsInt("search");
 				svmrk->textLimit = attrs.valueAsInt("limit");
 				svmrk->range = attrs.valueAsInt("range");
-				svmrk->label = label;
+				svmrk->setLabel(label);
 			}
 			else if (label != "" && type != MARKNoType)
 			{
 				Mark* mark = doc->newMark();
-				mark->label=attrs.valueAsString("label");
+				mark->setLabel(attrs.valueAsString("label"));
 				mark->setType(type);
-				
+				mark->setHolderName(attrs.valueAsString("holder"));
+
 				if (type == MARKVariableTextType && attrs.hasAttribute("str"))
 					mark->setString(attrs.valueAsString("str"));
-				if (type == MARK2ItemType && attrs.hasAttribute("ItemID"))
+				if (type == MARK2ItemType && attrs.hasAttribute("target"))
 				{
 					//QString itemName = attrs.valueAsString("itemName");
-					markeredItemsMap.insert(mark, attrs.valueAsInt("ItemID"));
+					markeredItemsMap.insert(mark, attrs.valueAsString("target"));
 				}
 				if (type == MARK2MarkType && attrs.hasAttribute("MARKlabel"))
 				{
@@ -3998,42 +4012,79 @@ bool Scribus150Format::readObject(ScribusDoc* doc, ScXmlStreamReader& reader, It
 		{
 			if (newItem->asTextFrame())
 			{
+				CharStyle newStyle;
+				readCharacterStyleAttrs(doc, tAtt, newStyle);
+				fixLegacyCharStyle(newStyle);
+				
 				QString l = tAtt.valueAsString("label");
 				MarkType t = (MarkType) tAtt.valueAsInt("type");
-				Mark* mark = m_Doc->getMarkDefinied(l, t);
-				if (mark == NULL)
-					//FIX ME mark will be null on page import
-					//TODO support for marks on page import
-					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
-
-				if (!m_Doc->isLoading())
-				{	//doc is not loading so it is copy/paste task
-					if (t != MARKVariableTextType)
+				Mark* mark = NULL;
+				if (t == MARKListType)
+					mark = new ListMark();
+				else
+				{
+					if (m_Doc->isLoading())
 					{
-						//create copy of mark
-						Mark* oldMark = mark;
-						if (t == MARKStyleVariableType)
-							mark = (Mark*) m_Doc->newStyleVariableMark((StyleVariableMark*) oldMark);
+						mark = m_Doc->getMarkDefinied(l, t);
+					}
+					else
+					{	//doc is not loading so it is copy/paste task
+						if (t == MARKVariableTextType)
+							mark = m_Doc->getMarkDefinied(l, t);
 						else
-							mark = m_Doc->newMark(oldMark);
-						getUniqueName(l,doc->marksLabelsList(t), "_");
-						mark->label = l;
-						if (t == MARKNoteMasterType)
-						{  //create copy of note
-							TextNote* old = mark->getNotePtr();
-							TextNote* note = m_Doc->newNote(old->notesStyle());
-							mark->setNotePtr(note);
-							note->setMasterMark(mark);
-							note->setSaxedText(old->saxedText());
-							m_Doc->setNotesChanged(true);
+						{
+							//create copy of mark
+							Mark* oldMark = m_Doc->getMarkDefinied(l, t);
+							if (oldMark == NULL)
+							{
+								qWarning() << "wrong copy of oldMark";
+								mark = m_Doc->newMark();
+								mark->setType(t);
+							}
+							else
+							{
+								if (t == MARKStyleVariableType)
+									mark = (Mark*) m_Doc->newStyleVariableMark((StyleVariableMark*) oldMark);
+								else
+									mark = m_Doc->newMark(oldMark);
+								getUniqueName(l,doc->marksLabelsList(t), "_");
+							}
+							mark->setLabel(l);
+							if (t == MARKNoteMasterType)
+							{  //create copy of note
+								TextNote* old = mark->getNotePtr();
+								TextNote* note = m_Doc->newNote(old->notesStyle());
+								mark->setNotePtr(note);
+								note->setMasterMark(mark);
+								note->setSaxedText(old->saxedText());
+								m_Doc->setNotesChanged(true);
+							}
 						}
 					}
 				}
-				//set pointer to item holds mark in his text
-				if (t == MARKAnchorType)
-					mark->setItemPtr(newItem);
-				mark->OwnPage = newItem->OwnPage;
-				newItem->itemText.insertMark(mark, newItem->itemText.length());
+				if (mark == NULL)
+					qDebug() << "Undefinied mark label ["<< l << "] type " << t;
+				else
+				{
+					int pos = newItem->itemText.length();
+					mark->setOwnPage(newItem->OwnPage);
+					newItem->itemText.insertMark(mark, pos);
+
+					if (newStyle != lastStyle->Style)
+					{
+						newItem->itemText.setCharStyle(lastStyle->StyleStart, pos - lastStyle->StyleStart, lastStyle->Style);
+						lastStyle->Style = newStyle;
+						lastStyle->StyleStart = pos;
+					}
+				}
+			
+				newItem->itemText.setCharStyle(lastStyle->StyleStart, newItem->itemText.length()-lastStyle->StyleStart, lastStyle->Style);
+				lastStyle->StyleStart = newItem->itemText.length();
+				ParagraphStyle pstyle;
+				if (!lastStyle->ParaStyle.isEmpty()) {
+					pstyle.setParent( lastStyle->ParaStyle );
+					newItem->itemText.applyStyle(newItem->itemText.length()-1, pstyle);
+				}
 			}
 		}
 		if (tName == "WeldEntry")
@@ -4713,7 +4764,8 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 			Q_ASSERT(false);
 		break;
 	}
-	
+
+	currItem->setGroupClipping(attrs.valueAsBool("groupClips", true));
 	currItem->FrameType = attrs.valueAsInt("FRTYPE", 0);
 	int startArrowIndex = attrs.valueAsInt("startArrowIndex", 0);
 	if ((startArrowIndex < 0) || (startArrowIndex > static_cast<int>(doc->arrowStyles().size())))
@@ -4831,6 +4883,8 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		pstyle.setKeepTogether(attrs.valueAsBool("keepTogether"));
 	if (attrs.hasAttribute("ParagraphEffectCharStyle"))
 		pstyle.setPeCharStyleName(attrs.valueAsString("ParagraphEffectCharStyle"));
+	if (attrs.hasAttribute("ParagraphEffectFont"))
+		pstyle.setPeFontName(attrs.valueAsString("ParagraphEffectFont"));
 	if (attrs.hasAttribute("ParagraphEffectOffset"))
 		pstyle.setParEffectOffset(attrs.valueAsDouble("ParagraphEffectOffset"));
 	if (attrs.hasAttribute("ParagraphEffectIndent"))
@@ -5359,7 +5413,16 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		currItem->inlineCharID = attrs.valueAsInt("InID", -1);
 	else
 		currItem->inlineCharID = -1;
-	
+
+	currItem->setHasSoftShadow(attrs.valueAsBool("HASSOFTSHADOW", false));
+	currItem->setSoftShadowXOffset(attrs.valueAsDouble("SOFTSHADOWXOFFSET", 5.0));
+	currItem->setSoftShadowYOffset(attrs.valueAsDouble("SOFTSHADOWYOFFSET", 5.0));
+	currItem->setSoftShadowColor(attrs.valueAsString("SOFTSHADOWCOLOR", CommonStrings::None));
+	currItem->setSoftShadowShade(attrs.valueAsInt("SOFTSHADOWSHADE", 100));
+	currItem->setSoftShadowBlurRadius(attrs.valueAsDouble("SOFTSHADOWBLURRADIUS", 5.0));
+	currItem->setSoftShadowBlendMode(attrs.valueAsInt("SOFTSHADOWBLENDMODE", 0));
+	currItem->setSoftShadowOpacity(attrs.valueAsDouble("SOFTSHADOWOPACITY", 1.0));
+
 	//currItem->setRedrawBounding();
 	//currItem->OwnPage = view->OnPage(currItem);
 	return currItem;
@@ -6572,22 +6635,22 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 {
 	if (!markeredItemsMap.isEmpty())
 	{
-		QMap<Mark*, int>::Iterator markIt;
-		QMap<Mark*, int>::Iterator end = markeredItemsMap.end();
+		QMap<Mark*, QString>::Iterator markIt;
+		QMap<Mark*, QString>::Iterator end = markeredItemsMap.end();
 		for (markIt = markeredItemsMap.begin(); markIt != end; ++markIt)
 		{
 			Mark* mrk = markIt.key();
-			int ItemID = markIt.value();
-			if (LinkID.contains(ItemID))
+			PageItem* target = m_Doc->getItemFromName(markIt.value());
+			if (target != NULL)
 			{
-				mrk->setItemPtr(LinkID[ItemID]);
-				mrk->setString(QString("%1").arg(mrk->getItemPtr()->OwnPage +1));
+				mrk->setTargetPtr(target);
+				mrk->setString(m_Doc->getFormattedSectionPageNumber(target->OwnPage));
 			}
 			else
 			{
-				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mrk->label << "] data - item [" << ItemID << "] not exists - DELETING MARK";
+				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mrk->getLabel() << "] data - item [" << markIt.value() << "] not exists - DELETING MARK";
 				if (!m_Doc->eraseMark(mrk, true))
-					qWarning() << "Erase mark [" << mrk->label << "] failed - was it definied?";
+					qWarning() << "Erase mark [" << mrk->getLabel() << "] failed - was it definied?";
 			}
 		}
 		markeredItemsMap.clear();
@@ -6609,10 +6672,9 @@ void Scribus150Format::updateNames2Ptr() //after document load - items pointers 
 			}
 			else
 			{
-				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mark->label << "] data - pointed mark name [" << label2 << "] not exists - DELETING MARK";
+				qWarning() << "Scribus150Format::updateNames2Ptr() : wrong mark [" << mark->getLabel() << "] data - pointed mark name [" << label2 << "] not exists - DELETING MARK";
 				if (!m_Doc->eraseMark(mark, true))
-					qWarning() << "Erase mark [" << mark->label << "] failed - was it definied?";
-				
+					qWarning() << "Erase mark [" << mark->getLabel() << "] failed - was it definied?";
 			}
 		}
 		markeredMarksMap.clear();

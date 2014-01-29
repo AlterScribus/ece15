@@ -297,19 +297,4 @@ public:
 private:
 	C item_;
 };
-/**** ItemsState for list of pointers to items *****/
-//template<class C>
-class ScItemsState : public SimpleState
-{
-public:
-	ScItemsState(const QString& name, const QString& description = 0, QPixmap* pixmap = 0)
-	: SimpleState(name, description, pixmap) {}
-	~ScItemsState() {}
-	void insertItem(QString itemname, void * item) { pointerMap.insert(itemname, item); }
-	void* getItem(QString itemname) const { if (pointerMap.contains(itemname)) return pointerMap.value(itemname); else return NULL;}
-	QList< QPair<void*, int> > insertItemPos;
-private:
-	QMap<QString,void*> pointerMap;
-};
-
 #endif

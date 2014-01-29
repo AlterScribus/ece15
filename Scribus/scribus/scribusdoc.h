@@ -36,6 +36,7 @@ for which a new license (GPL+exception) is in place.
 #include <QRectF>
 #include <QStringList>
 #include <QTimer>
+#include <QFile>
 
 #include "gtgettext.h" //CB For the ImportSetup struct and itemadduserframe
 #include "scribusapi.h"
@@ -954,6 +955,7 @@ public:
 	 * @brief Gets the page number fill character to be printed based on the section it is in.
 	 * Returns QString::null on failure to find the pageIndex
 	 */
+	const QString getFormattedSectionPageNumber(uint pageNumber);
 	const QChar getSectionPageNumberFillCharForPageIndex(const uint) const;
 	/**
 	 * @brief Gets the page number fill character to be printed based on the section it is in.
@@ -1047,6 +1049,8 @@ public:
 	void itemSelection_SetNamedLineStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedTableStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedCellStyle(const QString & name, Selection* customSelection=0);
+
+	void itemSelection_SetSoftShadow(bool has, QString color, double dx, double dy, double radius, int shade, double opac, int blend);
 
 	void itemSelection_SetLineWidth(double w);
 	void itemSelection_SetLineArt(Qt::PenStyle w);
@@ -1187,12 +1191,14 @@ public:
 	void removeInlineFrame(int fIndex);
 	void checkItemForFrames(PageItem *it, int fIndex);
 	bool hasPreflightErrors();
+	QFileDevice::Permissions filePermissions() { return docFilePermissions; }
+	void saveFilePermissions(QFileDevice::Permissions p) { docFilePermissions=p; }
 
 protected:
 	void addSymbols();
 	void applyPrefsPageSizingAndMargins(bool resizePages, bool resizeMasterPages, bool resizePageMargins, bool resizeMasterPageMargins);
-
 	bool m_hasGUI;
+	QFileDevice::Permissions docFilePermissions;
 	ApplicationPrefs& appPrefsData;
 	ApplicationPrefs docPrefsData;
 	UndoManager * const undoManager;
@@ -1684,18 +1690,16 @@ public:
 	void setCursor2MarkPos(const Mark* const mrk);
 	//return false if mark was not found
 	bool eraseMark(Mark* mrk, bool fromText=false, PageItem* item=NULL, bool force = false); //force is used only for deleting non-unique marks by MarksManager
-	void setUndoDelMark(const Mark* const mrk);
+	void eraseMark(Mark* mrk, PageItem* item, int pos); //force is used only for deleting non-unique marks by MarksManager
 
 	//for foot/endnotes
 	NotesStyle* newNotesStyle(const NotesStyle &nStyle);
 	void renameNotesStyle(const NotesStyle* const nStyle, const QString &newName);
 	//delete whole notes style with its notesframes and notes
 	void deleteNotesStyle(const QString &nsName);
-	void undoSetNotesStyle(SimpleState* ss, const NotesStyle* const nStyle);
 	NotesStyle* getNotesStyle(const QString &nsName);
 	//delete note, if fromText than marks for given note will be removed
 	void deleteNote(TextNote* note);
-	void setUndoDelNote(const TextNote* const note);
 	PageItem_NoteFrame* createNoteFrame(PageItem_TextFrame* inFrame, const NotesStyle* const nStyle, int index = -1);
 	PageItem_NoteFrame* createNoteFrame(const NotesStyle* const nStyle, double x, double y, double w, double h, double w2, QString fill, QString outline);
 	//delete noteframe
@@ -1726,6 +1730,14 @@ public:
 	//return page where endnotesframe should be located depending of notes style range and location of master mark
 	const ScPage* page4EndNotes(const NotesStyle* const nStyle, PageItem* item);
 
+	//UNDO
+	void undoSetNotesStyle(SimpleState* ss, const NotesStyle* const nStyle);
+	void setUndoDelNote(const TextNote* const note);
+	void setUndoDelUniqueMark(const Mark* const mrk);
+	ScItemState<CharStyle>* getUndoDelUniqueMark(const Mark* const mrk);
+	QList< ScItemState<CharStyle>* > getUndosDelNonUniqueMark(const Mark* const mrk);
+	void setUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
+	ScItemState<CharStyle>* getUndoDelNotUniqueMarkAtPos(const Mark* const mrk, PageItem* item, int pos);
 private:
 	QList<Mark*> m_docMarksList;
 	QList<TextNote*> m_docNotesList;
@@ -1745,10 +1757,6 @@ private:
 	int findMarkCPos(const Mark* const mrk, PageItem* item, int Start = 0);
 	//finds item which holds given mark, start searching from next to lastItem index in DocItems
 	PageItem* findMarkItem(const Mark* const mrk, int &lastItem);
-	//QMap<PageItem_NoteFrame*, QList<TextNote *> > map of notesframes and its list of notes
-
-	PageItem* findFirstMarkItem(const Mark* const mrk) { int tmp = -1; return findMarkItem(mrk, tmp); }
-
 	//search for endnotesframe for given notes style and item holding master mark or section number
 	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, void* item = NULL);
 	PageItem_NoteFrame* endNoteFrame(const NotesStyle* const nStyle, int sectIndex);
@@ -1758,11 +1766,15 @@ private:
 	void updateItemNotesNums(PageItem_TextFrame *frame, const NotesStyle* const nStyle, int &num);
 	//update notesframes text styles
 	void updateItemNotesFramesStyles(PageItem *item, const ParagraphStyle &newStyle);
+	void invalidateMasterFrames(const NotesStyle* const nStyle);
+	//UNDO
+	void restoreNotesStyle(SimpleState* ss, bool isUndo);
+	void restoreDeleteNote(SimpleState* ss, bool isUndo);
+	void restoreMark(SimpleState* ss, bool isUndo);
 	
 	//not used?
 	bool updateEndNotesNums(); //return true if doc needs update
 	void invalidateNoteFrames(const NotesStyle* const nStyle);
-	void invalidateMasterFrames(const NotesStyle* const nStyle);
 
 public slots:
 	//update strings (page numbers) for marks

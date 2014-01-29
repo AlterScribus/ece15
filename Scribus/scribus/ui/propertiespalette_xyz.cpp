@@ -876,9 +876,6 @@ void PropertiesPalette_XYZ::handleNewW()
 			item->arcWidth += dw * dscw;
 			item->arcHeight += dh * dsch;
 			item->recalcPath();
-			FPoint tp2(getMinClipF(&m_item->PoLine));
-			m_item->PoLine.translate(-tp2.x(), -tp2.y());
-			m_doc->AdjustItemSize(m_item);
 		}
 		if (m_item->isSpiral())
 		{
@@ -961,9 +958,6 @@ void PropertiesPalette_XYZ::handleNewH()
 				item->arcWidth += dw * dscw;
 				item->arcHeight += dh * dsch;
 				item->recalcPath();
-				FPoint tp2(getMinClipF(&m_item->PoLine));
-				m_item->PoLine.translate(-tp2.x(), -tp2.y());
-				m_doc->AdjustItemSize(m_item);
 			}
 			if (m_item->isSpiral())
 			{

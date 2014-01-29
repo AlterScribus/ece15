@@ -17,9 +17,11 @@ for which a new license (GPL+exception) is in place.
 #include "util_icon.h"
 //#include "ui/charselectenhanced.h"
 
-SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc) : QWidget()
+SMPStyleWidget::SMPStyleWidget(ScribusDoc* doc, StyleSet<CharStyle> *cstyles) : QWidget()
 {
 	m_Doc = doc;
+	m_cstyles = cstyles;
+
 	setupUi(this);
 	//Not used yet
 // 	optMarginCheckLeftProtruding->setVisible(false);
@@ -240,6 +242,16 @@ void SMPStyleWidget::setDoc(ScribusDoc *doc)
 		parEffectCharStyleCombo->setDoc(m_Doc);
 	}
 }
+QString SMPStyleWidget::bulletFont() const
+{
+	return m_bulletFont;
+}
+
+void SMPStyleWidget::setBulletFont(const QString &bulletFont)
+{
+	m_bulletFont = bulletFont;
+}
+
 
 void SMPStyleWidget::fillBulletStrEditCombo()
 {
@@ -396,6 +408,10 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 		ClearOnApplyBox->setParentValue(parent->clearOnApply());
 		coaParentButton->setVisible(!pstyle->isInhClearOnApply());
 		connect(coaParentButton, SIGNAL(clicked()), this, SLOT(slotParentClearOnApply()));
+
+		m_parentDC = parent->hasDropCap();
+		m_parentBul = parent->hasBullet();
+		m_parentNum = parent->hasNum();
 		if (pstyle->isInhHasDropCap() && pstyle->isInhHasBullet() && pstyle->isInhHasNum())
 		{
 			peParentButton->hide();
@@ -408,14 +424,6 @@ void SMPStyleWidget::show(ParagraphStyle *pstyle, QList<ParagraphStyle> &pstyles
 			f.setBold(true);
 			peParentButton->setFont(f);
 		}
-		connect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
-
-//Effects Gropup Box
-		parentDC_ = parent->hasDropCap();
-		parentBul_ = parent->hasBullet();
-		parentNum_ = parent->hasNum();
-		//parentParEffects_ = (parentDC_ || parentBul_ || parentNum_);
-		peParentButton->setVisible(!(pstyle->isInhHasDropCap() && pstyle->isInhHasBullet() && pstyle->isInhHasNum()));
 		connect(peParentButton, SIGNAL(clicked()), this, SLOT(slotParentParEffects()));
 
 		setWidgetBoldFont(parEffectCharStyleComboLabel, !pstyle->isInhPeCharStyleName());
@@ -792,6 +800,7 @@ void SMPStyleWidget::showBullet(QList<ParagraphStyle *> &pstyles, QList<CharStyl
 	}
 	bulletStrEdit->setEditText(chStr);
 	setWidgetBoldFont(bulletCharLabel, (hasParent_ && !pstyles[0]->isInhBulletStr()));
+	m_bulletFont = pstyles[0]->peFontName();
 
 	connectPESignals();
 	bulletCharTableButton->setEnabled(true);
@@ -1259,6 +1268,7 @@ void SMPStyleWidget::slotBullets(bool isOn)
 
 void SMPStyleWidget::insertSpecialChars(const QString &chars)
 {
+	m_bulletFont = m_enhanced->getUsedFont();
 	bulletStrEdit->lineEdit()->setText(chars);
 }
 
@@ -1297,9 +1307,9 @@ void SMPStyleWidget::slotParentParEffects()
 {
 	disconnectPESignals();
 	peParentButton->hide();
-	dropCapsBox->setChecked(parentDC_);
-	bulletBox->setChecked(parentBul_);
-	numBox->setChecked(parentNum_);
+	dropCapsBox->setChecked(m_parentDC);
+	bulletBox->setChecked(m_parentBul);
+	numBox->setChecked(m_parentNum);
 	emit useParentParaEffects();
 	connectPESignals();
 }
@@ -1331,14 +1341,20 @@ void SMPStyleWidget::openEnhanced()
 	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
 	m_enhanced->setDoc(m_Doc);
 	m_enhanced->setEnabled(true);
-	QString styleName = parEffectCharStyleCombo->currentText();
-	if (styleName != tr("No Style") && !styleName.isEmpty())
+	QString peFont;
+	if (currPStyle && currPStyle->peFontName() != "")
+		peFont = currPStyle->peFontName();
+	else
 	{
-		CharStyle chStyle = m_Doc->charStyle(styleName);
-		setCurrentComboItem(m_enhanced->fontSelector, chStyle.font().scName());
+		QString styleName = parEffectCharStyleCombo->currentText();
+		if (styleName != tr("No Style") && !styleName.isEmpty())
+			peFont = m_Doc->charStyle(styleName).font().scName();
+		else if (currPStyle)
+			peFont = currPStyle->charStyle().font().scName();
+//		CharStyle chStyle = m_cstyles->get(styleName);
+//		setCurrentComboItem(m_enhanced->fontSelector, chStyle.font().scName());
 	}
-	else if (currPStyle)
-		setCurrentComboItem(m_enhanced->fontSelector, currPStyle->charStyle().font().scName());
+	setCurrentComboItem(m_enhanced->fontSelector, peFont);
 	m_enhanced->newFont(m_enhanced->fontSelector->currentIndex());
 	m_enhanced->show();
 	QApplication::restoreOverrideCursor();

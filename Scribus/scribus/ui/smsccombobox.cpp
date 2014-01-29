@@ -10,9 +10,9 @@ for which a new license (GPL+exception) is in place.
 
 SMScComboBox::SMScComboBox(QWidget *parent)
 : ScComboBox(parent),
-  hasParent_(false),
-  useParentValue_(false),
-  pItem_(0)
+  m_hasParent(false),
+  m_useParentValue(false),
+  m_pItem(0)
 {
 	
 }
@@ -21,21 +21,21 @@ void SMScComboBox::setCurrentItem(int i)
 {
 	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	setFont(false);
-	hasParent_ = false;
-	pItem_ = 0;
+	m_hasParent = false;
+	m_pItem = 0;
 	ScComboBox::setCurrentIndex(i);
 	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 }
 
 void SMScComboBox::setCurrentItem(int i, bool isParentValue)
 {
-	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
-	hasParent_ = true;
-	pItem_ = i;
+	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	m_hasParent = true;
+	m_pItem = i;
 	setFont(!isParentValue);
-	if (!isParentValue)
+	if (!isParentValue && !m_useParentValue)
 	{
-		useParentValue_ = true;
+		m_useParentValue = true;
 		addItem( tr("Use Parent Value"));
 	}
 
@@ -47,8 +47,8 @@ void SMScComboBox::setCurrentItemByData(int i)
 {
 	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	setFont(false);
-	hasParent_ = false;
-	pItem_ = 0;
+	m_hasParent = false;
+	m_pItem = 0;
 	for(int idx(0); idx < count(); ++idx)
 	{
 		if(itemData(idx).toInt() == i)
@@ -59,12 +59,12 @@ void SMScComboBox::setCurrentItemByData(int i)
 
 void SMScComboBox::setCurrentItemByData(int i, bool isParentValue)
 {
-	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
-	hasParent_ = true;
+	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	m_hasParent = true;
 	setFont(!isParentValue);
-	if (!isParentValue)
+	if (!isParentValue && !m_useParentValue)
 	{
-		useParentValue_ = true;
+		m_useParentValue = true;
 		addItem( tr("Use Parent Value"));
 	}
 
@@ -73,7 +73,7 @@ void SMScComboBox::setCurrentItemByData(int i, bool isParentValue)
 		if(itemData(idx).toInt() == i)
 		{
 			ScComboBox::setCurrentIndex(idx);
-			pItem_ = idx;
+			m_pItem = idx;
 		}
 	}
 	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
@@ -83,8 +83,8 @@ void SMScComboBox::setCurrentItemByData(double d)
 {
 	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
 	setFont(false);
-	hasParent_ = false;
-	pItem_ = 0;
+	m_hasParent = false;
+	m_pItem = 0;
 	for(int idx(0); idx < count(); ++idx)
 	{
 		if(itemData(idx).toDouble() == d)
@@ -95,12 +95,12 @@ void SMScComboBox::setCurrentItemByData(double d)
 
 void SMScComboBox::setCurrentItemByData(double d, bool isParentValue)
 {
-	disconnect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
-	hasParent_ = true;
+	disconnect(this, SIGNAL(highlighted(int)), this, SLOT(currentChanged()));
+	m_hasParent = true;
 	setFont(!isParentValue);
-	if (!isParentValue)
+	if (!isParentValue && !m_useParentValue)
 	{
-		useParentValue_ = true;
+		m_useParentValue = true;
 		addItem( tr("Use Parent Value"));
 	}
 
@@ -109,7 +109,7 @@ void SMScComboBox::setCurrentItemByData(double d, bool isParentValue)
 		if(itemData(idx).toDouble() == d)
 		{
 			ScComboBox::setCurrentIndex(idx);
-			pItem_ = idx;
+			m_pItem = idx;
 		}
 	}
 	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(currentChanged()));
@@ -141,22 +141,23 @@ int SMScComboBox::getItemIndexForData(double d)
 
 void SMScComboBox::setParentItem(int i)
 {
-	hasParent_ = true;
-	pItem_ = i;
+	m_hasParent = true;
+	m_pItem = i;
 }
 
 bool SMScComboBox::useParentValue()
 {
 	bool ret = false;
-	if (useParentValue_ && hasParent_)
+
+	if (m_useParentValue && m_hasParent)
 	{
 		ret = currentIndex() == (count() - 1);
 		if (ret)
 		{
 			removeItem(count() - 1);
 			setFont(false);
-			setCurrentItem(pItem_, true);
-			useParentValue_ = false;
+			setCurrentItem(m_pItem, true);
+			m_useParentValue = false;
 		}
 	}
 	return ret;
@@ -171,11 +172,11 @@ void SMScComboBox::setFont(bool wantBold)
 
 void SMScComboBox::currentChanged()
 {
-	if (hasParent_ && !useParentValue_)
+	if (m_hasParent && !m_useParentValue)
 	{
 		setFont(true);
-		addItem(tr("Use Parent Value"));
-		useParentValue_ = true;
+		addItem( tr("Use Parent Value"));
+		m_useParentValue = true;
 	}
 	else
 	{

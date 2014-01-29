@@ -1143,7 +1143,7 @@ PageItem* VivaPlug::parseObjectDetailsXML(const QDomElement& obNode, int baseTyp
 							else
 								opa = 1.0 - (eo.text().toDouble() / 100.0);
 							fillOpacity = 1.0 - ((1.0 - fillOpacity) * (1.0 - opa));
-							strokeOpacity = 1.0 - ((1.0 - strokeOpacity) * (1.0 * opa));
+							strokeOpacity = 1.0 - ((1.0 - strokeOpacity) * (1.0 - opa));
 						}
 						else if (eo.tagName() == "vo:cornerRadius")
 							cornerRadius = parseUnit(eo.text());
@@ -1405,10 +1405,26 @@ PageItem* VivaPlug::parseObjectDetailsXML(const QDomElement& obNode, int baseTyp
 		}
 		else
 			item->FrameType = 3;
-		item->setFillColor(fillColor);
-		item->setLineColor(strokeColor);
-		item->setFillShade(fillTint);
-		item->setLineShade(strokeTint);
+		if (fillTint == 0)
+		{
+			item->setFillColor(CommonStrings::None);
+			item->setFillShade(100);
+		}
+		else
+		{
+			item->setFillColor(fillColor);
+			item->setFillShade(fillTint);
+		}
+		if (strokeTint == 0)
+		{
+			item->setLineColor(CommonStrings::None);
+			item->setLineShade(100);
+		}
+		else
+		{
+			item->setLineColor(strokeColor);
+			item->setLineShade(strokeTint);
+		}
 		if (baseType == 1)
 			item->setFillTransparency(imageOpacity);
 		else
@@ -1604,7 +1620,7 @@ void VivaPlug::parseTextXML(const QDomElement& obNode, StoryText &itemText, int 
 			if (eo.hasAttribute("vt:story-attribute-set"))
 			{
 				applyParagraphAttrs(newStyle, AttributeSets[eo.attribute("vt:story-attribute-set")]);
-				applyCharacterAttrs(newStyle.charStyle(), AttributeSets[eo.attribute("vt:story-attribute-set")]);
+				applyCharacterAttrs(newStyle.charStyle(), newStyle, AttributeSets[eo.attribute("vt:story-attribute-set")]);
 			}
 			for(QDomNode stx = eo.firstChild(); !stx.isNull(); stx = stx.nextSibling() )
 			{
@@ -1644,7 +1660,7 @@ void VivaPlug::parseTextXML(const QDomElement& obNode, StoryText &itemText, int 
 										{
 											CharStyle tmpCStyle = tmpStyle.charStyle();
 											if (stcet.hasAttribute("vt:character-attribute-set"))
-												applyCharacterAttrs(tmpCStyle, AttributeSets[stcet.attribute("vt:character-attribute-set")]);
+												applyCharacterAttrs(tmpCStyle, tmpStyle, AttributeSets[stcet.attribute("vt:character-attribute-set")]);
 											for(QDomNode stcesp = stcet.firstChild(); !stcesp.isNull(); stcesp = stcesp.nextSibling() )
 											{
 												QDomElement stcespt = stcesp.toElement();
@@ -1996,7 +2012,7 @@ void VivaPlug::parseStylesheetsXML(const QDomElement& obNode)
 				parseAttributeSetXML(stxe, attrs);
 			}
 			applyParagraphAttrs(newStyle, attrs);
-			applyCharacterAttrs(newStyle.charStyle(), attrs);
+			applyCharacterAttrs(newStyle.charStyle(), newStyle, attrs);
 			StyleSet<ParagraphStyle>tmp;
 			tmp.create(newStyle);
 			m_Doc->redefineStyles(tmp, false);
@@ -2032,6 +2048,8 @@ void VivaPlug::applyParagraphAttrs(ParagraphStyle &newStyle, AttributeSet &pAttr
 		newStyle.setLineSpacingMode(ParagraphStyle::FixedLineSpacing);
 		newStyle.setLineSpacing(parseUnit(pAttrs.lineSpacing.value));
 	}
+	else
+		newStyle.setLineSpacingMode(ParagraphStyle::AutomaticLineSpacing);
 	if (pAttrs.firstLineIndent.valid)
 		newStyle.setFirstIndent(parseUnit(pAttrs.firstLineIndent.value));
 	if (pAttrs.indent.valid)
@@ -2080,10 +2098,17 @@ void VivaPlug::applyParagraphAttrs(ParagraphStyle &newStyle, AttributeSet &pAttr
 	}
 }
 
-void VivaPlug::applyCharacterAttrs(CharStyle &tmpCStyle, AttributeSet &pAttrs)
+void VivaPlug::applyCharacterAttrs(CharStyle &tmpCStyle, ParagraphStyle &newStyle, AttributeSet &pAttrs)
 {
 	if (pAttrs.fontSize.valid)
+	{
 		tmpCStyle.setFontSize(pAttrs.fontSize.value.toInt() * 10);
+		if (pAttrs.lineSpacing.valid)
+		{
+			if (pAttrs.fontSize.value.toInt() > parseUnit(pAttrs.lineSpacing.value))
+				newStyle.setLineSpacingMode(ParagraphStyle::AutomaticLineSpacing);
+		}
+	}
 	if (pAttrs.fontFullName.valid)
 		tmpCStyle.setFont((*m_Doc->AllFonts)[pAttrs.fontFullName.value]);
 	if (pAttrs.fontColor.valid)

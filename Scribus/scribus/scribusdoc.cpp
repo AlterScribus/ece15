@@ -199,6 +199,7 @@ public:
 
 ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(NULL),
 	m_hasGUI(false),
+	docFilePermissions(QFileDevice::ReadOwner|QFileDevice::WriteOwner),
 	appPrefsData(PrefsManager::instance()->appPrefs),
 	docPrefsData(PrefsManager::instance()->appPrefs),
 	undoManager(UndoManager::instance()),
@@ -313,6 +314,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 
 ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pagesize, const MarginStruct& margins, const DocPagesSetup& pagesSetup) : UndoObject( tr("Document")),
 	m_hasGUI(false),
+	docFilePermissions(QFileDevice::ReadOwner|QFileDevice::WriteOwner),
 	appPrefsData(PrefsManager::instance()->appPrefs),
 	docPrefsData(PrefsManager::instance()->appPrefs),
 	undoManager(UndoManager::instance()),
@@ -1931,457 +1933,11 @@ void ScribusDoc::restore(UndoState* state, bool isUndo)
 			nF->asNoteFrame()->restoreInsertNoteText(ss,isUndo);
 		}
 		else if (ss->contains("NSTYLE"))
-		{
-			NotesStyle* NS = NULL;
-			if ((ss->get("NSTYLE") == "new" && isUndo) || (ss->get("NSTYLE") == "delete" && !isUndo))
-				deleteNotesStyle(ss->get("name"));
-			else if ((ss->get("NSTYLE") == "new" && !isUndo) || (ss->get("NSTYLE") == "delete" && isUndo))
-			{
-				NS = new NotesStyle();
-				NS->setName(ss->get("name"));
-				NS->setStart(ss->getInt("start"));
-				NS->setEndNotes(ss->getBool("endNotes"));
-				NS->setFormat((NumFormat) ss->getInt("numFormat"));
-				NS->setRange((NumerationRange) ss->getInt("range"));
-				NS->setPrefix(ss->get("prefix"));
-				NS->setSuffix(ss->get("suffix"));
-				NS->setAutoNotesHeight(ss->getBool("autoH"));
-				NS->setAutoNotesWidth(ss->getBool("autoW"));
-				NS->setAutoWeldNotesFrames(ss->getBool("autoWeld"));
-				NS->setAutoRemoveEmptyNotesFrames(ss->getBool("autoRemove"));
-				NS->setSuperscriptInMaster(ss->getBool("superMaster"));
-				NS->setSuperscriptInNote(ss->getBool("superNote"));
-				NS->setMarksCharStyle(ss->get("marksChStyle"));
-				NS->setNotesParStyle(ss->get("notesParStyle"));
-				m_docNotesStylesList.append(NS);
-				scMW()->emitUpdateRequest(reqMarksListViewUpdate);
-			}
-			else if (ss->get("NSTYLE") == "edit")
-			{
-				if (isUndo)
-					NS = getNotesStyle(ss->get("NEWname"));
-				else
-					NS = getNotesStyle(ss->get("name"));
-				Q_ASSERT(NS != NULL);
-				//check if Notes Style change form footnotes to endnotes or range of numeration was changed
-				//if use delete all notes frames with current style
-				bool delNF = false;
-				if (ss->getBool("NEWendNotes") != ss->getBool("endNotes")
-						|| ((isUndo && (ss->getBool("endNotes") && (NumerationRange) ss->getInt("range") != (NumerationRange) ss->getInt("NEWrange")))
-							|| (!isUndo && (ss->getBool("NEWendNotes") && ((NumerationRange) ss->getInt("NEWrange") != (NumerationRange) ss->getInt("range"))))))
-					delNF = true;
-				if (delNF)
-				{
-					foreach (PageItem_NoteFrame* nF, listNotesFrames(NS))
-						delNoteFrame(nF, false);
-					flag_updateEndNotes = NS->isEndNotes();
-				}
-				if (isUndo)
-				{
-					NS->setName(ss->get("name"));
-					NS->setStart(ss->getInt("start"));
-					NS->setRange((NumerationRange) ss->getInt("range"));
-					NS->setEndNotes(ss->getBool("endNotes"));
-					NS->setFormat((NumFormat) ss->getInt("numFormat"));
-					NS->setPrefix(ss->get("prefix"));
-					NS->setSuffix(ss->get("suffix"));
-					NS->setAutoNotesHeight(ss->getBool("autoH"));
-					NS->setAutoNotesWidth(ss->getBool("autoW"));
-					NS->setAutoWeldNotesFrames(ss->getBool("autoWeld"));
-					NS->setAutoRemoveEmptyNotesFrames(ss->getBool("autoRemove"));
-					NS->setSuperscriptInMaster(ss->getBool("superMaster"));
-					NS->setSuperscriptInNote(ss->getBool("superNote"));
-					NS->setMarksCharStyle(ss->get("marksChStyle"));
-					NS->setNotesParStyle(ss->get("notesParStyle"));
-				}
-				else
-				{
-					NS->setName(ss->get("NEWname"));
-					NS->setStart(ss->getInt("NEWstart"));
-					NS->setRange((NumerationRange) ss->getInt("NEWrange"));
-					NS->setEndNotes(ss->getBool("NEWendNotes"));
-					NS->setFormat((NumFormat) ss->getInt("NEWnumFormat"));
-					NS->setPrefix(ss->get("NEWprefix"));
-					NS->setSuffix(ss->get("NEWsuffix"));
-					NS->setAutoNotesHeight(ss->getBool("NEWautoH"));
-					NS->setAutoNotesWidth(ss->getBool("NEWautoW"));
-					NS->setAutoWeldNotesFrames(ss->getBool("NEWautoWeld"));
-					NS->setAutoRemoveEmptyNotesFrames(ss->getBool("NEWautoRemove"));
-					NS->setSuperscriptInMaster(ss->getBool("NEWsuperMaster"));
-					NS->setSuperscriptInNote(ss->getBool("NEWsuperNote"));
-					NS->setMarksCharStyle(ss->get("NEWmarksChStyle"));
-					NS->setNotesParStyle(ss->get("NEWnotesParStyle"));
-				}
-				setNotesChanged(true);
-				if ((ss->get("marksChStyle") != ss->get("NEWmarksChStyle"))
-						|| (ss->getBool("superMaster") != ss->getBool("NEWsuperMaster")))
-					invalidateMasterFrames(NS);
-				updateNotesNums(NS);
-				updateNotesFramesSettings(NS);
-				if (flag_updateEndNotes)
-					updateEndnotesFrames(NS, true);
-				updateNotesFramesStyles(NS);
-				if (notesChanged())
-				{
-					flag_updateMarksLabels = true;
-					changed();
-					regionsChanged()->update(QRectF());
-				}
-			}
-			if (NS != NULL)
-				scMW()->nsEditor->setNotesStyle(NS);
-			else
-				scMW()->nsEditor->updateNSList();
-		}
+			restoreNotesStyle(ss, isUndo);
 		else if (ss->contains("DELETE_NOTE"))
-		{
-			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
-			if (is)
-			{
-				NotesStyle* nStyle = getNotesStyle(is->get("nStyle"));
-				PageItem* master = NULL;
-				if (is->contains("noteframeName"))
-					master = getItemFromName(is->get("noteframeName"));
-				else
-					master = (PageItem*) is->getItem("inItem");
-				if (isUndo)
-				{
-					TextNote* note = newNote(nStyle);
-					Mark* mrk = newMark();
-					mrk->setType(MARKNoteMasterType);
-					mrk->setNotePtr(note);
-					note->setMasterMark(mrk);
-					note->setSaxedText(is->get("noteTXT"));
-					master->itemText.insertMark(mrk, is->getInt("at"));
-					master->invalid = true;
-					if (!nStyle->isAutoRemoveEmptyNotesFrames())
-					{
-						PageItem_NoteFrame* nF = (PageItem_NoteFrame*) is->getItem("noteframe");
-						Q_ASSERT(nF != NULL);
-						master->asTextFrame()->setNoteFrame(nF);
-					}
-					setNotesChanged(true);
-					if (note->isEndNote())
-						flag_updateEndNotes = true;
-				}
-				else
-				{
-					TextNote* note = master->itemText.mark(is->getInt("at"))->getNotePtr();
-					if (note->isEndNote())
-						flag_updateEndNotes = true;
-					deleteNote(note);
-				}
-				master->invalidateLayout();
-				master->updateLayout();
-			}
-		}
+			restoreDeleteNote(ss, isUndo);
 		else if (ss->contains("MARK"))
-		{
-			ScItemsState *is = dynamic_cast<ScItemsState*>(state);
-			if (is)
-			{
-				Mark* mrk = getMarkDefinied(is->get("label"), (MarkType) is->getInt("type"));
-				if (mrk == NULL && is->contains("labelOLD"))
-					mrk = getMarkDefinied(is->get("labelOLD"), (MarkType) is->getInt("type"));
-				int pos = is->getInt("at");
-				bool isAutoNoteFrame = false;
-				PageItem* currItem = NULL;
-				if (is->contains("noteframeName"))
-				{
-					currItem = getItemFromName(is->get("noteframeName"));
-					if (currItem != NULL)
-						isAutoNoteFrame = currItem->asNoteFrame()->isAutoFrame();
-				}
-				else
-					currItem = (PageItem*) is->getItem("inItem");
-				if (isUndo)
-				{
-					if (is->get("MARK") == "new")
-					{
-						Q_ASSERT(mrk != NULL);
-						if (mrk->isNoteType())
-						{
-							TextNote* note = mrk->getNotePtr();
-							NotesStyle* nStyle = note->notesStyle();
-							if (note->isEndNote())
-								flag_updateEndNotes = true;
-							deleteNote(note);
-							updateNotesNums(nStyle);
-						}
-						else
-							eraseMark(mrk, true, currItem, true);
-					}
-					else if (is->get("MARK") == "replace")
-					{
-						Q_ASSERT(pos >= 0);
-						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(mrk != NULL);
-						Mark* mrk = getMarkDefinied(is->get("label"), (MarkType) is->getInt("type"));
-						currItem->itemText.replaceMark(pos, mrk);
-						if (is->contains("strtxtOLD"))
-						{
-							mrk->setString(is->get("strtxtOLD"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("labelOLD"))
-							mrk->label = is->get("labelOLD");
-					}
-					else if (is->get("MARK") == "edit")
-					{
-						Q_ASSERT(mrk != NULL);
-						if (is->contains("labelOLD"))
-							mrk->label = is->get("labelOLD");
-						if (is->contains("strtxtOLD"))
-						{
-							mrk->setString(is->get("strtxtOLD"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("dNameOLD"))
-							mrk->setTargetMark(is->get("dNameOLD"), (MarkType) is->getInt("dTypeOLD"));
-						if (is->getItem("itemPtrOLD") != NULL)
-							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
-						if (mrk->isType(MARKStyleVariableType))
-						{
-							StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
-							if (is->contains("pstylenameOLD"))
-								svmrk->pStyleName = is->get("parstylenameOLD");
-							if (is->contains("searchOLD"))
-								svmrk->searchDirection = is->getInt("searchOLD");
-							if (is->contains("limitOLD"))
-								svmrk->textLimit = is->getInt("limitOLD");
-							if (is->contains("endingOLD"))
-								svmrk->range = is->getInt("endingOLD");
-						}
-					}
-					else if (is->get("MARK") == "insert_existing")
-					{
-						Q_ASSERT(pos >= 0);
-						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(mrk != NULL);
-						currItem->itemText.removeChars(pos,1);
-						if (is->contains("strOLD"))
-						{
-							mrk->setString(is->get("strOLD"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("labelOLD"))
-							mrk->label = is->get("labelOLD");
-					}
-					else if (is->get("MARK") == "delete")
-					{
-						Q_ASSERT(pos >= 0);
-						Q_ASSERT(currItem != NULL);
-						MarkType typ = (MarkType) is->getInt("type");
-						if (typ == MARKStyleVariableType)
-						{
-							StyleVariableMark * svmrk = newStyleVariableMark();
-							if (is->contains("pstylename"))
-								svmrk->pStyleName = is->get("pstylename");
-							if (is->contains("search"))
-								svmrk->searchDirection = is->getInt("search");
-							if (is->contains("limit"))
-								svmrk->textLimit = is->getInt("limit");
-							if (is->contains("range"))
-								svmrk->range = is->getInt("range");
-						}
-						else
-						{
-							mrk = newMark();
-							mrk->setType(typ);
-						}
-						mrk->label = is->get("label");
-						currItem->itemText.insertMark(mrk, pos);
-						if (is->contains("strtxt"))
-						{
-							mrk->setString(is->get("strtxt"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("dName"))
-							mrk->setTargetMark(is->get("dName"), (MarkType) is->getInt("dType"));
-						if (is->getItem("itemPtr") != NULL)
-							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
-					}
-					else if (is->get("MARK") == "eraseFromText") ////for non-unique marks
-					{
-						Q_ASSERT(pos >= 0);
-						Q_ASSERT(mrk != NULL);
-						Q_ASSERT(currItem != NULL);
-						currItem->itemText.insertMark(mrk, pos);
-						if (is->contains("strNew"))
-						{
-							mrk->setString(is->get("strNEW"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-					}
-					else if (is->get("MARK") == "delNonUnique")
-					{
-						//used if deleting non-unique marks by MarksManager
-						mrk = newMark();
-						mrk->label = is->get("label");
-						mrk->setType((MarkType) is->getInt("type"));
-						mrk->setString(is->get("strtxt"));
-						for (int i=0; i < is->insertItemPos.count(); ++i)
-						{
-							PageItem* item = (PageItem*) is->insertItemPos[i].first;
-							item->itemText.insertMark(mrk, is->insertItemPos[i].second);
-							item->invalid = true;
-						}
-					}
-					else
-					{
-						Q_ASSERT(false);
-						qDebug() << "MARK undo - unhandled " << is->get("MARK");
-					}
-				}
-				else  //REDO
-				{
-					if (is->get("MARK") == "new")
-					{
-						if (currItem == NULL)
-						{
-							qDebug() << "Wrong inItem in undo step for mark";
-							return;
-						}
-						MarkType typ = (MarkType) is->getInt("type");
-						if (typ == MARKStyleVariableType)
-						{
-							StyleVariableMark * svmrk = newStyleVariableMark();
-							if (is->contains("pstylename"))
-								svmrk->pStyleName = is->get("pstylename");
-							if (is->contains("search"))
-								svmrk->searchDirection = is->getInt("search");
-							if (is->contains("limit"))
-								svmrk->textLimit = is->getInt("limit");
-							if (is->contains("range"))
-								svmrk->range = is->getInt("range");
-							mrk = (Mark*) svmrk;
-						}
-						else
-						{
-							mrk = newMark();
-							mrk->setType((MarkType) is->getInt("type"));
-						}
-						mrk->label = is->get("label");
-						
-						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(pos >= 0);
-						currItem->itemText.insertMark(mrk, pos);
-						if (is->contains("strtxt"))
-							mrk->setString(is->get("strtxt"));
-						if (is->contains("dName"))
-							mrk->setTargetMark(is->get("dName"), (MarkType) is->getInt("dType"));
-						if (is->getItem("itemPtr") != NULL)
-							mrk->setItemPtr((PageItem*) is->getItem("itemPtrOLD"));
-						if (mrk->isType(MARKNoteMasterType))
-						{
-							NotesStyle* nStyle = getNotesStyle(is->get("nStyle"));;
-							TextNote* note = newNote(nStyle);
-							mrk->setNotePtr(note);
-							note->setMasterMark(mrk);
-							if (nStyle->isEndNotes())
-								flag_updateEndNotes = true;
-							updateNotesNums(nStyle);
-						}
-					}
-					else if (is->get("MARK") == "replace")
-					{
-						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(pos >= 0);
-						currItem->itemText.replaceMark(pos, getMarkDefinied(is->get("label"), (MarkType) is->getInt("type")));
-						if (is->contains("strtxtNEW"))
-						{
-							mrk->setString(is->get("strtxtNEW"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("labelNEW"))
-							mrk->label = is->get("labelNEW");
-					}
-					else if (is->get("MARK") == "edit")
-					{
-						if (is->contains("labelNEW"))
-							mrk->label = is->get("labelNEW");
-						if (is->contains("strtxtNEW"))
-						{
-							mrk->setString(is->get("strtxtNEW"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("dNameNEW"))
-							mrk->setTargetMark(is->get("dNameNEW"), (MarkType) is->getInt("dTypeNEW"));
-						if (is->getItem("itemPtrNEW") != NULL)
-							mrk->setItemPtr((PageItem*) is->getItem("itemPtrNEW"));
-						if (mrk->isType(MARKStyleVariableType))
-						{
-							StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
-							if (is->contains("pstylenameNEW"))
-								svmrk->pStyleName = is->get("pstylenameNEW");
-							if (is->contains("searchNEW"))
-								svmrk->searchDirection = is->getInt("searchNEW");
-							if (is->contains("limitNEW"))
-								svmrk->textLimit = is->getInt("limitNEW");
-							if (is->contains("endingNEW"))
-								svmrk->range = is->getInt("endingNEW");
-						}
-					}
-					else if (is->get("MARK") == "insert_existing")
-					{
-						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(pos >= 0);
-						currItem->itemText.insertMark(mrk, pos);
-						if (is->contains("strNew"))
-						{
-							mrk->setString(is->get("strNEW"));
-							invalidateVariableTextFrames(mrk, false);
-						}
-						if (is->contains("labelNEW"))
-							mrk->label = is->get("labelNEW");
-					}
-					else if (is->get("MARK") == "eraseFromText") //for non-unique marks
-					{
-						Q_ASSERT(currItem != NULL);
-						Q_ASSERT(pos >= 0);
-						currItem->itemText.removeChars(pos,1);
-					}
-					else if (is->get("MARK") == "delete")
-					{
-						if (!mrk->isUnique())
-						{
-							Q_ASSERT(currItem != NULL);
-							Q_ASSERT(pos >= 0);
-							currItem->itemText.removeChars(pos,1);
-						}
-						else
-						{
-							if (mrk->isType(MARKNoteMasterType))
-							{
-								TextNote* note = mrk->getNotePtr();
-								NotesStyle* nStyle = note->notesStyle();
-								if (note->isEndNote())
-									flag_updateEndNotes = true;
-								deleteNote(note);
-								updateNotesNums(nStyle);
-							}
-							else
-								eraseMark(mrk, true);
-						}
-					}
-					else if (is->get("MARK") == "delNonUnique")
-					{
-						//used if deleting non-unique marks by MarksManager
-						eraseMark(mrk, true, NULL, true);
-					}
-					else
-					{
-						qDebug() << "MARK redo - unhandled " << is->get("MARK");
-					}
-				}
-				scMW()->emitUpdateRequest(reqMarksListViewUpdate);
-				if (currItem != NULL && !isAutoNoteFrame)
-				{
-					currItem->invalidateLayout();
-					currItem->updateLayout();
-				}
-			}
-		}
+			restoreMark(ss, isUndo);
 		if (layersUndo)
 		{
 			if (ScCore->usingGUI())
@@ -4662,9 +4218,7 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 				else if (lc!=0) //If not on a master page just get the page number for the page and the text
 				{
 					//					pageNumberText=getSectionPageNumberForPageIndex(it->OwnPage);
-					pageNumberText = QString("%1").arg(getSectionPageNumberForPageIndex(it->OwnPage),
-													   getSectionPageNumberWidthForPageIndex(it->OwnPage),
-													   getSectionPageNumberFillCharForPageIndex(it->OwnPage));
+					pageNumberText = getFormattedSectionPageNumber(it->OwnPage);
 				}
 				else
 				{
@@ -4679,9 +4233,7 @@ void ScribusDoc::checkItemForFonts(PageItem *it, QMap<QString, QMap<uint, FPoint
 						if (DocPages.at(a)->MPageNam == it->OnMasterPage)
 						{
 							//								newText=getSectionPageNumberForPageIndex(a);
-							newText = QString("%1").arg(getSectionPageNumberForPageIndex(a),
-														getSectionPageNumberWidthForPageIndex(a),
-														getSectionPageNumberFillCharForPageIndex(a));
+							newText = getFormattedSectionPageNumber(a);
 							for (int nti=0;nti<newText.length();++nti)
 								if (pageNumberText.indexOf(newText[nti])==-1)
 									pageNumberText+=newText[nti];
@@ -4901,7 +4453,7 @@ bool ScribusDoc::applyMasterPage(const QString& pageName, const int pageNumber)
 	{
 		// PV - apply auto guides from MP only if there are no auto guides
 		// on original page
-		if (Ap->guides.horizontalAutoCount() != 0 || Ap->guides.horizontalAutoCount() != 0)
+		if (Ap->guides.horizontalAutoCount() != 0 || Ap->guides.verticalAutoCount() != 0)
 			Mp->guides.copy(&Ap->guides, GuideManagerCore::Standard);
 		else
 			Mp->guides.copy(&Ap->guides);
@@ -7114,6 +6666,11 @@ const QString ScribusDoc::getSectionPageNumberForPageIndex(const uint pageIndex)
 	return retVal;
 }
 
+const QString ScribusDoc::getFormattedSectionPageNumber(uint pageNumber)
+{
+	return QString("%1").arg(getSectionPageNumberForPageIndex(pageNumber), getSectionPageNumberWidthForPageIndex(pageNumber), getSectionPageNumberFillCharForPageIndex(pageNumber));
+}
+
 const QChar ScribusDoc::getSectionPageNumberFillCharForPageIndex(const uint pageIndex) const
 {
 	QChar retVal;
@@ -7881,6 +7438,33 @@ void ScribusDoc::itemSelection_RaiseItem()
 		changed();
 		regionsChanged()->update(QRectF());
 	}
+}
+
+void ScribusDoc::itemSelection_SetSoftShadow(bool has, QString color, double dx, double dy, double radius, int shade, double opac, int blend)
+{
+	if (color == CommonStrings::tr_NoneColor)
+		color = CommonStrings::None;
+	uint selectedItemCount = m_Selection->count();
+	if (selectedItemCount != 0)
+	{
+		for (uint a = 0; a < selectedItemCount; ++a)
+		{
+			PageItem *currItem = m_Selection->itemAt(a);
+			currItem->setHasSoftShadow(has);
+			currItem->setSoftShadowColor(color);
+			currItem->setSoftShadowXOffset(dx);
+			currItem->setSoftShadowYOffset(dy);
+			currItem->setSoftShadowBlurRadius(radius);
+			currItem->setSoftShadowShade(shade);
+			currItem->setSoftShadowOpacity(opac);
+			currItem->setSoftShadowBlendMode(blend);
+			QRectF newRect = currItem->getVisualBoundingRect().adjusted(-dx, -dy, dx, dy);
+			currItem->invalidateLayout();
+			regionsChanged()->update(newRect);
+		}
+	}
+	changed();
+
 }
 
 void ScribusDoc::itemSelection_SetLineWidth(double w)
@@ -9369,7 +8953,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 				if (currItem->itemText.hasMark(pos))
 				{
 					Mark* mark = currItem->itemText.mark(pos);
-					if (mark->isType(MARKBullNumType))
+					if (mark->isType(MARKListType))
 					{
 						if (UndoManager::undoEnabled())
 						{
@@ -9400,7 +8984,7 @@ void ScribusDoc::itemSelection_ClearBulNumStrings(Selection* customSelection)
 				if (currItem->itemText.hasMark(pos))
 				{
 					Mark* mark = currItem->itemText.mark(pos);
-					if (mark->isType(MARKBullNumType))
+					if (mark->isType(MARKListType))
 					{
 						if (UndoManager::undoEnabled())
 						{
@@ -9432,7 +9016,12 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 	bool doUndo = UndoManager::undoEnabled();
 	UndoTransaction* activeTransaction = NULL;
 	if (doUndo && selectedItemCount > 1)
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
+	{
+		PageItem* currItem = itemSelection->itemAt(0);
+		QString  targetName = (selectedItemCount > 1) ? Um::SelectionGroup : currItem->getUName();
+		QPixmap* targetPixmap = (selectedItemCount > 1) ? Um::IGroup : currItem->getUPixmap();
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(targetName, targetPixmap, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
+	}
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
@@ -9623,7 +9212,12 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 	UndoTransaction* activeTransaction = NULL;
 	bool doUndo = UndoManager::undoEnabled();
 	if (doUndo)
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
+	{
+		PageItem* currItem = itemSelection->itemAt(0);
+		QString  targetName = (selectedItemCount > 1) ? Um::SelectionGroup : currItem->getUName();
+		QPixmap* targetPixmap = (selectedItemCount > 1) ? Um::IGroup : currItem->getUPixmap();
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(targetName, targetPixmap, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
+	}
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
@@ -11830,9 +11424,9 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			Mark* m = m_docMarksList.at(a);
 			Q_ASSERT(m != NULL);
-			if (m->isType(MARK2ItemType) && (m->getItemPtr() == currItem))
+			if (m->getTargetPtr() == currItem)
 			{
-				setUndoDelMark(m);
+				setUndoDelUniqueMark(m);
 				eraseMark(m, true, NULL, true);
 			}
 		}
@@ -11840,15 +11434,14 @@ void ScribusDoc::itemSelection_DeleteItem(Selection* customSelection, bool force
 		{
 			if (currItem->itemText.length() >0)
 			{
-				currItem->itemText.selectAll();
-				currItem->asTextFrame()->deleteSelectedTextFromFrame();
+				currItem->asNoteFrame()->deleteAllNotes();
 				if (currItem->asNoteFrame()->masterFrame())
 					currItem->asNoteFrame()->masterFrame()->invalid = true;
 			}
 			if (!UndoManager::undoEnabled() || forceDeletion || currItem->isAutoNoteFrame())
 			{
-				itemList->removeAll(currItem);
 				delNoteFrame(currItem->asNoteFrame(), false, false);
+				itemList->removeAll(currItem);
 				continue;
 			}
 		}
@@ -14284,28 +13877,33 @@ void ScribusDoc::getClosestElementBorder(double xin, double yin, double *xout, d
 	QMap<double, uint> tmpGuidesSel;
 	double viewScale=m_View->scale();
 	QList<PageItem*> item = getAllItems(*Items);
+	PageItem *parentI = NULL;
+	if (m_Selection->count() > 0)
+		parentI = m_Selection->itemAt(0)->Parent;
 	for(int i=0;i<item.size();i++)
 	{
 		PageItem * cItem = item.at(i);
 		if(m_Selection->containsItem(cItem) || cItem->OwnPage != OnPage(xin,yin))
 			continue;
-		else if (fabs(cItem->yPos() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(cItem->yPos() - yin), i*3);
-		else if (fabs(cItem->yPos() + cItem->height() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(cItem->yPos() + cItem->height() - yin), i*3+1);
-		else if (fabs(cItem->yPos() + cItem->height()/2 - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(cItem->yPos() + cItem->height()/2 - yin), i*3+2);
+		else if (item.at(i)->Parent != parentI)
+			continue;
+		else if (fabs(item.at(i)->visualYPos() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualYPos() - yin), i*3);
+		else if (fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight() - yin), i*3+1);
+		else if (fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight()/2 - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight()/2 - yin), i*3+2);
 	}
 	if (tmpGuidesSel.count() != 0)
 	{
 		*GyM = tmpGuidesSel.begin().value();
 		PageItem * cItem = item.at(*GyM/3);
 		if(*GyM%3==0)
-			*yout = cItem->yPos() - page->yOffset();
+			*yout = item.at(*GyM/3)->visualYPos() - page->yOffset();
 		else if(*GyM%3==1)
-			*yout = cItem->yPos() + cItem->height() -page->yOffset();
+			*yout = item.at(*GyM/3)->visualYPos() + item.at(*GyM/3)->visualHeight() -page->yOffset();
 		else if(*GyM%3==2)
-			*yout = cItem->yPos() + cItem->height()/2 -page->yOffset();
+			*yout = item.at(*GyM/3)->visualYPos() + item.at(*GyM/3)->visualHeight()/2 -page->yOffset();
 	}
 	tmpGuidesSel.clear();
 	for(int i=0;i<item.size();i++)
@@ -14313,23 +13911,25 @@ void ScribusDoc::getClosestElementBorder(double xin, double yin, double *xout, d
 		PageItem * cItem = item.at(i);
 		if(m_Selection->containsItem(cItem) || cItem->OwnPage != OnPage(xin,yin))
 			continue;
-		else if (fabs(cItem->xPos() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(cItem->xPos() - xin), i*3);
-		else if (fabs(cItem->xPos() + cItem->width() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(cItem->xPos() + cItem->width() - xin), i*3+1);
-		else if (fabs(cItem->xPos() + cItem->width()/2 - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(cItem->xPos() + cItem->width()/2 - xin), i*3+2);
+		else if (item.at(i)->Parent != parentI)
+			continue;
+		else if (fabs(item.at(i)->visualXPos() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualXPos() - xin), i*3);
+		else if (fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth() - xin), i*3+1);
+		else if (fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth()/2 - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth()/2 - xin), i*3+2);
 	}
 	if (tmpGuidesSel.count() != 0)
 	{
 		*GxM = tmpGuidesSel.begin().value();
 		PageItem * cItem = item.at(*GxM/3);
 		if(*GxM%3==0)
-			*xout = cItem->xPos() -page->xOffset();
+			*xout = item.at(*GxM/3)->visualXPos() -page->xOffset();
 		else if(*GxM%3==1)
-			*xout = cItem->xPos() + cItem->width() -page->xOffset();
+			*xout = item.at(*GxM/3)->visualXPos() + item.at(*GxM/3)->visualWidth() -page->xOffset();
 		else if(*GxM%3==2)
-			*xout = cItem->xPos() + cItem->width()/2 -page->xOffset();
+			*xout = item.at(*GxM/3)->visualXPos() + item.at(*GxM/3)->visualWidth()/2 -page->xOffset();
 	}
 }
 
@@ -15712,6 +15312,13 @@ void ScribusDoc::removeFromGroup(PageItem* item)
 		item->maskTransform(psx, psy, pox, poy, prot, pskx, psky);
 		item->setMaskTransform(psx * grScXi, psy * grScYi, pox, poy, prot, pskx, psky);
 	}
+	if (item->isArc())
+	{
+		PageItem_Arc* ite = item->asArc();
+		ite->arcWidth = ite->arcWidth * grScXi;
+		ite->arcHeight = ite->arcHeight * grScYi;
+		ite->recalcPath();
+	}
 	if (item->asPathText())
 		item->updatePolyClip();
 	else
@@ -15724,21 +15331,28 @@ void ScribusDoc::resizeGroupToContents(PageItem* group)
 	PageItem_Group* currItem = group->asGroupFrame();
 	if (currItem == NULL)
 		return;
+	QTransform groupTrans = group->getTransform();
 	QPainterPath input1 = currItem->PoLine.toQPainterPath(true);
-	input1.translate(currItem->xPos(), currItem->yPos());
 	if (currItem->fillEvenOdd())
 		input1.setFillRule(Qt::OddEvenFill);
 	else
 		input1.setFillRule(Qt::WindingFill);
+	input1 = groupTrans.map(input1);
 	double minx =  std::numeric_limits<double>::max();
 	double miny =  std::numeric_limits<double>::max();
 	double maxx = -std::numeric_limits<double>::max();
 	double maxy = -std::numeric_limits<double>::max();
+	double oldX = currItem->xPos();
+	double oldY = currItem->yPos();
+	double oldW = currItem->width();
+	double oldH = currItem->height();
 	int gcount = currItem->groupItemList.count();
+	double scw = currItem->width() / currItem->groupWidth;
+	double sch = currItem->height() / currItem->groupHeight;
 	for (int c = 0; c < gcount; c++)
 	{
 		PageItem* gItem = currItem->groupItemList.at(c);
-		gItem->setXYPos(currItem->xPos() + gItem->gXpos, currItem->yPos() + gItem->gYpos, true);
+		gItem->setXYPos(oldX + gItem->gXpos, oldY + gItem->gYpos, true);
 		double x1, x2, y1, y2;
 		gItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
 		minx = qMin(minx, x1);
@@ -15746,34 +15360,38 @@ void ScribusDoc::resizeGroupToContents(PageItem* group)
 		maxx = qMax(maxx, x2);
 		maxy = qMax(maxy, y2);
 	}
-	double oldW = currItem->width();
-	double oldH = currItem->height();
+	groupTrans.scale(scw, sch);
+	QPointF newXY = groupTrans.map(QPointF(minx - oldX, miny - oldY));
 	currItem->setXYPos(minx, miny, true);
-	currItem->setWidthHeight(maxx - minx, maxy - miny, true);
+	currItem->setWidthHeight((maxx - minx) * scw, (maxy - miny) * sch, true);
 	currItem->groupWidth = maxx - minx;
 	currItem->groupHeight = maxy - miny;
 	for (int c = 0; c < gcount; c++)
 	{
 		PageItem* gItem = currItem->groupItemList.at(c);
-		gItem->gXpos = gItem->xPos() - minx;
-		gItem->gYpos = gItem->yPos() - miny;
+		gItem->gXpos = (gItem->xPos() - currItem->xPos());
+		gItem->gYpos = (gItem->yPos() - currItem->yPos());
 		gItem->gWidth = maxx - minx;
 		gItem->gHeight = maxy - miny;
 	}
+	currItem->setXYPos(newXY.x(), newXY.y(), true);
 	currItem->SetRectFrame();
-	if ((currItem->width() < oldW) || (currItem->height() < oldH))
+	currItem->ClipEdited = true;
+	currItem->FrameType = 3;
+	currItem->adjustXYPosition();
+	if ((currItem->width() != oldW) || (currItem->height() != oldH))
 	{
+		QTransform groupTrans2 = group->getTransform();
 		QPainterPath input2 = currItem->PoLine.toQPainterPath(true);
-		input2.translate(currItem->xPos(), currItem->yPos());
 		if (currItem->fillEvenOdd())
 			input2.setFillRule(Qt::OddEvenFill);
 		else
 			input2.setFillRule(Qt::WindingFill);
+		input2 = groupTrans2.map(input2);
 		QPainterPath result = input1.intersected(input2);
-		result.translate(-currItem->xPos(), -currItem->yPos());
+		result = groupTrans2.inverted().map(result);
 		currItem->PoLine.fromQPainterPath(result, true);
 	}
-	currItem->adjustXYPosition();
 }
 
 void ScribusDoc::itemSelection_resizeGroupToContents(Selection* customSelection)
@@ -17331,7 +16949,7 @@ bool ScribusDoc::updateLocalListNumbers(const StoryText& itemText)
 			continue;
 		if (itemText.hasMarkType(pos, MARKNoteFrameType))
 			continue;
-		if (itemText.hasMarkType(pos, MARKBullNumType) && itemText.paragraphStyle(pos).hasNum())
+		if (itemText.hasMarkType(pos, MARKListType) && itemText.paragraphStyle(pos).hasNum())
 		{
 			ParagraphStyle style = itemText.paragraphStyle(pos);
 			if (style.numName() == "<local block>")
@@ -17489,7 +17107,7 @@ bool ScribusDoc::updateListNumbers(bool updateNumerations)
 							numerations.value(style.numName())->m_lastlevel = style.numLevel();
 							if (mark == NULL)
 							{
-								BulNumMark* bnMark = new BulNumMark;
+								ListMark* bnMark = new ListMark;
 								item->itemText.insertMark(bnMark,pos);
 								//								hl = item->itemText.item(pos);
 								//								hl->applyCharStyle(item->itemText.paragraphStyle(pos).charStyle());
@@ -17546,9 +17164,7 @@ QStringList ScribusDoc::marksLabelsList(const MarkType type)
 	for (int a=0; a < m_docMarksList.count(); ++a)
 	{
 		Mark* m = m_docMarksList.at(a);
-		if (m == NULL)
-			continue;
-		if ((m != NULL) && m->isType(type))
+		if (m->isType(type))
 			nameList.append(m->label);
 	}
 	return nameList;
@@ -17619,9 +17235,26 @@ PageItem* ScribusDoc::findMarkItem(const Mark* const mrk, int &lastItem)
 
 int ScribusDoc::findMarkCPos(const Mark* const mrk, PageItem* currItem, int Start)
 {
-	if (currItem == NULL)
-		currItem = findFirstMarkItem(mrk);
-	if (currItem == NULL)
+	if (mrk->isUnique())
+	{
+		if (currItem == NULL)
+			currItem = getItemFromName(mrk->getHolderName());
+		if (currItem && currItem->itemName() == mrk->getHolderName())
+			return mrk->cPos;
+		else
+			return -1;
+	}
+	
+	else if (currItem)
+	{
+		for (int pos = currItem->firstInFrame(); pos < currItem->lastInFrame(); ++pos)
+		{
+			if (currItem->itemText.hasMark(pos, mrk))
+				return pos;
+		}
+		return -1;
+	}
+	else
 	{
 		foreach (PageItem* item, DocItems)
 		{
@@ -17639,17 +17272,6 @@ int ScribusDoc::findMarkCPos(const Mark* const mrk, PageItem* currItem, int Star
 		}
 		return -1;
 	}
-	Q_ASSERT(currItem->isTextFrame());
-	
-	if (Start < currItem->firstInFrame())
-		Start = currItem->firstInFrame();
-	
-	for (int i = Start; i < currItem->itemText.length(); ++i)
-	{
-		if (currItem->itemText.hasMark(i, mrk))
-			return i;
-	}
-	return -1;
 }
 
 bool ScribusDoc::isMarkUsed(const Mark* const mrk, bool visible)
@@ -17681,150 +17303,219 @@ bool ScribusDoc::isMarkUsed(const Mark* const mrk, bool visible)
 
 void ScribusDoc::setCursor2MarkPos(const Mark* const mrk)
 {
-	if (mrk == NULL)
-		return;
+	Q_ASSERT(m_docMarksList.contains(const_cast<Mark*>(mrk)));
 	PageItem* item = NULL;
-	if (mrk->isType(MARKNoteFrameType) || mrk->isType(MARKNoteMasterType))
-		item = mrk->getItemPtr();
-	if (item == NULL)
-		item = getItemFromName(mrk->getItemName());
-	if (item == NULL)
-		item = findFirstMarkItem(mrk);
+	item = getItemFromName(mrk->getHolderName());
 	if (item == NULL)
 		return;
 	
-	int CPos = findMarkCPos(mrk, item);
+	int CPos = mrk->cPos;
 	if (CPos > -1)
 	{
 		scMW()->deselectAll();
-		scMW()->selectItemFromOutlines(item, true, CPos +1);
+		if (mrk->isType(MARKNoteFrameType))
+			++CPos;
+		scMW()->selectItemFromOutlines(item, true, CPos);
 	}
 }
 
 bool ScribusDoc::eraseMark(Mark *mrk, bool fromText, PageItem *item, bool force)
 {
+	qDebug() << "Erase mark" << mrk->getLabel() << "from text" << fromText << "force" << force;
+	Q_ASSERT(m_docMarksList.contains(mrk));
 	bool found = false;
 	if (fromText)
 	{
-		if (item != NULL)
+		if (mrk->isUnique())
 		{
-			int MPos = findMarkCPos(mrk, item);
-			while (MPos > -1)
+			PageItem* it = getItemFromName(mrk->getHolderName());
+			Q_ASSERT(item == it);
+			if (it->itemText.length() > 0)
 			{
-				if (mrk->isType(MARKNoteFrameType) && MPos > 1 && item->itemText.text(MPos -1) == SpecialChars::PARSEP)
-					item->itemText.removeChars(MPos-1,2);
+				Q_ASSERT(item->itemText.hasMark(mrk->getCPos(), mrk));
+				if (mrk->isType(MARKNoteFrameType) && mrk->cPos > 1 && item->itemText.text(mrk->cPos -1) == SpecialChars::PARSEP)
+					item->itemText.removeChars(mrk->cPos-1,2);
 				else
-					item->itemText.removeChars(MPos,1);
+					item->itemText.removeChars(mrk->cPos,1);
 				found = true;
-				MPos = findMarkCPos(mrk, item);
 			}
 		}
 		else
 		{
-			//find and delete all mark`s apperences in text
-			int MPos = -1;
-			int itemIndex = -1;
-			item = findMarkItem(mrk, itemIndex);
-			while (item != NULL)
+			int start = 0;
+			int stop = item->itemText.length();
+			if (item->HasSel)
 			{
-				MPos = findMarkCPos(mrk, item);
-				while (MPos > -1)
+				start = item->itemText.startOfSelection();
+				stop = item->itemText.endOfSelection();
+			}
+			if (item != NULL)
+			{
+				int MPos = findMarkCPos(mrk, item, start);
+				while (MPos > -1 && MPos < stop)
 				{
 					item->itemText.removeChars(MPos,1);
-					MPos = findMarkCPos(mrk, item);
+					found = true;
+					if (item->itemText.endOfSelection() < 0)
+						break;
+					MPos = findMarkCPos(mrk, item, MPos);
 				}
-				found = true;
-				item->asTextFrame()->invalidateLayout(false);
-				item = findMarkItem(mrk, itemIndex);
+				item->invalid = true;
 			}
-		}
-	}
-	//remove mark references
-	for (int a=0; a < m_docMarksList.count(); ++a)
-	{
-		Mark* m = m_docMarksList.at(a);
-		if (m == NULL)
-			continue;
-		if (m->isType(MARK2MarkType))
-		{
-			QString l;
-			MarkType t;
-			m->getTargetMark(l, t);
-			if (mrk == getMarkDefinied(l, t))
+			else
 			{
-				setUndoDelMark(m);
-				eraseMark(m, true, NULL, true);
+				//find and delete all mark`s apperences in text
+				int MPos = -1;
+				int itemIndex = -1;
+				item = findMarkItem(mrk, itemIndex);
+				while (item != NULL)
+				{
+					item->invalid = true;
+					MPos = findMarkCPos(mrk, item);
+					while (MPos > -1)
+					{
+						item->itemText.removeChars(MPos,1);
+						MPos = findMarkCPos(mrk, item, MPos);
+					}
+					found = true;
+					item->asTextFrame()->invalidateLayout(false);
+					item = findMarkItem(mrk, itemIndex);
+				}
 			}
 		}
 	}
 	//erase mark from marksMap
 	if (mrk->isUnique() || force)
 	{
+		//remove references to this mark
+		for (int a=0; a < m_docMarksList.count(); ++a)
+		{
+			Mark* m = m_docMarksList.at(a);
+			Q_ASSERT(m);
+
+			if (m->isType(MARK2MarkType))
+			{
+				if (mrk == m->getTargetMark())
+				{
+					setUndoDelUniqueMark(m);
+					eraseMark(m, true, NULL, true);
+				}
+			}
+		}
 		m_docMarksList.removeOne(mrk);
 		delete mrk;
 	}
+	item->invalid = true;
 	return found;
 }
 
-void ScribusDoc::setUndoDelMark(const Mark* const mrk)
-{ //used by MarksManager
-	if (UndoManager::undoEnabled())
+void ScribusDoc::eraseMark(Mark *mrk, PageItem *item, int pos)
+{
+	qDebug() << "Erase mark2" << mrk->getLabel() << "from item" << item->itemName()  << "at" << pos;
+	Q_ASSERT(m_docMarksList.contains(mrk));
+	Q_ASSERT(item->itemText.hasMark(pos, mrk));
+
+	item->itemText.removeChars(pos,1);
+	if (mrk->isUnique())
 	{
-		ScItemsState* ims = new ScItemsState(Um::DeleteMark,"",Um::IDelete);
-		if (mrk->isUnique())
+		//remove mark references
+		for (int a=0; a < m_docMarksList.count(); ++a)
 		{
-			ims->set("MARK", QString("delete"));
-			PageItem* master = findFirstMarkItem(mrk);
-			if (master->isNoteFrame())
-				ims->set("noteframeName", master->getUName());
-			else
-				ims->insertItem("inItem", master);
-			ims->set("at", findMarkCPos(mrk, master));
-			if (mrk->isType(MARK2MarkType))
+			Mark* m = m_docMarksList.at(a);
+			if (m == NULL)
+				continue;
+			if (m->isType(MARK2MarkType))
 			{
-				QString dName;
-				MarkType dType;
-				mrk->getTargetMark(dName, dType);
-				ims->set("dName", dName);
-				ims->set("dType", (int) dType);
-			}
-			else if (mrk->isType(MARK2ItemType))
-				ims->insertItem("itemPtr", mrk->getItemPtr());
-			else if (mrk->isType(MARKStyleVariableType))
-			{
-				StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
-				ims->set("pstylename", svmrk->pStyleName);
-				ims->set("search", svmrk->searchDirection);
-				ims->set("limit", svmrk->textLimit);
-				ims->set("range", svmrk->range);
-			}
-		}
-		else
-		{
-			ims->set("MARK", QString("delNonUnique"));
-			int MPos = -1;
-			int itemIndex = -1;
-			//find all mark insertions
-			PageItem* item = findMarkItem(mrk, itemIndex);
-			while (item != NULL)
-			{
-				int num = 0; //shift of insertion position for undo
-				MPos = findMarkCPos(mrk, item);
-				while (MPos > -1)
+				if (mrk == m->getTargetMark())
 				{
-					ims->insertItemPos.append(QPair<void*, int>((void*) item, MPos - num)); //-num as while undo text will be shorter (without marks)
-					//++num;
-					MPos = findMarkCPos(mrk, item, MPos+1);
+					setUndoDelUniqueMark(m);
+					eraseMark(m, true, NULL, true);
 				}
-				item = findMarkItem(mrk, itemIndex);
 			}
 		}
-		ims->set("ETEA", mrk->label);
-		ims->set("label", mrk->label);
-		ims->set("type", (int) mrk->getType());
-		ims->set("strtxt", mrk->getString());
-		undoManager->action(this, ims);
+		m_docMarksList.removeOne(mrk);
+		delete mrk;
 	}
+	item->invalid = true;
+}
+
+void ScribusDoc::setUndoDelUniqueMark(const Mark* const mrk)
+{
+	if (undoManager->undoEnabled())
+		undoManager->action(this, getUndoDelUniqueMark(mrk));
+}
+
+ScItemState<CharStyle>* ScribusDoc::getUndoDelUniqueMark(const Mark* const mrk)
+{
+	ScItemState<CharStyle>* ss = new ScItemState<CharStyle>(Um::DeleteMark,"",Um::IDelete);
+	ss->set("MARK", QString("delete"));
+	PageItem* master = getItemFromName(mrk->getHolderName());
+	if (master->isNoteFrame())
+		ss->set("noteframeName", master->getUName());
+	else
+		ss->set("inItem", mrk->getHolderName());
+	ss->set("at", mrk->cPos);
+	if (mrk->isType(MARK2MarkType))
+	{
+		ss->set("dName",mrk->getTargetMark()->getLabel());
+		ss->set("dType", mrk->getTargetMark()->getType());
+	}
+	if (mrk->isType(MARK2ItemType))
+		ss->set("targetItemName", mrk->getTargetPtr()->getUName());
+	ss->set("ETEA", mrk->label);
+	ss->set("label", mrk->label);
+	ss->set("type", (int) mrk->getType());
+	ss->set("strtxt", mrk->getString());
+	ss->setItem(master->itemText.charStyle(mrk->cPos));
+	return ss;
+}
+
+QList< ScItemState<CharStyle>*> ScribusDoc::getUndosDelNonUniqueMark(const Mark * const mrk)
+{
+	QList< ScItemState<CharStyle>*> undosList;
+	//find all mark insertions in reverse order
+	for (int i=DocItems.count(); i >=0; --i)
+	{
+		PageItem* item = DocItems.at(i);
+		if (!item->isTextFrame() || item->prevInChain())
+			continue;
+		
+		for (int pos = item->itemText.length() -1; pos >=0; --pos)
+		{
+			if (item->itemText.hasMark(pos,mrk))
+			{
+				ScItemState<CharStyle>* ims = new ScItemState<CharStyle>(Um::DeleteMark,"",Um::IDelete);
+				ims->set("MARK", QString("eraseFromText"));
+				ims->set("ETEA", mrk->label);
+				ims->set("label", mrk->label);
+				ims->set("type", (int) mrk->getType());
+				ims->setItem(item->itemText.charStyle(pos));
+				undosList.append(ims);
+			}
+		}
+	}
+	return undosList;
+}
+
+void ScribusDoc::setUndoDelNotUniqueMarkAtPos(const Mark * const mrk, PageItem *item, int pos)
+{
+	if (undoManager->undoEnabled())
+		undoManager->action(this, getUndoDelNotUniqueMarkAtPos(mrk, item, pos));
+}
+
+ScItemState<CharStyle>* ScribusDoc::getUndoDelNotUniqueMarkAtPos(const Mark * const mrk, PageItem *item, int pos)
+{
+	Q_ASSERT(item->itemText.hasMark(pos,mrk));
+
+	ScItemState<CharStyle> * ims = new ScItemState<CharStyle>(Um::DeleteMark,"",Um::IDelete);
+	ims->set("MARK", QString("eraseFromText"));
+	ims->set("at", pos);
+	ims->set("inItem", item->getUName());
+	ims->setItem(item->itemText.charStyle(pos));
+	ims->set("ETEA", mrk->label);
+	ims->set("label", mrk->label);
+	ims->set("type", (int) mrk->getType());
+	return ims;
 }
 
 bool ScribusDoc::invalidateVariableTextFrames(const Mark* const mrk, bool forceUpdate)
@@ -17846,9 +17537,10 @@ bool ScribusDoc::invalidateVariableTextFrames(const Mark* const mrk, bool forceU
 }
 
 //update strings (page number) for marks pointed to anchors and items
-//and update marks list in Marka Manager
+//and update marks list in Marks Manager
 bool ScribusDoc::updateMarks(bool updateNotesMarks)
 {
+	//set holderName to last frame in chain for notes ouside of visible text
 	if (updateNotesMarks && !notesList().isEmpty())
 	{
 		foreach (PageItem* item, DocItems)
@@ -17866,8 +17558,7 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 							if (item->itemText.hasMark(i) && item->itemText.mark(i)->isNoteType())
 							{
 								TextNote * note = item->itemText.mark(i)->getNotePtr();
-								note->masterMark()->setItemPtr(item);
-								note->masterMark()->setItemName(item->itemName());
+								note->masterMark()->setHolderName(item->getUName());
 							}
 						}
 					}
@@ -17895,17 +17586,6 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 				if (invalidateVariableTextFrames(mrk, false))
 					docWasChanged = true;
 			}
-			else if (mrk->isUnique())
-			{
-				PageItem* mItem = findFirstMarkItem(mrk);
-				mrk->OwnPage =(mItem != NULL) ? mItem->OwnPage : -1;
-				mrk->setItemName((mItem != NULL) ? mItem->itemName() : QString(""));
-				if (mrk->isType(MARKStyleVariableType) && mrk->getItemPtr())
-				{
-					mrk->getItemPtr()->invalid = true;
-					docWasChanged = true;
-				}
-			}
 		}
 	}
 	
@@ -17931,55 +17611,20 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 		docWasChanged = notesFramesUpdate();
 	}
 	
-	//for all marks
+	//for all unique marks
 	foreach (Mark* mrk, m_docMarksList)
 	{
-		//set mark page number
-		PageItem* mItem = findFirstMarkItem(mrk);
-		if (mItem != NULL)
-			mrk->OwnPage = mItem->OwnPage;
-		else
-			mrk->OwnPage = -1;
-		if (mrk->isType(MARK2ItemType))
+		if (mrk->isUnique())
 		{
-			if (mrk->getItemPtr() != NULL)
+			PageItem* mItem = getItemFromName(mrk->getHolderName());
+			if (mrk->hasTargetPtr())
 			{
-				int page = mrk->getItemPtr()->OwnPage +1;
-				if (mrk->getString().toInt() != page)
+				if (mrk->getTargetPtr() != NULL)
 				{
-					mrk->setString(QString("%1").arg(page));
-					if (mItem != NULL)
+					QString pageStr = getFormattedSectionPageNumber(mrk->getTargetPtr()->OwnPage);
+					if (mrk->getString() != pageStr)
 					{
-						mItem->asTextFrame()->invalidateLayout(false);
-						docWasChanged = true;
-					}
-				}
-			}
-			else
-				mrk->setString("");
-		}
-		else if (mrk->isType(MARK2MarkType))
-		{
-			QString l;
-			MarkType t;
-			mrk->getTargetMark(l,t);
-			Mark* destMark = getMarkDefinied(l,t);
-			if (destMark != NULL)
-			{
-				PageItem* dItem = findFirstMarkItem(destMark);
-				if (dItem == NULL)
-				{
-					destMark->OwnPage = -1;
-					mrk->setString("");
-					docWasChanged = true;
-				}
-				else
-				{
-					destMark->OwnPage = dItem->OwnPage;
-					int page = destMark->OwnPage +1;
-					if (mrk->getString().toInt() != page)
-					{
-						mrk->setString(QString("%1").arg(page));
+						mrk->setString(pageStr);
 						if (mItem != NULL)
 						{
 							mItem->asTextFrame()->invalidateLayout(false);
@@ -17987,11 +17632,35 @@ bool ScribusDoc::updateMarks(bool updateNotesMarks)
 						}
 					}
 				}
+				else
+				{
+					mrk->setString("?");
+					docWasChanged = true;
+				}
 			}
-			else
+			else if (mrk->hasTargetMark())
 			{
-				mrk->setString("");
-				docWasChanged = true;
+				const Mark* destMark = mrk->getTargetMark();
+				if (destMark != NULL)
+				{
+					PageItem* dItem = getItemFromName(destMark->getHolderName());
+					Q_ASSERT(dItem);
+					QString pageStr = getFormattedSectionPageNumber(destMark->getOwnPage());
+					if (mrk->getString() != pageStr)
+					{
+						mrk->setString(pageStr);
+						if (mItem != NULL)
+						{
+							mItem->asTextFrame()->invalidateLayout(false);
+							docWasChanged = true;
+						}
+					}
+				}
+				else
+				{
+					mrk->setString("?");
+					docWasChanged = true;
+				}
 			}
 		}
 	}
@@ -18061,7 +17730,7 @@ void ScribusDoc::deleteNotesStyle(const QString &nsName)
 		while (!toDel.isEmpty())
 		{
 			TextNote* note = toDel.takeFirst();
-			master2Update.append(findFirstMarkItem(note->masterMark()));
+			master2Update.append(getItemFromName(note->masterMark()->getHolderName()));
 			setUndoDelNote(note);
 			deleteNote(note);
 		}
@@ -18120,33 +17789,30 @@ NotesStyle* ScribusDoc::getNotesStyle(const QString &nsName)
 
 void ScribusDoc::deleteNote(TextNote* note)
 {
-	if (note == NULL)
-		return;
+	Q_ASSERT(note);
+	Q_ASSERT(note->noteMark());
+	Q_ASSERT(note->masterMark());
+
 	PageItem_NoteFrame* nF = NULL;
-	if (note->noteMark() != NULL)
+	nF = getItemFromName(note->noteMark()->getHolderName())->asNoteFrame();
+	if (nF)
 	{
-		if (note->noteMark()->getItemPtr() != NULL)
-			nF = note->noteMark()->getItemPtr()->asNoteFrame();
-		if (nF == NULL)
-			nF = findFirstMarkItem(note->noteMark())->asNoteFrame();
-	}
-	PageItem* master = note->masterMark()->getItemPtr();
-	if (nF != NULL)
-	{
+		eraseMark(note->noteMark(), nF, note->noteMark()->getCPos());
 		nF->removeNoteFromList(note);
-		master->invalid = true;
-		if (nF->notesList().isEmpty() && nF->isAutoNoteFrame())
-		{
-			nF->deleteIt = true;
-			master->asTextFrame()->removeNoteFrame(nF);
-		}
-		else
-			nF->invalid = true;
+		if (nF->notesList().isEmpty())
+			nF->setMarkedForDelete();
 	}
-	if (note->masterMark() != NULL)
-		eraseMark(note->masterMark(), true, master);
-	if (note->noteMark() != NULL)
-		eraseMark(note->noteMark(), true, nF);
+	else
+	{
+		m_docMarksList.removeOne(note->noteMark());
+		delete note->noteMark();
+	}
+	note->clearNoteMark();
+	PageItem* master = getItemFromName(note->masterMark()->getHolderName());
+	master->invalid = true;
+	eraseMark(note->masterMark(), master, note->masterMark()->getCPos());
+	note->clearMasterMark();
+
 	m_docNotesList.removeOne(note);
 	setNotesChanged(true);
 	if (note->isEndNote())
@@ -18158,19 +17824,21 @@ void ScribusDoc::setUndoDelNote(const TextNote * const note)
 {
 	if (UndoManager::undoEnabled())
 	{
-		ScItemsState* ims = new ScItemsState(Um::DeleteNote,"",Um::IDelete);
+		ScItemState< QPair<CharStyle, CharStyle> >* ims = new ScItemState< QPair<CharStyle, CharStyle> >(Um::DeleteNote,"",Um::IDelete);
 		ims->set("DELETE_NOTE", QString("delete_note"));
 		ims->set("ETEA", note->masterMark()->label);
-		PageItem* master = note->masterMark()->getItemPtr();
+		PageItem* master = getItemFromName(note->masterMark()->getHolderName());
+		Q_ASSERT(master);
 		int pos = findMarkCPos(note->masterMark(), master);
 		Q_ASSERT(pos > -1);
-		Q_ASSERT(master);
-		ims->insertItem("inItem", master);
+		ims->set("inItem", master->getUName());
 		ims->set("at", pos);
+		ims->set("label", note->masterMark()->getLabel());
 		ims->set("noteTXT", note->saxedText());
 		ims->set("nStyle", note->notesStyle()->name());
+		ims->setItem(qMakePair(note->getCharStyleMasterMark(), note->getCharStyleNoteMark()));
 		if (!note->notesStyle()->isAutoRemoveEmptyNotesFrames())
-			ims->insertItem("noteframe", note->noteMark()->getItemPtr());
+			ims->set("noteframe", note->noteMark()->getHolderName());
 		undoManager->action(this, ims);
 	}
 }
@@ -18195,61 +17863,51 @@ void ScribusDoc::updateItemNotesNums(PageItem_TextFrame* frame, const NotesStyle
 			{
 				QString numStr = nStyle->prefix() + nStyle->numString(noteNum) + nStyle->suffix();
 				QString mStr = mark->getString();
-				QString label = mark->label;
-				if ((mStr != numStr) || flag_updateMarksLabels || flag_updateEndNotes)
+				QString label;
+				label = "NoteMark_" + nStyle->name();
+				if (nStyle->range() != NSRdocument)
+				{
+					if (nStyle->range() == NSRsection)
+						label += " in section " + getSectionNameForPageIndex(frame->OwnPage) + " page " + QString::number(frame->OwnPage +1);
+					else if (nStyle->range() == NSRpage)
+						label += " on page " + QString::number(frame->OwnPage +1);
+					else if (nStyle->range() == NSRstory)
+						label += " in " + frame->firstInChain()->itemName();
+					else if (nStyle->range() == NSRframe)
+						label += " in frame " + frame->itemName();
+				}
+				label += "_" + QString::number(noteNum);
+				
+				TextNote* note = mark->getNotePtr();
+				if ((mStr != numStr) || label != mark->getLabel() || flag_updateMarksLabels || flag_updateEndNotes)
 				{
 					doUpdate = true;
 					mark->setString(numStr);
-					label = "NoteMark_" + nStyle->name();
-					if (nStyle->range() != NSRdocument)
-					{
-						if (nStyle->range() == NSRsection)
-							label += " in section " + getSectionNameForPageIndex(frame->OwnPage) + " page " + QString::number(frame->OwnPage +1);
-						else if (nStyle->range() == NSRpage)
-							label += " on page " + QString::number(frame->OwnPage +1);
-						else if (nStyle->range() == NSRstory)
-							label += " in " + frame->firstInChain()->itemName();
-						else if (nStyle->range() == NSRframe)
-							label += " in frame " + frame->itemName();
-					}
-					label += "_" + QString::number(noteNum);
-					mark->label = label;
+					mark->setLabel(label);
+					note->setNum(noteNum);
 				}
-				TextNote* note = mark->getNotePtr();
-				note->setNum(noteNum);
-				note->masterMark()->setItemPtr(frame);
-				
-				if (note->noteMark() != NULL)
+				if (note->noteMark() && note->noteMark()->getString() != numStr)
 				{
 					note->noteMark()->setString(numStr);
 					label = label.replace("NoteMark","NoteFrameMark");
-					note->noteMark()->label = label;
+					note->noteMark()->setLabel(label);
+					PageItem_NoteFrame* nF = (PageItem_NoteFrame*) getItemFromName(note->noteMark()->getHolderName());
+					if (nF)
+					{
+						if (nStyle->isEndNotes())
+							m_docEndNotesFramesChanged.append(nF);
+						else
+							nF->invalid = true;
+					}
 				}
 				++index;
 				++noteNum;
 			}
 		}
 	}
-	PageItem_NoteFrame * nF;
-	if (nStyle->isEndNotes())
-		nF = endNoteFrame(nStyle);
-	else
-		nF = frame->itemNoteFrame(nStyle);
-	
 	if (doUpdate)
-	{
 		frame->invalidateLayout(false);
-		if ((nF != NULL) && !nF->deleteIt)
-		{
-			if (nStyle->isEndNotes())
-				m_docEndNotesFramesChanged.append(nF);
-			else
-				nF->invalidateLayout(true);
-		}
-	}
 	num = noteNum;
-	if (!nStyle->isEndNotes() && (index == 0) && (nF != NULL) && nF->isAutoNoteFrame())
-		nF->deleteIt = true;
 }
 
 bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
@@ -18281,7 +17939,7 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 					if (!currItem->asTextFrame()->isValidChainFromBegin())
 					{
 						currItem->layout();
-						if (flag_restartMarksRenumbering)
+						if (flag_restartMarksRenumbering || itemsCount != Items->count())
 						{
 							//restart whole update as items was changed
 							if (endNF != NULL)
@@ -18310,8 +17968,8 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 		if ((num == nStyle->start()) && nStyle->isEndNotes())
 		{
 			PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-			if (nF != NULL && nF->isAutoNoteFrame())
-				nF->deleteIt = true;
+			if (nF)
+				nF->setMarkedForDelete();
 		}
 	}
 	else if (nStyle->range() == NSRsection)
@@ -18365,9 +18023,8 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 				}
 				if ((i != -1) && (num == nStyle->start()) && nStyle->isEndNotes())
 				{
-					PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-					if (nF != NULL && nF->isAutoNoteFrame())
-						nF->deleteIt = true;
+					if (PageItem_NoteFrame* nF = endNoteFrame(nStyle))
+						nF->setMarkedForDelete();
 				}
 			}
 		}
@@ -18483,9 +18140,8 @@ bool ScribusDoc::updateNotesNums(const NotesStyle* const nStyle)
 			}
 			if ((i != -1) && (num == nStyle->start()) && nStyle->isEndNotes())
 			{
-				PageItem_NoteFrame* nF = endNoteFrame(nStyle);
-				if (nF != NULL && nF->isAutoNoteFrame())
-					nF->deleteIt = true;
+				if (PageItem_NoteFrame* nF = endNoteFrame(nStyle))
+					nF->setMarkedForDelete();
 			}
 		}
 	}
@@ -18512,7 +18168,7 @@ void ScribusDoc::updateNotesFramesStyles(NotesStyle *nStyle)
 	for (int i=0; i<Items->count(); ++i)
 	{
 		PageItem* item = Items->at(i);
-		if (item->isNoteFrame() && (item->asNoteFrame()->getNotesStyle() == nStyle) && !item->asNoteFrame()->deleteIt)
+		if (item->isNoteFrame() && (item->asNoteFrame()->getNotesStyle() == nStyle) && !item->asNoteFrame()->isMarkedForDelete())
 		{
 			ParagraphStyle newStyle;
 			if (nStyle->notesParStyle().isEmpty() || (nStyle->notesParStyle() == tr("No Style")))
@@ -18598,6 +18254,455 @@ const ScPage *ScribusDoc::page4EndNotes(const NotesStyle * const nStyle, PageIte
 	return scP;
 }
 
+void ScribusDoc::restoreNotesStyle(SimpleState *ss, bool isUndo)
+{
+	NotesStyle* NS = NULL;
+	if ((ss->get("NSTYLE") == "new" && isUndo) || (ss->get("NSTYLE") == "delete" && !isUndo))
+		deleteNotesStyle(ss->get("name"));
+	else if ((ss->get("NSTYLE") == "new" && !isUndo) || (ss->get("NSTYLE") == "delete" && isUndo))
+	{
+		NS = new NotesStyle();
+		NS->setName(ss->get("name"));
+		NS->setStart(ss->getInt("start"));
+		NS->setEndNotes(ss->getBool("endNotes"));
+		NS->setFormat((NumFormat) ss->getInt("numFormat"));
+		NS->setRange((NumerationRange) ss->getInt("range"));
+		NS->setPrefix(ss->get("prefix"));
+		NS->setSuffix(ss->get("suffix"));
+		NS->setAutoNotesHeight(ss->getBool("autoH"));
+		NS->setAutoNotesWidth(ss->getBool("autoW"));
+		NS->setAutoWeldNotesFrames(ss->getBool("autoWeld"));
+		NS->setAutoRemoveEmptyNotesFrames(ss->getBool("autoRemove"));
+		NS->setSuperscriptInMaster(ss->getBool("superMaster"));
+		NS->setSuperscriptInNote(ss->getBool("superNote"));
+		NS->setMarksCharStyle(ss->get("marksChStyle"));
+		NS->setNotesParStyle(ss->get("notesParStyle"));
+		m_docNotesStylesList.append(NS);
+		scMW()->emitUpdateRequest(reqMarksListViewUpdate);
+	}
+	else if (ss->get("NSTYLE") == "edit")
+	{
+		if (isUndo)
+			NS = getNotesStyle(ss->get("NEWname"));
+		else
+			NS = getNotesStyle(ss->get("name"));
+		Q_ASSERT(NS != NULL);
+		//check if Notes Style change form footnotes to endnotes or range of numeration was changed
+		//if use delete all notes frames with current style
+		bool delNF = false;
+		if (ss->getBool("NEWendNotes") != ss->getBool("endNotes")
+				|| ((isUndo && (ss->getBool("endNotes") && (NumerationRange) ss->getInt("range") != (NumerationRange) ss->getInt("NEWrange")))
+					|| (!isUndo && (ss->getBool("NEWendNotes") && ((NumerationRange) ss->getInt("NEWrange") != (NumerationRange) ss->getInt("range"))))))
+			delNF = true;
+		if (delNF)
+		{
+			foreach (PageItem_NoteFrame* nF, listNotesFrames(NS))
+				delNoteFrame(nF, false);
+			flag_updateEndNotes = NS->isEndNotes();
+		}
+		if (isUndo)
+		{
+			NS->setName(ss->get("name"));
+			NS->setStart(ss->getInt("start"));
+			NS->setRange((NumerationRange) ss->getInt("range"));
+			NS->setEndNotes(ss->getBool("endNotes"));
+			NS->setFormat((NumFormat) ss->getInt("numFormat"));
+			NS->setPrefix(ss->get("prefix"));
+			NS->setSuffix(ss->get("suffix"));
+			NS->setAutoNotesHeight(ss->getBool("autoH"));
+			NS->setAutoNotesWidth(ss->getBool("autoW"));
+			NS->setAutoWeldNotesFrames(ss->getBool("autoWeld"));
+			NS->setAutoRemoveEmptyNotesFrames(ss->getBool("autoRemove"));
+			NS->setSuperscriptInMaster(ss->getBool("superMaster"));
+			NS->setSuperscriptInNote(ss->getBool("superNote"));
+			NS->setMarksCharStyle(ss->get("marksChStyle"));
+			NS->setNotesParStyle(ss->get("notesParStyle"));
+		}
+		else
+		{
+			NS->setName(ss->get("NEWname"));
+			NS->setStart(ss->getInt("NEWstart"));
+			NS->setRange((NumerationRange) ss->getInt("NEWrange"));
+			NS->setEndNotes(ss->getBool("NEWendNotes"));
+			NS->setFormat((NumFormat) ss->getInt("NEWnumFormat"));
+			NS->setPrefix(ss->get("NEWprefix"));
+			NS->setSuffix(ss->get("NEWsuffix"));
+			NS->setAutoNotesHeight(ss->getBool("NEWautoH"));
+			NS->setAutoNotesWidth(ss->getBool("NEWautoW"));
+			NS->setAutoWeldNotesFrames(ss->getBool("NEWautoWeld"));
+			NS->setAutoRemoveEmptyNotesFrames(ss->getBool("NEWautoRemove"));
+			NS->setSuperscriptInMaster(ss->getBool("NEWsuperMaster"));
+			NS->setSuperscriptInNote(ss->getBool("NEWsuperNote"));
+			NS->setMarksCharStyle(ss->get("NEWmarksChStyle"));
+			NS->setNotesParStyle(ss->get("NEWnotesParStyle"));
+		}
+		setNotesChanged(true);
+		if ((ss->get("marksChStyle") != ss->get("NEWmarksChStyle"))
+				|| (ss->getBool("superMaster") != ss->getBool("NEWsuperMaster")))
+			invalidateMasterFrames(NS);
+		updateNotesNums(NS);
+		updateNotesFramesSettings(NS);
+		if (flag_updateEndNotes)
+			updateEndnotesFrames(NS, true);
+		updateNotesFramesStyles(NS);
+		if (notesChanged())
+		{
+			flag_updateMarksLabels = true;
+			changed();
+			regionsChanged()->update(QRectF());
+		}
+	}
+	if (NS != NULL)
+		scMW()->nsEditor->setNotesStyle(NS);
+	else
+		scMW()->nsEditor->updateNSList();
+}
+
+void ScribusDoc::restoreDeleteNote(SimpleState *ss, bool isUndo)
+{
+	ScItemState< QPair<CharStyle, CharStyle> >* ims = (ScItemState< QPair<CharStyle, CharStyle> >*) ss;
+	Q_ASSERT(ims);
+	NotesStyle* nStyle = getNotesStyle(ss->get("nStyle"));
+	PageItem* master = NULL;
+	if (ss->contains("noteframeName"))
+		master = getItemFromName(ss->get("noteframeName"));
+	else
+		master = getItemFromName(ss->get("inItem"));
+	Q_ASSERT(master);
+	if (isUndo)
+	{
+		TextNote* note = newNote(nStyle);
+		Mark* mrk = newMark();
+		mrk->setType(MARKNoteMasterType);
+		mrk->setNotePtr(note);
+		mrk->setLabel(ss->get("label"));
+		note->setMasterMark(mrk);
+		note->setSaxedText(ss->get("noteTXT"));
+		note->setCharStyleMasterMark(ims->getItem().first);
+		note->setCharStyleNoteMark(ims->getItem().second);
+		int cPos = ss->getInt("at");
+		master->itemText.insertMark(mrk, cPos);
+		master->itemText.applyCharStyle(cPos,1,note->getCharStyleMasterMark());
+		master->invalid = true;
+		if (!nStyle->isAutoRemoveEmptyNotesFrames())
+		{
+			PageItem_NoteFrame* nF = (PageItem_NoteFrame*) getItemFromName(ss->get("noteframe"));
+			Q_ASSERT(nF);
+			master->asTextFrame()->setNoteFrame(nF);
+		}
+		setNotesChanged(true);
+		if (note->isEndNote())
+			flag_updateEndNotes = true;
+	}
+	else
+	{
+		TextNote* note = master->itemText.mark(ss->getInt("at"))->getNotePtr();
+		if (note->isEndNote())
+			flag_updateEndNotes = true;
+		PageItem_NoteFrame* nF = (PageItem_NoteFrame*) getItemFromName(note->noteMark()->getHolderName());
+		Q_ASSERT(nF);
+		deleteNote(note);
+		if (!nF->isMarkedForDelete())
+			nF->updateNotes();
+		else
+			updateNotesNums(nStyle);
+	}
+	flag_updateMarksLabels = true;
+	regionsChanged()->update(QRect());
+	changed();
+}
+
+void ScribusDoc::restoreMark(SimpleState *ss, bool isUndo)
+{
+	Mark* mrk = getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type"));
+	if (mrk == NULL && ss->contains("labelOLD"))
+		mrk = getMarkDefinied(ss->get("labelOLD"), (MarkType) ss->getInt("type"));
+	int pos = ss->getInt("at");
+	bool isAutoNoteFrame = false;
+	PageItem* currItem = NULL;
+	if (ss->contains("noteframeName"))
+	{
+		currItem = getItemFromName(ss->get("noteframeName"));
+		if (currItem != NULL)
+			isAutoNoteFrame = currItem->asNoteFrame()->isAutoFrame();
+	}
+	else
+		currItem = getItemFromName(ss->get("inItem"));
+	if (isUndo)
+	{
+		if (ss->get("MARK") == "new")
+		{
+			Q_ASSERT(mrk != NULL);
+			if (mrk->isNoteType())
+			{
+				TextNote* note = mrk->getNotePtr();
+				NotesStyle* nStyle = note->notesStyle();
+				if (note->isEndNote())
+					flag_updateEndNotes = true;
+				deleteNote(note);
+				updateNotesNums(nStyle);
+			}
+			else
+				eraseMark(mrk, true, currItem, true);
+		}
+		else if (ss->get("MARK") == "replace")
+		{
+			Q_ASSERT(pos >= 0);
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(mrk != NULL);
+			Mark* mrk = getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type"));
+			currItem->itemText.replaceMark(pos, mrk);
+			if (ss->contains("strtxtOLD"))
+			{
+				mrk->setString(ss->get("strtxtOLD"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelOLD"))
+				mrk->label = ss->get("labelOLD");
+		}
+		else if (ss->get("MARK") == "edit")
+		{
+			Q_ASSERT(mrk != NULL);
+			if (ss->contains("labelOLD"))
+				mrk->label = ss->get("labelOLD");
+			if (ss->contains("strtxtOLD"))
+			{
+				mrk->setString(ss->get("strtxtOLD"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("dNameOLD"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dNameOLD"), (MarkType) ss->getInt("dTypeOLD")));
+			if (ss->get("itemNameOLD") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("itemNameOLD")));
+			if (mrk->isType(MARKStyleVariableType))
+			{
+				StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+				if (ss->contains("pstylenameOLD"))
+					svmrk->pStyleName = ss->get("parstylenameOLD");
+				if (ss->contains("searchOLD"))
+					svmrk->searchDirection = ss->getInt("searchOLD");
+				if (ss->contains("limitOLD"))
+					svmrk->textLimit = ss->getInt("limitOLD");
+				if (ss->contains("endingOLD"))
+					svmrk->range = ss->getInt("endingOLD");
+			}
+			
+		}
+		else if (ss->get("MARK") == "insert_existing")
+		{
+			Q_ASSERT(pos >= 0);
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(mrk != NULL);
+			currItem->itemText.removeChars(pos,1);
+			if (ss->contains("strOLD"))
+			{
+				mrk->setString(ss->get("strOLD"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelOLD"))
+				mrk->label = ss->get("labelOLD");
+		}
+		else if (ss->get("MARK") == "delete")
+		{
+			Q_ASSERT(pos >= 0);
+			Q_ASSERT(currItem != NULL);
+			MarkType typ = (MarkType) ss->getInt("type");
+			if (typ == MARKStyleVariableType)
+			{
+				StyleVariableMark * svmrk = newStyleVariableMark();
+				if (ss->contains("pstylename"))
+					svmrk->pStyleName = ss->get("pstylename");
+				if (ss->contains("search"))
+					svmrk->searchDirection = ss->getInt("search");
+				if (ss->contains("limit"))
+					svmrk->textLimit = ss->getInt("limit");
+				if (ss->contains("range"))
+					svmrk->range = ss->getInt("range");
+			}
+			else
+			{
+				mrk = newMark();
+				mrk->setType(typ);
+			}
+			mrk->label = ss->get("label");
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			if (ss->contains("strtxt"))
+			{
+				mrk->setString(ss->get("strtxt"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("dName"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dName"), (MarkType) ss->getInt("dType")));
+			if (ss->get("targetName") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("targetNameOLD")));
+		}
+		else if (ss->get("MARK") == "eraseFromText")
+		{
+			//used if non-unique mark is deleted only from text
+			Q_ASSERT(pos >= 0);
+			if (ss->getInt("type") == MARKListType)
+				mrk = new ListMark();
+			Q_ASSERT(mrk != NULL);
+			Q_ASSERT(currItem != NULL);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+		}
+		else if (ss->get("MARK") == "delNonUnique")
+		{
+			//used if deleting non-unique mark by MarksManager
+			mrk = newMark();
+			mrk->label = ss->get("label");
+			mrk->setType((MarkType) ss->getInt("type"));
+			mrk->setString(ss->get("strtxt"));
+			PageItem* item = getItemFromName(ss->get("inItem"));
+			Q_ASSERT(item);
+			item->itemText.insertMark(mrk, ss->getInt("at"));
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			item->invalid = true;
+		}
+		else
+		{
+			Q_ASSERT(false);
+			qDebug() << "MARK undo - unhandled " << ss->get("MARK");
+		}
+	}
+	else  //REDO
+	{
+		if (ss->get("MARK") == "new")
+		{
+			if (currItem == NULL)
+			{
+				qDebug() << "Wrong inItem in undo step for mark";
+				return;
+			}
+			MarkType typ = (MarkType) ss->getInt("type");
+			if (typ == MARKStyleVariableType)
+			{
+				StyleVariableMark * svmrk = newStyleVariableMark();
+				if (ss->contains("pstylename"))
+					svmrk->pStyleName = ss->get("pstylename");
+				if (ss->contains("search"))
+					svmrk->searchDirection = ss->getInt("search");
+				if (ss->contains("limit"))
+					svmrk->textLimit = ss->getInt("limit");
+				if (ss->contains("range"))
+					svmrk->range = ss->getInt("range");
+				mrk = (Mark*) svmrk;
+			}
+			else
+			{
+				mrk = newMark();
+				mrk->setType((MarkType) ss->getInt("type"));
+			}
+			mrk->label = ss->get("label");
+			
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			if (ss->contains("strtxt"))
+				mrk->setString(ss->get("strtxt"));
+			if (ss->contains("dName"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dName"), (MarkType) ss->getInt("dType")));
+			if (ss->get("targetName") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("targetNameOLD")));
+		}
+		else if (ss->get("MARK") == "replace")
+		{
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.replaceMark(pos, getMarkDefinied(ss->get("label"), (MarkType) ss->getInt("type")));
+			if (ss->contains("strtxtNEW"))
+			{
+				mrk->setString(ss->get("strtxtNEW"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelNEW"))
+				mrk->label = ss->get("labelNEW");
+		}
+		else if (ss->get("MARK") == "edit")
+		{
+			if (ss->contains("labelNEW"))
+				mrk->label = ss->get("labelNEW");
+			if (ss->contains("strtxtNEW"))
+			{
+				mrk->setString(ss->get("strtxtNEW"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("dNameNEW"))
+				mrk->setTargetMark(getMarkDefinied(ss->get("dNameNEW"), (MarkType) ss->getInt("dTypeNEW")));
+			if (ss->get("itemNameNEW") != "")
+				mrk->setTargetPtr(getItemFromName(ss->get("itemNameNEW")));
+			if (mrk->isType(MARKStyleVariableType))
+			{
+				StyleVariableMark* svmrk = (StyleVariableMark*) mrk;
+				if (ss->contains("pstylenameNEW"))
+					svmrk->pStyleName = ss->get("pstylenameNEW");
+				if (ss->contains("searchNEW"))
+					svmrk->searchDirection = ss->getInt("searchNEW");
+				if (ss->contains("limitNEW"))
+					svmrk->textLimit = ss->getInt("limitNEW");
+				if (ss->contains("endingNEW"))
+					svmrk->range = ss->getInt("endingNEW");
+			}
+		}
+		else if (ss->get("MARK") == "insert_existing")
+		{
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.insertMark(mrk, pos);
+			if (ScItemState<CharStyle>* is = (ScItemState<CharStyle>*) ss)
+				currItem->itemText.applyCharStyle(pos,1, is->getItem());
+			if (ss->contains("strNew"))
+			{
+				mrk->setString(ss->get("strNEW"));
+				invalidateVariableTextFrames(mrk, false);
+			}
+			if (ss->contains("labelNEW"))
+				mrk->label = ss->get("labelNEW");
+		}
+		else if (ss->get("MARK") == "eraseFromText") //for non-unique marks
+		{
+			Q_ASSERT(currItem != NULL);
+			Q_ASSERT(pos >= 0);
+			currItem->itemText.removeChars(pos,1);
+		}
+		else if (ss->get("MARK") == "delete")
+		{
+			if (!mrk->isUnique())
+			{
+				Q_ASSERT(currItem != NULL);
+				Q_ASSERT(pos >= 0);
+				currItem->itemText.removeChars(pos,1);
+			}
+			else
+				eraseMark(mrk, true);
+		}
+		else if (ss->get("MARK") == "delNonUnique")
+		{
+			//used if deleting non-unique marks by MarksManager
+			eraseMark(mrk, true, NULL, true);
+		}
+		else
+		{
+			qDebug() << "MARK redo - unhandled " << ss->get("MARK");
+		}
+	}
+	scMW()->emitUpdateRequest(reqMarksListViewUpdate);
+	if (currItem != NULL && !isAutoNoteFrame)
+	{
+		currItem->invalidateLayout();
+		//			currItem->updateLayout();
+	}
+	regionsChanged()->update(QRect());
+	changed();
+}
+
 bool ScribusDoc::notesFramesUpdate()
 {
 	bool removeEmptyNF = false;
@@ -18613,24 +18718,22 @@ bool ScribusDoc::notesFramesUpdate()
 				continue;
 			if (item->isNoteFrame())
 			{
-				if (item->asNoteFrame()->notesList().isEmpty())
-				{
-					if (item->isAutoNoteFrame())
-						item->asNoteFrame()->deleteIt = true;
-				}
+				PageItem_NoteFrame* nF = item->asNoteFrame();
+				if (nF->notesList().isEmpty())
+					nF->setMarkedForDelete();
 				else
 				{
-					if (item->asNoteFrame()->isEndNotesFrame())
-						updateEndNotesFrameContent(item->asNoteFrame());
+					if (nF->isEndNotesFrame())
+						updateEndNotesFrameContent(nF);
 					else
 					{
-						if (item->itemText.length() == 0 && !item->asNoteFrame()->notesList().isEmpty())
-							item->asNoteFrame()->updateNotes();
-						item->invalid = true;
-						item->layout();
+						if (item->itemText.length() == 0 && !nF->notesList().isEmpty())
+							nF->updateNotes();
+						nF->invalid = true;
+						nF->layout();
 					}
 				}
-				if (item->asNoteFrame()->deleteIt)
+				if (nF->isMarkedForDelete())
 					removeEmptyNF = true;
 			}
 			if (end != Items->count())
@@ -18651,7 +18754,7 @@ bool ScribusDoc::notesFramesUpdate()
 		for (int i = 0; i < end; ++i)
 		{
 			PageItem* item = Items->at(i);
-			if (item->isAutoNoteFrame() && item->asNoteFrame()->deleteIt)
+			if (item->isAutoNoteFrame() && item->asNoteFrame()->isMarkedForDelete())
 				tmplist.append(item);
 		}
 		foreach (PageItem* item, tmplist)
@@ -18727,9 +18830,9 @@ void ScribusDoc::updateEndNotesFrameContent(PageItem_NoteFrame *nF, bool invalid
 	
 	if (nList.isEmpty())
 	{
-		if (nF->isAutoNoteFrame())
+		nF->setMarkedForDelete();
+		if (nF->isMarkedForDelete())
 		{
-			nF->deleteIt = true;
 			m_docNotesInFrameMap.remove(nF);
 			delNoteFrame(nF);
 		}
@@ -18764,7 +18867,7 @@ void ScribusDoc::updateChangedEndNotesFrames()
 		PageItem_NoteFrame* nF = m_docEndNotesFramesChanged.first();
 		m_docEndNotesFramesChanged.removeAll(nF);
 		updateEndNotesFrameContent(nF);
-		if (nF->deleteIt && nF->isAutoNoteFrame())
+		if (nF->isMarkedForDelete() && nF->isAutoNoteFrame())
 			delNoteFrame(nF);
 	}
 }
@@ -18796,10 +18899,13 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 {
 	Q_ASSERT(nF != NULL);
 	
-	//for all notes in noteFrame set notes marks to null
-	foreach(TextNote* n, nF->notesList())
+	//for all notes in noteFrame - delete notes marks
+	QListIterator<TextNote*> it(nF->notesList());
+	it.toBack();
+	while (it.hasPrevious())
 	{
-		eraseMark(n->noteMark(),true, nF, true);
+		TextNote* n = it.previous();
+		eraseMark(n->noteMark(),nF, n->noteMark()->getCPos());
 		n->clearNoteMark();
 	}
 	
@@ -18818,13 +18924,13 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 		m_docEndNotesFramesChanged.removeAll(nF);
 		foreach (TextNote* note, nF->notesList())
 		{
-			note->masterMark()->getItemPtr()->asTextFrame()->removeNoteFrame(nF);
-			note->masterMark()->getItemPtr()->invalid = true;
+			getItemFromName(note->masterMark()->getHolderName())->asTextFrame()->removeNoteFrameFromMap(nF);
+			getItemFromName(note->masterMark()->getHolderName())->invalid = true;
 		}
 	}
 	else if (nF->masterFrame() != NULL)
 	{
-		nF->masterFrame()->removeNoteFrame(nF);
+		nF->masterFrame()->removeNoteFrameFromMap(nF);
 		nF->masterFrame()->invalid = true;
 	}
 	m_docNotesInFrameMap.remove(nF);
@@ -18837,25 +18943,27 @@ void ScribusDoc::delNoteFrame(PageItem_NoteFrame* nF, bool removeMarks, bool for
 	{
 		Mark* m = m_docMarksList.at(a);
 		Q_ASSERT(m != NULL);
-		if (m->isType(MARK2ItemType) && (m->getItemPtr() == nF))
+		if (m->isType(MARK2ItemType) && (getItemFromName(m->getHolderName()) == nF))
 		{
-			setUndoDelMark(m);
+			setUndoDelUniqueMark(m);
 			eraseMark(m,true);
 		}
 	}
-	m_Selection->delaySignalsOn();
 	if (m_Selection->findItem(nF)!=-1)
 	{
+		bool signalsBlocked = m_Selection->signalsBlocked();
+		m_Selection->blockSignals(true);
 		if (appMode == modeEdit)
 			view()->requestMode(modeNormal);
 		m_Selection->removeItem(nF);
 		if (m_Selection->isEmpty() && nF->masterFrame())
 			m_Selection->addItem(nF->masterFrame());
+		m_Selection->blockSignals(signalsBlocked);
 	}
-	m_Selection->delaySignalsOff();
-	regionsChanged()->update(nF->getVisualBoundingRect());
 	Items->removeOne(nF);
+	flag_restartMarksRenumbering = true;
 	setNotesChanged(true);
+	regionsChanged()->update(nF->getVisualBoundingRect());
 	if (forceDeletion)
 		delete nF;
 }
@@ -18905,7 +19013,7 @@ void ScribusDoc::invalidateMasterFrames(const NotesStyle * const nStyle)
 	foreach (TextNote* note, m_docNotesList)
 	{
 		if (note->notesStyle() == nStyle)
-			toInvalidate.append(note->masterMark()->getItemPtr());
+			toInvalidate.append(getItemFromName(note->masterMark()->getHolderName()));
 	}
 	while (!toInvalidate.isEmpty())
 		toInvalidate.takeFirst()->invalid = true;

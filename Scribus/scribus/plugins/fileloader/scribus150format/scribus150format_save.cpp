@@ -432,8 +432,12 @@ bool Scribus150Format::saveFile(const QString & fileName, const FileFormat & /* 
 	}
 	else if (QFile::exists(tmpFileName))
 		QFile::remove(tmpFileName);
-	if (writeSucceed) 
+	if (writeSucceed)
 		QFile::remove(tmpFileName);
+#ifdef Q_OS_UNIX
+	if (writeSucceed)
+		QFile::setPermissions(fileName, m_Doc->filePermissions());
+#endif
 	return writeSucceed;
 }
 
@@ -656,6 +660,8 @@ void Scribus150Format::putPStyle(ScXmlStreamWriter & docu, const ParagraphStyle 
 		docu.writeAttribute("NACH", style.gapAfter());
 	if ( ! style.isInhPeCharStyleName())
 		docu.writeAttribute("ParagraphEffectCharStyle", style.peCharStyleName());
+	if ( ! style.isInhPeFontName())
+		docu.writeAttribute("ParagraphEffectFont", style.peFontName());
 	if ( ! style.isInhParEffectOffset())
 		docu.writeAttribute("ParagraphEffectOffset", style.parEffectOffset());
 	if ( ! style.isInhParEffectIndent())
@@ -1279,14 +1285,14 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 		if (mrk->isType(MARKNoteFrameType))
 			continue;
 		docu.writeEmptyElement("Mark");
-		docu.writeAttribute("label", mrk->label);
+		docu.writeAttribute("label", mrk->getLabel());
 		docu.writeAttribute("type", mrk->getType());
-		if (mrk->isType(MARK2ItemType) && mrk->hasItemPtr())
+		docu.writeAttribute("holder", mrk->getHolderName());
+		if (mrk->hasTargetPtr())
 		{
-			const PageItem* item = mrk->getItemPtr();
+			const PageItem* item = mrk->getTargetPtr();
 			assert(item != NULL);
-			docu.writeAttribute("ItemID", qHash(item));
-			//docu.writeAttribute("itemName", item->itemName());
+			docu.writeAttribute("target", item->itemName());
 		}
 		else if (mrk->isType(MARKVariableTextType) && mrk->hasString())
 			docu.writeAttribute("str", mrk->getString());
@@ -1298,13 +1304,10 @@ void Scribus150Format::writeMarks(ScXmlStreamWriter & docu)
 			docu.writeAttribute("limit", svmrk->textLimit);
 			docu.writeAttribute("range", svmrk->range);
 		}
-		else if (mrk->isType(MARK2MarkType) && mrk->hasMark())
+		else if (mrk->hasTargetMark())
 		{
-			QString label;
-			MarkType type;
-			mrk->getTargetMark(label, type);
-			docu.writeAttribute("MARKlabel", label);
-			docu.writeAttribute("MARKtype", type);
+			docu.writeAttribute("MARKlabel", mrk->getTargetMark()->getLabel());
+			docu.writeAttribute("MARKtype", mrk->getTargetMark()->getType());
 		}
 	}
 	docu.writeEndElement();
@@ -1420,10 +1423,12 @@ void Scribus150Format::writeNotes(ScXmlStreamWriter & docu)
 		if (TN->masterMark() == NULL)
 			continue;
 		docu.writeEmptyElement("Note");
-		docu.writeAttribute("Master", TN->masterMark()->label);
+		docu.writeAttribute("Master", TN->masterMark()->getLabel());
 		docu.writeAttribute("NStyle", TN->notesStyle()->name());
 		docu.writeAttribute("Text", TN->saxedText());
 		//store charstyle for note number (not stored with note text)
+		docu.writeEmptyElement("MasterMarkerCharStyle");
+		putCStyle(docu, TN->getCharStyleMasterMark());
 		docu.writeEmptyElement("NoteMarkerCharStyle");
 		putCStyle(docu, TN->getCharStyleNoteMark());
 	}
@@ -1638,11 +1643,11 @@ void Scribus150Format::writeITEXTs(ScribusDoc *doc, ScXmlStreamWriter &docu, Pag
         else if (ch == SpecialChars::OBJECT && item->itemText.hasMark(k))
 		{
             Mark* mark = item->itemText.mark(k);
-			if (!mark->isType(MARKBullNumType))
-			{ //dont save marks for bullets and numbering
+			{
 				docu.writeEmptyElement("MARK");
-				docu.writeAttribute("label", mark->label);
+				docu.writeAttribute("label", mark->getLabel());
 				docu.writeAttribute("type", mark->getType());
+				putCStyle(docu, lastStyle);
 			}
 		}
 		else if (ch == SpecialChars::PARSEP)	// stores also the paragraphstyle for preceding chars
@@ -2652,6 +2657,8 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 			docu.writeAttribute("LANGUAGE", dStyle.charStyle().language());
 		if ( ! dStyle.isInhPeCharStyleName())
 			docu.writeAttribute("ParagraphEffectCharStyle", dStyle.peCharStyleName());
+		if ( ! dStyle.isInhPeFontName())
+			docu.writeAttribute("ParagraphEffectFont", dStyle.peFontName());
 		if ( ! dStyle.isInhParEffectOffset())
 			docu.writeAttribute("ParagraphEffectOffset", dStyle.parEffectOffset());
 		if ( ! dStyle.isInhParEffectIndent())
@@ -2779,6 +2786,17 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 		docu.writeAttribute("TransBlend", item->fillBlendmode());
 	if (item->lineBlendmode() != 0)
 		docu.writeAttribute("TransBlendS", item->lineBlendmode());
+	if (item->hasSoftShadow())
+	{
+		docu.writeAttribute("HASSOFTSHADOW",item->hasSoftShadow() ? 1 : 0);
+		docu.writeAttribute("SOFTSHADOWXOFFSET",item->softShadowXOffset());
+		docu.writeAttribute("SOFTSHADOWYOFFSET",item->softShadowYOffset());
+		docu.writeAttribute("SOFTSHADOWCOLOR",item->softShadowColor());
+		docu.writeAttribute("SOFTSHADOWBLURRADIUS",item->softShadowBlurRadius());
+		docu.writeAttribute("SOFTSHADOWSHADE",item->softShadowShade());
+		docu.writeAttribute("SOFTSHADOWBLENDMODE",item->softShadowBlendMode());
+		docu.writeAttribute("SOFTSHADOWOPACITY",item->softShadowOpacity());
+	}
 
 	if (item->isTable())
 	{
@@ -2823,6 +2841,7 @@ void Scribus150Format::SetItemProps(ScXmlStreamWriter& docu, PageItem* item, con
 	{
 		docu.writeAttribute("groupWidth", item->groupWidth);
 		docu.writeAttribute("groupHeight", item->groupHeight);
+		docu.writeAttribute("groupClips", item->groupClipping());
 	}
 	if (item->DashValues.count() != 0)
 	{

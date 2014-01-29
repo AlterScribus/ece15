@@ -145,10 +145,9 @@ void PropertyWidget_ParEffect::displayCharStyle(const QString& name)
 void PropertyWidget_ParEffect::enableDropCap(bool enable)
 {
 //	dropCapRadio_->setChecked(enable);
-	dropCapLines->setEnabled(enable);
+	dropCapLines->setVisible(enable);
 	if (enable)
 	{
-		dropCapsGroup->show();
 		enableBullet(false);
 		enableNum(false);
 	}
@@ -223,7 +222,7 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 	}
 	else
 		enablePE = false;
-
+	
 	QString numName = numComboBox->currentText();
 	int nFormat = 0;
 	dropCapLines->setValue(newPStyle.dropCapLines());
@@ -241,6 +240,8 @@ void PropertyWidget_ParEffect::updateStyle(const ParagraphStyle& newPStyle)
 	numPrefix->setText(newPStyle.numPrefix());
 	numSuffix->setText(newPStyle.numSuffix());
 	numStart->setValue(newPStyle.numStart());
+	if (m_item)
+		m_bulletFont = getBulletFontName();
 
 	nFormat = newPStyle.numFormat();
 	numFormatCombo->setCurrentIndex(nFormat);
@@ -335,7 +336,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	enableParEffect(peCombo->currentIndex() != 0);
 	if (peCombo->currentIndex() == 1)
 	{
-		enableDropCap(true);
 		newStyle.setDropCapLines(dropCapLines->value());
 		newStyle.setHasDropCap(true);
 		newStyle.setHasBullet(false);
@@ -343,7 +343,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	}
 	else if (peCombo->currentIndex() == 2)
 	{
-		enableBullet(true);
 		newStyle.setHasBullet(true);
 		QString bStr = bulletStrEdit->currentText();
 		if (bStr.isEmpty())
@@ -354,7 +353,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 	}
 	else if (peCombo->currentIndex() == 3)
 	{
-		enableNum(true);
 		newStyle.setHasDropCap(false);
 		newStyle.setHasBullet(false);
 		newStyle.setHasNum(true);
@@ -370,12 +368,6 @@ void PropertyWidget_ParEffect::handleParEffectUse()
 			newStyle.setNumHigher(true);
 		}
 	}
-	else
-	{
-		newStyle.setHasDropCap(false);
-		newStyle.setHasBullet(false);
-		newStyle.setHasNum(false);
-	}
 	newStyle.setParEffectOffset(peOffset->value() / m_unitRatio);
 	newStyle.setParEffectIndent(peIndent->isChecked());
 	handleChanges(m_item, newStyle);
@@ -388,7 +380,9 @@ void PropertyWidget_ParEffect::handleBulletStr(QString bulStr)
 	ParagraphStyle newStyle;
 	if (bulStr.isEmpty())
 		bulStr = QChar(0x2022);
+	newStyle.setHasBullet(true);
 	newStyle.setBulletStr(bulStr);
+	newStyle.setPeFontName(m_bulletFont);
 	handleChanges(m_item, newStyle);
 }
 
@@ -584,8 +578,7 @@ void PropertyWidget_ParEffect::openEnhanced()
 	connect(m_enhanced, SIGNAL(paletteShown(bool)), bulletCharTableButton, SLOT(setChecked(bool)));
 	m_enhanced->setDoc(m_doc);
 	m_enhanced->setEnabled(true);
-	QString styleName = peCharStyleCombo->currentText();
-	setCurrentComboItem(m_enhanced->fontSelector, m_item->currentStyle().charStyle().font().scName());
+	setCurrentComboItem(m_enhanced->fontSelector, m_bulletFont);
 	m_enhanced->newFont(m_enhanced->fontSelector->currentIndex());
 	m_enhanced->show();
 	QApplication::changeOverrideCursor(Qt::ArrowCursor);
@@ -609,7 +602,62 @@ void PropertyWidget_ParEffect::on_bulletCharTableButton_toggled(bool checked)
 	else if (!m_enhanced && checked)
 		openEnhanced();
 }
+
 void PropertyWidget_ParEffect::insertSpecialChars(const QString &chars)
 {
+	m_bulletFont = m_enhanced->getUsedFont();
 	bulletStrEdit->lineEdit()->setText(chars);
+}
+
+QString PropertyWidget_ParEffect::getBulletFontName()
+{
+	QString fontName;
+	if (m_doc->appMode == modeEdit)
+	{
+		int position = m_item->itemText.cursorPosition();
+		if (m_item->itemText.lengthOfSelection() > 0)
+			position = qMin(qMax(m_item->itemText.endOfSelection() - 1, 0), qMax(position, m_item->itemText.startOfSelection()));
+		if (m_item->itemText.paragraphStyle(position).peFontName() != "")
+			fontName = m_item->itemText.paragraphStyle(position).peFontName();
+		else if (m_item->itemText.paragraphStyle(position).peCharStyleName() != "")
+			fontName = m_doc->charStyle(m_item->itemText.paragraphStyle(position).peCharStyleName()).font().scName();
+		else
+			fontName = m_item->itemText.paragraphStyle(position).charStyle().font().scName();
+	}
+	else
+	{
+		if (m_item->itemText.defaultStyle().peFontName() != "")
+			fontName = m_item->itemText.defaultStyle().peFontName();
+		else if (m_item->itemText.defaultStyle().peCharStyleName() != "")
+			fontName = m_doc->charStyle(m_item->itemText.defaultStyle().peCharStyleName()).font().scName();
+		else
+			fontName = m_item->itemText.defaultStyle().charStyle().font().scName();
+	}
+	return fontName;
+	
+}
+
+void PropertyWidget_ParEffect::applyBulletFont()
+{
+	ParagraphStyle newStyle;
+	newStyle.setPeFontName(m_bulletFont);
+	int position = 0;
+	int end = m_item->itemText.length()-1;
+	if (m_doc->appMode == modeEdit)
+	{
+		position = m_item->itemText.cursorPosition();
+		end = position +1;
+		if (m_item->itemText.lengthOfSelection() > 0)
+		{
+			position = m_item->itemText.startOfSelection();
+			end = m_item->itemText.endOfSelection() -1;
+		}
+	}
+
+	position = m_item->itemText.findParagraphStart(position);
+	while (position < end)
+	{
+		m_item->itemText.applyStyle(position, newStyle);
+		position = m_item->itemText.findParagraphEnd(position) + 1;
+	}
 }

@@ -226,6 +226,7 @@ SlaOutputDev::SlaOutputDev(ScribusDoc* doc, QList<PageItem*> *Elements, QStringL
 	xref = NULL;
 	m_fontEngine = 0;
 	m_font = 0;
+	m_formWidgets = 0;
 	updateGUICounter = 0;
 	layersSetByOCG = false;
 	cropOffsetX = 0;
@@ -537,331 +538,329 @@ bool SlaOutputDev::handleWidgetAnnot(Annot* annota, double xCoor, double yCoor, 
 {
 	bool retVal = false;
 	bool found = false;
+
+	if (!m_formWidgets)
+		return false;
+
 	int formcount = m_formWidgets->getNumWidgets();
 	for (int i = 0; i < formcount; ++i)
 	{
 		FormWidget *fm = m_formWidgets->getWidget(i);
-		if (fm)
+		if (!fm)
+			continue;
+		AnnotWidget *ano = fm->getWidgetAnnotation();
+		if (!ano)
+			continue;
+		if (ano != (AnnotWidget*) annota)
+			continue;
+		found = true;
+		int wtyp = -1;
+		if (fm->getType() == formButton)
 		{
-			AnnotWidget *ano = fm->getWidgetAnnotation();
-			if (ano)
+			FormWidgetButton *btn = (FormWidgetButton*)fm;
+			if (btn)
 			{
-				if (ano == (AnnotWidget*)annota)
+				if (btn->getButtonType() == formButtonCheck)
 				{
-					found = true;
-					int wtyp = -1;
-					if (fm->getType() == formButton)
-					{
-						FormWidgetButton *btn = (FormWidgetButton*)fm;
-						if (btn)
-						{
-							if (btn->getButtonType() == formButtonCheck)
-							{
-								wtyp = Annotation::Checkbox;
-								retVal = true;
-							}
-							else if (btn->getButtonType() == formButtonPush)
-							{
-								wtyp = Annotation::Button;
-								retVal = true;
-							}
-							else if (btn->getButtonType() == formButtonRadio)
-							{
-								wtyp = Annotation::RadioButton;
-								retVal = true;
-							}
-						}
-					}
-					else if (fm->getType() == formText)
-					{
-						wtyp = Annotation::Textfield;
-						retVal = true;
-					}
-					else if (fm->getType() == formChoice)
-					{
-						FormWidgetChoice *btn = (FormWidgetChoice*)fm;
-						if (btn)
-						{
-							if (btn->isCombo())
-							{
-								wtyp = Annotation::Combobox;
-								retVal = true;
-							}
-							else if (btn->isListBox())
-							{
-								wtyp = Annotation::Listbox;
-								retVal = true;
-							}
-						}
-					}
-					if (retVal)
-					{
-						AnnotAppearanceCharacs *achar = ano->getAppearCharacs();
-						bool fgFound = false;
-						bool bgFound = false;
-						if (achar)
-						{
-							AnnotColor *bgCol = achar->getBackColor();
-							if (bgCol)
-							{
-								bgFound = true;
-								CurrColorFill = getAnnotationColor(bgCol);
-							}
-							else
-								CurrColorFill = CommonStrings::None;
-							AnnotColor *fgCol = achar->getBorderColor();
-							if (fgCol)
-							{
-								fgFound = true;
-								CurrColorStroke = getAnnotationColor(fgCol);
-							}
-							else
-							{
-								fgCol = achar->getBackColor();
-								if (fgCol)
-									CurrColorStroke = getAnnotationColor(fgCol);
-								else
-									CurrColorStroke = CommonStrings::None;
-							}
-						}
-						QString CurrColorText = "Black";
-						double fontSize = 12;
-						QString fontName = "";
-						QString itemText = "";
-						AnnotAppearance *apa = annota->getAppearStreams();
-						if (apa || !achar)
-						{
-							AnoOutputDev *Adev = new AnoOutputDev(m_doc, m_importedColors);
-							Gfx *gfx;
-#ifdef POPPLER_VERSION
-							gfx = new Gfx(pdfDoc, Adev, pdfDoc->getPage(m_actPage)->getResourceDict(), annota->getRect(), NULL);
-#else
-							gfx = new Gfx(xref, Adev, pdfDoc->getPage(m_actPage)->getResourceDict(), catalog, annota->getRect(), NULL);
-#endif
-							ano->draw(gfx, false);
-							if (!bgFound)
-								CurrColorFill = Adev->CurrColorFill;
-							if (!fgFound)
-								CurrColorStroke = Adev->CurrColorStroke;
-							CurrColorText = Adev->CurrColorText;
-							fontSize = Adev->m_fontSize;
-							fontName = UnicodeParsedString(Adev->m_fontName);
-							itemText = UnicodeParsedString(Adev->m_itemText);
-							delete gfx;
-							delete Adev;
-						}
-						int z = m_doc->itemAdd(PageItem::TextFrame, PageItem::Rectangle, xCoor, yCoor, width, height, 0, CurrColorFill, CommonStrings::None, true);
-						PageItem *ite = m_doc->Items->at(z);
-						int flg = annota->getFlags();
-						if (!(flg & 16))
-							ite->setRotation(rotate, true);
-						ite->ClipEdited = true;
-						ite->FrameType = 3;
-						ite->setFillEvenOdd(false);
-						ite->Clip = FlattenPath(ite->PoLine, ite->Segments);
-						ite->ContourLine = ite->PoLine.copy();
-						ite->setTextFlowMode(PageItem::TextFlowDisabled);
-						m_Elements->append(ite);
-						if (m_groupStack.count() != 0)
-						{
-							m_groupStack.top().Items.append(ite);
-							applyMask(ite);
-						}
-						ite->setIsAnnotation(true);
-						ite->AutoName = false;
-						AnnotBorder *brd = annota->getBorder();
-						if (brd)
-						{
-							int bsty = brd->getStyle();
-							if (bsty == AnnotBorder::borderDashed)
-								bsty = 1;
-							else if (bsty == AnnotBorder::borderBeveled)
-								bsty = 3;
-							else if (bsty == AnnotBorder::borderInset)
-								bsty = 4;
-							else if (bsty == AnnotBorder::borderUnderlined)
-								bsty = 2;
-							ite->annotation().setBsty(bsty);
-							ite->annotation().setBorderColor(CurrColorStroke);
-							ite->annotation().setBwid(qRound(brd->getWidth()));
-						}
-						else
-						{
-							ite->annotation().setBsty(0);
-							ite->annotation().setBorderColor(CommonStrings::None);
-							ite->annotation().setBwid(0);
-						}
-						QString tmTxt = "";
-						tmTxt = UnicodeParsedString(fm->getPartialName());
-						if (!tmTxt.isEmpty())
-							ite->setItemName(tmTxt);
-						tmTxt = "";
-						tmTxt = UnicodeParsedString(fm->getAlternateUiName());
-						if (!tmTxt.isEmpty())
-							ite->annotation().setToolTip(tmTxt);
-						tmTxt = "";
-						if (achar)
-						{
-							tmTxt = UnicodeParsedString(achar->getRolloverCaption());
-							if (!tmTxt.isEmpty())
-								ite->annotation().setRollOver(tmTxt);
-							tmTxt = "";
-							tmTxt = UnicodeParsedString(achar->getAlternateCaption());
-							if (!tmTxt.isEmpty())
-								ite->annotation().setDown(tmTxt);
-						}
-						ite->annotation().setType(wtyp);
-						ite->annotation().setFlag(0);
-						if (flg & 2)
-							ite->annotation().setVis(1);
-						if (flg & 32)
-							ite->annotation().setVis(3);
-						if (wtyp == Annotation::Button)
-						{
-							ite->setFillColor(CurrColorFill);
-							if (achar)
-								ite->itemText.insertChars(UnicodeParsedString(achar->getNormalCaption()));
-							else
-								ite->itemText.insertChars(itemText);
-							applyTextStyle(ite, fontName, CurrColorText, fontSize);
-							ite->annotation().addToFlag(Annotation::Flag_PushButton);
-							FormWidgetButton *btn = (FormWidgetButton*)fm;
-							if (!btn->isReadOnly())
-								ite->annotation().addToFlag(Annotation::Flag_Edit);
-							handleActions(ite, ano);
-						}
-						else if (wtyp == Annotation::Textfield)
-						{
-							FormWidgetText *btn = (FormWidgetText*)fm;
-							if (btn)
-							{
-								ite->itemText.insertChars(UnicodeParsedString(btn->getContent()));
-								applyTextStyle(ite, fontName, CurrColorText, fontSize);
-								if (btn->isMultiline())
-									ite->annotation().addToFlag(Annotation::Flag_Multiline);
-								if (btn->isPassword())
-									ite->annotation().addToFlag(Annotation::Flag_Password);
-								if (btn->noSpellCheck())
-									ite->annotation().addToFlag(Annotation::Flag_DoNotSpellCheck);
-								if (btn->noScroll())
-									ite->annotation().addToFlag(Annotation::Flag_DoNotScroll);
-								int mxLen = btn->getMaxLen();
-								if (mxLen > 0)
-									ite->annotation().setMaxChar(mxLen);
-								else
-									ite->annotation().setMaxChar(-1);
-								if (!btn->isReadOnly())
-									ite->annotation().addToFlag(Annotation::Flag_Edit);
-								handleActions(ite, ano);
-							}
-						}
-						else if (wtyp == Annotation::Checkbox)
-						{
-							FormWidgetButton *btn = (FormWidgetButton*)fm;
-							if (btn)
-							{
-								ite->annotation().setIsChk(btn->getState());
-								ite->annotation().setCheckState(ite->annotation().IsChk());
-								handleActions(ite, ano);
-								if (itemText == "4")
-									ite->annotation().setChkStil(0);
-								else if (itemText == "5")
-									ite->annotation().setChkStil(1);
-								else if (itemText == "F")
-									ite->annotation().setChkStil(2);
-								else if (itemText == "l")
-									ite->annotation().setChkStil(3);
-								else if (itemText == "H")
-									ite->annotation().setChkStil(4);
-								else if (itemText == "n")
-									ite->annotation().setChkStil(5);
-								else
-									ite->annotation().setChkStil(0);
-								if (!btn->isReadOnly())
-									ite->annotation().addToFlag(Annotation::Flag_Edit);
-							}
-						}
-						else if ((wtyp == Annotation::Combobox) || (wtyp == Annotation::Listbox))
-						{
-							FormWidgetChoice *btn = (FormWidgetChoice*)fm;
-							if (btn)
-							{
-								if (wtyp == 5)
-									ite->annotation().addToFlag(Annotation::Flag_Combo);
-								int co = btn->getNumChoices();
-								if (co > 0)
-								{
-									QString inh = UnicodeParsedString(btn->getChoice(0));
-									for (int a = 1; a < co; a++)
-									{
-										inh += "\n" + UnicodeParsedString(btn->getChoice(a));
-									}
-									ite->itemText.insertChars(inh);
-								}
-								applyTextStyle(ite, fontName, CurrColorText, fontSize);
-								if (!btn->isReadOnly())
-									ite->annotation().addToFlag(Annotation::Flag_Edit);
-								handleActions(ite, ano);
-							}
-						}
-						else if (wtyp == Annotation::RadioButton)
-						{
-							FormWidgetButton *btn = (FormWidgetButton*)fm;
-							if (btn)
-							{
-								ite->setItemName( CommonStrings::itemName_RadioButton + QString("%1").arg(m_doc->TotalItems));
-								ite->annotation().setIsChk(btn->getState());
-								ite->annotation().setCheckState(ite->annotation().IsChk());
-								handleActions(ite, ano);
-								m_radioButtons.insert(annota->getRef().num, ite);
-							}
-						}
-					}
-					break;
+					wtyp = Annotation::Checkbox;
+					retVal = true;
+				}
+				else if (btn->getButtonType() == formButtonPush)
+				{
+					wtyp = Annotation::Button;
+					retVal = true;
+				}
+				else if (btn->getButtonType() == formButtonRadio)
+				{
+					wtyp = Annotation::RadioButton;
+					retVal = true;
 				}
 			}
 		}
+		else if (fm->getType() == formText)
+		{
+			wtyp = Annotation::Textfield;
+			retVal = true;
+		}
+		else if (fm->getType() == formChoice)
+		{
+			FormWidgetChoice *btn = (FormWidgetChoice*)fm;
+			if (btn)
+			{
+				if (btn->isCombo())
+				{
+					wtyp = Annotation::Combobox;
+					retVal = true;
+				}
+				else if (btn->isListBox())
+				{
+					wtyp = Annotation::Listbox;
+					retVal = true;
+				}
+			}
+		}
+		if (retVal)
+		{
+			AnnotAppearanceCharacs *achar = ano->getAppearCharacs();
+			bool fgFound = false;
+			bool bgFound = false;
+			if (achar)
+			{
+				AnnotColor *bgCol = achar->getBackColor();
+				if (bgCol)
+				{
+					bgFound = true;
+					CurrColorFill = getAnnotationColor(bgCol);
+				}
+				else
+					CurrColorFill = CommonStrings::None;
+				AnnotColor *fgCol = achar->getBorderColor();
+				if (fgCol)
+				{
+					fgFound = true;
+					CurrColorStroke = getAnnotationColor(fgCol);
+				}
+				else
+				{
+					fgCol = achar->getBackColor();
+					if (fgCol)
+						CurrColorStroke = getAnnotationColor(fgCol);
+					else
+						CurrColorStroke = CommonStrings::None;
+				}
+			}
+			QString CurrColorText = "Black";
+			double fontSize = 12;
+			QString fontName = "";
+			QString itemText = "";
+			AnnotAppearance *apa = annota->getAppearStreams();
+			if (apa || !achar)
+			{
+				AnoOutputDev *Adev = new AnoOutputDev(m_doc, m_importedColors);
+				Gfx *gfx;
+#ifdef POPPLER_VERSION
+				gfx = new Gfx(pdfDoc, Adev, pdfDoc->getPage(m_actPage)->getResourceDict(), annota->getRect(), NULL);
+#else
+				gfx = new Gfx(xref, Adev, pdfDoc->getPage(m_actPage)->getResourceDict(), catalog, annota->getRect(), NULL);
+#endif
+				ano->draw(gfx, false);
+				if (!bgFound)
+					CurrColorFill = Adev->CurrColorFill;
+				if (!fgFound)
+					CurrColorStroke = Adev->CurrColorStroke;
+				CurrColorText = Adev->CurrColorText;
+				fontSize = Adev->m_fontSize;
+				fontName = UnicodeParsedString(Adev->m_fontName);
+				itemText = UnicodeParsedString(Adev->m_itemText);
+				delete gfx;
+				delete Adev;
+			}
+			int z = m_doc->itemAdd(PageItem::TextFrame, PageItem::Rectangle, xCoor, yCoor, width, height, 0, CurrColorFill, CommonStrings::None, true);
+			PageItem *ite = m_doc->Items->at(z);
+			int flg = annota->getFlags();
+			if (!(flg & 16))
+				ite->setRotation(rotate, true);
+			ite->ClipEdited = true;
+			ite->FrameType = 3;
+			ite->setFillEvenOdd(false);
+			ite->Clip = FlattenPath(ite->PoLine, ite->Segments);
+			ite->ContourLine = ite->PoLine.copy();
+			ite->setTextFlowMode(PageItem::TextFlowDisabled);
+			m_Elements->append(ite);
+			if (m_groupStack.count() != 0)
+			{
+				m_groupStack.top().Items.append(ite);
+				applyMask(ite);
+			}
+			ite->setIsAnnotation(true);
+			ite->AutoName = false;
+			AnnotBorder *brd = annota->getBorder();
+			if (brd)
+			{
+				int bsty = brd->getStyle();
+				if (bsty == AnnotBorder::borderDashed)
+					bsty = 1;
+				else if (bsty == AnnotBorder::borderBeveled)
+					bsty = 3;
+				else if (bsty == AnnotBorder::borderInset)
+					bsty = 4;
+				else if (bsty == AnnotBorder::borderUnderlined)
+					bsty = 2;
+				ite->annotation().setBsty(bsty);
+				ite->annotation().setBorderColor(CurrColorStroke);
+				ite->annotation().setBwid(qRound(brd->getWidth()));
+			}
+			else
+			{
+				ite->annotation().setBsty(0);
+				ite->annotation().setBorderColor(CommonStrings::None);
+				ite->annotation().setBwid(0);
+			}
+			QString tmTxt = "";
+			tmTxt = UnicodeParsedString(fm->getPartialName());
+			if (!tmTxt.isEmpty())
+				ite->setItemName(tmTxt);
+			tmTxt = "";
+			tmTxt = UnicodeParsedString(fm->getAlternateUiName());
+			if (!tmTxt.isEmpty())
+				ite->annotation().setToolTip(tmTxt);
+			tmTxt = "";
+			if (achar)
+			{
+				tmTxt = UnicodeParsedString(achar->getRolloverCaption());
+				if (!tmTxt.isEmpty())
+					ite->annotation().setRollOver(tmTxt);
+				tmTxt = "";
+				tmTxt = UnicodeParsedString(achar->getAlternateCaption());
+				if (!tmTxt.isEmpty())
+					ite->annotation().setDown(tmTxt);
+			}
+			ite->annotation().setType(wtyp);
+			ite->annotation().setFlag(0);
+			if (flg & 2)
+				ite->annotation().setVis(1);
+			if (flg & 32)
+				ite->annotation().setVis(3);
+			if (wtyp == Annotation::Button)
+			{
+				ite->setFillColor(CurrColorFill);
+				if (achar)
+					ite->itemText.insertChars(UnicodeParsedString(achar->getNormalCaption()));
+				else
+					ite->itemText.insertChars(itemText);
+				applyTextStyle(ite, fontName, CurrColorText, fontSize);
+				ite->annotation().addToFlag(Annotation::Flag_PushButton);
+				FormWidgetButton *btn = (FormWidgetButton*)fm;
+				if (!btn->isReadOnly())
+					ite->annotation().addToFlag(Annotation::Flag_Edit);
+				handleActions(ite, ano);
+			}
+			else if (wtyp == Annotation::Textfield)
+			{
+				FormWidgetText *btn = (FormWidgetText*)fm;
+				if (btn)
+				{
+					ite->itemText.insertChars(UnicodeParsedString(btn->getContent()));
+					applyTextStyle(ite, fontName, CurrColorText, fontSize);
+					if (btn->isMultiline())
+						ite->annotation().addToFlag(Annotation::Flag_Multiline);
+					if (btn->isPassword())
+						ite->annotation().addToFlag(Annotation::Flag_Password);
+					if (btn->noSpellCheck())
+						ite->annotation().addToFlag(Annotation::Flag_DoNotSpellCheck);
+					if (btn->noScroll())
+						ite->annotation().addToFlag(Annotation::Flag_DoNotScroll);
+					int mxLen = btn->getMaxLen();
+					if (mxLen > 0)
+						ite->annotation().setMaxChar(mxLen);
+					else
+						ite->annotation().setMaxChar(-1);
+					if (!btn->isReadOnly())
+						ite->annotation().addToFlag(Annotation::Flag_Edit);
+					handleActions(ite, ano);
+				}
+			}
+			else if (wtyp == Annotation::Checkbox)
+			{
+				FormWidgetButton *btn = (FormWidgetButton*)fm;
+				if (btn)
+				{
+					ite->annotation().setIsChk(btn->getState());
+					ite->annotation().setCheckState(ite->annotation().IsChk());
+					handleActions(ite, ano);
+					if (itemText == "4")
+						ite->annotation().setChkStil(0);
+					else if (itemText == "5")
+						ite->annotation().setChkStil(1);
+					else if (itemText == "F")
+						ite->annotation().setChkStil(2);
+					else if (itemText == "l")
+						ite->annotation().setChkStil(3);
+					else if (itemText == "H")
+						ite->annotation().setChkStil(4);
+					else if (itemText == "n")
+						ite->annotation().setChkStil(5);
+					else
+						ite->annotation().setChkStil(0);
+					if (!btn->isReadOnly())
+						ite->annotation().addToFlag(Annotation::Flag_Edit);
+				}
+			}
+			else if ((wtyp == Annotation::Combobox) || (wtyp == Annotation::Listbox))
+			{
+				FormWidgetChoice *btn = (FormWidgetChoice*)fm;
+				if (btn)
+				{
+					if (wtyp == 5)
+						ite->annotation().addToFlag(Annotation::Flag_Combo);
+					int co = btn->getNumChoices();
+					if (co > 0)
+					{
+						QString inh = UnicodeParsedString(btn->getChoice(0));
+						for (int a = 1; a < co; a++)
+						{
+							inh += "\n" + UnicodeParsedString(btn->getChoice(a));
+						}
+						ite->itemText.insertChars(inh);
+					}
+					applyTextStyle(ite, fontName, CurrColorText, fontSize);
+					if (!btn->isReadOnly())
+						ite->annotation().addToFlag(Annotation::Flag_Edit);
+					handleActions(ite, ano);
+				}
+			}
+			else if (wtyp == Annotation::RadioButton)
+			{
+				FormWidgetButton *btn = (FormWidgetButton*)fm;
+				if (btn)
+				{
+					ite->setItemName( CommonStrings::itemName_RadioButton + QString("%1").arg(m_doc->TotalItems));
+					ite->annotation().setIsChk(btn->getState());
+					ite->annotation().setCheckState(ite->annotation().IsChk());
+					handleActions(ite, ano);
+					m_radioButtons.insert(annota->getRef().num, ite);
+				}
+			}
+		}
+		break;
 	}
 	if (!found)
 	{
 		Object obj1;
 		Ref refa = annota->getRef();
 		Object *act = xref->fetch(refa.num, refa.gen, &obj1);
-		if (act)
+		if (act && act->isDict())
 		{
-			if (act->isDict())
+			Dict* dict = act->getDict();
+			Object obj2;
+			//childs
+			if (dict->lookup("Kids", &obj2)->isArray())
 			{
-				Dict* dict = act->getDict();
-				Object obj2;
-				//childs
-				if (dict->lookup("Kids", &obj2)->isArray())
+				// Load children
+				QList<int> radList;
+				for (int i = 0 ; i < obj2.arrayGetLength(); i++)
 				{
-				  // Load children
-					QList<int> radList;
-					for (int i = 0 ; i < obj2.arrayGetLength(); i++)
+					Object childRef, childObj;
+					if (!obj2.arrayGetNF(i, &childRef)->isRef())
 					{
-						Object childRef, childObj;
-						if (!obj2.arrayGetNF(i, &childRef)->isRef())
-						{
-							childRef.free();
-							continue;
-						}
-						if (!obj2.arrayGet(i, &childObj)->isDict())
-						{
-							childObj.free();
-							childRef.free();
-							continue;
-						}
-						const Ref ref = childRef.getRef();
-						radList.append(ref.num);
+						childRef.free();
+						continue;
+					}
+					if (!obj2.arrayGet(i, &childObj)->isDict())
+					{
 						childObj.free();
 						childRef.free();
+						continue;
 					}
-					QString tmTxt = UnicodeParsedString(annota->getName());
-					m_radioMap.insert(tmTxt, radList);
+					const Ref ref = childRef.getRef();
+					radList.append(ref.num);
+					childObj.free();
+					childRef.free();
 				}
-				obj2.free();
+				QString tmTxt = UnicodeParsedString(annota->getName());
+				m_radioMap.insert(tmTxt, radList);
 			}
+			obj2.free();
 		}
 		obj1.free();
 	}
@@ -1482,6 +1481,18 @@ void SlaOutputDev::clearSoftMask(GfxState * /*state*/)
 	}
 }
 
+void SlaOutputDev::updateFillColor(GfxState *state)
+{
+	CurrFillShade = 100;
+	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &CurrFillShade);
+}
+
+void SlaOutputDev::updateStrokeColor(GfxState *state)
+{
+	CurrStrokeShade = 100;
+	CurrColorStroke = getColor(state->getStrokeColorSpace(), state->getStrokeColor(), &CurrStrokeShade);
+}
+
 void SlaOutputDev::clip(GfxState *state)
 {
 //	qDebug() << "Clip";
@@ -1589,15 +1600,13 @@ void SlaOutputDev::stroke(GfxState *state)
 	ctm = state->getCTM();
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	int shade = 100;
-	CurrColorStroke = getColor(state->getStrokeColorSpace(), state->getStrokeColor(), &shade);
 	QString output = convertPath(state->getPath());
 	getPenState(state);
 	if ((m_Elements->count() != 0) && (output == Coords))			// Path is the same as in last fill
 	{
 		PageItem* ite = m_Elements->last();
 		ite->setLineColor(CurrColorStroke);
-		ite->setLineShade(shade);
+		ite->setLineShade(CurrStrokeShade);
 		ite->setLineEnd(PLineEnd);
 		ite->setLineJoin(PLineJoin);
 		ite->setLineWidth(state->getTransformedLineWidth());
@@ -1632,7 +1641,7 @@ void SlaOutputDev::stroke(GfxState *state)
 				{
 					lItem->setLineColor(CurrColorStroke);
 					lItem->setLineWidth(state->getTransformedLineWidth());
-					lItem->setLineShade(shade);
+					lItem->setLineShade(CurrStrokeShade);
 					lItem->setLineTransparency(1.0 - state->getStrokeOpacity());
 					lItem->setLineBlendmode(getBlendMode(state));
 					lItem->setLineEnd(PLineEnd);
@@ -1644,7 +1653,7 @@ void SlaOutputDev::stroke(GfxState *state)
 				}
 				else
 				{
-					ite->setLineShade(shade);
+					ite->setLineShade(CurrStrokeShade);
 					ite->setLineTransparency(1.0 - state->getStrokeOpacity());
 					ite->setLineBlendmode(getBlendMode(state));
 					ite->setLineEnd(PLineEnd);
@@ -1659,7 +1668,7 @@ void SlaOutputDev::stroke(GfxState *state)
 			}
 			else
 			{
-				ite->setLineShade(shade);
+				ite->setLineShade(CurrStrokeShade);
 				ite->setLineTransparency(1.0 - state->getStrokeOpacity());
 				ite->setLineBlendmode(getBlendMode(state));
 				ite->setLineEnd(PLineEnd);
@@ -1682,8 +1691,6 @@ void SlaOutputDev::fill(GfxState *state)
 	ctm = state->getCTM();
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	int shade = 100;
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	FPointArray out;
 	QString output = convertPath(state->getPath());
 	out.parseSVG(output);
@@ -1702,7 +1709,7 @@ void SlaOutputDev::fill(GfxState *state)
 		ite->PoLine = out.copy();
 		ite->ClipEdited = true;
 		ite->FrameType = 3;
-		ite->setFillShade(shade);
+		ite->setFillShade(CurrFillShade);
 		ite->setLineShade(100);
 		ite->setFillEvenOdd(false);
 		ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -1728,8 +1735,6 @@ void SlaOutputDev::eoFill(GfxState *state)
 	ctm = state->getCTM();
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	int shade = 100;
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	FPointArray out;
 	QString output = convertPath(state->getPath());
 	out.parseSVG(output);
@@ -1748,7 +1753,7 @@ void SlaOutputDev::eoFill(GfxState *state)
 		ite->PoLine = out.copy();
 		ite->ClipEdited = true;
 		ite->FrameType = 3;
-		ite->setFillShade(shade);
+		ite->setFillShade(CurrFillShade);
 		ite->setLineShade(100);
 		ite->setFillEvenOdd(true);
 		ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -1828,7 +1833,6 @@ GBool SlaOutputDev::axialShadedFill(GfxState *state, GfxAxialShading *shading, d
 	GrEndY = gr.point(1).y() - crect.y();
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	QString output = QString("M %1 %2").arg(0.0).arg(0.0);
 	output += QString("L %1 %2").arg(crect.width()).arg(0.0);
 	output += QString("L %1 %2").arg(crect.width()).arg(crect.height());
@@ -1841,7 +1845,7 @@ GBool SlaOutputDev::axialShadedFill(GfxState *state, GfxAxialShading *shading, d
 	PageItem* ite = m_doc->Items->at(z);
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
-	ite->setFillShade(shade);
+	ite->setFillShade(CurrFillShade);
 	ite->setLineShade(100);
 	ite->setFillEvenOdd(false);
 	ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -1931,7 +1935,6 @@ GBool SlaOutputDev::radialShadedFill(GfxState *state, GfxRadialShading *shading,
 	GrFocalY = gr.point(2).y() - crect.y();
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	QString output = QString("M %1 %2").arg(0.0).arg(0.0);
 	output += QString("L %1 %2").arg(crect.width()).arg(0.0);
 	output += QString("L %1 %2").arg(crect.width()).arg(crect.height());
@@ -1944,7 +1947,7 @@ GBool SlaOutputDev::radialShadedFill(GfxState *state, GfxRadialShading *shading,
 	PageItem* ite = m_doc->Items->at(z);
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
-	ite->setFillShade(shade);
+	ite->setFillShade(CurrFillShade);
 	ite->setLineShade(100);
 	ite->setFillEvenOdd(false);
 	ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -1969,8 +1972,6 @@ GBool SlaOutputDev::gouraudTriangleShadedFill(GfxState *state, GfxGouraudTriangl
 {
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	int shade = 100;
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	double xmin, ymin, xmax, ymax;
 	// get the clip region bbox
 	state->getClipBBox(&xmin, &ymin, &xmax, &ymax);
@@ -1991,7 +1992,7 @@ GBool SlaOutputDev::gouraudTriangleShadedFill(GfxState *state, GfxGouraudTriangl
 	PageItem* ite = m_doc->Items->at(z);
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
-	ite->setFillShade(100);
+	ite->setFillShade(CurrFillShade);
 	ite->setLineShade(100);
 	ite->setFillEvenOdd(false);
 	ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -2010,6 +2011,7 @@ GBool SlaOutputDev::gouraudTriangleShadedFill(GfxState *state, GfxGouraudTriangl
 	double x0, y0, x1, y1, x2, y2;
 	for (int i = 0; i < shading->getNTriangles(); i++)
 	{
+		int shade = 100;
 		meshGradientPatch patchM;
 		shading->getTriangle(i, &x0, &y0, &color[0],  &x1, &y1, &color[1],  &x2, &y2, &color[2]);
 		patchM.BL.resetTo(FPoint(x0, y0));
@@ -2051,8 +2053,6 @@ GBool SlaOutputDev::patchMeshShadedFill(GfxState *state, GfxPatchMeshShading *sh
 //	qDebug() << "mesh shaded fill";
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	int shade = 100;
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	double xmin, ymin, xmax, ymax;
 	// get the clip region bbox
 	state->getClipBBox(&xmin, &ymin, &xmax, &ymax);
@@ -2073,7 +2073,7 @@ GBool SlaOutputDev::patchMeshShadedFill(GfxState *state, GfxPatchMeshShading *sh
 	PageItem* ite = m_doc->Items->at(z);
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
-	ite->setFillShade(shade);
+	ite->setFillShade(CurrFillShade);
 	ite->setLineShade(100);
 	ite->setFillEvenOdd(false);
 	ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -2092,6 +2092,7 @@ GBool SlaOutputDev::patchMeshShadedFill(GfxState *state, GfxPatchMeshShading *sh
 	ite->meshGradientPatches.clear();
 	for (int i = 0; i < shading->getNPatches(); i++)
 	{
+		int shade = 100;
 		GfxPatch *patch = shading->getPatch(i);
 		GfxColor color;
 		meshGradientPatch patchM;
@@ -2274,8 +2275,6 @@ GBool SlaOutputDev::tilingPatternFill(GfxState *state, Gfx * /*gfx*/, Catalog *c
 	}
 	double xCoor = m_doc->currentPage()->xOffset();
 	double yCoor = m_doc->currentPage()->yOffset();
-	int shade = 100;
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 	double xmin, ymin, xmax, ymax;
 	// get the clip region bbox
 	state->getClipBBox(&xmin, &ymin, &xmax, &ymax);
@@ -2293,7 +2292,7 @@ GBool SlaOutputDev::tilingPatternFill(GfxState *state, Gfx * /*gfx*/, Catalog *c
 	ite = m_doc->Items->at(z);
 	ite->ClipEdited = true;
 	ite->FrameType = 3;
-	ite->setFillShade(shade);
+	ite->setFillShade(CurrFillShade);
 	ite->setLineShade(100);
 	ite->setFillEvenOdd(false);
 	ite->setFillTransparency(1.0 - state->getFillOpacity());
@@ -2367,9 +2366,7 @@ void SlaOutputDev::drawImageMask(GfxState *state, Object *ref, Stream *str, int 
 			}
 		}
 	}
-	int shade = 100;
-	CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
-	QColor backColor = ScColorEngine::getShadeColorProof(m_doc->PageColors[CurrColorFill], m_doc, shade);
+	QColor backColor = ScColorEngine::getShadeColorProof(m_doc->PageColors[CurrColorFill], m_doc, CurrFillShade);
 	QImage res = QImage(width, height, QImage::Format_ARGB32);
 	res.fill(backColor.rgb());
 	unsigned char cc, cm, cy, ck;
@@ -3552,8 +3549,6 @@ void SlaOutputDev::drawChar(GfxState *state, double x, double y, double dx, doub
 			m_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 			double xCoor = m_doc->currentPage()->xOffset();
 			double yCoor = m_doc->currentPage()->yOffset();
-			int shade = 100;
-			CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
 			FPointArray textPath;
 			textPath.fromQPainterPath(qPath);
 			FPoint wh = textPath.WidthHeight();
@@ -3570,7 +3565,7 @@ void SlaOutputDev::drawChar(GfxState *state, double x, double y, double dx, doub
 				ite->PoLine = textPath.copy();
 				ite->ClipEdited = true;
 				ite->FrameType = 3;
-				ite->setFillShade(shade);
+				ite->setFillShade(CurrFillShade);
 				ite->setFillEvenOdd(false);
 				ite->setFillTransparency(1.0 - state->getFillOpacity());
 				ite->setFillBlendmode(getBlendMode(state));
@@ -3580,12 +3575,11 @@ void SlaOutputDev::drawChar(GfxState *state, double x, double y, double dx, doub
 				m_doc->AdjustItemSize(ite);
 				if ((render & 3) == 1 || (render & 3) == 2)
 				{
-					CurrColorStroke = getColor(state->getStrokeColorSpace(), state->getStrokeColor(), &shade);
 					ite->setLineColor(CurrColorStroke);
 					ite->setLineWidth(state->getTransformedLineWidth());
 					ite->setLineTransparency(1.0 - state->getStrokeOpacity());
 					ite->setLineBlendmode(getBlendMode(state));
-					ite->setLineShade(shade);
+					ite->setLineShade(CurrStrokeShade);
 				}
 				m_Elements->append(ite);
 				if (m_groupStack.count() != 0)
@@ -3602,171 +3596,47 @@ void SlaOutputDev::drawChar(GfxState *state, double x, double y, double dx, doub
 GBool SlaOutputDev::beginType3Char(GfxState *state, double x, double y, double dx, double dy, CharCode code, Unicode *u, int uLen)
 {
 //	qDebug() << "beginType3Char";
-	double *ctm;
-	ctm = state->getCTM();
-	QTransform orig_ctm = QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]);
 	GfxFont *gfxFont;
-	GfxFontType fontType;
 	if (!(gfxFont = state->getFont()))
 		return gTrue;
-	fontType = gfxFont->getType();
-	if (fontType != fontType3)
+	if (gfxFont->getType() != fontType3)
 		return gTrue;
-	Ref* fref = gfxFont->getID();
-	QString fRefID = QString("Font_%1_%2").arg(fref->num).arg(code);
-	if (m_Font_Pattern_Map.contains(fRefID))
-	{
-		QLineF cline = QLineF(0, 0, 1, 0);
-		QLineF tline = orig_ctm.map(cline);
-		double xCoor = m_doc->currentPage()->xOffset();
-		double yCoor = m_doc->currentPage()->yOffset();
-		ScPattern pat = m_doc->docPatterns[m_Font_Pattern_Map[fRefID].pattern];
-		QTransform mm;
-		mm.translate(0, -pat.height * tline.length());
-		mm = orig_ctm * mm;
-		int shade = 100;
-		CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
-		int z = 0;
-		if (m_Font_Pattern_Map[fRefID].colored)
-			z = m_doc->itemAdd(PageItem::Symbol, PageItem::Unspecified, xCoor + mm.dx(), yCoor + mm.dy(), pat.width * tline.length(), pat.height * tline.length(), 0, CommonStrings::None, CommonStrings::None, true);
-		else
-			z = m_doc->itemAdd(PageItem::Polygon, PageItem::Rectangle, xCoor + mm.dx(), yCoor + mm.dy(), pat.width * tline.length(), pat.height * tline.length(), 0, CurrColorFill, CommonStrings::None, true);
-		PageItem *b = m_doc->Items->at(z);
-		b->setWidth(pat.width * tline.length());
-		b->setHeight(pat.height * tline.length());
-		b->OldB2 = b->width();
-		b->OldH2 = b->height();
-		m_doc->RotMode(3);
-		m_doc->RotateItem(-tline.angle(), b);
-		m_doc->RotMode(0);
-		b->setFillShade(shade);
-		b->setFillEvenOdd(false);
-		b->setFillTransparency(1.0 - state->getFillOpacity());
-		b->setFillBlendmode(getBlendMode(state));
-		b->setLineEnd(PLineEnd);
-		b->setLineJoin(PLineJoin);
-		b->setTextFlowMode(PageItem::TextFlowDisabled);
-		if (m_Font_Pattern_Map[fRefID].colored)
-			b->setPattern(m_Font_Pattern_Map[fRefID].pattern);
-		else
-		{
-			b->setFillShade(shade);
-			b->setPatternMask(m_Font_Pattern_Map[fRefID].pattern);
-			b->setMaskTransform(b->width() / pat.width * 100, b->height() / pat.height * 100, 0, 0, 0, 0, 0);
-			b->setMaskType(3);
-		}
-		m_Elements->append(b);
-		if (m_groupStack.count() != 0)
-		{
-			m_groupStack.top().Items.append(b);
-		}
-		return gTrue;
-	}
-	else
-	{
-		F3Entry f3e;
-		f3e.ctm = orig_ctm;
-		f3e.glyphRef = fRefID;
-		f3e.colored = false;
-		m_F3Stack.push(f3e);
-		ctm = state->getTextMat();
-		state->setCTM(ctm[0], ctm[1], ctm[2], ctm[3], 0, 0);
-		pushGroup();
-		return gFalse;
-	}
+	F3Entry f3e;
+	f3e.colored = false;
+	m_F3Stack.push(f3e);
+	pushGroup();
+	return gFalse;
 }
 
 void SlaOutputDev::endType3Char(GfxState *state)
 {
 //	qDebug() << "endType3Char";
-	double *ctm;
-	ctm = state->getCTM();
+	F3Entry f3e = m_F3Stack.pop();
 	groupEntry gElements = m_groupStack.pop();
 	m_doc->m_Selection->clear();
 	if (gElements.Items.count() > 0)
 	{
+		m_doc->m_Selection->delaySignalsOn();
 		for (int dre = 0; dre < gElements.Items.count(); ++dre)
 		{
 			m_doc->m_Selection->addItem(gElements.Items.at(dre), true);
 			m_Elements->removeAll(gElements.Items.at(dre));
 		}
-		m_doc->itemSelection_FlipV();
 		PageItem *ite;
 		if (m_doc->m_Selection->count() > 1)
 			ite = m_doc->groupObjectsSelection();
 		else
 			ite = m_doc->m_Selection->itemAt(0);
-		ite->setFillTransparency(1.0 - state->getFillOpacity());
-		ite->setFillBlendmode(getBlendMode(state));
-		m_doc->m_Selection->clear();
-		ScPattern pat = ScPattern();
-		pat.setDoc(m_doc);
-		m_doc->DoDrawing = true;
-		pat.pattern = ite->DrawObj_toImage(qMax(ite->width(), ite->height()));
-		pat.xoffset = 0;
-		pat.yoffset = 0;
-		m_doc->DoDrawing = false;
-		pat.width = ite->width();
-		pat.height = ite->height();
-		ite->gXpos = 0;
-		ite->gYpos = 0;
-		ite->setXYPos(ite->gXpos, ite->gYpos, true);
-		pat.items.append(ite);
-		m_doc->Items->removeAll(ite);
-		QString id = QString("Pattern_from_PDF_%1T").arg(m_doc->docPatterns.count() + 1);
-		m_doc->addPattern(id, pat);
-		tmpSel->clear();
-		if (m_F3Stack.count() > 0)
+		if (!f3e.colored)
 		{
-			F3Entry f3e = m_F3Stack.pop();
-			state->setCTM(f3e.ctm.m11(), f3e.ctm.m12(), f3e.ctm.m21(), f3e.ctm.m22(), f3e.ctm.dx(), f3e.ctm.dy());
-			QLineF cline = QLineF(0, 0, 1, 0);
-			QLineF tline = f3e.ctm.map(cline);
-			double xCoor = m_doc->currentPage()->xOffset();
-			double yCoor = m_doc->currentPage()->yOffset();
-			QTransform mm;
-			mm.translate(0, -pat.height * tline.length());
-			mm = f3e.ctm * mm;
-			int shade = 100;
-			CurrColorFill = getColor(state->getFillColorSpace(), state->getFillColor(), &shade);
-			int z = 0;
-			if (f3e.colored)
-				z = m_doc->itemAdd(PageItem::Symbol, PageItem::Unspecified, xCoor + mm.dx(), yCoor + mm.dy(), pat.width * tline.length(), pat.height * tline.length(), 0, CommonStrings::None, CommonStrings::None, true);
-			else
-				z = m_doc->itemAdd(PageItem::Polygon, PageItem::Rectangle, xCoor + mm.dx(), yCoor + mm.dy(), pat.width * tline.length(), pat.height * tline.length(), 0, CurrColorFill, CommonStrings::None, true);
-			PageItem *b = m_doc->Items->at(z);
-			b->setWidth(pat.width * tline.length());
-			b->setHeight(pat.height * tline.length());
-			b->OldB2 = b->width();
-			b->OldH2 = b->height();
-			m_doc->RotMode(3);
-			m_doc->RotateItem(-tline.angle(), b);
-			m_doc->RotMode(0);
-			b->setFillEvenOdd(false);
-			b->setFillTransparency(1.0 - state->getFillOpacity());
-			b->setFillBlendmode(getBlendMode(state));
-			b->setLineEnd(PLineEnd);
-			b->setLineJoin(PLineJoin);
-			b->setTextFlowMode(PageItem::TextFlowDisabled);
-			if (f3e.colored)
-				b->setPattern(id);
-			else
-			{
-				b->setFillShade(shade);
-				b->setPatternMask(id);
-				b->setMaskTransform(b->width() / pat.width * 100, b->height() / pat.height * 100, 0, 0, 0, 0, 0);
-				b->setMaskType(3);
-			}
-			m_Elements->append(b);
-			if (m_groupStack.count() != 0)
-			{
-				m_groupStack.top().Items.append(b);
-			}
-			F3GlyphEntry gid;
-			gid.colored = f3e.colored;
-			gid.pattern = id;
-			m_Font_Pattern_Map.insert(f3e.glyphRef, gid);
+			m_doc->itemSelection_SetItemBrush(CurrColorFill);
+			m_doc->itemSelection_SetItemBrushShade(CurrFillShade);
+			m_doc->itemSelection_SetItemFillTransparency(1.0 - state->getFillOpacity());
+			m_doc->itemSelection_SetItemFillBlend(getBlendMode(state));
 		}
+		m_Elements->append(ite);
+		m_doc->m_Selection->clear();
+		m_doc->m_Selection->delaySignalsOff();
 	}
 }
 

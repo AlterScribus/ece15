@@ -196,6 +196,14 @@ PageItem::PageItem(const PageItem & other)
 	fill_gradient(other.fill_gradient),
 	fillRule(other.fillRule),
 	doOverprint(other.doOverprint),
+	m_hasSoftShadow(other.m_hasSoftShadow),
+	m_softShadowColor(other.m_softShadowColor),
+	m_softShadowShade(other.m_softShadowShade),
+	m_softShadowBlurRadius(other.m_softShadowBlurRadius),
+	m_softShadowXOffset(other.m_softShadowXOffset),
+	m_softShadowYOffset(other.m_softShadowYOffset),
+	m_softShadowOpacity(other.m_softShadowOpacity),
+	m_softShadowBlendMode(other.m_softShadowBlendMode),
 	LeftLink(other.LeftLink),
 	RightLink(other.RightLink),
 	TopLink(other.TopLink),
@@ -336,7 +344,8 @@ PageItem::PageItem(const PageItem & other)
 	m_imageYOffset(other.m_imageYOffset),
 	m_imageRotation(other.m_imageRotation),
 	m_isReversed(other.m_isReversed),
-	firstLineOffsetP(other.firstLineOffsetP)
+	firstLineOffsetP(other.firstLineOffsetP),
+	m_groupClips(other.m_groupClips)
 {
 	QString tmp;
 	m_Doc->TotalItems++;
@@ -828,6 +837,16 @@ PageItem::PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double 
 	}
 	isInlineImage = false;
 	isTempFile = false;
+
+	m_hasSoftShadow = false;
+	m_softShadowColor = "Black";
+	m_softShadowShade = 100;
+	m_softShadowBlurRadius = 5.0;
+	m_softShadowXOffset = 5.0;
+	m_softShadowYOffset = 5.0;
+	m_softShadowOpacity = 0.0;
+	m_softShadowBlendMode = 0;
+	m_groupClips = true;
 }
 
 PageItem::~PageItem()
@@ -845,7 +864,7 @@ PageItem::~PageItem()
                 if (itemText.hasMark(pos))
 				{
                     Mark* mrk = itemText.mark(pos);
-					if (!mrk->isType(MARKBullNumType))
+					if (!mrk->isType(MARKListType))
 						m_Doc->eraseMark(mrk);
 				}
 			}
@@ -1816,12 +1835,16 @@ void PageItem::DrawObj(ScPainter *p, QRectF cullingArea)
 void PageItem::DrawObj_Pre(ScPainter *p)
 {
 	p->save();
+	double lwCorr = m_lineWidth;
+	double sc = p->zoomFactor();
+	if ((m_lineWidth * sc) < 1)
+		lwCorr = 0;
 	if (!isEmbedded)
 		p->translate(m_xPos, m_yPos);
 	p->rotate(m_rotation);
 	if (m_Doc->layerOutline(LayerID))
 	{
-		p->setPen(m_Doc->layerMarker(LayerID), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+		p->setPen(m_Doc->layerMarker(LayerID), 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 		p->setFillMode(ScPainter::None);
 		p->setBrushOpacity(1.0);
 		p->setPenOpacity(1.0);
@@ -1830,8 +1853,10 @@ void PageItem::DrawObj_Pre(ScPainter *p)
 	{
 		if (!isGroup())
 		{
+			if (hasSoftShadow())
+				DrawSoftShadow(p);
 			p->setBlendModeFill(fillBlendmode());
-			p->setLineWidth(m_lineWidth);
+			p->setLineWidth(lwCorr);
 			if (GrType != 0)
 			{
 				if (GrType == 8)
@@ -1943,7 +1968,7 @@ void PageItem::DrawObj_Pre(ScPainter *p)
 			}
 			if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
 			{
-				p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
+				p->setPen(strokeQColor, lwCorr, PLineArt, PLineEnd, PLineJoin);
 				if (DashValues.count() != 0)
 					p->setDash(DashValues, DashOffset);
 			}
@@ -1994,11 +2019,15 @@ void PageItem::DrawObj_Pre(ScPainter *p)
 void PageItem::DrawObj_Post(ScPainter *p)
 {
 	bool doStroke=true;
+	double lwCorr = m_lineWidth;
+	double sc = p->zoomFactor();
+	if ((m_lineWidth * sc) < 1)
+		lwCorr = 0;
 	if (m_Doc->layerOutline(LayerID))
 	{
 		if (itemType()!=Line)
 		{
-			p->setPen(m_Doc->layerMarker(LayerID), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+			p->setPen(m_Doc->layerMarker(LayerID), 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 			p->setFillMode(ScPainter::None);
 			p->setBrushOpacity(1.0);
 			p->setPenOpacity(1.0);
@@ -2040,7 +2069,7 @@ void PageItem::DrawObj_Post(ScPainter *p)
 				p->setPenOpacity(1.0 - lineTransparency());
 				if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
 				{
-					p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
+					p->setPen(strokeQColor, lwCorr, PLineArt, PLineEnd, PLineJoin);
 					if (DashValues.count() != 0)
 						p->setDash(DashValues, DashOffset);
 				}
@@ -2097,12 +2126,14 @@ void PageItem::DrawObj_Post(ScPainter *p)
 					else if (lineColor() != CommonStrings::None)
 					{
 						p->setStrokeMode(ScPainter::Solid);
-						p->setPen(strokeQColor, m_lineWidth, PLineArt, PLineEnd, PLineJoin);
+						p->setPen(strokeQColor, lwCorr, PLineArt, PLineEnd, PLineJoin);
 						if (DashValues.count() != 0)
 							p->setDash(DashValues, DashOffset);
 						p->strokePath();
 					}
 					else
+						no_stroke = true;
+					if (lineTransparency() > 0.9)
 						no_stroke = true;
 				}
 				else
@@ -2364,6 +2395,39 @@ void PageItem::DrawStrokePattern(ScPainter *p, QPainterPath &path)
 	p->newPath();
 }
 
+void PageItem::DrawSoftShadow(ScPainter *p)
+{
+	if (m_softShadowColor == CommonStrings::None)
+		return;
+	if ((itemType() == PathText) || (itemType() == Symbol) || (itemType() == Group) || (itemType() == Line) || (itemType() == PolyLine) || (itemType() == Spiral))
+		return;
+	double lwCorr = m_lineWidth;
+	double sc = p->zoomFactor();
+	if ((m_lineWidth * sc) < 1)
+		lwCorr = 0;
+	const ScColor& col = m_Doc->PageColors[m_softShadowColor];
+	QColor tmp = ScColorEngine::getShadeColorProof(col, m_Doc, m_softShadowShade);
+	if (m_Doc->viewAsPreview)
+	{
+		VisionDefectColor defect;
+		tmp = defect.convertDefect(tmp, m_Doc->previewVisual);
+	}
+	p->save();
+	FPointArray sh = PoLine.copy();
+	sh.translate(m_softShadowXOffset, m_softShadowYOffset);
+	p->beginLayer(1.0 - m_softShadowOpacity, m_softShadowBlendMode);
+	p->setupPolygon(&sh);
+	p->setBrush(tmp);
+	p->setFillMode(ScPainter::Solid);
+	p->setStrokeMode(ScPainter::Solid);
+	p->setPen(tmp, lwCorr, PLineArt, PLineEnd, PLineJoin);
+	p->fillPath();
+	p->strokePath();
+	p->blur(m_softShadowBlurRadius);
+	p->endLayer();
+	p->restore();
+}
+
 QImage PageItem::DrawObj_toImage(double maxSize)
 {
 	bool isEmbedded_Old = isEmbedded;
@@ -2443,9 +2507,7 @@ QString PageItem::ExpandToken(uint base)
 		{
 			//CB Section numbering
 			//chstr = out.arg(m_Doc->getSectionPageNumberForPageIndex(OwnPage), -(int)zae);
-			chstr = QString("%1").arg(m_Doc->getSectionPageNumberForPageIndex(OwnPage),
-							m_Doc->getSectionPageNumberWidthForPageIndex(OwnPage),
-							m_Doc->getSectionPageNumberFillCharForPageIndex(OwnPage));
+			chstr = m_Doc->getFormattedSectionPageNumber(OwnPage);
 		}
 		else
 			return "#";
@@ -6592,13 +6654,17 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 	int start = ss->getInt("START");
 	if (ScItemState<ParagraphStyle> *is = dynamic_cast<ScItemState<ParagraphStyle> *>(ss))
 	{
+		const ParagraphStyle pstyle = is->getItem();
 		if (isUndo)
 		{
 			if (start < itemText.length())
-				itemText.applyStyle(start, is->getItem());
+				itemText.applyStyle(start, pstyle);
 			else
-				itemText.setDefaultStyle(is->getItem());
+				itemText.setDefaultStyle(pstyle);
 		}
+		if (pstyle.hasNum())
+			m_Doc->flag_Renumber = true;
+		
 	}
 	else if (ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss))
 	{
@@ -10856,10 +10922,8 @@ QString PageItem::getItemTextSaxed(int selStart, int selLength)
 
 	if (selLength == 0)
 		selLength = 1;
-	itemText.deselectAll();
-	itemText.select(selStart, selLength);
+	itemText.select(selStart, selLength, false);
 	it.insert(0, itemText, true);
-	itemText.deselectAll();
 
 	//saxing text
 	return saxedTextFromStory(it);

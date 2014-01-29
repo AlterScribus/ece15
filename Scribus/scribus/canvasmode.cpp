@@ -559,6 +559,7 @@ void CanvasMode::drawOutline(QPainter* p, double scalex, double scaley, double d
 						p->rotate(currItem->rotation());
 					}
 					p->scale(scalex, scaley);
+					p->drawRect(QRectF(0.0, 0.0, currItem->visualWidth(), currItem->visualHeight()));
 					PageItem_Group* gItem = currItem->asGroupFrame();
 					uint itemCountG = gItem->groupItemList.count();
 					if (itemCountG < m_canvas->moveWithFullOutlinesThreshold)
@@ -581,6 +582,20 @@ void CanvasMode::drawOutline(QPainter* p, double scalex, double scaley, double d
 				}
 				else
 				{
+					p->save();
+					p->setBrush(m_brush["outline"]);
+					p->setPen(m_pen["outline"]);
+					p->translate(currItem->visualXPos(), currItem->visualYPos());
+					p->translate(deltax, deltay);
+					if (currItem->rotation() != 0)
+					{
+						p->setRenderHint(QPainter::Antialiasing);
+						p->rotate(currItem->rotation());
+					}
+					p->scale(scalex, scaley);
+					p->drawRect(QRectF(0.0, 0.0, currItem->visualWidth(), currItem->visualHeight()));
+					p->restore();
+
 					p->save();
 					p->setBrush(m_brush["outline"]);
 					p->setPen(m_pen["outline"]);
@@ -658,6 +673,19 @@ void CanvasMode::drawOutline(QPainter* p, double scalex, double scaley, double d
 							p->save();
 							p->setBrush(m_brush["outline"]);
 							p->setPen(m_pen["outline"]);
+							p->translate(currItem->visualXPos(), currItem->visualYPos());
+							p->translate(deltax, deltay);
+							if (currItem->rotation() != 0)
+							{
+								p->setRenderHint(QPainter::Antialiasing);
+								p->rotate(currItem->rotation());
+							}
+							p->scale(scalex, scaley);
+							p->drawRect(QRectF(0.0, 0.0, currItem->visualWidth(), currItem->visualHeight()));
+							p->restore();
+							p->save();
+							p->setBrush(m_brush["outline"]);
+							p->setPen(m_pen["outline"]);
 							p->translate(currItem->xPos(), currItem->yPos());
 							p->translate(deltax, deltay);
 							if (currItem->rotation() != 0)
@@ -682,7 +710,7 @@ void CanvasMode::drawOutline(QPainter* p, double scalex, double scaley, double d
 						p->setRenderHint(QPainter::Antialiasing);
 						p->rotate(currItem->rotation());
 					}
-					p->drawRect(QRectF(0.0, 0.0, currItem->width()+1.0, currItem->height()+1.0));
+					p->drawRect(QRectF(0.0, 0.0, currItem->visualWidth(), currItem->visualHeight()));
 				}
 				p->restore();
 			}
@@ -1073,9 +1101,12 @@ void CanvasMode::commonDrawTextCursor(QPainter* p, PageItem_TextFrame* textframe
 		cPen.setColor ( ScColorEngine::getRGBColor ( m_doc->PageColors[textframe->itemText.charStyle ( textCursorPos ).fillColor() ], m_doc ) );
 	}
 	//handle Right to Left writing
-	if ( textframe->reversed() )
+	if (textframe->imageFlippedH())
+		dx = textframe->width() - dx;
+	if (textframe->imageFlippedV())
 	{
-		dx=textframe->width()-dx;
+		dy  = textframe->height() - dy;
+		dy1 = textframe->height() - dy1;
 	}
 	p->save();
 	p->setTransform(textframe->getTransform(), true);

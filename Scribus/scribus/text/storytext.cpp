@@ -428,7 +428,6 @@ void StoryText::removeChars(int pos, uint len)
 		//            delete it->mark;
 		//            it->mark = NULL;
 		//        }
-		
 		//		qDebug("remove char %d at %d", (int) it->ch.unicode(), i);
 		d->takeAt(i);
 		d->len--;
@@ -437,7 +436,7 @@ void StoryText::removeChars(int pos, uint len)
 		// consistent in functions such as select()
 		if (i <= m_selLast) --m_selLast;
 		if (i < m_selFirst) --m_selFirst;
-		if ((i + 1 ) <= d->cursorPosition && d->cursorPosition > 0) d->cursorPosition -= 1;
+		if ((i + 1 ) <= (signed) d->cursorPosition && d->cursorPosition > 0) d->cursorPosition -= 1;
 	}
 	
 	d->len = d->count();
@@ -447,6 +446,8 @@ void StoryText::removeChars(int pos, uint len)
 		m_selFirst =  0;
 		m_selLast  = -1;
 	}
+	//FIXME - ugly hack, but sometimes m_selLast has wrong value
+	m_selLast = qMin(m_selLast, length()-1);
 	invalidate(pos, length());
 }
 
@@ -472,7 +473,7 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 	{
 		int referenceChar = qMax(0, qMin(pos-1, length()-1));
 		//do not apply style from note or bullet mark
-		while (referenceChar >0 && item(referenceChar -1)->hasMark() && (item(referenceChar-1)->mark->isNoteType() || item(referenceChar -1)->mark->isType(MARKBullNumType)))
+		while (referenceChar >0 && item(referenceChar -1)->hasMark() && (item(referenceChar-1)->mark->isNoteType() || item(referenceChar -1)->mark->isType(MARKListType)))
 			--referenceChar;
 		if (referenceChar==0)
 			clone.applyCharStyle(defaultStyle().charStyle());
@@ -491,7 +492,7 @@ void StoryText::insertChars(int pos, QString txt, bool applyNeighbourStyle) //, 
 			//			qDebug() << QString("new PARSEP %2 at %1").arg(pos).arg(paragraphStyle(pos).name());
 			insertParSep(pos + i);
 		}
-		if (d->cursorPosition >= (pos + i)) {
+		if ((signed) d->cursorPosition >= (pos + i)) {
 			d->cursorPosition += 1;
 		}
 	}
@@ -518,7 +519,7 @@ void StoryText::insertCharsWithSoftHyphens(int pos, QString txt, bool applyNeigh
 	{
 		int referenceChar = qMax(0, qMin(pos-1, length()-1));
 		//do not apply style from note or bullet mark
-		while (referenceChar >0 && item(referenceChar -1)->hasMark() && (item(referenceChar-1)->mark->isNoteType() || item(referenceChar -1)->mark->isType(MARKBullNumType)))
+		while (referenceChar >0 && item(referenceChar -1)->hasMark() && (item(referenceChar-1)->mark->isNoteType() || item(referenceChar -1)->mark->isType(MARKListType)))
 			--referenceChar;
 		if (referenceChar==0)
 			clone.applyCharStyle(defaultStyle().charStyle());
@@ -666,7 +667,7 @@ void StoryText::insertMark(const Mark* const mrk, int pos)
 	if (pos < 0)
 		pos = d->cursorPosition;
 	
-	insertChars(pos, SpecialChars::OBJECT, false);
+	insertChars(pos, SpecialChars::OBJECT, true);
 	const_cast<StoryText *>(this)->d->at(pos)->mark = const_cast<Mark *> (mrk);
 }
 
@@ -941,12 +942,12 @@ const CharStyle & StoryText::charStyle(int pos) const
 		return defaultStyle().charStyle();
 	}
 	else if (pos == length()) {
-		//		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
+//		qDebug() << "storytext::charstyle: access at end of text %i" << pos;
 		--pos;
 	}
 	//if previous is note or bullet mark then search backward
 	//for normal char or return default style
-	if (pos > 0 && (hasMarkType(pos,MARKNoteFrameType) || hasMarkType(pos,MARKBullNumType)))
+	if (pos > 0 && (hasMarkType(pos,MARKNoteFrameType) || hasMarkType(pos,MARKListType)))
 	{
 		//case when there no normal text after mark
 		if ((pos == length()-1) || (text(pos+1) == SpecialChars::PARSEP))
@@ -954,7 +955,7 @@ const CharStyle & StoryText::charStyle(int pos) const
 	}
 	if (text(pos) == SpecialChars::PARSEP)
 	{
-		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP || hasMarkType(pos-1,MARKNoteFrameType) || hasMarkType(pos-1,MARKBullNumType))
+		if ((pos == 0) || text(pos-1) == SpecialChars::PARSEP || hasMarkType(pos-1,MARKNoteFrameType) || hasMarkType(pos-1,MARKListType))
 			return paragraphStyle(pos).charStyle();
 		else //get charStyle from last char in paragraph
 			--pos;
@@ -1062,6 +1063,13 @@ void StoryText::applyCharStyle(int pos, uint len, const CharStyle& style )
 			lastParStart = i + 1;
 		}*/
 		itText->applyCharStyle(style);
+		if (itText->mark && itText->mark->getNotePtr())
+		{
+			if (itText->hasMarkType(MARKNoteMasterType))
+				itText->mark->getNotePtr()->setCharStyleMasterMark(*itText);
+			else if (itText->hasMarkType(MARKNoteFrameType))
+				itText->mark->getNotePtr()->setCharStyleNoteMark(*itText);
+		}
 	}
 	// Does not work well, do not reenable before checking #9337, #9376 and #9428
 	/*if (pos + signed(len) == length() && lastParStart >= 0)
@@ -1093,6 +1101,13 @@ void StoryText::eraseCharStyle(int pos, uint len, const CharStyle& style )
 		if (itText->ch == SpecialChars::PARSEP && itText->parstyle != NULL)
 			itText->parstyle->charStyle().eraseCharStyle(style);
 		itText->eraseCharStyle(style);
+		if (itText->mark && itText->mark->getNotePtr())
+		{
+			if (itText->hasMarkType(MARKNoteMasterType))
+				itText->mark->getNotePtr()->setCharStyleMasterMark(*itText);
+			else if (itText->hasMarkType(MARKNoteFrameType))
+				itText->mark->getNotePtr()->setCharStyleNoteMark(*itText);
+		}
 	}
 	// Does not work well, do not reenable before checking #9337, #9376 and #9428
 	/*if (pos + signed(len) == length())
@@ -1203,6 +1218,13 @@ void StoryText::setCharStyle(int pos, uint len, const CharStyle& style)
 		/*if (itText->ch == SpecialChars::PARSEP && itText->parstyle != NULL)
 			itText->parstyle->charStyle() = style;*/
 		itText->setStyle(style);
+		if (itText->mark && itText->mark->getNotePtr())
+		{
+			if (itText->hasMarkType(MARKNoteMasterType))
+				itText->mark->getNotePtr()->setCharStyleMasterMark(*itText);
+			else if (itText->hasMarkType(MARKNoteFrameType))
+				itText->mark->getNotePtr()->setCharStyleNoteMark(*itText);
+		}
 	}
 	
 	invalidate(pos, pos + len);
@@ -1671,11 +1693,15 @@ int StoryText::endOfFrame(int pos)
 
 int StoryText::startOfSelection() const
 {
+	Q_ASSERT(m_selLast < length());
+	
 	return m_selFirst <= m_selLast? m_selFirst : 0;
 }
 
 int StoryText::endOfSelection() const
 {
+	Q_ASSERT(m_selLast < length());
+	
 	return m_selFirst <= m_selLast? m_selLast + 1 : -1;
 }
 
@@ -1687,6 +1713,7 @@ int StoryText::lengthOfSelection() const
 		return 0;
 	if (m_selLast >= length())
 		last = length() -1;
+	Q_ASSERT(last < length());
 	return m_selFirst <= last? last - m_selFirst + 1 : 0;
 }
 
@@ -1750,18 +1777,23 @@ void StoryText::select(int pos, uint len, bool on)
 		}
 	}
 	else {
-		if (pos <= m_selFirst && m_selLast < pos + signed(len))
-			deselectAll();
-		// shrink
-		else if (!selected(pos - 1) && selected(pos + len - 1))
-			m_selFirst = pos + len;
-		else if (selected(pos) && !selected(pos + len))
-			m_selLast = pos - 1;
-		else if (selected(pos) || selected(pos + len - 1))
-			// Grr, deselection splits selection
-			m_selLast = pos - 1;
+		//FIX ME - dosn`t "on" mean extend selection?
+		//if so just KISS if "on" is false
+		deselectAll();
+		m_selFirst = pos;
+		m_selLast = pos + len -1;
+//		if (pos <= m_selFirst && m_selLast < pos + signed(len))
+//			deselectAll();
+//		// shrink
+//		else if (!selected(pos - 1) && selected(pos + len - 1))
+//			m_selFirst = pos + len;
+//		else if (selected(pos) && !selected(pos + len))
+//			m_selLast = pos - 1;
+//		else if (selected(pos) || selected(pos + len - 1))
+//			// Grr, deselection splits selection
+//			m_selLast = pos - 1;
 	}
-	
+	Q_ASSERT(m_selLast < length());
 	//	qDebug("new selection: %d - %d", m_selFirst, m_selLast);
 }
 
@@ -1773,11 +1805,13 @@ void StoryText::extendSelection(int oldPos, int newPos)
 		if (m_selLast == oldPos - 1)
 		{
 			m_selLast = newPos - 1;
+			Q_ASSERT(m_selLast < length());
 			return;
 		}
 		else if (m_selFirst == oldPos)
 		{
 			m_selFirst = newPos;
+			Q_ASSERT(m_selLast < length());
 			return;
 		}
 		// can't extend, fall through
@@ -1793,6 +1827,7 @@ void StoryText::extendSelection(int oldPos, int newPos)
 		m_selFirst = newPos;
 		m_selLast = oldPos - 1;
 	}
+	Q_ASSERT(m_selLast < length());
 }
 
 void StoryText::selectAll()
@@ -2035,7 +2070,6 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	defaultStyle().saxx(handler, "defaultstyle");
 	
 	CharStyle lastStyle(charStyle(0));
-	bool lastWasPar = true;
 	int lastPos = 0;
 	handler.begin("p", empty);
 	paragraphStyle(0).saxx(handler);
@@ -2043,13 +2077,16 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 	lastStyle.saxx(handler);
 	for (int i=0; i < length(); ++i)
 	{
-		if (hasMark(i))
+		if (hasMarkType(i, MARKNoteFrameType))
 		{
-			Mark* mrk = mark(i);
-			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteFrameType))
-					|| mrk->isType(MARKBullNumType))
-				continue; //do not insert notes marks into notes frames and bullets marks anywhere
+			if  (i -1 - lastPos > 0)
+			{
+				handler.chars(textWithSoftHyphens(lastPos, i -1 -lastPos));
+			}
+			lastPos = i +1;
+			continue;
 		}
+
 		const QChar curr(text(i));
 		const CharStyle& style(charStyle(i));
 		
@@ -2073,9 +2110,15 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			}
 			lastPos = i;
 		}
+		if (lastStyle != style)
+		{
+			handler.end("span");
+			handler.begin("span", empty);
+			style.saxx(handler);
+			lastStyle = style;
+		}
 		
-		lastWasPar = (curr == SpecialChars::PARSEP);
-		if (lastWasPar)
+		if (curr == SpecialChars::PARSEP)
 		{
 			handler.end("span");
 			handler.end("p");
@@ -2093,36 +2136,33 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			Mark* mrk = mark(i);
 			if ((m_doc->m_Selection->itemAt(0)->isNoteFrame() && mrk->isType(MARKNoteMasterType))
 					|| (!m_doc->m_Selection->itemAt(0)->isTextFrame() && mrk->isType(MARKNoteFrameType))
-					|| mrk->isType(MARKBullNumType))
+					|| mrk->isType(MARKListType))
 				continue; //do not insert notes marks into text frames nad vice versa
 			Xml_attr mark_attr;
-			mark_attr.insert("label", mrk->label);
 			mark_attr.insert("typ", QString::number((int )mrk->getType()));
-			
-			if (mrk->isType(MARK2ItemType) && (mrk->getItemPtr() != NULL))
-				mark_attr.insert("item", mrk->getItemPtr()->itemName());
-			else if (mrk->isType(MARK2MarkType))
+			if (!mrk->isType(MARKListType))
 			{
-				QString l;
-				MarkType t;
-				mrk->getTargetMark(l, t);
-				if (m_doc->getMarkDefinied(l,t) != NULL)
+				mark_attr.insert("label", mrk->getLabel());
+				if (mrk->hasTargetPtr())
+					mark_attr.insert("target", mrk->getTargetPtr()->itemName());
+				else if (mrk->hasTargetMark())
 				{
-					mark_attr.insert("mark_l", l);
-					mark_attr.insert("mark_t", QString::number((int) t));
+						mark_attr.insert("mark_l", mrk->getTargetMark()->getLabel());
+						mark_attr.insert("mark_t", QString::number(mrk->getTargetMark()->getType()));
+				}
+				else if (mrk->isType(MARKNoteMasterType))
+				{
+					TextNote * const note = mrk->getNotePtr();
+					assert(note != null);
+					mark_attr.insert("nStyle", note->notesStyle()->name());
+					mark_attr.insert("note",note->saxedText());
+					//store noteframe name for inserting into note if it is non-auto-removable
+					if (note->noteMark() && !m_doc->getItemFromName(note->noteMark()->getHolderName())->isAutoNoteFrame())
+						mark_attr.insert("noteframe", note->noteMark()->getHolderName());
 				}
 			}
-			else if (mrk->isType(MARKNoteMasterType))
-			{
-				TextNote * const note = mrk->getNotePtr();
-				assert(note != null);
-				mark_attr.insert("nStyle", note->notesStyle()->name());
-				mark_attr.insert("note",note->saxedText());
-				//store noteframe name for inserting into note if it is non-auto-removable
-				if (note->noteMark() && note->noteMark()->getItemPtr() && !note->noteMark()->getItemPtr()->isAutoNoteFrame())
-					mark_attr.insert("noteframe", note->noteMark()->getItemPtr()->getUName());
-			}
 			handler.beginEnd("mark", mark_attr);
+			
 		}
 		else if (curr == SpecialChars::TAB)
 		{
@@ -2156,14 +2196,14 @@ void StoryText::saxx(SaxHandler& handler, const Xml_string& elemtag) const
 			unic.insert("code", toXMLString(curr.unicode()));
 			handler.beginEnd("unicode", unic);
 		}
-		else if (lastStyle != style)
-		{
-			handler.end("span");
-			handler.begin("span", empty);
-			style.saxx(handler);
-			lastStyle = style;
-			continue;
-		}
+//		else if (lastStyle != style)
+//		{
+//			handler.end("span");
+//			handler.begin("span", empty);
+//			style.saxx(handler);
+//			lastStyle = style;
+//			continue;
+//		}
 		else
 			continue;
 		lastPos = i+1;
@@ -2303,10 +2343,26 @@ public:
 				l = Xml_data(lIt);
 			if (tIt != attr.end())
 				t = (MarkType) parseInt(Xml_data(tIt));
-			if (t != MARKBullNumType)
+			ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
+			Q_ASSERT(doc);
+			//				ParagraphStyle* pstyle = NULL;
+			if (t == MARKVariableTextType)
+				mrk = doc->getMarkDefinied(l,t);
+			else if (t == MARKListType)
+				mrk = new ListMark();
+			else
 			{
 				ScribusDoc* doc  = this->dig->lookup<ScribusDoc>("<scribusdoc>");
 				//				ParagraphStyle* pstyle = NULL;
+				mrk = doc->newMark();
+				mrk->setType(t);
+				getUniqueName(l,doc->marksLabelsList(t), "_");
+				mrk->setLabel(l);
+				mrk->setOwnPage(doc->currentPage()->pageNr());
+				Xml_attr::iterator iIt = attr.find("target");
+				Xml_attr::iterator m_lIt = attr.find("mark_l");
+				Xml_attr::iterator m_tIt = attr.find("mark_t");
+				if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
 				if (t == MARKStyleVariableType)
 				{
 					StyleVariableMark * svmrk = doc->newStyleVariableMark();
@@ -2328,54 +2384,42 @@ public:
 					mrk = doc->getMarkDefinied(l,t);
 				else
 				{
-					mrk = doc->newMark();
-					getUniqueName(l,doc->marksLabelsList(t), "_");
-					mrk->label = l;
-					mrk->OwnPage = doc->currentPage()->pageNr();
-					mrk->setType(t);
-					Xml_attr::iterator iIt = attr.find("item");
-					Xml_attr::iterator m_lIt = attr.find("mark_l");
-					Xml_attr::iterator m_tIt = attr.find("mark_t");
-					if (mrk->isType(MARK2ItemType) && (iIt != attr.end()))
-					{
-						PageItem* item = doc->getItemFromName(Xml_data(iIt));
-						mrk->setItemPtr(item);
-						if (item == NULL)
-							mrk->setString("0");
-						else
-							mrk->setString(QString::number(item->OwnPage));
-						mrk->setItemName(Xml_data(iIt));
-					}
-					if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
-					{
-						Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
-						mrk->setTargetMark(targetMark);
-						if (targetMark == NULL)
-							mrk->setString("0");
-						else
-							mrk->setString(QString::number(targetMark->OwnPage));
-						mrk->setItemName(Xml_data(m_lIt));
-					}
-					if (mrk->isType(MARKNoteMasterType))
-					{
-						Xml_attr::iterator nIt = attr.find("note");
-						Xml_attr::iterator nsIt = attr.find("nStyle");
-						NotesStyle* NS;
-						if (nsIt == attr.end())
-							NS = doc->m_docNotesStylesList.at(0);
-						else
-							NS = doc->getNotesStyle(Xml_data(nsIt));
-						TextNote* note = doc->newNote(NS);
-						note->setMasterMark(mrk);
-						if (nIt != attr.end())
-							note->setSaxedText(Xml_data(nIt));
-						mrk->setNotePtr(note);
-						doc->setNotesChanged(true);
-					}
-					doc->newMark(mrk);
+					PageItem* item = doc->getItemFromName(Xml_data(iIt));
+					mrk->setTargetPtr(item);
+					if (item == NULL)
+						mrk->setString("?");
+					else
+						mrk->setString(doc->getFormattedSectionPageNumber(item->OwnPage));
+					mrk->setHolderName(Xml_data(iIt));
 				}
-				story->insertMark(mrk);
+				if (mrk->isType(MARK2MarkType) && (m_lIt != attr.end()) && (m_tIt != attr.end()))
+				{
+					Mark* targetMark = doc->getMarkDefinied(Xml_data(m_lIt), (MarkType) parseInt(Xml_data(m_tIt)));
+					mrk->setTargetMark(targetMark);
+					if (targetMark == NULL)
+						mrk->setString("?");
+					else
+						mrk->setString(doc->getFormattedSectionPageNumber(targetMark->getOwnPage()));
+					mrk->setHolderName(Xml_data(m_lIt));
+				}
+				if (mrk->isType(MARKNoteMasterType))
+				{
+					Xml_attr::iterator nIt = attr.find("note");
+					Xml_attr::iterator nsIt = attr.find("nStyle");
+					NotesStyle* NS;
+					if (nsIt == attr.end())
+						NS = doc->m_docNotesStylesList.at(0);
+					else
+						NS = doc->getNotesStyle(Xml_data(nsIt));
+					TextNote* note = doc->newNote(NS);
+					note->setMasterMark(mrk);
+					if (nIt != attr.end())
+						note->setSaxedText(Xml_data(nIt));
+					mrk->setNotePtr(note);
+					doc->setNotesChanged(true);
+				}
 			}
+			story->insertMark(mrk);
 		}
 	}
 };

@@ -91,6 +91,7 @@ QImage XpsPlug::readThumbnail(QString fName)
 		delete uz;
 		if (progressDialog)
 			progressDialog->close();
+		return QImage();
 	}
 	bool found = false;
 	if (uz->contains("_rels/.rels"))
@@ -366,6 +367,7 @@ bool XpsPlug::import(QString fNameIn, const TransactionSettings& trSettings, int
 		if (!(flags & LoadSavePlugin::lfLoadAsPattern))
 			m_Doc->view()->updatesOn(true);
 		qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
+		success = false;
 	}
 	if (interactive)
 		m_Doc->setLoading(false);
@@ -413,19 +415,17 @@ bool XpsPlug::convert(QString fn)
 		delete uz;
 		if (progressDialog)
 			progressDialog->close();
+		return false;
 	}
+
+	retVal = false;
 	if (uz->contains("FixedDocSeq.fdseq"))
-	{
-		parseDocSequence("FixedDocSeq.fdseq");
-		resolveLinks();
-	}
+		retVal = parseDocSequence("FixedDocSeq.fdseq");
 	else if (uz->contains("FixedDocumentSequence.fdseq"))
-	{
-		parseDocSequence("FixedDocumentSequence.fdseq");
+		retVal = parseDocSequence("FixedDocumentSequence.fdseq");
+	if (retVal)
 		resolveLinks();
-	}
-	else
-		retVal = false;
+
 	uz->close();
 	delete uz;
 	if (progressDialog)
@@ -433,138 +433,142 @@ bool XpsPlug::convert(QString fn)
 	return retVal;
 }
 
-void XpsPlug::parseDocSequence(QString designMap)
+bool XpsPlug::parseDocSequence(QString designMap)
 {
 	QByteArray f;
 	QDomDocument designMapDom;
 	if (!uz->read(designMap, f))
-		return;
-	if(designMapDom.setContent(f))
+		return false;
+	if (!designMapDom.setContent(f))
+		return false;
+
+	bool parsed = false;
+	QString DocumentReference = "";
+	QDomElement docElem = designMapDom.documentElement();
+	for(QDomNode drawPag = docElem.firstChild(); !drawPag.isNull(); drawPag = drawPag.nextSibling() )
 	{
-		QString DocumentReference = "";
-		QDomElement docElem = designMapDom.documentElement();
-		for(QDomNode drawPag = docElem.firstChild(); !drawPag.isNull(); drawPag = drawPag.nextSibling() )
+		QDomElement dpg = drawPag.toElement();
+		if (dpg.tagName() == "DocumentReference")
 		{
-			QDomElement dpg = drawPag.toElement();
-			if (dpg.tagName() == "DocumentReference")
+			if (dpg.hasAttribute("Source"))
 			{
-				if (dpg.hasAttribute("Source"))
-				{
-					DocumentReference = dpg.attribute("Source", "");
-					if (DocumentReference.startsWith("/"))
-						DocumentReference = DocumentReference.mid(1);
-					parseDocReference(DocumentReference);
-				}
+				DocumentReference = dpg.attribute("Source", "");
+				if (DocumentReference.startsWith("/"))
+					DocumentReference = DocumentReference.mid(1);
+				parsed = parseDocReference(DocumentReference);
+				if (!parsed) break;
 			}
 		}
 	}
+	return parsed;
 }
 
-void XpsPlug::parseDocReference(QString designMap)
+bool XpsPlug::parseDocReference(QString designMap)
 {
 	QByteArray f;
 	QFileInfo fi(designMap);
 	QString path = fi.path();
-	if (uz->read(designMap, f))
+	if (!uz->read(designMap, f))
+		return false;
+
+	QDomDocument designMapDom;
+	if (!designMapDom.setContent(f))
+		return false;
+
+	QString PageReference = "";
+	QDomElement docElem = designMapDom.documentElement();
+	if (importerFlags & LoadSavePlugin::lfCreateThumbnail)
 	{
-		QDomDocument designMapDom;
-		if(designMapDom.setContent(f))
+		QDomNodeList pgList = docElem.childNodes();
+		QDomNode drawPag = pgList.item(0);
+		QDomElement dpg = drawPag.toElement();
+		if (dpg.tagName() == "PageContent")
 		{
-			QString PageReference = "";
-			QDomElement docElem = designMapDom.documentElement();
-			if (importerFlags & LoadSavePlugin::lfCreateThumbnail)
+			if (dpg.hasAttribute("Source"))
 			{
-				QDomNodeList pgList = docElem.childNodes();
-				QDomNode drawPag = pgList.item(0);
-				QDomElement dpg = drawPag.toElement();
-				if (dpg.tagName() == "PageContent")
+				PageReference = dpg.attribute("Source", "");
+				if (PageReference.startsWith("/"))
 				{
-					if (dpg.hasAttribute("Source"))
-					{
-						PageReference = dpg.attribute("Source", "");
-						if (PageReference.startsWith("/"))
-						{
-							PageReference = PageReference.mid(1);
-							parsePageReference(PageReference);
-						}
-						else
-						{
-							if (!PageReference.startsWith(path))
-							{
-								PageReference = path + "/" + PageReference;
-								PageReference = QDir::cleanPath(PageReference);
-							}
-							parsePageReference(PageReference);
-						}
-					}
+					PageReference = PageReference.mid(1);
+					parsePageReference(PageReference);
 				}
-			}
-			else
-			{
-				std::vector<int> pageNs;
-				QString pageString = "*";
-				int pgCount = 0;
-				int maxPages = docElem.childNodes().count();
-				if (((interactive) || (importerFlags & LoadSavePlugin::lfCreateDoc)) && (maxPages > 1))
+				else
 				{
-					if (progressDialog)
-						progressDialog->hide();
-					qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
-					XpsImportOptions *optImp = new XpsImportOptions(ScCore->primaryMainWindow());
-					optImp->setUpOptions(m_FileName, 1, maxPages, interactive);
-					optImp->exec();
-					pageString = optImp->getPagesString();
-					delete optImp;
-					qApp->changeOverrideCursor(QCursor(Qt::WaitCursor));
-					if (progressDialog)
-						progressDialog->show();
-					qApp->processEvents();
-				}
-				parsePagesString(pageString, &pageNs, maxPages);
-				if (pageString != "*")
-					maxPages = pageNs.size();
-				if (progressDialog)
-				{
-					progressDialog->setTotalSteps("GI", maxPages);
-					progressDialog->setProgress("GI", pgCount);
-					qApp->processEvents();
-				}
-				QDomNodeList pgList = docElem.childNodes();
-				for (uint ap = 0; ap < pageNs.size(); ++ap)
-				{
-					QDomNode drawPag = pgList.item(pageNs[ap] - 1);
-					QDomElement dpg = drawPag.toElement();
-					if (dpg.tagName() == "PageContent")
+					if (!PageReference.startsWith(path))
 					{
-						if (dpg.hasAttribute("Source"))
-						{
-							PageReference = dpg.attribute("Source", "");
-							if (PageReference.startsWith("/"))
-							{
-								PageReference = PageReference.mid(1);
-								parsePageReference(PageReference);
-							}
-							else
-							{
-								if (!PageReference.startsWith(path))
-								{
-									PageReference = path + "/" + PageReference;
-									PageReference = QDir::cleanPath(PageReference);
-								}
-								parsePageReference(PageReference);
-							}
-						}
+						PageReference = path + "/" + PageReference;
+						PageReference = QDir::cleanPath(PageReference);
 					}
-					pgCount++;
-					if (progressDialog)
-					{
-						progressDialog->setProgress("GI", pgCount);
-						qApp->processEvents();
-					}
+					parsePageReference(PageReference);
 				}
 			}
 		}
 	}
+	else
+	{
+		std::vector<int> pageNs;
+		QString pageString = "*";
+		int pgCount = 0;
+		int maxPages = docElem.childNodes().count();
+		if (((interactive) || (importerFlags & LoadSavePlugin::lfCreateDoc)) && (maxPages > 1))
+		{
+			if (progressDialog)
+				progressDialog->hide();
+			qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
+			XpsImportOptions optImp(ScCore->primaryMainWindow());
+			optImp.setUpOptions(m_FileName, 1, maxPages, interactive);
+			if (optImp.exec() != QDialog::Accepted)
+				return false;
+			pageString = optImp.getPagesString();
+			qApp->changeOverrideCursor(QCursor(Qt::WaitCursor));
+			if (progressDialog)
+				progressDialog->show();
+			qApp->processEvents();
+		}
+		parsePagesString(pageString, &pageNs, maxPages);
+		if (pageString != "*")
+			maxPages = pageNs.size();
+		if (progressDialog)
+		{
+			progressDialog->setTotalSteps("GI", maxPages);
+			progressDialog->setProgress("GI", pgCount);
+			qApp->processEvents();
+		}
+		QDomNodeList pgList = docElem.childNodes();
+		for (uint ap = 0; ap < pageNs.size(); ++ap)
+		{
+			QDomNode drawPag = pgList.item(pageNs[ap] - 1);
+			QDomElement dpg = drawPag.toElement();
+			if (dpg.tagName() == "PageContent")
+			{
+				if (dpg.hasAttribute("Source"))
+				{
+					PageReference = dpg.attribute("Source", "");
+					if (PageReference.startsWith("/"))
+					{
+						PageReference = PageReference.mid(1);
+						parsePageReference(PageReference);
+					}
+					else
+					{
+						if (!PageReference.startsWith(path))
+						{
+							PageReference = path + "/" + PageReference;
+							PageReference = QDir::cleanPath(PageReference);
+						}
+						parsePageReference(PageReference);
+					}
+				}
+			}
+			pgCount++;
+			if (progressDialog)
+			{
+				progressDialog->setProgress("GI", pgCount);
+				qApp->processEvents();
+			}
+		}
+	}
+	return true;
 }
 
 void XpsPlug::parsePageReference(QString designMap)
@@ -716,6 +720,8 @@ PageItem* XpsPlug::parseObjectXML(QDomElement &dpg, QString path)
 	obState.patternMask = "";
 	obState.CapStyle = Qt::FlatCap;
 	obState.JoinStyle = Qt::MiterJoin;
+	obState.DashOffset = 0;
+	obState.DashPattern.clear();
 	QString itemName = "";
 	QString itemTarget = "";
 	if (dpg.hasAttribute("Name"))
@@ -769,6 +775,22 @@ PageItem* XpsPlug::parseObjectXML(QDomElement &dpg, QString path)
 			obState.JoinStyle = Qt::BevelJoin;
 		else
 			obState.JoinStyle = Qt::MiterJoin;
+	}
+	if (dpg.hasAttribute("StrokeDashOffset"))
+		obState.DashOffset = dpg.attribute("StrokeDashOffset", "0.0").toDouble();
+	if (dpg.hasAttribute("StrokeDashArray"))
+	{
+		QString trans = dpg.attribute("StrokeDashArray", "");
+		if (!trans.isEmpty())
+		{
+			ScTextStream list(&trans, QIODevice::ReadOnly);
+			while (!list.atEnd())
+			{
+				double d;
+				list >> d;
+				obState.DashPattern.append(d);
+			}
+		}
 	}
 	if (dpg.hasAttribute("Clip"))
 	{
@@ -1189,10 +1211,10 @@ PageItem* XpsPlug::parseObjectXML(QDomElement &dpg, QString path)
 				maxx = qMax(maxx, x2);
 				maxy = qMax(maxy, y2);
 			}
-			double gx = qMin(baseX, minx);
-			double gy = qMin(baseY, miny);
-			double gw = maxx - qMin(baseX, minx);
-			double gh = maxy - qMin(baseY, miny);
+			double gx = minx;
+			double gy = miny;
+			double gw = maxx - minx;
+			double gh = maxy - miny;
 			int z = m_Doc->itemAdd(PageItem::Group, PageItem::Rectangle, gx, gy, gw, gh, 0, CommonStrings::None, CommonStrings::None, true);
 			if (z >= 0)
 			{
@@ -1204,14 +1226,22 @@ PageItem* XpsPlug::parseObjectXML(QDomElement &dpg, QString path)
 				retObj->OldH2 = retObj->height();
 				retObj->updateClip();
 				m_Doc->groupObjectsToItem(retObj, GElements);
-				retObj->PoLine.scale(obState.transform.m11(), obState.transform.m22());
+				double scX = 1.0;
+				double scY = 1.0;
+				double rot = 0.0;
+				double dx = 0.0;
+				double dy = 0.0;
+				getTransformValuesFromMatrix( obState.transform, scX, scY, rot, dx, dy);
+				QLineF transp = QLineF(0, 0, retObj->xPos() - m_Doc->currentPage()->xOffset(), retObj->yPos() - m_Doc->currentPage()->yOffset());
+				transp = obState.transform.map(transp);
+				retObj->setXYPos(transp.p2().x() + m_Doc->currentPage()->xOffset(), transp.p2().y() + m_Doc->currentPage()->yOffset());
+				if ((scX != 1.0) || (scY != 1.0))
+					retObj->PoLine.scale(scX, scY);
 				FPoint wh = getMaxClipF(&retObj->PoLine);
 				retObj->setWidthHeight(wh.x(),wh.y());
 				m_Doc->AdjustItemSize(retObj, true);
 				retObj->OldB2 = retObj->width();
 				retObj->OldH2 = retObj->height();
-				if ((obState.transform.dx() != 0.0) || (obState.transform.dy() != 0))
-					retObj->moveBy((double)(obState.transform.dx()), (double)(obState.transform.dy()), true);
 				if (obState.maskTyp != 0)
 				{
 					double xp = retObj->xPos() - m_Doc->currentPage()->xOffset();
@@ -1220,6 +1250,8 @@ PageItem* XpsPlug::parseObjectXML(QDomElement &dpg, QString path)
 					retObj->setMaskVector(obState.maskStart.x() - xp, obState.maskStart.y() - yp, obState.maskEnd.x() - xp, obState.maskEnd.y() - yp, obState.maskFocus.x() - xp, obState.maskFocus.y() - yp, obState.maskScale, 0);
 					retObj->setMaskType(obState.maskTyp);
 				}
+				if (rot != 0)
+					retObj->setRotation(-rot, true);
 				retObj->OwnPage = m_Doc->OnPage(retObj);
 				m_Doc->GroupOnPage(retObj);
 				m_Doc->Items->removeLast();
@@ -1638,6 +1670,7 @@ PageItem* XpsPlug::addClip(PageItem* retObj, ObjState &obState)
 		QList<PageItem*> GElements;
 		GElements.append(retObj);
 		m_Doc->groupObjectsToItem(itemg, GElements);
+		m_Doc->resizeGroupToContents(itemg);
 		m_Doc->GroupOnPage(itemg);
 		retObj = itemg;
 		m_Doc->Items->removeLast();
@@ -1755,7 +1788,20 @@ void XpsPlug::finishItem(PageItem* item, ObjState &obState)
 		item->setStrokeGradientType(obState.strokeTyp);
 	}
 	if (!obState.patternStroke.isEmpty())
+	{
+		item->GrTypeStroke = 8;
 		item->setStrokePattern(obState.patternStroke);
+	}
+	if (!obState.DashPattern.isEmpty())
+	{
+		item->setDashOffset(obState.DashOffset);
+		QVector<double> pattern(obState.DashPattern.count());
+		for (int i = 0; i < obState.DashPattern.count(); ++i)
+		{
+			pattern[i] = obState.DashPattern[i] * obState.LineW;
+		}
+		item->setDashes(pattern);
+	}
 }
 
 QString XpsPlug::handleColor(QString rgbColor, double &opacity)

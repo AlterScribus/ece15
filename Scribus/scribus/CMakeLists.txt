@@ -10,6 +10,7 @@ ADD_SUBDIRECTORY(fonts)
 ADD_SUBDIRECTORY(styles)
 ADD_SUBDIRECTORY(text)
 ADD_SUBDIRECTORY(imposition)
+ADD_SUBDIRECTORY(ui/qml)
 IF(WITH_TESTS)
   ADD_SUBDIRECTORY(tests)
 ENDIF(WITH_TESTS)
@@ -139,6 +140,7 @@ SET(SCRIBUS_UI_SRC
   ui/propertiespalette_groupbase.ui
   ui/propertiespalette_imagebase.ui
   ui/propertiespalette_linebase.ui
+  ui/propertiespalette_shadowbase.ui
   ui/propertiespalette_shapebase.ui
   ui/propertiespalette_tablebase.ui
   ui/propertiespalette_textbase.ui
@@ -412,6 +414,7 @@ SET(SCRIBUS_MOC_CLASSES
   ui/propertiespalette_group.h
   ui/propertiespalette_image.h
   ui/propertiespalette_line.h
+  ui/propertiespalette_shadow.h
   ui/propertiespalette_shape.h
   ui/propertiespalette_table.h
   ui/propertiespalette_text.h
@@ -862,6 +865,7 @@ SET(SCRIBUS_SOURCES
   ui/propertiespalette_image.cpp
   ui/propertiespalette_group.cpp
   ui/propertiespalette_line.cpp
+  ui/propertiespalette_shadow.cpp
   ui/propertiespalette_shape.cpp
   ui/propertiespalette_table.cpp
   ui/propertiespalette_text.cpp

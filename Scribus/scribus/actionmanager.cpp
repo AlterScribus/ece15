@@ -1574,10 +1574,10 @@ void ActionManager::languageChange()
 	(*scrActions)["itemConvertToPolygon"]->setTexts( tr("&Polygon"));
 	(*scrActions)["itemConvertToTextFrame"]->setTexts( tr("&Text Frame"));
 	(*scrActions)["itemConvertToSymbolFrame"]->setTexts( tr("&Symbol"));
-	(*scrActions)["itemsUnWeld"]->setTexts( tr("Unweld items"));
-	(*scrActions)["itemWeld"]->setTexts( tr("Weld items"));
-	(*scrActions)["itemEditWeld"]->setTexts( tr("Edit weld item"));
 	(*scrActions)["itemClearPStyle"]->setTexts( tr("Clear Paragraph Style"));
+	(*scrActions)["itemsUnWeld"]->setTexts( tr("Unweld Items"));
+	(*scrActions)["itemWeld"]->setTexts( tr("Weld Items"));
+	(*scrActions)["itemEditWeld"]->setTexts( tr("Edit Welded Item"));
 
 	//Insert Menu
 	(*scrActions)["insertFrame"]->setTexts( tr("&Frames..."));
@@ -2544,6 +2544,8 @@ void ActionManager::setStartupActionsEnabled(bool enabled)
 	(*scrActions)["editSearchReplace"]->setEnabled(false);
 	(*scrActions)["editMasterPages"]->setEnabled(false);
 	(*scrActions)["editJavascripts"]->setEnabled(false);
+	(*scrActions)["editEditWithImageEditor"]->setEnabled(false);
+	(*scrActions)["editEditRenderSource"]->setEnabled(false);
 	(*scrActions)["toolsPreflightVerifier"]->setEnabled(false);
 	(*scrActions)["extrasHyphenateText"]->setEnabled(false);
 	(*scrActions)["extrasDeHyphenateText"]->setEnabled(false);

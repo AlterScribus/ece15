@@ -100,10 +100,12 @@ private:
 		int itemType;
 		Qt::PenCapStyle CapStyle;
 		Qt::PenJoinStyle JoinStyle;
+		QVector<double> DashPattern;
+		double DashOffset;
 	};
 	bool convert(QString fn);
-	void parseDocSequence(QString designMap);
-	void parseDocReference(QString designMap);
+	bool parseDocSequence(QString designMap);
+	bool parseDocReference(QString designMap);
 	void parsePageReference(QString designMap);
 	PageItem* parseObjectXML(QDomElement& dpg, QString path);
 	void parseOpacityXML(QDomElement &spe, QString path, ObjState &obState);
