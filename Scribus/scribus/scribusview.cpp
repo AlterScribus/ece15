@@ -354,6 +354,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	endEditButton->setVisible(false);
 	connect(endEditButton, SIGNAL(clicked()), m_ScMW, SLOT(slotFileClose()));
 	editOnPreviewToolbarButton->hide();
+	m_oldSnapToElem = Doc->SnapElement;
 	languageChange();
 }
 
@@ -443,6 +444,7 @@ void ScribusView::togglePreviewEdit()
 {
 	Doc->editOnPreview = !Doc->editOnPreview;
 	m_ScMW->setPreviewToolbar();
+	m_EditModeWasOn = true;
 	DrawNew();
 }
 
@@ -456,6 +458,9 @@ void ScribusView::togglePreview()
 	bool recalc = false;
 	Doc->editOnPreview = false;
 	editOnPreviewToolbarButton->setChecked(false);
+	m_AnnotChanged = false;
+	m_EditModeWasOn = false;
+	m_ChangedState = Doc->isModified();
 	if (m_canvas->m_viewMode.viewAsPreview)
 	{
 		editOnPreviewToolbarButton->show();
@@ -474,7 +479,8 @@ void ScribusView::togglePreview()
 	}
 	else
 	{
-		Doc->ResetFormFields();
+		if (m_AnnotChanged)
+			Doc->ResetFormFields();
 		editOnPreviewToolbarButton->hide();
 		Doc->guidesPrefs().framesShown = storedFramesShown;
 		Doc->guidesPrefs().showControls = storedShowControls;
@@ -511,6 +517,8 @@ void ScribusView::togglePreview()
 	if (docPtr) // document may have been destroyed in-between
 	{
 		DrawNew();
+		if ((!m_EditModeWasOn) && (!m_AnnotChanged))
+			Doc->setModified(m_ChangedState);
 	}
 	undoManager->setUndoEnabled(true);
 }
@@ -1675,24 +1683,22 @@ bool ScribusView::slotSetCurs(int x, int y)
 		// #9592 : layout must be valid here, or screenToPosition() may crash
 		if (textFrame->invalid)
 			textFrame->layout();
+
 		double sx, sy;
 		getScaleFromMatrix(mm, sx, sy);
 		QTransform ms;
 		ms.scale(sx, sy);
-		if(textFrame->reversed())
-		{ //handle Right to Left writing
-			FPoint point(textFrame->width() * mm.m11() - (canvasPoint.x() - textFramePoint.x()), canvasPoint.y() - textFramePoint.y());
-			point = point.transformPoint(ms, true);
-			textFrame->itemText.setCursorPosition(textFrame->itemText.length() == 0 ? 0 :
-				textFrame->itemText.screenToPosition(point));
-		}
-		else
-		{
-			FPoint point(canvasPoint.x() - textFramePoint.x(), canvasPoint.y() - textFramePoint.y());
-			point = point.transformPoint(ms, true);
-			textFrame->itemText.setCursorPosition(textFrame->itemText.length() == 0 ? 0 :
-				textFrame->itemText.screenToPosition(point));
-		}
+
+		double px = canvasPoint.x() - textFramePoint.x();
+		double py = canvasPoint.y() - textFramePoint.y();
+		if (textFrame->imageFlippedH())
+			px = textFrame->width() * mm.m11() - px;
+		if (textFrame->imageFlippedV())
+			py = textFrame->height() * mm.m22() - py;
+		FPoint point(px, py);
+		point = point.transformPoint(ms, true);
+		textFrame->itemText.setCursorPosition(textFrame->itemText.length() == 0 ? 0 :
+			textFrame->itemText.screenToPosition(point));
 
 		if (textFrame->itemText.length() > 0)
 		{
@@ -4395,7 +4401,10 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
 		if(m->key() == Qt::Key_Shift)
+		{
+			m_oldSnapToElem = Doc->SnapElement;
 			m_ScMW->SetSnapElements(false);
+		}
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyPressEvent(m);
 		else
@@ -4406,7 +4415,7 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
 		if(m->key() == Qt::Key_Shift)
-			m_ScMW->SetSnapElements(true);
+			m_ScMW->SetSnapElements(m_oldSnapToElem);
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyReleaseEvent(m);
 		else

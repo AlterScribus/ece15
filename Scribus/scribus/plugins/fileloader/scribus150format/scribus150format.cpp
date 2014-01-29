@@ -4645,6 +4645,7 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		break;
 	}
 
+	currItem->setGroupClipping(attrs.valueAsBool("groupClips", true));
 	currItem->FrameType = attrs.valueAsInt("FRTYPE", 0);
 	int startArrowIndex = attrs.valueAsInt("startArrowIndex", 0);
 	if ((startArrowIndex < 0) || (startArrowIndex > static_cast<int>(doc->arrowStyles().size())))
@@ -5272,6 +5273,15 @@ PageItem* Scribus150Format::pasteItem(ScribusDoc *doc, ScXmlStreamAttributes& at
 		currItem->inlineCharID = attrs.valueAsInt("InID", -1);
 	else
 		currItem->inlineCharID = -1;
+
+	currItem->setHasSoftShadow(attrs.valueAsBool("HASSOFTSHADOW", false));
+	currItem->setSoftShadowXOffset(attrs.valueAsDouble("SOFTSHADOWXOFFSET", 5.0));
+	currItem->setSoftShadowYOffset(attrs.valueAsDouble("SOFTSHADOWYOFFSET", 5.0));
+	currItem->setSoftShadowColor(attrs.valueAsString("SOFTSHADOWCOLOR", CommonStrings::None));
+	currItem->setSoftShadowShade(attrs.valueAsInt("SOFTSHADOWSHADE", 100));
+	currItem->setSoftShadowBlurRadius(attrs.valueAsDouble("SOFTSHADOWBLURRADIUS", 5.0));
+	currItem->setSoftShadowBlendMode(attrs.valueAsInt("SOFTSHADOWBLENDMODE", 0));
+	currItem->setSoftShadowOpacity(attrs.valueAsDouble("SOFTSHADOWOPACITY", 1.0));
 
 	//currItem->setRedrawBounding();
 	//currItem->OwnPage = view->OnPage(currItem);

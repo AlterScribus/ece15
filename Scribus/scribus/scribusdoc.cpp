@@ -196,6 +196,7 @@ public:
 
 ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(NULL),
 	m_hasGUI(false),
+	docFilePermissions(QFileDevice::ReadOwner|QFileDevice::WriteOwner),
 	appPrefsData(PrefsManager::instance()->appPrefs),
 	docPrefsData(PrefsManager::instance()->appPrefs),
 	undoManager(UndoManager::instance()),
@@ -310,6 +311,7 @@ ScribusDoc::ScribusDoc() : UndoObject( tr("Document")), Observable<ScribusDoc>(N
 
 ScribusDoc::ScribusDoc(const QString& docName, int unitindex, const PageSize& pagesize, const MarginStruct& margins, const DocPagesSetup& pagesSetup) : UndoObject( tr("Document")),
 	m_hasGUI(false),
+	docFilePermissions(QFileDevice::ReadOwner|QFileDevice::WriteOwner),
 	appPrefsData(PrefsManager::instance()->appPrefs),
 	docPrefsData(PrefsManager::instance()->appPrefs),
 	undoManager(UndoManager::instance()),
@@ -4398,7 +4400,7 @@ bool ScribusDoc::applyMasterPage(const QString& pageName, const int pageNumber)
 	{
 		// PV - apply auto guides from MP only if there are no auto guides
 		// on original page
-		if (Ap->guides.horizontalAutoCount() != 0 || Ap->guides.horizontalAutoCount() != 0)
+		if (Ap->guides.horizontalAutoCount() != 0 || Ap->guides.verticalAutoCount() != 0)
 			Mp->guides.copy(&Ap->guides, GuideManagerCore::Standard);
 		else
 			Mp->guides.copy(&Ap->guides);
@@ -7361,6 +7363,33 @@ void ScribusDoc::itemSelection_RaiseItem()
 	}
 }
 
+void ScribusDoc::itemSelection_SetSoftShadow(bool has, QString color, double dx, double dy, double radius, int shade, double opac, int blend)
+{
+	if (color == CommonStrings::tr_NoneColor)
+		color = CommonStrings::None;
+	uint selectedItemCount = m_Selection->count();
+	if (selectedItemCount != 0)
+	{
+		for (uint a = 0; a < selectedItemCount; ++a)
+		{
+			PageItem *currItem = m_Selection->itemAt(a);
+			currItem->setHasSoftShadow(has);
+			currItem->setSoftShadowColor(color);
+			currItem->setSoftShadowXOffset(dx);
+			currItem->setSoftShadowYOffset(dy);
+			currItem->setSoftShadowBlurRadius(radius);
+			currItem->setSoftShadowShade(shade);
+			currItem->setSoftShadowOpacity(opac);
+			currItem->setSoftShadowBlendMode(blend);
+			QRectF newRect = currItem->getVisualBoundingRect().adjusted(-dx, -dy, dx, dy);
+			currItem->invalidateLayout();
+			regionsChanged()->update(newRect);
+		}
+	}
+	changed();
+
+}
+
 void ScribusDoc::itemSelection_SetLineWidth(double w)
 {
 	uint selectedItemCount=m_Selection->count();
@@ -8853,8 +8882,13 @@ void ScribusDoc::itemSelection_ApplyParagraphStyle(const ParagraphStyle & newSty
 		return;
 	itemSelection_ClearBulNumStrings(itemSelection);
 	UndoTransaction* activeTransaction = NULL;
-	if (UndoManager::undoEnabled() && selectedItemCount > 1)
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
+	if (UndoManager::undoEnabled())
+	{
+		PageItem* currItem = itemSelection->itemAt(0);
+		QString  targetName = (selectedItemCount > 1) ? Um::SelectionGroup : currItem->getUName();
+		QPixmap* targetPixmap = (selectedItemCount > 1) ? Um::IGroup : currItem->getUPixmap();
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(targetName, targetPixmap, Um::ApplyTextStyle, newStyle.displayName(), Um::IFont));
+	}
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
@@ -8940,7 +8974,12 @@ void ScribusDoc::itemSelection_ApplyCharStyle(const CharStyle & newStyle, Select
 		return;
 	UndoTransaction* activeTransaction = NULL;
 	if (UndoManager::undoEnabled())
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
+	{
+		PageItem* currItem = itemSelection->itemAt(0);
+		QString  targetName = (selectedItemCount > 1) ? Um::SelectionGroup : currItem->getUName();
+		QPixmap* targetPixmap = (selectedItemCount > 1) ? Um::IGroup : currItem->getUPixmap();
+		activeTransaction = new UndoTransaction(undoManager->beginTransaction(targetName, targetPixmap, Um::ApplyTextStyle, newStyle.asString(), Um::IFont));
+	}
 	for (uint aa = 0; aa < selectedItemCount; ++aa)
 	{
 		PageItem *currItem = itemSelection->itemAt(aa);
@@ -13565,48 +13604,55 @@ void ScribusDoc::getClosestElementBorder(double xin, double yin, double *xout, d
 	QMap<double, uint> tmpGuidesSel;
 	double viewScale=m_View->scale();
 	QList<PageItem*> item = getAllItems(*Items);
+	PageItem *parentI = NULL;
+	if (m_Selection->count() > 0)
+		parentI = m_Selection->itemAt(0)->Parent;
 	for(int i=0;i<item.size();i++)
 	{
 		if(m_Selection->containsItem(item.at(i)) || item.at(i)->OwnPage != OnPage(xin,yin))
 			continue;
-		else if (fabs(item.at(i)->yPos() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->yPos() - yin), i*3);
-		else if (fabs(item.at(i)->yPos() + item.at(i)->height() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->yPos() + item.at(i)->height() - yin), i*3+1);
-		else if (fabs(item.at(i)->yPos() + item.at(i)->height()/2 - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->yPos() + item.at(i)->height()/2 - yin), i*3+2);
+		else if (item.at(i)->Parent != parentI)
+			continue;
+		else if (fabs(item.at(i)->visualYPos() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualYPos() - yin), i*3);
+		else if (fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight() - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight() - yin), i*3+1);
+		else if (fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight()/2 - yin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualYPos() + item.at(i)->visualHeight()/2 - yin), i*3+2);
 	}
 	if (tmpGuidesSel.count() != 0)
 	{
 		*GyM = tmpGuidesSel.begin().value();
 		if(*GyM%3==0)
-			*yout = item.at(*GyM/3)->yPos() - page->yOffset();
+			*yout = item.at(*GyM/3)->visualYPos() - page->yOffset();
 		else if(*GyM%3==1)
-			*yout = item.at(*GyM/3)->yPos() + item.at(*GyM/3)->height() -page->yOffset();
+			*yout = item.at(*GyM/3)->visualYPos() + item.at(*GyM/3)->visualHeight() -page->yOffset();
 		else if(*GyM%3==2)
-			*yout = item.at(*GyM/3)->yPos() + item.at(*GyM/3)->height()/2 -page->yOffset();
+			*yout = item.at(*GyM/3)->visualYPos() + item.at(*GyM/3)->visualHeight()/2 -page->yOffset();
 	}
 	tmpGuidesSel.clear();
 	for(int i=0;i<item.size();i++)
 	{
 		if(m_Selection->containsItem(item.at(i)) || item.at(i)->OwnPage != OnPage(xin,yin))
 			continue;
-		else if (fabs(item.at(i)->xPos() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->xPos() - xin), i*3);
-		else if (fabs(item.at(i)->xPos() + item.at(i)->width() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->xPos() + item.at(i)->width() - xin), i*3+1);
-		else if (fabs(item.at(i)->xPos() + item.at(i)->width()/2 - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
-			tmpGuidesSel.insert(fabs(item.at(i)->xPos() + item.at(i)->width()/2 - xin), i*3+2);
+		else if (item.at(i)->Parent != parentI)
+			continue;
+		else if (fabs(item.at(i)->visualXPos() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualXPos() - xin), i*3);
+		else if (fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth() - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth() - xin), i*3+1);
+		else if (fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth()/2 - xin) < (prefsData().guidesPrefs.guideRad / viewScale))
+			tmpGuidesSel.insert(fabs(item.at(i)->visualXPos() + item.at(i)->visualWidth()/2 - xin), i*3+2);
 	}
 	if (tmpGuidesSel.count() != 0)
 	{
 		*GxM = tmpGuidesSel.begin().value();
 		if(*GxM%3==0)
-			*xout = item.at(*GxM/3)->xPos() -page->xOffset();
+			*xout = item.at(*GxM/3)->visualXPos() -page->xOffset();
 		else if(*GxM%3==1)
-			*xout = item.at(*GxM/3)->xPos() + item.at(*GxM/3)->width() -page->xOffset();
+			*xout = item.at(*GxM/3)->visualXPos() + item.at(*GxM/3)->visualWidth() -page->xOffset();
 		else if(*GxM%3==2)
-			*xout = item.at(*GxM/3)->xPos() + item.at(*GxM/3)->width()/2 -page->xOffset();
+			*xout = item.at(*GxM/3)->visualXPos() + item.at(*GxM/3)->visualWidth()/2 -page->xOffset();
 	}
 }
 
@@ -14968,8 +15014,32 @@ void ScribusDoc::removeFromGroup(PageItem* item)
 	item->setXYPos(nX, nY, true);
 	item->rotateBy(-gRot);
 	item->setLineWidth(item->lineWidth() * qMax(grScXi, grScYi));
-	item->setImageXScale(item->imageXScale() * grScXi);
-	item->setImageYScale(item->imageYScale() * grScYi);
+	if (!item->ScaleType)
+		item->AdjustPictScale();
+	else
+	{
+		item->setImageXScale(item->imageXScale() * grScXi);
+		item->setImageYScale(item->imageYScale() * grScYi);
+	}
+	if (item->GrType == 8)
+	{
+		double psx, psy, pox, poy, prot, pskx, psky;
+		item->patternTransform(psx, psy, pox, poy, prot, pskx, psky);
+		item->setPatternTransform(psx * grScXi, psy * grScYi, pox, poy, prot, pskx, psky);
+	}
+	if ((item->GrMask == 3) || (item->GrMask == 6) || (item->GrMask == 7) || (item->GrMask == 8))
+	{
+		double psx, psy, pox, poy, prot, pskx, psky;
+		item->maskTransform(psx, psy, pox, poy, prot, pskx, psky);
+		item->setMaskTransform(psx * grScXi, psy * grScYi, pox, poy, prot, pskx, psky);
+	}
+	if (item->isArc())
+	{
+		PageItem_Arc* ite = item->asArc();
+		ite->arcWidth = ite->arcWidth * grScXi;
+		ite->arcHeight = ite->arcHeight * grScYi;
+		ite->recalcPath();
+	}
 	if (item->asPathText())
 		item->updatePolyClip();
 	else
@@ -14982,21 +15052,28 @@ void ScribusDoc::resizeGroupToContents(PageItem* group)
 	PageItem_Group* currItem = group->asGroupFrame();
 	if (currItem == NULL)
 		return;
+	QTransform groupTrans = group->getTransform();
 	QPainterPath input1 = currItem->PoLine.toQPainterPath(true);
-	input1.translate(currItem->xPos(), currItem->yPos());
 	if (currItem->fillEvenOdd())
 		input1.setFillRule(Qt::OddEvenFill);
 	else
 		input1.setFillRule(Qt::WindingFill);
+	input1 = groupTrans.map(input1);
 	double minx =  std::numeric_limits<double>::max();
 	double miny =  std::numeric_limits<double>::max();
 	double maxx = -std::numeric_limits<double>::max();
 	double maxy = -std::numeric_limits<double>::max();
+	double oldX = currItem->xPos();
+	double oldY = currItem->yPos();
+	double oldW = currItem->width();
+	double oldH = currItem->height();
 	int gcount = currItem->groupItemList.count();
+	double scw = currItem->width() / currItem->groupWidth;
+	double sch = currItem->height() / currItem->groupHeight;
 	for (int c = 0; c < gcount; c++)
 	{
 		PageItem* gItem = currItem->groupItemList.at(c);
-		gItem->setXYPos(currItem->xPos() + gItem->gXpos, currItem->yPos() + gItem->gYpos, true);
+		gItem->setXYPos(oldX + gItem->gXpos, oldY + gItem->gYpos, true);
 		double x1, x2, y1, y2;
 		gItem->getVisualBoundingRect(&x1, &y1, &x2, &y2);
 		minx = qMin(minx, x1);
@@ -15004,34 +15081,38 @@ void ScribusDoc::resizeGroupToContents(PageItem* group)
 		maxx = qMax(maxx, x2);
 		maxy = qMax(maxy, y2);
 	}
-	double oldW = currItem->width();
-	double oldH = currItem->height();
+	groupTrans.scale(scw, sch);
+	QPointF newXY = groupTrans.map(QPointF(minx - oldX, miny - oldY));
 	currItem->setXYPos(minx, miny, true);
-	currItem->setWidthHeight(maxx - minx, maxy - miny, true);
+	currItem->setWidthHeight((maxx - minx) * scw, (maxy - miny) * sch, true);
 	currItem->groupWidth = maxx - minx;
 	currItem->groupHeight = maxy - miny;
 	for (int c = 0; c < gcount; c++)
 	{
 		PageItem* gItem = currItem->groupItemList.at(c);
-		gItem->gXpos = gItem->xPos() - minx;
-		gItem->gYpos = gItem->yPos() - miny;
+		gItem->gXpos = (gItem->xPos() - currItem->xPos());
+		gItem->gYpos = (gItem->yPos() - currItem->yPos());
 		gItem->gWidth = maxx - minx;
 		gItem->gHeight = maxy - miny;
 	}
+	currItem->setXYPos(newXY.x(), newXY.y(), true);
 	currItem->SetRectFrame();
-	if ((currItem->width() < oldW) || (currItem->height() < oldH))
+	currItem->ClipEdited = true;
+	currItem->FrameType = 3;
+	currItem->adjustXYPosition();
+	if ((currItem->width() != oldW) || (currItem->height() != oldH))
 	{
+		QTransform groupTrans2 = group->getTransform();
 		QPainterPath input2 = currItem->PoLine.toQPainterPath(true);
-		input2.translate(currItem->xPos(), currItem->yPos());
 		if (currItem->fillEvenOdd())
 			input2.setFillRule(Qt::OddEvenFill);
 		else
 			input2.setFillRule(Qt::WindingFill);
+		input2 = groupTrans2.map(input2);
 		QPainterPath result = input1.intersected(input2);
-		result.translate(-currItem->xPos(), -currItem->yPos());
+		result = groupTrans2.inverted().map(result);
 		currItem->PoLine.fromQPainterPath(result, true);
 	}
-	currItem->adjustXYPosition();
 }
 
 void ScribusDoc::itemSelection_resizeGroupToContents(Selection* customSelection)

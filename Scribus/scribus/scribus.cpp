@@ -50,7 +50,10 @@ for which a new license (GPL+exception) is in place.
 #include <QMouseEvent>
 #include <QPixmap>
 #include <QProgressBar>
-//#include <QQuickView>
+//<<QML testing
+#include <QHBoxLayout>
+#include <QQuickView>
+//>>
 #include <QRegExp>
 #include <QStyleFactory>
 #include <QTableWidget>
@@ -378,7 +381,11 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 	mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	if (prefsManager->appPrefs.uiPrefs.useTabs)
+	{
 		mdiArea->setViewMode(QMdiArea::TabbedView);
+		mdiArea->setTabsClosable(true);
+		mdiArea->setDocumentMode(true);
+	}
 	else
 		mdiArea->setViewMode(QMdiArea::SubWindowView);
 	setCentralWidget( mdiArea );
@@ -454,6 +461,8 @@ int ScribusMainWindow::initScMW(bool primaryMainWindow)
 
 ScribusMainWindow::~ScribusMainWindow()
 {
+	if (actionManager)
+		delete actionManager;
 	delete m_doc;
 }
 
@@ -800,6 +809,7 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->setMenuEnabled("EditPasteRecent", false);
 	scrMenuMgr->setMenuEnabled("EditContents", false);
 
+
 	//Item Menu
 	scrMenuMgr->createMenu("Item", ActionManager::defaultMenuNameEntryTranslated("Item"));
 	scrMenuMgr->createMenu("DuplicateTransform", tr("Duplicate/Transform"), "Item");
@@ -824,12 +834,10 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemLowerToBottom", "ItemLevel");
 	scrMenuMgr->createMenu("ItemLayer", tr("Send to La&yer"), "",false, true);
 	scrMenuMgr->addMenuItemString("ItemLayer", "Item");
-//	scrMenuMgr->addMenuToMenu("ItemLayer", "Item");
 	scrMenuMgr->createMenu("SendTo", tr("Send to"), "Item");
 	scrMenuMgr->addMenuItemString("SendTo", "Item");
 	scrMenuMgr->createMenu("ItemSendToScrapbook", tr("Scrapbook"),"",false,true);
 	scrMenuMgr->addMenuItemString("ItemSendToScrapbook", "SendTo");
-//	scrMenuMgr->addMenuToMenu("itemSendToScrapbook", "SendTo");
 	scrMenuMgr->addMenuItemString("itemSendToPattern", "SendTo");
 	scrMenuMgr->addMenuItemString("itemSendToInline", "SendTo");
 	scrMenuMgr->createMenu("Adjust", tr("Adjust"), "Item");
@@ -851,7 +859,6 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemPreviewNormal", "ItemPreviewSettings");
 	scrMenuMgr->addMenuItemString("itemPreviewFull", "ItemPreviewSettings");
 	scrMenuMgr->createMenu("ItemPDFOptions", tr("&PDF Options"));
-//	scrMenuMgr->addMenuToMenu("ItemPDFOptions", "Item");
 	scrMenuMgr->addMenuItemString("ItemPDFOptions", "Item");
 	scrMenuMgr->addMenuItemString("itemPDFIsAnnotation", "ItemPDFOptions");
 	scrMenuMgr->addMenuItemString("itemPDFIsBookmark", "ItemPDFOptions");
@@ -859,11 +866,11 @@ void ScribusMainWindow::initMenuBar()
 	scrMenuMgr->addMenuItemString("itemPDFFieldProps", "ItemPDFOptions");
 	scrMenuMgr->createMenu("ItemConvertTo", tr("C&onvert To"), "Item");
 	scrMenuMgr->addMenuItemString("ItemConvertTo", "Item");
-	scrMenuMgr->addMenuItemString("itemConvertToBezierCurve", "ItemConvertTo");
-	scrMenuMgr->addMenuItemString("itemConvertToImageFrame", "ItemConvertTo");
-	scrMenuMgr->addMenuItemString("itemConvertToOutlines", "ItemConvertTo");
-	scrMenuMgr->addMenuItemString("itemConvertToPolygon", "ItemConvertTo");
 	scrMenuMgr->addMenuItemString("itemConvertToTextFrame", "ItemConvertTo");
+	scrMenuMgr->addMenuItemString("itemConvertToImageFrame", "ItemConvertTo");
+	scrMenuMgr->addMenuItemString("itemConvertToPolygon", "ItemConvertTo");
+	scrMenuMgr->addMenuItemString("itemConvertToBezierCurve", "ItemConvertTo");
+	scrMenuMgr->addMenuItemString("itemConvertToOutlines", "ItemConvertTo");
 	scrMenuMgr->addMenuItemString("itemConvertToSymbolFrame", "ItemConvertTo");
 	scrMenuMgr->createMenu("TextLinking", tr("Text Frame Links"), "Item");
 	scrMenuMgr->addMenuItemString("TextLinking", "Item");
@@ -883,8 +890,8 @@ void ScribusMainWindow::initMenuBar()
 
 	scrMenuMgr->createMenu("Weld", tr("Welding"), "Item");
 	scrMenuMgr->addMenuItemString("Weld", "Item");
-	scrMenuMgr->addMenuItemString("itemsUnWeld", "Weld");
 	scrMenuMgr->addMenuItemString("itemWeld", "Weld");
+	scrMenuMgr->addMenuItemString("itemsUnWeld", "Weld");
 	scrMenuMgr->addMenuItemString("itemEditWeld", "Weld");
 
 	//scrMenuMgr->addMenuItem(scrActions["editMark"], "Item", false);
@@ -1860,11 +1867,10 @@ void ScribusMainWindow::closeEvent(QCloseEvent *ce)
 	if (!emergencyActivated)
 		prefsManager->SavePrefs();
 	UndoManager::deleteInstance();
-	PrefsManager::deleteInstance();
 	FormatsManager::deleteInstance();
 	UrlLauncher::deleteInstance();
 //	qApp->changeOverrideCursor(QCursor(Qt::ArrowCursor));
-	qApp->exit(0);
+	ce->accept();
 }
 
 void ScribusMainWindow::requestUpdate(int val)
@@ -2713,6 +2719,8 @@ void ScribusMainWindow::HaveNewDoc()
 void ScribusMainWindow::HaveNewSel(int SelectedType)
 {
 	PageItem *currItem = NULL;
+	if (doc == NULL)
+		return;
 	const uint docSelectionCount=doc->m_Selection->count();
 	if (SelectedType != -1)
 	{
@@ -4093,6 +4101,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		prefsManager->appPrefs.fontPrefs.AvailFonts.updateFontMap();
 
 		doc=new ScribusDoc();
+		doc->saveFilePermissions(QFile::permissions(fileName));
 		doc->is12doc=is12doc;
 		doc->appMode = modeNormal;
 		doc->HasCMS = false;
@@ -4905,7 +4914,8 @@ bool ScribusMainWindow::DoFileClose()
 		scrActions["editSearchReplace"]->setEnabled(false);
 		scrActions["editMasterPages"]->setEnabled(false);
 		scrActions["editJavascripts"]->setEnabled(false);
-
+		scrActions["editEditWithImageEditor"]->setEnabled(false);
+		scrActions["editEditRenderSource"]->setEnabled(false);
 		//scrActions["toolsPreflightVerifier"]->setEnabled(false);
 
 		scrActions["extrasHyphenateText"]->setEnabled(false);
@@ -8004,7 +8014,11 @@ void ScribusMainWindow::slotPrefsOrg()
 		}
 		emit UpdateRequest(reqDefFontListUpdate);
 		if (prefsManager->appPrefs.uiPrefs.useTabs)
+		{
 			mdiArea->setViewMode(QMdiArea::TabbedView);
+			mdiArea->setTabsClosable(true);
+			mdiArea->setDocumentMode(true);
+		}
 		else
 			mdiArea->setViewMode(QMdiArea::SubWindowView);
 		bool shadowChanged = oldPrefs.displayPrefs.showPageShadow != prefsManager->showPageShadow();
@@ -11601,22 +11615,21 @@ void ScribusMainWindow::setPreviewToolbar()
 	HaveNewSel(-1);
 }
 
-#include <QHBoxLayout>
+
 void ScribusMainWindow::testQTQuick2_1()
 {
 	/*
 	qDebug()<<"Testing Qt Quick 2.0";
 
 	QQuickView qqv;
-
-
 	QDialog d(this);
 	QHBoxLayout *layout = new QHBoxLayout(&d);
 	QWidget *container = createWindowContainer(&qqv, this);
 	d.setMinimumSize(300, 200);
 	d.setMaximumSize(300, 200);
 	d.setFocusPolicy(Qt::TabFocus);
-	qqv.setSource(QUrl::fromLocalFile("//Users/craig/scribus/PostTrunk/trunkqt5/Scribus/scribus/ui/qtq_test1.qml"));
+	qqv.setSource(QUrl::fromLocalFile(ScPaths::instance().qmlDir() + "qtq_test1.qml"));
+
 	layout->addWidget(container);
 	d.exec();
 	*/

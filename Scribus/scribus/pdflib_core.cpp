@@ -2142,12 +2142,8 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 						if (ite->imageFlippedV())
 							PutPage("1 0 0 -1 0 "+FToStr(-ite->height())+" cm\n");
 						if (ite->imageClip.size() != 0)
-						{
-							PutPage(SetClipPathImage(ite));
-							PutPage("h\nW*\nn\n");
-						}
-						PutPage(SetClipPath(ite));
-						PutPage("h\nW*\nn\n");
+							PutPage(SetImagePathAndClip(ite));
+						PutPage(SetPathAndClip(ite, true));
 						if ((ite->PictureIsAvailable) && (!ite->Pfile.isEmpty()))
 						{
 							if (!PDF_Image(ite, ite->Pfile, ite->imageXScale(), ite->imageYScale(), ite->imageXOffset(), -ite->imageYOffset(), false, ite->IProfile, ite->UseEmbedded, ite->IRender, &tmpOut))
@@ -2167,7 +2163,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 									if (ite->patternStrokePath)
 									{
 										QPainterPath path = ite->PoLine.toQPainterPath(false);
-										PutPage(HandleBrushPattern(ite, path, pag, pag->pageNr()));
+										PutPage(handleBrushPattern(ite, path, pag, pag->pageNr()));
 									}
 									else
 									{
@@ -2223,7 +2219,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 									QPainterPath path;
 									path.moveTo(0, 0);
 									path.lineTo(ite->width(), 0);
-									PutPage(HandleBrushPattern(ite, path, pag, pag->pageNr()));
+									PutPage(handleBrushPattern(ite, path, pag, pag->pageNr()));
 								}
 								else
 								{
@@ -2330,7 +2326,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 									if (ite->patternStrokePath)
 									{
 										QPainterPath path = ite->PoLine.toQPainterPath(false);
-										PutPage(HandleBrushPattern(ite, path, pag, pag->pageNr()));
+										PutPage(handleBrushPattern(ite, path, pag, pag->pageNr()));
 									}
 									else
 									{
@@ -2420,7 +2416,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 									if (ite->patternStrokePath)
 									{
 										QPainterPath path = ite->PoLine.toQPainterPath(false);
-										PutPage(HandleBrushPattern(ite, path, pag, pag->pageNr()));
+										PutPage(handleBrushPattern(ite, path, pag, pag->pageNr()));
 									}
 									else
 									{
@@ -2508,8 +2504,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 							QString tmpD = "";
 							ScPattern pat = doc.docPatterns[ite->pattern()];
 							PutPage("q\n");
-							PutPage(SetClipPath(ite));
-							PutPage(ite->fillRule ? "h W* n\n" : "h W n\n");
+							PutPage(SetPathAndClip(ite));
 							if (ite->imageFlippedH())
 								PutPage("-1 0 0 1 "+FToStr(ite->width())+" 0 cm\n");
 							if (ite->imageFlippedV())
@@ -2542,8 +2537,8 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 						{
 							QString tmpD = "";
 							PutPage("q\n");
-							PutPage(SetClipPath(ite));
-							PutPage(ite->fillRule ? "h W* n\n" : "h W n\n");
+							if (ite->groupClipping())
+								PutPage(SetPathAndClip(ite));
 							if (ite->imageFlippedH())
 								PutPage("-1 0 0 1 "+FToStr(ite->width())+" 0 cm\n");
 							if (ite->imageFlippedV())
@@ -2551,7 +2546,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 							QTransform trans;
 							trans.scale(ite->width() / ite->groupWidth, ite->height() / ite->groupHeight);
 							trans.translate(0.0, -ite->height());
-							trans.translate(ite->groupItemList.at(0)->gXpos, -ite->groupItemList.at(0)->gYpos);
+							//trans.translate(ite->groupItemList.at(0)->gXpos, -ite->groupItemList.at(0)->gYpos);
 							PutPage(FToStr(trans.m11())+" "+FToStr(trans.m12())+" "+FToStr(trans.m21())+" "+FToStr(trans.m22())+" "+FToStr(trans.dx())+" "+FToStr(trans.dy())+" cm\n");
 							for (int em = 0; em < ite->groupItemList.count(); ++em)
 							{
@@ -2561,7 +2556,7 @@ bool PDFLibCore::PDF_TemplatePage(const ScPage* pag, bool )
 								QString output;
 								if (inPattern > 0)
 									patternStackPos.push(QPointF(embedded->gXpos, -(embedded->gYpos - ite->height())));
-								if (!PDF_ProcessItem(output, embedded, pag, pag->pageNr(), true))
+								if (!PDF_ProcessItem(output, embedded, pag, pag->pageNr(), true, true))
 									return "";
 								if (inPattern)
 									patternStackPos.pop();
@@ -3356,7 +3351,8 @@ QString PDFLibCore::Write_TransparencyGroup(double trans, int blend, QString &da
 				scaleH = controlItem->groupHeight / controlItem->height();
 			else
 				scaleH = 1.0 / (controlItem->groupHeight / controlItem->height());
-			PutDoc("/BBox [ "+FToStr(0)+" "+FToStr(-controlItem->height() * scaleH)+" "+FToStr(controlItem->groupWidth * scaleW)+" "+FToStr(controlItem->groupHeight * scaleH)+" ]\n");
+		//	PutDoc("/BBox [ "+FToStr(0)+" "+FToStr(-controlItem->height() * scaleH)+" "+FToStr(controlItem->groupWidth * scaleW)+" "+FToStr(controlItem->groupHeight * scaleH)+" ]\n");
+			PutDoc("/BBox [ "+FToStr(0)+" "+FToStr(-controlItem->height() * scaleH)+" "+FToStr(ActPageP->width())+" "+FToStr(controlItem->groupHeight * scaleH)+" ]\n");
 		}
 		if (controlItem->isSymbol())
 		{
@@ -3449,6 +3445,130 @@ QString PDFLibCore::Write_TransparencyGroup(double trans, int blend, QString &da
 	retString += "/"+name+" Do\n";
 	retString += "Q\n";
 	return retString;
+}
+
+QString PDFLibCore::PDF_PutSoftShadow(PageItem* ite, const ScPage *pag)
+{
+	if (Options.Version < PDFOptions::PDFVersion_14 || !ite->hasSoftShadow() || ite->softShadowColor() == CommonStrings::None || !ite->printEnabled())
+		return "";
+	QString tmp("q\n");
+	double softShadowDPI = Options.Resolution;
+	int pixelRadius = qRound(ite->softShadowBlurRadius() / 72.0 * softShadowDPI);
+	tmp += "1 0 0 1 ";
+	tmp += FToStr(ite->softShadowXOffset() - ite->softShadowBlurRadius())+" ";
+	tmp += FToStr(-ite->softShadowYOffset() - ite->softShadowBlurRadius())+" cm\n";
+	tmp += "1 0 0 1 0 " + FToStr(-(ite->height() + ite->visualLineWidth()))+" cm\n";
+	tmp += FToStr(ite->width() + ite->visualLineWidth() + 2 * ite->softShadowBlurRadius()) + " 0 0 " + FToStr(ite->height() + ite->visualLineWidth() + 2 * ite->softShadowBlurRadius())+" 0 0 cm\n" ;
+
+	double savRot = ite->rotation();
+	ite->setRotation(0, true);
+	double maxSize = qMax(ite->visualWidth(), ite->visualHeight());
+	maxSize = qMin(3000.0, maxSize * (softShadowDPI / 72.0));
+	bool savedShadow = ite->hasSoftShadow();
+	ite->setHasSoftShadow(false);
+	QImage imgC = ite->DrawObj_toImage(maxSize);
+	ite->setRotation(savRot, true);
+	ite->setHasSoftShadow(savedShadow);
+
+	imgC = imgC.copy(-pixelRadius,-pixelRadius,imgC.width()+2*pixelRadius,imgC.height()+2*pixelRadius); // Add border
+	ScImage img = imgC.alphaChannel().convertToFormat(QImage::Format_RGB32);
+
+	ImageEffect eff;
+	ScImageEffectList el;
+	eff.effectCode = ScImage::EF_BLUR;
+	eff.effectParameters = QString("%1 1.0").arg(pixelRadius);
+	el.append(eff);
+	img.applyEffect(el,ite->doc()->PageColors,false);
+
+	uint maskObj = newObject();
+	StartObj(maskObj);
+	PutDoc("<<\n/Type /XObject\n/Subtype /Image\n");
+	PutDoc("/Width "+QString::number(img.width())+"\n");
+	PutDoc("/Height "+QString::number(img.height())+"\n");
+	PutDoc("/ColorSpace /DeviceGray\n");
+	PutDoc("/BitsPerComponent 8\n");
+	uint lengthObj = newObject();
+	PutDoc("/Length "+QString::number(lengthObj)+" 0 R\n");
+	PutDoc("/Filter /FlateDecode\n");
+	PutDoc(">>\nstream\n");
+	int bytesWritten = WriteFlateImageToStream(img, maskObj, ColorSpaceGray, false);
+	PutDoc("\nendstream\nendobj\n");
+	StartObj(lengthObj);
+	PutDoc(QString("    %1\n").arg(bytesWritten));
+	PutDoc("endobj\n");
+
+	uint colObj = newObject();
+	StartObj(colObj);
+	PutDoc("<<\n/Type /XObject\n/Subtype /Image\n");
+	PutDoc("/Width 1\n");
+	PutDoc("/Height 1\n");
+	PutDoc("/Interpolate false\n");
+	PutDoc("/BitsPerComponent 8\n");
+	PutDoc("/SMask "+QString::number(maskObj)+" 0 R\n");
+
+	ScImage col(1,1);
+	QString colstr = SetColor(ite->softShadowColor(), ite->softShadowShade());
+	if (Options.isGrayscale)
+	{
+		double gf;
+		int g;
+		QTextStream ts(&colstr, QIODevice::ReadOnly);
+		ts >> gf;
+		g = qRound(gf * 255);
+		col.imgInfo.colorspace = ColorSpaceGray;
+		col.qImagePtr()->setPixel(0,0,qRgba(g,g,g,255));
+		PutDoc("/ColorSpace /DeviceGray\n");
+		PutDoc("/Length 1\n");
+		PutDoc(">>\nstream\n");
+		WriteImageToStream(col, colObj, ColorSpaceGray, true);
+		PutDoc("\nendstream\nendobj\n");
+	}
+	else if (Options.UseRGB)
+	{
+		double r,g,b;
+		QTextStream ts(&colstr, QIODevice::ReadOnly);
+		ts >> r;
+		ts >> g;
+		ts >> b;
+		col.imgInfo.colorspace = ColorSpaceRGB;
+		col.qImagePtr()->setPixel(0, 0, qRgba(qRound(r*255), qRound(g*255), qRound(b*255), 255));
+		PutDoc("/ColorSpace /DeviceRGB\n");
+		PutDoc("/Length 3\n");
+		PutDoc(">>\nstream\n");
+		WriteImageToStream(col, colObj, ColorSpaceRGB, false);
+		PutDoc("\nendstream\nendobj\n");
+	}
+	else //CMYK
+	{
+		double c,m,y,k;
+		QTextStream ts(&colstr, QIODevice::ReadOnly);
+		ts >> c;
+		ts >> m;
+		ts >> y;
+		ts >> k;
+		col.imgInfo.colorspace = ColorSpaceCMYK;
+		col.qImagePtr()->setPixel(0, 0, qRgba(qRound(c*255), qRound(m*255), qRound(y*255), qRound(k*255)));
+		PutDoc("/ColorSpace /DeviceCMYK\n");
+		PutDoc("/Length 4\n");
+		PutDoc(">>\nstream\n");
+		WriteImageToStream(col, colObj, ColorSpaceCMYK, false);
+		PutDoc("\nendstream\nendobj\n");
+	}
+
+	QString colRes = ResNam+QString::number(ResCount);
+	Seite.ImgObjects[colRes] = colObj;
+	ResCount++;
+
+	QString ShName = ResNam+QString::number(ResCount);
+	ResCount++;
+	Transpar[ShName] = writeGState("/ca "+FToStr(1.0 - ite->softShadowOpacity())+"\n"
+								   + "/AIS false\n/OPM 1\n"
+								   + "/BM /" + blendMode(ite->softShadowBlendMode()) + "\n");
+
+	tmp += "/"+ShName+" gs\n";
+
+	tmp += "/"+colRes+" Do Q\n";
+	return tmp;
 }
 
 /**
@@ -3588,6 +3708,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 			sr = 0;
 		tmp += FToStr(cr)+" "+FToStr(sr)+" "+FToStr(-sr)+" "+FToStr(cr)+" 0 0 cm\n";
 	}
+	tmp += PDF_PutSoftShadow(ite,pag);
 	switch (ite->itemType())
 	{
 		case PageItem::ImageFrame:
@@ -3643,12 +3764,8 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 			if (ite->imageFlippedV())
 				tmp += "1 0 0 -1 0 "+FToStr(-ite->height())+" cm\n";
 			if (ite->imageClip.size() != 0)
-			{
-				tmp += SetClipPathImage(ite);
-				tmp += "h\nW*\nn\n";
-			}
-			tmp += SetClipPath(ite);
-			tmp += "h\nW*\nn\n";
+				tmp += SetImagePathAndClip(ite);
+			tmp += SetPathAndClip(ite, true);
 			if ((ite->PictureIsAvailable) && (!ite->Pfile.isEmpty()))
 			{
 				if (!PDF_Image(ite, ite->Pfile, ite->imageXScale(), ite->imageYScale(), ite->imageXOffset(), -ite->imageYOffset(), false, ite->IProfile, ite->UseEmbedded, ite->IRender, &tmpOut))
@@ -3668,7 +3785,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 						if (ite->patternStrokePath)
 						{
 							QPainterPath path = ite->PoLine.toQPainterPath(false);
-							tmp += HandleBrushPattern(ite, path, pag, PNr);
+							tmp += handleBrushPattern(ite, path, pag, PNr);
 						}
 						else
 						{
@@ -3773,7 +3890,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 						if (ite->patternStrokePath)
 						{
 							QPainterPath path = ite->PoLine.toQPainterPath(false);
-							tmp += HandleBrushPattern(ite, path, pag, PNr);
+							tmp += handleBrushPattern(ite, path, pag, PNr);
 						}
 						else
 						{
@@ -3827,7 +3944,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 						QPainterPath path;
 						path.moveTo(0, 0);
 						path.lineTo(ite->width(), 0);
-						tmp += HandleBrushPattern(ite, path, pag, PNr);
+						tmp += handleBrushPattern(ite, path, pag, PNr);
 					}
 					else
 					{
@@ -3935,7 +4052,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 						if (ite->patternStrokePath)
 						{
 							QPainterPath path = ite->PoLine.toQPainterPath(false);
-							tmp += HandleBrushPattern(ite, path, pag, PNr);
+							tmp += handleBrushPattern(ite, path, pag, PNr);
 						}
 						else
 						{
@@ -4026,7 +4143,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 						if (ite->patternStrokePath)
 						{
 							QPainterPath path = ite->PoLine.toQPainterPath(false);
-							tmp += HandleBrushPattern(ite, path, pag, PNr);
+							tmp += handleBrushPattern(ite, path, pag, PNr);
 						}
 						else
 						{
@@ -4121,7 +4238,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 								if (ite->patternStrokePath)
 								{
 									QPainterPath path = ite->PoLine.toQPainterPath(false);
-									tmp += HandleBrushPattern(ite, path, pag, PNr);
+									tmp += handleBrushPattern(ite, path, pag, PNr);
 								}
 								else
 								{
@@ -4181,11 +4298,7 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 				QString tmpD = "";
 				ScPattern pat = doc.docPatterns[ite->pattern()];
 				tmp += "q\n";
-				tmp += SetClipPath(ite);
-				if (ite->fillRule)
-					tmp += "h W* n\n";
-				else
-					tmp += "h W n\n";
+				tmp += SetPathAndClip(ite);
 				if (ite->imageFlippedH())
 					tmp += "-1 0 0 1 "+FToStr(ite->width())+" 0 cm\n";
 				if (ite->imageFlippedV())
@@ -4220,11 +4333,8 @@ bool PDFLibCore::PDF_ProcessItem(QString& output, PageItem* ite, const ScPage* p
 			{
 				QString tmpD = "";
 				tmp += "q\n";
-				tmp += SetClipPath(ite);
-				if (ite->fillRule)
-					tmp += "h W* n\n";
-				else
-					tmp += "h W n\n";
+				if (ite->groupClipping())
+					tmp += SetPathAndClip(ite);
 				if (ite->imageFlippedH())
 					tmp += "-1 0 0 1 "+FToStr(ite->width())+" 0 cm\n";
 				if (ite->imageFlippedV())
@@ -4508,7 +4618,7 @@ QString PDFLibCore::paintBorder(const TableBorder& border, const QPointF& start,
 	return tmp;
 }
 
-QString PDFLibCore::HandleBrushPattern(PageItem* ite, QPainterPath &path, const ScPage* pag, uint PNr)
+QString PDFLibCore::handleBrushPattern(PageItem* ite, QPainterPath &path, const ScPage* pag, uint PNr)
 {
 	QString tmp;
 	tmp = "";
@@ -5744,129 +5854,153 @@ QString PDFLibCore::SetGradientColor(const QString& farbe, double Shade)
 	return tmp;
 }
 
-QString PDFLibCore::SetClipPathImage(PageItem *ite)
-{
-	QString tmp("");
-	if (ite->imageClip.size() > 3)
-	{
-		bool nPath = true;
-		for (int poi=0; poi<ite->imageClip.size()-3; poi += 4)
-		{
-			if (ite->imageClip.point(poi).x() > 900000)
-			{
-				tmp += "h\n";
-				nPath = true;
-				continue;
-			}
-			FPoint np, np1, np2, np3;
-			if (nPath)
-			{
-				np = ite->imageClip.point(poi);
-				tmp += FToStr(np.x())+" "+FToStr(-np.y())+" m\n";
-				nPath = false;
-			}
-			np = ite->imageClip.point(poi);
-			np1 = ite->imageClip.point(poi+1);
-			np2 = ite->imageClip.point(poi+3);
-			np3 = ite->imageClip.point(poi+2);
-			if ((np == np1) && (np2 == np3))
-				tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" l\n";
-			else
-			{
-				tmp += FToStr(np1.x())+" "+FToStr(-np1.y())+" ";
-				tmp += FToStr(np2.x())+" "+FToStr(-np2.y())+" ";
-				tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" c\n";
-			}
-		}
-	}
-	return tmp;
-}
-
 QString PDFLibCore::SetClipPath(PageItem *ite, bool poly)
 {
-	QString tmp("");
+	QString tmp;
 	FPoint np, np1, np2, np3, np4, firstP;
 	bool nPath = true;
 	bool first = true;
-	if (ite->PoLine.size() > 3)
+	if (ite->PoLine.size() <= 3)
+		return tmp;
+
+	for (int poi=0; poi<ite->PoLine.size()-3; poi += 4)
 	{
-		for (int poi=0; poi<ite->PoLine.size()-3; poi += 4)
+		if (ite->PoLine.point(poi).x() > 900000)
 		{
-			if (ite->PoLine.point(poi).x() > 900000)
-			{
-				nPath = true;
-				continue;
-			}
-			if (nPath)
-			{
-				np = ite->PoLine.point(poi);
-				if ((!first) && (poly) && (np4 == firstP))
-					tmp += "h\n";
-				tmp += FToStr(np.x())+" "+FToStr(-np.y())+" m\n";
-				nPath = false;
-				first = false;
-				firstP = np;
-				np4 = np;
-			}
-			np = ite->PoLine.point(poi);
-			np1 = ite->PoLine.point(poi+1);
-			np2 = ite->PoLine.point(poi+3);
-			np3 = ite->PoLine.point(poi+2);
-			if ((np == np1) && (np2 == np3))
-				tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" l\n";
-			else
-			{
-				tmp += FToStr(np1.x())+" "+FToStr(-np1.y())+" ";
-				tmp += FToStr(np2.x())+" "+FToStr(-np2.y())+" ";
-				tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" c\n";
-			}
-			np4 = np3;
+			nPath = true;
+			continue;
 		}
+		if (nPath)
+		{
+			np = ite->PoLine.point(poi);
+			if ((!first) && (poly) && (np4 == firstP))
+				tmp += "h\n";
+			tmp += FToStr(np.x())+" "+FToStr(-np.y())+" m\n";
+			nPath = false;
+			first = false;
+			firstP = np;
+			np4 = np;
+		}
+		np = ite->PoLine.point(poi);
+		np1 = ite->PoLine.point(poi+1);
+		np2 = ite->PoLine.point(poi+3);
+		np3 = ite->PoLine.point(poi+2);
+		if ((np == np1) && (np2 == np3))
+			tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" l\n";
+		else
+		{
+			tmp += FToStr(np1.x())+" "+FToStr(-np1.y())+" ";
+			tmp += FToStr(np2.x())+" "+FToStr(-np2.y())+" ";
+			tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" c\n";
+		}
+		np4 = np3;
 	}
 	return tmp;
 }
 
 QString PDFLibCore::SetClipPathArray(FPointArray *ite, bool poly)
 {
-	QString tmp("");
+	QString tmp;
 	FPoint np, np1, np2, np3, np4, firstP;
 	bool nPath = true;
 	bool first = true;
-	if (ite->size() > 3)
+	if (ite->size() <= 3)
+		return tmp;
+
+	for (int poi=0; poi<ite->size()-3; poi += 4)
 	{
-		for (int poi=0; poi<ite->size()-3; poi += 4)
+		if (ite->point(poi).x() > 900000)
 		{
-			if (ite->point(poi).x() > 900000)
-			{
-				nPath = true;
-				continue;
-			}
-			if (nPath)
-			{
-				np = ite->point(poi);
-				if ((!first) && (poly) && (np4 == firstP))
-					tmp += "h\n";
-				tmp += FToStr(np.x())+" "+FToStr(-np.y())+" m\n";
-				nPath = false;
-				first = false;
-				firstP = np;
-				np4 = np;
-			}
+			nPath = true;
+			continue;
+		}
+		if (nPath)
+		{
 			np = ite->point(poi);
-			np1 = ite->point(poi+1);
-			np2 = ite->point(poi+3);
-			np3 = ite->point(poi+2);
-			if ((np == np1) && (np2 == np3))
-				tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" l\n";
-			else
-			{
-				tmp += FToStr(np1.x())+" "+FToStr(-np1.y())+" ";
-				tmp += FToStr(np2.x())+" "+FToStr(-np2.y())+" ";
-				tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" c\n";
-			}
-			np4 = np3;
+			if ((!first) && (poly) && (np4 == firstP))
+				tmp += "h\n";
+			tmp += FToStr(np.x())+" "+FToStr(-np.y())+" m\n";
+			nPath = false;
+			first = false;
+			firstP = np;
+			np4 = np;
+		}
+		np = ite->point(poi);
+		np1 = ite->point(poi+1);
+		np2 = ite->point(poi+3);
+		np3 = ite->point(poi+2);
+		if ((np == np1) && (np2 == np3))
+			tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" l\n";
+		else
+		{
+			tmp += FToStr(np1.x())+" "+FToStr(-np1.y())+" ";
+			tmp += FToStr(np2.x())+" "+FToStr(-np2.y())+" ";
+			tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" c\n";
+		}
+		np4 = np3;
+	}
+	return tmp;
+}
+
+QString PDFLibCore::SetClipPathImage(PageItem *ite)
+{
+	QString tmp;
+	if (ite->imageClip.size() <= 3)
+		return tmp;
+
+	bool nPath = true;
+	for (int poi=0; poi<ite->imageClip.size()-3; poi += 4)
+	{
+		if (ite->imageClip.point(poi).x() > 900000)
+		{
+			tmp += "h\n";
+			nPath = true;
+			continue;
+		}
+		FPoint np, np1, np2, np3;
+		if (nPath)
+		{
+			np = ite->imageClip.point(poi);
+			tmp += FToStr(np.x())+" "+FToStr(-np.y())+" m\n";
+			nPath = false;
+		}
+		np = ite->imageClip.point(poi);
+		np1 = ite->imageClip.point(poi+1);
+		np2 = ite->imageClip.point(poi+3);
+		np3 = ite->imageClip.point(poi+2);
+		if ((np == np1) && (np2 == np3))
+			tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" l\n";
+		else
+		{
+			tmp += FToStr(np1.x())+" "+FToStr(-np1.y())+" ";
+			tmp += FToStr(np2.x())+" "+FToStr(-np2.y())+" ";
+			tmp += FToStr(np3.x())+" "+FToStr(-np3.y())+" c\n";
 		}
 	}
+	return tmp;
+}
+
+QString PDFLibCore::SetImagePathAndClip(PageItem *item)
+{
+	QString tmp = SetClipPathImage(item);
+	if (tmp.length() > 0)
+		tmp += "h W* n\n";
+	return tmp;
+}
+
+QString PDFLibCore::SetPathAndClip(PageItem *item)
+{
+	QString tmp = SetClipPath(item);
+	if (tmp.length() > 0)
+		tmp += (item->fillRule ? "h W* n\n" : "h W n\n");
+	return tmp;
+}
+
+QString PDFLibCore::SetPathAndClip(PageItem *item, bool fillRule)
+{
+	QString tmp = SetClipPath(item);
+	if (tmp.length() > 0)
+		tmp += (fillRule ? "h W* n\n" : "h W n\n");
 	return tmp;
 }
 
@@ -7492,8 +7626,7 @@ bool PDFLibCore::PDF_DiamondGradientFill(QString& output, PageItem *c)
 		tmp += "/"+ShName+" gs\n";
 	}
 	tmp += putColor(colorNames.last(), colorShades.last(), true);
-	tmp += SetClipPath(c);
-	tmp += (c->fillRule ? "h\nW*\nn\n" : "h\nW\nn\n");
+	tmp += SetPathAndClip(c);
 	tmp += FToStr(c->GrControl1.x())+" "+FToStr(-c->GrControl1.y())+" m\n";
 	tmp += FToStr(c->GrControl2.x())+" "+FToStr(-c->GrControl2.y())+" l\n";
 	tmp += FToStr(c->GrControl3.x())+" "+FToStr(-c->GrControl3.y())+" l\n";
@@ -9426,7 +9559,6 @@ void PDFLibCore::PDF_Bookmark(PageItem *currItem, double ypos)
 	Bvie->SetAction(currItem, "/XYZ 0 "+FToStr(ypos)+" 0]");
 	BookMinUse = true;
 }
-
 
 bool PDFLibCore::PDF_EmbeddedPDF(PageItem* c, const QString& fn, double sx, double sy, double x, double y, bool fromAN, const QString& Profil, bool Embedded, int Intent, ShIm& imgInfo, QString* output)
 {

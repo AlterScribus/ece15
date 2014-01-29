@@ -16,6 +16,7 @@ for which a new license (GPL+exception) is in place.
 
 ScFileWidget::ScFileWidget(QWidget * parent) : QFileDialog(parent, Qt::Widget)
 {
+	setOption(QFileDialog::DontUseNativeDialog);
 	setSizeGripEnabled(false);
 	setModal(false);
 	setViewMode(QFileDialog::List);
@@ -56,7 +57,7 @@ QString ScFileWidget::selectedFile()
 	return l.at(0);
 }
 
-/* Hack to make the previews in our Fildialogs useable again
+/* Hack to make the previews in our file dialogs useable again
    needed e.g on OpenSuse patched Qt versions */
 void ScFileWidget::accept()
 {

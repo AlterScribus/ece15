@@ -237,9 +237,6 @@
     <ClInclude Include="..\..\..\scribus\hyphen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\scribus\icons5.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\scribus\ioapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -657,9 +654,6 @@
     <ClInclude Include="..\..\..\scribus\ui\ui_gradienteditor.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\scribus\ui\ui_gradientmanager.h">
-      <Filter>Generated Form Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_gradientvectorbase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
@@ -675,9 +669,6 @@
     <ClInclude Include="..\..\..\scribus\ui\ui_helpbrowsernavigation.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\scribus\ui\ui_hysettingsBase.h">
-      <Filter>Generated Form Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_insertaframe.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
@@ -685,9 +676,6 @@
       <Filter>Generated Form Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_inserttablerowsdialog.h">
-      <Filter>Generated Form Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\scribus\ui_lensdialogbase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_mark2item.h">
@@ -816,12 +804,6 @@
     <ClInclude Include="..\..\..\scribus\ui\ui_prefs_scrapbookbase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\scribus\ui\ui_prefs_scripterbase.h">
-      <Filter>Generated Form Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\scribus\ui\ui_prefs_shortwordsbase.h">
-      <Filter>Generated Form Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_prefs_spellingbase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
@@ -846,6 +828,9 @@
     <ClInclude Include="..\..\..\scribus\ui\ui_propertiespalette_linebase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
+	<ClInclude Include="..\..\..\scribus\ui\ui_propertiespalette_shadowbase.h">
+      <Filter>Generated Form Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_propertiespalette_shapebase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
@@ -865,9 +850,6 @@
       <Filter>Generated Form Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_propertywidget_flopbase.h">
-      <Filter>Generated Form Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\scribus\ui\ui_propertywidget_linebase.h">
       <Filter>Generated Form Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\scribus\ui\ui_propertywidget_optmarginsbase.h">
@@ -1015,6 +997,18 @@
       <Filter>colorMgmt</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\scribus\selectionrubberband.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\scribus\color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\scribus\crypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\scribus\documentchecker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\scribus\ui\smradiobutton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1860,6 +1854,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\ui\propertiespalette_line.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\..\scribus\ui\propertiespalette_shadow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\scribus\ui\propertiespalette_shape.cpp">
@@ -3065,6 +3062,9 @@
     <ClCompile Include="..\..\..\scribus\ui\moc_propertiespalette_line.cpp">
       <Filter>Generated Moc Files</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\..\scribus\ui\moc_propertiespalette_shadow.cpp">
+      <Filter>Generated Moc Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\scribus\ui\moc_propertiespalette_shape.cpp">
       <Filter>Generated Moc Files</Filter>
     </ClCompile>
@@ -3675,6 +3675,9 @@
       <Filter>Form Files</Filter>
     </uic>
     <uic Include="..\..\..\scribus\ui\propertiespalette_linebase.ui">
+      <Filter>Form Files</Filter>
+    </uic>
+	<uic Include="..\..\..\scribus\ui\propertiespalette_shadowbase.ui">
       <Filter>Form Files</Filter>
     </uic>
     <uic Include="..\..\..\scribus\ui\propertiespalette_shapebase.ui">
@@ -4533,6 +4536,9 @@
     <moc Include="..\..\..\scribus\ui\propertiespalette_line.h">
       <Filter>Header Files</Filter>
     </moc>
+	<moc Include="..\..\..\scribus\ui\propertiespalette_shadow.h">
+      <Filter>Header Files</Filter>
+    </moc>
     <moc Include="..\..\..\scribus\ui\propertiespalette_shape.h">
       <Filter>Header Files</Filter>
     </moc>
@@ -4854,19 +4860,5 @@
     <moc Include="..\..\..\scribus\upgradechecker.h">
       <Filter>Header Files</Filter>
     </moc>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\..\..\scribus\color.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\scribus\crypt.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\scribus\documentchecker.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\scribus\ui\smradiobutton.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
   </ItemGroup>
 </Project>

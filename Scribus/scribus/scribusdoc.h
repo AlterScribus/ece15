@@ -36,6 +36,7 @@ for which a new license (GPL+exception) is in place.
 #include <QRectF>
 #include <QStringList>
 #include <QTimer>
+#include <QFile>
 
 #include "gtgettext.h" //CB For the ImportSetup struct and itemadduserframe
 #include "scribusapi.h"
@@ -1046,6 +1047,8 @@ public:
 	void itemSelection_SetNamedCharStyle(const QString & name, Selection* customSelection=0);
 	void itemSelection_SetNamedLineStyle(const QString & name, Selection* customSelection=0);
 
+	void itemSelection_SetSoftShadow(bool has, QString color, double dx, double dy, double radius, int shade, double opac, int blend);
+
 	void itemSelection_SetLineWidth(double w);
 	void itemSelection_SetLineArt(Qt::PenStyle w);
 	void itemSelection_SetLineJoin(Qt::PenJoinStyle w);
@@ -1182,12 +1185,14 @@ public:
 	void removeInlineFrame(int fIndex);
 	void checkItemForFrames(PageItem *it, int fIndex);
 	bool hasPreflightErrors();
+	QFileDevice::Permissions filePermissions() { return docFilePermissions; }
+	void saveFilePermissions(QFileDevice::Permissions p) { docFilePermissions=p; }
 
 protected:
 	void addSymbols();
 	void applyPrefsPageSizingAndMargins(bool resizePages, bool resizeMasterPages, bool resizePageMargins, bool resizeMasterPageMargins);
-
 	bool m_hasGUI;
+	QFileDevice::Permissions docFilePermissions;
 	ApplicationPrefs& appPrefsData;
 	ApplicationPrefs docPrefsData;
 	UndoManager * const undoManager;

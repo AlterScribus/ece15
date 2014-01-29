@@ -174,6 +174,9 @@ public:
 	int editStrokeGradient;
 	int redrawMode;
 	int redrawCount;
+	bool m_AnnotChanged;
+	bool m_EditModeWasOn;
+	bool m_ChangedState;
 	PageItem *redrawItem;
 	SelectionRubberBand *redrawMarker;
 	FPoint RCenter;
@@ -327,6 +330,7 @@ private: // Private attributes
 	bool _isGlobalMode;
 	bool linkAfterDraw;
 	bool ImageAfterDraw;
+	bool m_oldSnapToElem;
 
 	double oldItemX;
 	double oldItemY;
