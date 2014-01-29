@@ -401,6 +401,8 @@ void CanvasMode_Edit::mouseMoveEvent(QMouseEvent *m)
 				currItem->itemText.deselectAll();
 				currItem->HasSel = false;
 				m_view->slotSetCurs(m->globalPos().x(), m->globalPos().y());
+				//hack for not updated oldCp value (pherhaps from other item)
+				oldCp = qMin(oldCp, currItem->itemText.length());
 				//Make sure we dont go here if the old cursor position was not set
 				if (oldCp!=-1 && currItem->itemText.length() > 0)
 				{

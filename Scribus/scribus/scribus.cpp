@@ -3498,6 +3498,7 @@ void ScribusMainWindow::slotDocCh(bool /*reb*/)
 			doc->flag_updateMarksLabels = false;
 		}
 	} while (!updateEnd);
+//	doc->regionsChanged()->update(QRectF());
 }
 
 void ScribusMainWindow::updateRecent(QString fn)
@@ -5268,8 +5269,17 @@ void ScribusMainWindow::slotEditCut()
 				cItem->deleteSelectedTextFromFrame();
 				if (doc->appMode == modeEditTable)
 					currItem->asTable()->update();
-				else
-					cItem->update();
+				if (currItem->isAutoNoteFrame() && (currItem->asNoteFrame()->notesList().isEmpty()))
+				//empty note frame can be deleted so let get pointer to master frame
+				{
+					doc->m_Selection->delaySignalsOn();
+					doc->m_Selection->removeItem(cItem);
+					doc->regionsChanged()->update(QRect());
+					cItem = currItem->asNoteFrame()->masterFrame();
+					doc->m_Selection->addItem(cItem);
+					doc->m_Selection->delaySignalsOff();
+				}
+				cItem->update();
 			}
 		}
 		else
@@ -10085,12 +10095,11 @@ void ScribusMainWindow::updateDocument()
 {
 	if (HaveDoc)
 	{
-		doc->updateListNumbers(true);
-		if (doc->updateMarks(true) || doc->flag_layoutNotesFrames || doc->flag_Renumber || doc->flag_restartMarksRenumbering || doc->flag_updateEndNotes)
-		{
-			slotDocCh();
-			doc->regionsChanged()->update(QRect());
-		}
+		doc->flag_NumUpdateRequest = true;
+		doc->flag_Renumber = true;
+		doc->flag_updateMarksLabels = true;
+		slotDocCh();
+		doc->regionsChanged()->update(QRect());
 	}
 }
 
@@ -11120,6 +11129,8 @@ void ScribusMainWindow::slotInsertMarkNote()
 		mrk->setType(MARKNoteMasterType);
 		mrk->setNotePtr(doc->newNote(nStyle));
 		mrk->getNotePtr()->setMasterMark(mrk);
+		mrk->getNotePtr()->setCharStyleNoteMark(currItem->itemText.defaultStyle().charStyle());
+		mrk->getNotePtr()->setCharStyleMasterMark(currItem->itemText.charStyle());
 		mrk->setString("");
 		mrk->OwnPage = currItem->OwnPage;
 		currItem->itemText.insertMark(mrk);
@@ -11286,6 +11297,8 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 		}
 
 		currItem->itemText.insertMark(mrk);
+		if (mrk->isType(MARKNoteMasterType))
+			mrk->getNotePtr()->setCharStyleMasterMark(currItem->itemText.charStyle());
 		mrk->OwnPage = currItem->OwnPage;
 		mrk->setHolderName(currItem->itemName());
 
@@ -11295,6 +11308,7 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 			mrk->getNotePtr()->setMasterMark(mrk);
 			mrk->setString("");
 		}
+		docWasChanged = true;
 
 		if (UndoManager::undoEnabled())
 		{
@@ -11342,7 +11356,6 @@ bool ScribusMainWindow::insertMarkDialog(PageItem_TextFrame* currItem, MarkType 
 			else
 				is->set("inItem", currItem->getUName());
 			undoManager->action(doc, is);
-			docWasChanged = true;
 		}
 	}
 	delete insertMDialog;

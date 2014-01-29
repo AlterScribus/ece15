@@ -151,6 +151,8 @@ void gtAction::writeUnstyled(const QString& text, bool isNote)
 		if (note == NULL)
 		{
 			note = it->m_Doc->newNote(it->m_Doc->m_docNotesStylesList.at(0));
+			note->setCharStyleMasterMark(it->itemText.charStyle());
+			note->setCharStyleNoteMark(it->itemText.charStyle());
 			Q_ASSERT(noteStory == NULL);
 			noteStory = new StoryText(it->m_Doc);
 		}
@@ -294,6 +296,8 @@ void gtAction::write(const QString& text, gtStyle *style, bool isNote)
 		if (noteStory == NULL)
 		{
 			note = it->m_Doc->newNote(it->m_Doc->m_docNotesStylesList.at(0));
+			note->setCharStyleMasterMark(it->itemText.charStyle());
+			note->setCharStyleNoteMark(it->itemText.charStyle());
 			noteStory = new StoryText(it->m_Doc);
 		}
 		story = noteStory;
