@@ -5054,9 +5054,18 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 	}
 	int start = itemText.startOfSelection();
 	int stop = itemText.endOfSelection();
-	//	//check if whole paragraph with list marker is going to delete
-	//	if (start > 0 && itemText.hasMarkType(start -1, MARKBullNumType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
-	//		--start;
+	//if whole paragraph is selected then delete PARSEP too
+	if ((stop < itemText.length()) && (itemText.text(stop) == SpecialChars::PARSEP) && (start == 0 || itemText.text(start-1)==SpecialChars::PARSEP))
+	{
+		itemText.select(stop,1);
+		++stop;
+	}
+	//check if whole paragraph with list marker is going to delete
+	if (start > 0 && itemText.hasMarkType(start -1, MARKListType) && (stop == itemText.length() || itemText.findParagraphEnd(start) <= stop))
+	{
+		--start;
+		itemText.select(start,1);
+	}
 	if(UndoManager::undoEnabled()) {
 		int lastPos = start;
 		CharStyle lastParent = itemText.charStyle(start);
