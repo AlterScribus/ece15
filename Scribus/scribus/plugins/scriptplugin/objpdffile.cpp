@@ -571,7 +571,7 @@ static PyMemberDef PDFfile_members[] = {
 	{const_cast<char*>("achange"), T_INT, offsetof(PDFfile, achange), 0, const_cast<char*>("Allow Changing the Document. Bool value")},
 	{const_cast<char*>("acopy"), T_INT, offsetof(PDFfile, acopy), 0, const_cast<char*>("Allow Copying Text and Graphics. Bool value")},
 	{const_cast<char*>("aanot"), T_INT, offsetof(PDFfile, aanot), 0, const_cast<char*>("Allow Adding Annotations and Fields. Bool value")},
-	{const_cast<char*>("version"), T_INT, offsetof(PDFfile, version), 0, const_cast<char*>("Choose PDF version to use:\n\t12 = PDF/X-3\n\t13 = PDF 1.3 (Acrobat 4)\n\t14 = PDF 1.4 (Acrobat 5)")},
+	{const_cast<char*>("version"), T_INT, offsetof(PDFfile, version), 0, const_cast<char*>("Choose PDF version to use:\n\t10 = PDF/X4\n\t11 = PDF/X1a\n\t12 = PDF/X-3\n\t13 = PDF 1.3 (Acrobat 4)\n\t14 = PDF 1.4 (Acrobat 5)\n\t15 = PDF 1.5 (Acrobat 6)")},
 	{const_cast<char*>("outdst"), T_INT, offsetof(PDFfile, outdst), 0, const_cast<char*>("Output destination.\n\t0 - screen\n\t1 - printer")},
 	{const_cast<char*>("profiles"), T_INT, offsetof(PDFfile, profiles), 0, const_cast<char*>("Embed a color profile for solid colors. Bool value.")},
 	{const_cast<char*>("profilei"), T_INT, offsetof(PDFfile, profilei), 0, const_cast<char*>("Embed a color profile for images. Bool value.")},
@@ -677,7 +677,6 @@ static int PDFfile_setpages(PDFfile *self, PyObject *value, void * /*closure*/)
 	Py_DECREF(self->pages);
 	Py_INCREF(value);
 	self->pages = value;
-	PyList_Sort(self->pages);
 	return 0;
 }
 
@@ -700,7 +699,7 @@ static int PDFfile_setresolution(PDFfile *self, PyObject *value, void * /*closur
 	}
 	int n = PyInt_AsLong(value);
 	if (n<35 || n>4000) {
-		PyErr_SetString(PyExc_ValueError, "'compress' value must be in interval from 35 to 4000");
+		PyErr_SetString(PyExc_ValueError, "'resolution' value must be in interval from 35 to 4000");
 		return -1;
 	}
 	Py_DECREF(self->resolution);
@@ -1120,7 +1119,7 @@ static PyObject *PDFfile_save(PDFfile *self)
 	ScCore->primaryMainWindow()->doc->pdfOptions().UseLPI = self->uselpi;
 	ScCore->primaryMainWindow()->doc->pdfOptions().UseSpotColors = self->usespot;
 	ScCore->primaryMainWindow()->doc->pdfOptions().doMultiFile = self->domulti;
-	self->version = minmaxi(self->version, 10, 14);
+	self->version = minmaxi(self->version, PDFOptions::PDFVersion_Min, PDFOptions::PDFVersion_Max);
 	// FIXME: Sanity check version
 	ScCore->primaryMainWindow()->doc->pdfOptions().Version = (PDFOptions::PDFVersion)self->version;
 	if (self->encrypt)
@@ -1223,7 +1222,7 @@ static PyMethodDef PDFfile_methods[] = {
 PyTypeObject PDFfile_Type = {
 	PyObject_HEAD_INIT(NULL) // PyObject_VAR_HEAD
 	0,		      //
-	const_cast<char*>("PDFfile"), // char *tp_name; /* For printing, in format "<module>.<name>" */
+	const_cast<char*>("scribus.PDFfile"), // char *tp_name; /* For printing, in format "<module>.<name>" */
 	sizeof(PDFfile),     // int tp_basicsize, /* For allocation */
 	0,		    // int tp_itemsize; /* For allocation */
 

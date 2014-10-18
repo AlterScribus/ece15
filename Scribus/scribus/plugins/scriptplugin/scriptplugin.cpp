@@ -300,6 +300,7 @@ char* tr(const char* docstringConstant)
 PyMethodDef scribus_methods[] = {
 	// 2004/10/03 pv - aliases with common Python syntax - ClassName methodName
 	// 2004-11-06 cr - move aliasing to dynamically generated wrapper functions, sort methoddef
+	{const_cast<char*>("applyMasterPage"), scribus_applymasterpage, METH_VARARGS, tr(scribus_applymasterpage__doc__)},
 	{const_cast<char*>("changeColor"), scribus_setcolor, METH_VARARGS, tr(scribus_setcolor__doc__)},
 	{const_cast<char*>("changeColorRGB"), scribus_setcolorrgb, METH_VARARGS, tr(scribus_setcolorrgb__doc__)},
 	{const_cast<char*>("changeColorCMYK"), scribus_setcolorcmyk, METH_VARARGS, tr(scribus_setcolorcmyk__doc__)},
@@ -442,6 +443,7 @@ PyMethodDef scribus_methods[] = {
 	{const_cast<char*>("progressReset"), (PyCFunction)scribus_progressreset, METH_NOARGS, tr(scribus_progressreset__doc__)},
 	{const_cast<char*>("progressSet"), scribus_progresssetprogress, METH_VARARGS, tr(scribus_progresssetprogress__doc__)},
 	{const_cast<char*>("progressTotal"), scribus_progresssettotalsteps, METH_VARARGS, tr(scribus_progresssettotalsteps__doc__)},
+	{const_cast<char*>("readPDFOptions"), (PyCFunction)scribus_readpdfoptions, METH_VARARGS, tr(scribus_readpdfoptions__doc__)},
 	{const_cast<char*>("redrawAll"), (PyCFunction)scribus_redraw, METH_NOARGS, tr(scribus_redraw__doc__)},
 	{const_cast<char*>("removeTableRows"), scribus_removetablerows, METH_VARARGS, tr(scribus_removetablerows__doc__)},
 	{const_cast<char*>("removeTableColumns"), scribus_removetablecolumns, METH_VARARGS, tr(scribus_removetablecolumns__doc__)},
@@ -455,6 +457,7 @@ PyMethodDef scribus_methods[] = {
 	{const_cast<char*>("saveDocAs"), scribus_savedocas, METH_VARARGS, tr(scribus_savedocas__doc__)},
 	{const_cast<char*>("saveDoc"), (PyCFunction)scribus_savedoc, METH_NOARGS, tr(scribus_savedoc__doc__)},
 	{const_cast<char*>("savePageAsEPS"), scribus_savepageeps, METH_VARARGS, tr(scribus_savepageeps__doc__)},
+	{const_cast<char*>("savePDFOptions"), (PyCFunction)scribus_savepdfoptions, METH_VARARGS, tr(scribus_savepdfoptions__doc__)},
 	{const_cast<char*>("scaleGroup"), scribus_scalegroup, METH_VARARGS, tr(scribus_scalegroup__doc__)},
 	{const_cast<char*>("scaleImage"), scribus_scaleimage, METH_VARARGS, tr(scribus_scaleimage__doc__)},
 	{const_cast<char*>("setImageBrightness"), scribus_setimagebrightness, METH_VARARGS, tr(scribus_setimagebrightness__doc__)},

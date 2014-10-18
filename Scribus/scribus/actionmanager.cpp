@@ -481,12 +481,12 @@ void ActionManager::initItemMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	name="itemToggleInlineImage";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
-	name="itemPreviewLow";
-	scrActions->insert(name, new ScrAction(ScrAction::DataInt, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 2));
-	name="itemPreviewNormal";
-	scrActions->insert(name, new ScrAction(ScrAction::DataInt, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 1));
 	name="itemPreviewFull";
 	scrActions->insert(name, new ScrAction(ScrAction::DataInt, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 0));
+	name="itemPreviewNormal";
+	scrActions->insert(name, new ScrAction(ScrAction::DataInt, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 1));
+	name="itemPreviewLow";
+	scrActions->insert(name, new ScrAction(ScrAction::DataInt, QPixmap(), QPixmap(), "", defaultKey(name), mainWindow, 2));
 	name="itemPDFIsBookmark";
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 	(*scrActions)["itemPDFIsBookmark"]->setToggleAction(true);
@@ -499,9 +499,9 @@ void ActionManager::initItemMenuActions()
 	scrActions->insert(name, new ScrAction("", defaultKey(name), mainWindow));
 
 	(*scrActions)["itemImageIsVisible"]->setToggleAction(true);
-	(*scrActions)["itemPreviewLow"]->setToggleAction(true);
-	(*scrActions)["itemPreviewNormal"]->setToggleAction(true);
 	(*scrActions)["itemPreviewFull"]->setToggleAction(true);
+	(*scrActions)["itemPreviewNormal"]->setToggleAction(true);
+	(*scrActions)["itemPreviewLow"]->setToggleAction(true);
 	(*scrActions)["itemToggleInlineImage"]->setToggleAction(true);
 
 	name="itemShapeEdit";
@@ -1279,9 +1279,9 @@ void ActionManager::disconnectNewViewActions()
 	disconnect( (*scrActions)["toolsZoomIn"], 0, 0, 0);
 	disconnect( (*scrActions)["toolsZoomOut"], 0, 0, 0);
 	disconnect( (*scrActions)["itemImageIsVisible"], 0, 0, 0);
-	disconnect( (*scrActions)["itemPreviewLow"], SIGNAL(triggeredData(int)), 0, 0 );
-	disconnect( (*scrActions)["itemPreviewNormal"], SIGNAL(triggeredData(int)), 0,0 );
 	disconnect( (*scrActions)["itemPreviewFull"], SIGNAL(triggeredData(int)), 0, 0 );
+	disconnect( (*scrActions)["itemPreviewNormal"], SIGNAL(triggeredData(int)), 0, 0 );
+	disconnect( (*scrActions)["itemPreviewLow"], SIGNAL(triggeredData(int)), 0, 0 );
 	disconnect( (*scrActions)["itemConvertToBezierCurve"], 0, 0, 0);
 	disconnect( (*scrActions)["itemConvertToImageFrame"], 0, 0, 0);
 	disconnect( (*scrActions)["itemConvertToOutlines"], 0, 0, 0);
@@ -1316,9 +1316,9 @@ void ActionManager::disconnectNewSelectionActions()
 {
 	disconnect( (*scrActions)["itemImageIsVisible"], 0, 0, 0);
 	//Only disconnect triggeredData for data based actions or you will disconnect the internal signal
-	disconnect( (*scrActions)["itemPreviewLow"], SIGNAL(triggeredData(int)) , 0, 0);
-	disconnect( (*scrActions)["itemPreviewNormal"], SIGNAL(triggeredData(int)) , 0, 0);
 	disconnect( (*scrActions)["itemPreviewFull"], SIGNAL(triggeredData(int)) , 0, 0);
+	disconnect( (*scrActions)["itemPreviewNormal"], SIGNAL(triggeredData(int)) , 0, 0);
+	disconnect( (*scrActions)["itemPreviewLow"], SIGNAL(triggeredData(int)) , 0, 0);
 	disconnect( (*scrActions)["editClearContents"], 0, 0, 0);
 	disconnect( (*scrActions)["editTruncateContents"], 0, 0, 0);
 }
@@ -1326,9 +1326,9 @@ void ActionManager::disconnectNewSelectionActions()
 void ActionManager::connectNewSelectionActions(ScribusView* /*currView*/, ScribusDoc* currDoc)
 {
 	connect( (*scrActions)["itemImageIsVisible"], SIGNAL(toggled(bool)), currDoc, SLOT(itemSelection_ToggleImageShown()) );
-	connect( (*scrActions)["itemPreviewLow"], SIGNAL(triggeredData(int)), currDoc, SLOT(itemSelection_ChangePreviewResolution(int)) );
-	connect( (*scrActions)["itemPreviewNormal"], SIGNAL(triggeredData(int)), currDoc, SLOT(itemSelection_ChangePreviewResolution(int)) );
 	connect( (*scrActions)["itemPreviewFull"], SIGNAL(triggeredData(int)), currDoc, SLOT(itemSelection_ChangePreviewResolution(int)) );
+	connect( (*scrActions)["itemPreviewNormal"], SIGNAL(triggeredData(int)), currDoc, SLOT(itemSelection_ChangePreviewResolution(int)) );
+	connect( (*scrActions)["itemPreviewLow"], SIGNAL(triggeredData(int)), currDoc, SLOT(itemSelection_ChangePreviewResolution(int)) );
 	connect( (*scrActions)["editClearContents"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_ClearItem()) );
 	connect( (*scrActions)["editTruncateContents"], SIGNAL(triggered()), currDoc, SLOT(itemSelection_TruncateItem()) );
 }
@@ -1578,9 +1578,9 @@ void ActionManager::languageChange()
 	(*scrActions)["itemAdjustImageToFrame"]->setTexts( tr("Adjust Image to Frame"));
 	(*scrActions)["itemToggleInlineImage"]->setTexts( tr("Embed Image"));
 	(*scrActions)["itemExtendedImageProperties"]->setTexts( tr("Extended Image Properties"));
-	(*scrActions)["itemPreviewLow"]->setTexts( tr("&Low Resolution"));
-	(*scrActions)["itemPreviewNormal"]->setTexts( tr("&Normal Resolution"));
 	(*scrActions)["itemPreviewFull"]->setTexts( tr("&Full Resolution"));
+	(*scrActions)["itemPreviewNormal"]->setTexts( tr("&Normal Resolution"));
+	(*scrActions)["itemPreviewLow"]->setTexts( tr("&Low Resolution"));
 	(*scrActions)["itemPDFIsBookmark"]->setTexts( tr("Is PDF &Bookmark"));
 	(*scrActions)["itemPDFIsAnnotation"]->setTexts( tr("Is PDF A&nnotation"));
 	(*scrActions)["itemPDFAnnotationProps"]->setTexts( tr("Annotation P&roperties"));
@@ -1756,7 +1756,7 @@ void ActionManager::languageChange()
 	(*scrActions)["fileSave"]->setStatusTextAndShortcut( tr("Save the current document"));
 	(*scrActions)["toolsCopyProperties"]->setStatusTextAndShortcut( tr("Copy item properties"));
 	(*scrActions)["toolsEditContents"]->setStatusTextAndShortcut( tr("Edit contents of a frame"));
-	(*scrActions)["toolsEditWithStoryEditor"]->setStatusTextAndShortcut( tr("Edit text in the Story Editor"));
+	(*scrActions)["toolsEditWithStoryEditor"]->setStatusTextAndShortcut( tr("Edit text in story editor"));
 	(*scrActions)["toolsEyeDropper"]->setStatusTextAndShortcut( tr("Eye Dropper"));
 	(*scrActions)["toolsInsertArc"]->setStatusTextAndShortcut( tr("Insert an arc"));
 	(*scrActions)["toolsInsertBezier"]->setStatusTextAndShortcut( tr("Insert a bezier curve"));
@@ -2118,9 +2118,9 @@ void ActionManager::createDefaultMenus()
 		<< "itemAdjustImageToFrame" 
 		<< "itemToggleInlineImage" 
 		<< "itemExtendedImageProperties" 
-		<< "itemPreviewLow" 
-		<< "itemPreviewNormal" 
 		<< "itemPreviewFull" 
+		<< "itemPreviewNormal" 
+		<< "itemPreviewLow" 
 		<< "itemRaise" 
 		<< "itemLower" 
 		<< "itemRaiseToTop" 
@@ -2514,137 +2514,5 @@ QString ActionManager::defaultMenuNameEntryTranslated(const QString& index)
 			return defMenuNames.at(i).second.at(2);
 	}
 	return QString::null;
-}
-
-void ActionManager::setStartupActionsEnabled(bool enabled)
-{
-	(*scrActions)["fileDocSetup150"]->setEnabled(false);
-	(*scrActions)["filePrint"]->setEnabled(false);
-	(*scrActions)["fileSave"]->setEnabled(false);
-	(*scrActions)["fileSaveAs"]->setEnabled(false);
-	(*scrActions)["fileRevert"]->setEnabled(false);
-	(*scrActions)["fileCollect"]->setEnabled(false);
-	(*scrActions)["fileClose"]->setEnabled(false);
-	(*scrActions)["PrintPreview"]->setEnabled(false);
-	(*scrActions)["SaveAsDocumentTemplate"]->setEnabled(false);
-//	scrMenuMgr->setMenuEnabled("FileImport", false);
-//	scrMenuMgr->setMenuEnabled("FileExport", false);
-	(*scrActions)["fileExportAsPDF"]->setEnabled(false);
-	(*scrActions)["fileExportText"]->setEnabled(false);
-	(*scrActions)["fileExportAsEPS"]->setEnabled(false);
-	(*scrActions)["fileImportText"]->setEnabled(false);
-	(*scrActions)["fileImportText2"]->setEnabled(false);
-	(*scrActions)["fileImportImage"]->setEnabled(false);
-	(*scrActions)["fileImportAppendText"]->setEnabled(false);
-	(*scrActions)["fileImportVector"]->setEnabled(false);
-	(*scrActions)["pageInsert"]->setEnabled(false);
-	(*scrActions)["pageImport"]->setEnabled(false);
-	(*scrActions)["pageDelete"]->setEnabled(false);
-	(*scrActions)["pageImport"]->setEnabled(false);
-	(*scrActions)["pageMove"]->setEnabled(false);
-	(*scrActions)["pageCopy"]->setEnabled(false);
-	(*scrActions)["pageApplyMasterPage"]->setEnabled(false);
-	(*scrActions)["pageCopyToMasterPage"]->setEnabled(false);
-	(*scrActions)["pageManageGuides"]->setEnabled(false);
-	(*scrActions)["pageManageMargins"]->setEnabled(false);
-	(*scrActions)["editUndoAction"]->setEnabled(false);
-	(*scrActions)["editRedoAction"]->setEnabled(false);
-	(*scrActions)["editCut"]->setEnabled(false);
-	(*scrActions)["editCopy"]->setEnabled(false);
-	(*scrActions)["editPaste"]->setEnabled(false);
-//	scrMenuMgr->setMenuEnabled("EditPasteRecent", false);
-	(*scrActions)["editClearContents"]->setEnabled(false);
-	(*scrActions)["editTruncateContents"]->setEnabled(false);
-	(*scrActions)["editSelectAll"]->setEnabled(false);
-	(*scrActions)["editSelectAllOnLayer"]->setEnabled(false);
-	(*scrActions)["editDeselectAll"]->setEnabled(false);
-	(*scrActions)["editReplaceColors"]->setEnabled(false);
-	(*scrActions)["editStyles"]->setEnabled(false);
-	(*scrActions)["editMarks"]->setEnabled(false);
-	(*scrActions)["editNotesStyles"]->setEnabled(false);
-	(*scrActions)["editSearchReplace"]->setEnabled(false);
-	(*scrActions)["editMasterPages"]->setEnabled(false);
-	(*scrActions)["editJavascripts"]->setEnabled(false);
-	(*scrActions)["editEditWithImageEditor"]->setEnabled(false);
-	(*scrActions)["editEditRenderSource"]->setEnabled(false);
-	(*scrActions)["toolsPreflightVerifier"]->setEnabled(false);
-	(*scrActions)["extrasHyphenateText"]->setEnabled(false);
-	(*scrActions)["extrasDeHyphenateText"]->setEnabled(false);
-	(*scrActions)["viewFitInWindow"]->setEnabled(false);
-	(*scrActions)["viewFitWidth"]->setEnabled(false);
-	(*scrActions)["viewFit50"]->setEnabled(false);
-	(*scrActions)["viewFit75"]->setEnabled(false);
-	(*scrActions)["viewFit100"]->setEnabled(false);
-	(*scrActions)["viewFit200"]->setEnabled(false);
-	(*scrActions)["viewFit400"]->setEnabled(false);
-	(*scrActions)["viewSnapToGuides"]->setChecked(false);
-	(*scrActions)["viewSnapToElements"]->setChecked(false);
-	(*scrActions)["viewSnapToGrid"]->setChecked(false);
-	(*scrActions)["viewShowRulers"]->setEnabled(false);
-//	scrMenuMgr->setMenuEnabled("Insert", false);
-	(*scrActions)["insertFrame"]->setEnabled(false);
-	(*scrActions)["insertSampleText"]->setEnabled(false);
-	(*scrActions)["itemDuplicate"]->setEnabled(false);
-	(*scrActions)["itemMulDuplicate"]->setEnabled(false);
-	(*scrActions)["itemTransform"]->setEnabled(false);
-	(*scrActions)["itemDelete"]->setEnabled(false);
-	(*scrActions)["itemRaise"]->setEnabled(false);
-	(*scrActions)["itemLower"]->setEnabled(false);
-	(*scrActions)["itemRaiseToTop"]->setEnabled(false);
-	(*scrActions)["itemLowerToBottom"]->setEnabled(false);
-//	scrMenuMgr->setMenuEnabled("itemSendToScrapbook", false);
-	(*scrActions)["itemSendToPattern"]->setEnabled(false);
-	(*scrActions)["itemSendToInline"]->setEnabled(false);
-	(*scrActions)["itemAdjustFrameToImage"]->setEnabled(false);
-	(*scrActions)["itemAdjustImageToFrame"]->setEnabled(false);
-	(*scrActions)["itemExtendedImageProperties"]->setEnabled(false);
-	(*scrActions)["itemUpdateImage"]->setEnabled(false);
-	(*scrActions)["itemPreviewLow"]->setEnabled(false);
-	(*scrActions)["itemPreviewNormal"]->setEnabled(false);
-	(*scrActions)["itemPreviewFull"]->setEnabled(false);
-	(*scrActions)["itemAttributes"]->setEnabled(false);
-	(*scrActions)["itemPDFAnnotationProps"]->setEnabled(false);
-	(*scrActions)["itemPDFFieldProps"]->setEnabled(false);
-	(*scrActions)["itemConvertToBezierCurve"]->setEnabled(false);
-	(*scrActions)["itemConvertToImageFrame"]->setEnabled(false);
-	(*scrActions)["itemConvertToOutlines"]->setEnabled(false);
-	(*scrActions)["itemConvertToPolygon"]->setEnabled(false);
-	(*scrActions)["itemConvertToTextFrame"]->setEnabled(false);
-	(*scrActions)["itemConvertToSymbolFrame"]->setEnabled(false);
-	(*scrActions)["toolsSelect"]->setEnabled(false);
-	(*scrActions)["toolsRotate"]->setEnabled(false);
-	(*scrActions)["toolsEditContents"]->setEnabled(false);
-	(*scrActions)["toolsEditWithStoryEditor"]->setEnabled(false);
-	(*scrActions)["toolsZoom"]->setEnabled(false);
-	(*scrActions)["toolsInsertTextFrame"]->setEnabled(false);
-	(*scrActions)["toolsInsertImageFrame"]->setEnabled(false);
-	(*scrActions)["toolsInsertShape"]->setEnabled(false);
-	(*scrActions)["toolsInsertLine"]->setEnabled(false);
-	(*scrActions)["toolsInsertBezier"]->setEnabled(false);
-	(*scrActions)["toolsInsertFreehandLine"]->setEnabled(false);
-	(*scrActions)["toolsInsertCalligraphicLine"]->setEnabled(false);
-	(*scrActions)["toolsInsertPolygon"]->setEnabled(false);
-	(*scrActions)["toolsInsertArc"]->setEnabled(false);
-	(*scrActions)["toolsInsertSpiral"]->setEnabled(false);
-	(*scrActions)["toolsInsertRenderFrame"]->setEnabled(false);
-	(*scrActions)["toolsInsertTable"]->setEnabled(false);
-	(*scrActions)["toolsLinkTextFrame"]->setEnabled(false);
-	(*scrActions)["toolsUnlinkTextFrame"]->setEnabled(false);
-	(*scrActions)["toolsUnlinkTextFrameWithTextCopy"]->setEnabled(false);
-	(*scrActions)["toolsUnlinkTextFrameWithTextCut"]->setEnabled(false);
-	(*scrActions)["toolsMeasurements"]->setEnabled(false);
-	(*scrActions)["toolsCopyProperties"]->setEnabled(false);
-	(*scrActions)["toolsEyeDropper"]->setEnabled(false);
-	(*scrActions)["toolsPDFPushButton"]->setEnabled(false);
-	(*scrActions)["toolsPDFRadioButton"]->setEnabled(false);
-	(*scrActions)["toolsPDFTextField"]->setEnabled(false);
-	(*scrActions)["toolsPDFCheckBox"]->setEnabled(false);
-	(*scrActions)["toolsPDFComboBox"]->setEnabled(false);
-	(*scrActions)["toolsPDFListBox"]->setEnabled(false);
-	(*scrActions)["toolsPDFAnnotText"]->setEnabled(false);
-	(*scrActions)["toolsPDFAnnotLink"]->setEnabled(false);
-#ifdef HAVE_OSG
-	(*scrActions)["toolsPDFAnnot3D"]->setEnabled(false);
-#endif
 }
 

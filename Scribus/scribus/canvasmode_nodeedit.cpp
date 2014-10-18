@@ -538,13 +538,9 @@ void CanvasMode_NodeEdit::handleNodeEditPress(QMouseEvent* m, QRect)
 			m_doc->nodeEdit.ClRe = a;
 			if ((m_doc->nodeEdit.EdPoints) && (m_doc->nodeEdit.SelNode.contains(a) == 0))
 			{
-				if (m->modifiers() == Qt::ShiftModifier)
-					m_doc->nodeEdit.SelNode.append(a);
-				else
-				{
+				if (m->modifiers() != Qt::ShiftModifier)
 					m_doc->nodeEdit.SelNode.clear();
-					m_doc->nodeEdit.SelNode.append(a);
-				}
+				m_doc->nodeEdit.SelNode.append(a);
 			}
 			m_doc->nodeEdit.update(Clip.pointQF(a));
 			pfound = true;
@@ -801,7 +797,10 @@ void CanvasMode_NodeEdit::handleNodeEditPress(QMouseEvent* m, QRect)
 				return;
 			}
 		}
-		if ((currItem->Segments.count() != 0) && ((EndInd - StartInd) <= 12))
+
+		int numPoints = (StartInd != 0) ? (StartInd-4) : 0;
+		numPoints += (Clip.size() - EndInd);
+		if ((currItem->Segments.count() > 0) && ((EndInd - StartInd) <= 12) && (numPoints > 0))
 		{
 			if (StartInd != 0)
 				cli.putPoints(0, StartInd-4, Clip);
@@ -826,6 +825,11 @@ void CanvasMode_NodeEdit::handleNodeEditPress(QMouseEvent* m, QRect)
 					cli.putPoints(cli.size(), EndInd - StartInd - 4, Clip, StartInd+4);
 					cli.putPoints(cli.size(), Clip.size() - EndInd, Clip, EndInd);
 				}
+			}
+			else if (m_doc->nodeEdit.ClRe == static_cast<int>(EndInd - 2))
+			{
+				Clip.remove(m_doc->nodeEdit.ClRe - 2, 4);
+				cli = Clip.copy();
 			}
 			else
 			{

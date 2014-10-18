@@ -1210,7 +1210,7 @@ void SlaOutputDev::startDoc(PDFDoc *doc, XRef *xrefA, Catalog *catA)
 	true);
 }
 
-void SlaOutputDev::startPage(int pageNum, GfxState *)
+void SlaOutputDev::startPage(int pageNum, GfxState *, XRef *)
 {
 	m_formWidgets = pdfDoc->getPage(pageNum)->getFormWidgets();
 	m_radioMap.clear();
@@ -1280,7 +1280,19 @@ void SlaOutputDev::restoreState(GfxState *state)
 						m_Elements->removeAll(gElements.Items.at(d));
 					}
 					PageItem *sing = gElements.Items.first();
+					QPainterPath input1 = sing->PoLine.toQPainterPath(true);
+					if (sing->fillEvenOdd())
+						input1.setFillRule(Qt::OddEvenFill);
+					else
+						input1.setFillRule(Qt::WindingFill);
+					QPainterPath input2 = ite->PoLine.toQPainterPath(true);
+					if (ite->fillEvenOdd())
+						input2.setFillRule(Qt::OddEvenFill);
+					else
+						input2.setFillRule(Qt::WindingFill);
+					QPainterPath result = input1.intersected(input2);
 					if ((gElements.Items.count() == 1)
+						 && (sing->isGroup() && !result.isEmpty())
 						 && (sing->isImageFrame() || sing->isGroup() || sing->isPolygon() || sing->isPolyLine())
 						 && (ite->patternMask().isEmpty() || sing->patternMask().isEmpty() || (sing->patternMask() == ite->patternMask()))
 						 && (state->getFillOpacity() == (1.0 - ite->fillTransparency()))
@@ -1313,31 +1325,16 @@ void SlaOutputDev::restoreState(GfxState *state)
 									allItems[si]->moveBy(dx, dy, true);
 								}
 							}
-							QPainterPath input1 = sing->PoLine.toQPainterPath(true);
-							if (sing->fillEvenOdd())
-								input1.setFillRule(Qt::OddEvenFill);
-							else
-								input1.setFillRule(Qt::WindingFill);
-							QPainterPath input2 = ite->PoLine.toQPainterPath(true);
-							if (ite->fillEvenOdd())
-								input2.setFillRule(Qt::OddEvenFill);
-							else
-								input2.setFillRule(Qt::WindingFill);
-							QPainterPath result = input1.intersected(input2);
 							sing->setXYPos(ite->xPos(), ite->yPos(), true);
 							sing->setWidthHeight(ite->width(), ite->height(), true);
 							sing->groupWidth = ite->width();
 							sing->groupHeight = ite->height();
-						/*	if (sing->isImageFrame())
-							{
-								QTransform ft;
-								ft.translate(-result.boundingRect().x(), -result.boundingRect().y());
-								ft.scale(ite->width() / result.boundingRect().width(), ite->height() / result.boundingRect().height());
-								result = ft.map(result);
-							}*/
 							sing->ClipEdited = true;
 							sing->FrameType = 3;
-							sing->PoLine.fromQPainterPath(result);
+							if (!result.isEmpty())
+								sing->PoLine.fromQPainterPath(result);
+							else
+								sing->SetRectFrame();
 							m_doc->AdjustItemSize(sing);
 							if (sing->isGroup())
 								sing->asGroupFrame()->adjustXYPosition();
@@ -3591,7 +3588,6 @@ void SlaOutputDev::drawChar(GfxState *state, double x, double y, double dx, doub
 			{
 				int z = m_doc->itemAdd(PageItem::Polygon, PageItem::Unspecified, xCoor, yCoor, 10, 10, 0, CurrColorFill, CommonStrings::None, true);
 				PageItem* ite = m_doc->Items->at(z);
-				FPoint tp2(getMinClipF(&textPath));
 				QTransform mm;
 				mm.scale(1, -1);
 				mm.translate(x, -y);

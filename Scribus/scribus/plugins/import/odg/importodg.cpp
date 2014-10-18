@@ -368,17 +368,34 @@ bool OdgPlug::convert(QString fn)
 		if (!uz->open(fn))
 		{
 			delete uz;
-			if (progressDialog)
-				progressDialog->close();
-			return false;
+			QByteArray f;
+			loadRawText(fn, f);
+			QDomDocument designMapDom;
+			QString errorMsg = "";
+			int errorLine = 0;
+			int errorColumn = 0;
+			if (designMapDom.setContent(f, &errorMsg, &errorLine, &errorColumn))
+			{
+				retVal = parseDocReferenceXML(designMapDom);
+			}
+			else
+			{
+				qDebug() << "Error loading File" << errorMsg << "at Line" << errorLine << "Column" << errorColumn;
+				if (progressDialog)
+					progressDialog->close();
+				return false;
+			}
 		}
-		retVal = false;
-		if (uz->contains("styles.xml"))
-			retVal = parseStyleSheets("styles.xml");
-		if (uz->contains("content.xml"))
-			retVal = parseDocReference("content.xml");
-		uz->close();
-		delete uz;
+		else
+		{
+			retVal = false;
+			if (uz->contains("styles.xml"))
+				retVal = parseStyleSheets("styles.xml");
+			if (uz->contains("content.xml"))
+				retVal = parseDocReference("content.xml");
+			uz->close();
+			delete uz;
+		}
 	}
 	if (progressDialog)
 		progressDialog->close();
@@ -2568,11 +2585,26 @@ void OdgPlug::resovleStyle(ObjStyle &tmpOStyle, QString pAttrs)
 		if (actStyle.shadowY.valid)
 			tmpOStyle.shadowY = parseUnit(actStyle.shadowY.value);
 		if (actStyle.shadowTrans.valid)
-			tmpOStyle.shadowTrans = 1.0 - parseUnit(actStyle.shadowTrans.value);
+		{
+			double transVal = parseUnit(actStyle.shadowTrans.value);
+			if (transVal > 1.0)
+				transVal /= 100.0;
+			tmpOStyle.shadowTrans = 1.0 - transVal;
+		}
 		if (actStyle.fillOpacity.valid)
-			tmpOStyle.fillOpacity = 1.0 - parseUnit(actStyle.fillOpacity.value);
+		{
+			double transVal = parseUnit(actStyle.fillOpacity.value);
+			if (transVal > 1.0)
+				transVal /= 100.0;
+			tmpOStyle.fillOpacity = 1.0 - transVal;
+		}
 		if (actStyle.strokeOpacity.valid)
-			tmpOStyle.strokeOpacity = 1.0 - parseUnit(actStyle.strokeOpacity.value);
+		{
+			double transVal = parseUnit(actStyle.strokeOpacity.value);
+			if (transVal > 1.0)
+				transVal /= 100.0;
+			tmpOStyle.strokeOpacity = 1.0 - transVal;
+		}
 		if (actStyle.LineW.valid)
 			tmpOStyle.LineW = parseUnit(actStyle.LineW.value);
 		if (actStyle.fontName.valid)
@@ -2800,7 +2832,7 @@ double OdgPlug::parseUnit(const QString &unit)
 		unitval.replace( "%", "" );
 	double value = ScCLocale::toDoubleC(unitval);
 	if( unit.right( 2 ) == "pt" )
-		value = value;
+		{}/* value = value; */ //no change
 	else if( unit.right( 2 ) == "cm" )
 		value = ( value / 2.54 ) * 72;
 	else if( unit.right( 2 ) == "mm" )
@@ -2808,7 +2840,7 @@ double OdgPlug::parseUnit(const QString &unit)
 	else if( unit.right( 2 ) == "in" )
 		value = value * 72;
 	else if( unit.right( 2 ) == "px" )
-		value = value;
+		{}/* value = value; */ //no change
 	else if( unit.right( 1 ) == "%" )
 		value = value / 100.0;
 	return value;
@@ -3416,7 +3448,6 @@ PageItem* OdgPlug::applyStartArrow(PageItem* ite, ObjStyle &obState)
 					EndArrow.map(m);
 					refP = m.map(refP);
 					QPainterPath pa2 = EndArrow.toQPainterPath(true);
-					QRectF br2 = pa2.boundingRect();
 					QTransform m2;
 					FPoint grOffset2(getMinClipF(&EndArrow));
 					m2.translate(-grOffset2.x(), -grOffset2.y());

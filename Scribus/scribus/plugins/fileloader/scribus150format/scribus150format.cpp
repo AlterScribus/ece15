@@ -283,9 +283,11 @@ bool Scribus150Format::loadElements(const QString & data, QString fileDir, int t
 		}
 		if (tagName == "CHARSTYLE")
 		{
-			readParagraphStyle(m_Doc, reader, vg);
+			CharStyle cstyle;
 			StyleSet<CharStyle> temp;
-			temp.create(vg.charStyle());
+			ScXmlStreamAttributes attrs = reader.scAttributes();
+			readNamedCharacterStyleAttrs(m_Doc, attrs, cstyle);
+			temp.create(cstyle);
 			m_Doc->redefineCharStyles(temp, false);
 		}
 		if (tagName == "TableStyle")
@@ -2103,12 +2105,13 @@ void Scribus150Format::readDocAttributes(ScribusDoc* doc, ScXmlStreamAttributes&
 
 void Scribus150Format::readCMSSettings(ScribusDoc* doc, ScXmlStreamAttributes& attrs)
 {
+	PrefsManager* prefsManager = PrefsManager::instance();
 	doc->cmsSettings().SoftProofOn     = attrs.valueAsBool("DPSo", false);
 	doc->cmsSettings().SoftProofFullOn = attrs.valueAsBool("DPSFo", false);
 	doc->cmsSettings().CMSinUse   = attrs.valueAsBool("DPuse", false);
 	doc->cmsSettings().GamutCheck = attrs.valueAsBool("DPgam", false);
 	doc->cmsSettings().BlackPoint = attrs.valueAsBool("DPbla", true);
-	doc->cmsSettings().DefaultMonitorProfile   = attrs.valueAsString("DPMo","");
+	doc->cmsSettings().DefaultMonitorProfile   = prefsManager->appPrefs.colorPrefs.DCMSset.DefaultMonitorProfile;
 	doc->cmsSettings().DefaultPrinterProfile   = attrs.valueAsString("DPPr","");
 	doc->cmsSettings().DefaultImageRGBProfile  = attrs.valueAsString("DPIn","");
 	doc->cmsSettings().DefaultImageCMYKProfile = attrs.valueAsString("DPInCMYK","");

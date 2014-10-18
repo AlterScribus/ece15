@@ -216,7 +216,7 @@ public:	// Start enumerator definitions
 public: // Start public functions
 
 	PageItem(ScribusDoc *pa, ItemType newType, double x, double y, double w, double h, double w2, QString fill, QString outline);
-	~PageItem();
+	virtual ~PageItem();
 
 	/* these do essentially the same as a dynamic cast but might be more readable */
 	virtual PageItem_Arc * asArc()					{ return NULL; } ///< Return self if Arc item, otherwise null
@@ -1494,6 +1494,7 @@ protected: // Start protected functions
 	void restoreCustomLineStyle(SimpleState *state, bool isUndo);
 	void restoreDefaultParagraphStyle(SimpleState *state, bool isUndo);
 	void restoreDeleteFrameText(SimpleState *state, bool isUndo);
+	void restoreDropLinks(UndoState *state, bool isUndo);
 	void restoreEndArrowScale(SimpleState *state, bool isUndo);
 	void restoreFill(SimpleState *state, bool isUndo);
 	void restoreFillGradient(SimpleState *state, bool isUndo);

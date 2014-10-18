@@ -60,6 +60,7 @@ for which a new license (GPL+exception) is in place.
 #include "styles/cellstyle.h"
 #include "undoobject.h"
 #include "undostate.h"
+#include "undotransaction.h"
 #include "updatemanager.h"
 #include "usertaskstructs.h"
 
@@ -75,7 +76,6 @@ class ScribusMainWindow;
 class ResourceCollection;
 class PageSize;
 class ScPattern;
-class UndoTransaction;
 class Serializer;
 class QProgressBar;
 class MarksManager;
@@ -88,7 +88,7 @@ struct SCRIBUS_API NodeEditContext : public MassObservable<QPointF>
 	int submode;
 	bool isContourLine;
 	FPointArray *oldClip;
-	UndoTransaction* nodeTransaction;
+	UndoTransaction nodeTransaction;
 	double oldItemX;
 	double oldItemY;
 		
@@ -128,6 +128,7 @@ public:
 	ScribusDoc(const QString& docName, int unitIndex, const PageSize& pagesize, const MarginStruct& margins, const DocPagesSetup& pagesSetup);
 	~ScribusDoc();
 	void init();
+	bool inAnEditMode() const;
 	QList<PageItem*> getAllItems(QList<PageItem*> &items);
 	QList<PageItem*> *parentGroup(PageItem* item, QList<PageItem*> *list);
 	void setup(const int, const int, const int, const int, const int, const QString&, const QString&);
@@ -714,6 +715,10 @@ public:
 	bool addPattern(QString &name, ScPattern& pattern);
 	void setPatterns(QHash<QString, ScPattern> &patterns);
 	/*!
+	* @brief Check pattern with specified name and return it if valid
+	*/
+	ScPattern* checkedPattern(QString &name);
+	/*!
 	* @brief Builds a QStringList of the patterns used within the document
 	*/
 	QStringList getUsedPatterns();
@@ -1043,6 +1048,7 @@ public:
 	void itemSelection_UnGroupObjects(Selection* customSelection=0);
 	void addToGroup(PageItem* group, PageItem* item);
 	void removeFromGroup(PageItem* item);
+	void rescaleGroup(PageItem* group, double scale);
 	void resizeGroupToContents(PageItem* group);
 	void itemSelection_resizeGroupToContents(Selection *customSelection=0);
 	void itemSelection_convertItemsTo(const PageItem::ItemType newType, Selection* restoredSelection=0, Selection* customSelection=0);
@@ -1383,8 +1389,8 @@ public:
 	void itemResizeToMargin(PageItem* item, int direction); //direction reflect enum numbers from Canvas::FrameHandle
 
 private:
-	UndoTransaction* m_itemCreationTransaction;
-	UndoTransaction* m_alignTransaction;
+	UndoTransaction m_itemCreationTransaction;
+	UndoTransaction m_alignTransaction;
 
 	ScPage* m_currentPage;
 	UpdateManager m_updateManager;

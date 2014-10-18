@@ -68,6 +68,7 @@ for which a new license (GPL+exception) is in place.
 
 #include "appmodes.h"
 #include "actionmanager.h"
+#include "appmodehelper.h"
 #include "canvas.h"
 #include "canvasgesture.h"
 #include "canvasmode.h"
@@ -155,7 +156,8 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	Ready(false),
 	oldX(0), oldY(0),
 	m_groupTransactions(0),
-	m_groupTransaction(NULL),
+	m_oldCanvasHeight(0), m_oldCanvasWidth(0),
+	m_groupTransaction(),
 	_isGlobalMode(true),
 	linkAfterDraw(false),
 	ImageAfterDraw(false),
@@ -215,7 +217,7 @@ ScribusView::ScribusView(QWidget* win, ScribusMainWindow* mw, ScribusDoc *doc) :
 	m_canvas->resetRenderMode();
 	m_ScMW->scrActions["viewPreviewMode"]->setChecked(m_canvas->m_viewMode.viewAsPreview);
 //	m_SnapCounter = 0;
-
+	m_mousePointDoc = FPoint(0,0);
 	Doc->regionsChanged()->connectObserver(this);
 	connect(this, SIGNAL(HaveSel()), Doc, SLOT(selectionChanged()));
 // Commented out to fix bug #7865
@@ -322,13 +324,13 @@ void ScribusView::togglePreview(bool inPreview)
 		m_ScMW->scrActions["viewEditInPreview"]->setEnabled(false);
 		Doc->guidesPrefs().framesShown = storedFramesShown;
 		Doc->guidesPrefs().showControls = storedShowControls;
-		if (m_ScMW->viewToolBar->visualMenu->currentIndex() != Doc->previewVisual)
-			recalc = true;
 		m_canvas->m_viewMode.previewVisual = 0;
 		Doc->previewVisual = 0;
+		if (m_ScMW->viewToolBar->visualMenu->currentIndex() != Doc->previewVisual)
+			recalc = true;
 		m_ScMW->viewToolBar->setDoc(Doc);
 	}
-	m_ScMW->appModeHelper.setPreviewMode(inPreview);
+	m_ScMW->appModeHelper->setPreviewMode(inPreview);
 	m_ScMW->setPreviewToolbar();
 	m_ScMW->viewToolBar->setViewPreviewMode(inPreview);
 	ScGuardedPtr<ScribusDoc> docPtr = Doc->guardedPtr();
@@ -476,18 +478,14 @@ void ScribusView::requestMode(int appMode)
 			break;
 		default:
 			if (appMode < 0 || appMode > submodeFirstSubmode)
-			{
-//				qDebug() << "request mode: UNKNOWN" << appMode;
 				appMode = modeNormal;
-			}
 			m_previousMode = appMode;
 			break;
 	}
 
-//	qDebug() << "request mode" << Doc->appMode << "-->" << appMode;
 	if (Doc->appMode != appMode)
 	{
-		m_ScMW->setAppMode(appMode);
+		m_ScMW->appModeHelper->setApplicationMode(m_ScMW, Doc, appMode);
 		CanvasMode* newCanvasMode = modeInstances.value(appMode);
 		if (!newCanvasMode)
 		{
@@ -496,7 +494,6 @@ void ScribusView::requestMode(int appMode)
 		}
 		if (newCanvasMode)
 		{
-//			qDebug() << "request canvas mode" << typeid(*newCanvasMode).name();
 			m_canvasMode->deactivate(false);
 			m_canvasMode = newCanvasMode;
 			m_canvasMode->activate(false);
@@ -504,9 +501,96 @@ void ScribusView::requestMode(int appMode)
 		updateNecessary = true;
 	}
 	else
-		m_ScMW->setAppMode(appMode);
+	{
+		m_ScMW->appModeHelper->setApplicationMode(m_ScMW, Doc, appMode);
+	}
 	if (updateNecessary)
 		updateCanvas();
+	setCursorBasedOnAppMode(appMode);
+}
+
+void ScribusView::setCursorBasedOnAppMode(int appMode)
+{
+	int docSelectionCount = Doc->m_Selection->count();
+	switch (appMode)
+	{
+		case modeDrawShapes:
+		case modeDrawArc:
+		case modeDrawSpiral:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(loadIcon("DrawFrame.xpm")));
+			break;
+		case modeDrawImage:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(loadIcon("DrawImageFrame.xpm")));
+			break;
+		case modeDrawLatex:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(loadIcon("DrawLatexFrame.xpm")));
+			break;
+		case modeDrawText:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(loadIcon("DrawTextFrame.xpm")));
+			break;
+		case modeDrawTable2:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(loadIcon("DrawTable.xpm")));
+			break;
+		case modeDrawRegularPolygon:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(loadIcon("DrawPolylineFrame.xpm")));
+			break;
+		case modeMagnifier:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			Magnify = true;
+			setCursor(QCursor(loadIcon("LupeZ.xpm")));
+			break;
+		case modePanning:
+			setCursor(QCursor(loadIcon("HandC.xpm")));
+			break;
+		case modeDrawLine:
+		case modeDrawBezierLine:
+			setCursor(QCursor(Qt::CrossCursor));
+			break;
+		case modeDrawCalligraphicLine:
+		case modeDrawFreehandLine:
+			setCursor(QCursor(loadIcon("DrawFreeLine.png"), 0, 32));
+			break;
+		case modeEyeDropper:
+			setCursor(QCursor(loadIcon("colorpickercursor.png"), 0, 32));
+			break;
+		case modeInsertPDFButton:
+		case modeInsertPDFRadioButton:
+		case modeInsertPDFTextfield:
+		case modeInsertPDFCheckbox:
+		case modeInsertPDFCombobox:
+		case modeInsertPDFListbox:
+		case modeInsertPDFTextAnnotation:
+		case modeInsertPDFLinkAnnotation:
+		case modeInsertPDF3DAnnotation:
+			if (docSelectionCount!=0)
+				Deselect(true);
+			setCursor(QCursor(Qt::CrossCursor));
+			break;
+		case modeMeasurementTool:
+		case modeEditGradientVectors:
+		case modeEditMeshGradient:
+		case modeEditArc:
+		case modeEditPolygon:
+		case modeEditSpiral:
+			setCursor(QCursor(Qt::CrossCursor));
+			break;
+		default:
+			setCursor(QCursor(Qt::ArrowCursor));
+		break;
+	}
 }
 
 
@@ -652,7 +736,7 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 	QString text;
 	QUrl url;
 	PageItem *currItem;
-	UndoTransaction* activeTransaction = NULL;
+	UndoTransaction activeTransaction;
 	bool img = false;
 	m_canvas->resetRenderMode();
 	redrawMode = 0;
@@ -918,10 +1002,9 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 			uint oldDocItemCount = Doc->Items->count();
 			if (((!img) || (vectorFile)) && (Doc->DraggedElem == 0))
 			{
-				activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Create,"",Um::ICreate));
+				activeTransaction = undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Create, "", Um::ICreate);
 				if (fi.exists())
 				{
-					QString data;
 					if (fi.suffix().toLower() == "sce")
 					{
 						emit LoadElem(url.toLocalFile(), dropPosDoc.x(), dropPosDoc.y(), true, false, Doc, this);
@@ -988,9 +1071,25 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 						emit AddBM(currItem);
 				}
 				Doc->m_Selection->copy(tmpSelection, false);
-				activeTransaction->commit();
-				delete activeTransaction;
-				activeTransaction = NULL;
+				if (Doc->m_Selection->count() == 1)
+				{
+					PageItem *newItem = Doc->m_Selection->itemAt(0);
+					if ((newItem->width() > Doc->currentPage()->width()) || (newItem->height() > Doc->currentPage()->height()))
+					{
+					//	QMenu *pmen = new QMenu();
+					//	pmen->addAction( tr("Keep original Size"));
+					//	pmen->addAction( tr("Scale to Page Size"));
+					//	re = pmen->actions().indexOf(pmen->exec(QCursor::pos()));
+					//	delete pmen;
+					//	if (re == 1)
+					//	{
+							Doc->rescaleGroup(newItem, qMin(qMin(Doc->currentPage()->width() / newItem->width(), Doc->currentPage()->height() / newItem->height()), 1.0));
+							newItem->update();
+					//	}
+					}
+				}
+				activeTransaction.commit();
+				activeTransaction.reset();
 			}
 			else
 			{
@@ -1099,7 +1198,7 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 					nx = npx.x();
 					ny = npx.y();
 				}
-				activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Move,"",Um::IMove));
+				activeTransaction = undoManager->beginTransaction(Um::SelectionGroup, Um::IGroup, Um::Move, "", Um::IMove);
 				Doc->moveGroup(nx-gx, ny-gy);
 				Doc->m_Selection->setGroupRect();
 				Doc->m_Selection->getGroupRect(&gx, &gy, &gw, &gh);
@@ -1119,9 +1218,8 @@ void ScribusView::contentsDropEvent(QDropEvent *e)
 					currItem->gWidth = gw;
 					currItem->gHeight = gh;
 				}
-				activeTransaction->commit();
-				delete activeTransaction;
-				activeTransaction = NULL;
+				activeTransaction.commit();
+				activeTransaction.reset();
 				emit ItemGeom();
 			}
 			else if (Doc->m_Selection->count() == 1)
@@ -1730,10 +1828,10 @@ void ScribusView::Deselect(bool /*prop*/)
 //CB Remove emit/start pasting objects
 void ScribusView::PasteToPage()
 {
-	UndoTransaction* activeTransaction = NULL;
+	UndoTransaction activeTransaction;
 	int ac = Doc->Items->count();
 	if (UndoManager::undoEnabled())
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Doc->currentPage()->getUName(), 0, Um::Paste, "", Um::IPaste));
+		activeTransaction = undoManager->beginTransaction(Doc->currentPage()->getUName(), 0, Um::Paste, "", Um::IPaste);
 /*	if (ScMimeData::clipboardHasScribusFragment())
 	{
 		bool savedAlignGrid = Doc->SnapGrid;
@@ -1814,18 +1912,16 @@ void ScribusView::PasteToPage()
 	{
 		if (activeTransaction)
 		{
-			activeTransaction->cancel();
-			delete activeTransaction;
-			activeTransaction = NULL;
+			activeTransaction.cancel();
+			activeTransaction.reset();
 		}
 		return;
 	}
 	newObjects.clear();
 	if (activeTransaction)
 	{
-		activeTransaction->commit();
-		delete activeTransaction;
-		activeTransaction = NULL;
+		activeTransaction.commit();
+		activeTransaction.reset();
 	}
 	emit DocChanged();
 }
@@ -1915,8 +2011,8 @@ void ScribusView::startGroupTransaction(const QString& action, const QString& de
 			target = itemSelection->itemAt(0)->getUName();
 			targetIcon = itemSelection->itemAt(0)->getUPixmap();
 		}
-		m_groupTransaction = new UndoTransaction(undoManager->beginTransaction(target, targetIcon,
-																			   action, tooltip, actionIcon));
+		m_groupTransaction = undoManager->beginTransaction(target, targetIcon,
+														   action, tooltip, actionIcon);
 	}
 	++m_groupTransactions;
 }
@@ -1927,15 +2023,14 @@ void ScribusView::startGroupTransaction(const QString& action, const QString& de
 */
 void ScribusView::endGroupTransaction()
 {
-	if(m_groupTransactions > 0)
+	if (m_groupTransactions > 0)
 	{
 		--m_groupTransactions;
 	}
 	if (m_groupTransaction && m_groupTransactions == 0)
 	{
-		m_groupTransaction->commit();
-		delete m_groupTransaction;
-		m_groupTransaction = NULL;
+		m_groupTransaction.commit();
+		m_groupTransaction.reset();
 	}
 }
 
@@ -1944,15 +2039,14 @@ void ScribusView::endGroupTransaction()
  */
 void ScribusView::cancelGroupTransaction()
 {
-	if(m_groupTransaction && m_groupTransactions == 1)
+	if (m_groupTransaction && m_groupTransactions == 1)
 	{
-		m_groupTransaction->cancel();
-		delete m_groupTransaction;
-		m_groupTransaction = NULL;
+		m_groupTransaction.cancel();
+		m_groupTransaction.reset();
 	}
 	else if (m_groupTransaction)
 	{
-		m_groupTransaction->markFailed();
+		m_groupTransaction.markFailed();
 	}
 	if (m_groupTransactions > 0)
 		--m_groupTransactions;
@@ -3994,6 +4088,7 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	if (obj == widget() && event->type() == QEvent::MouseMove)
 	{
 		QMouseEvent* m = static_cast<QMouseEvent*> (event);
+		m_mousePointDoc=m_canvas->globalToCanvas(m->globalPos());
 		FPoint p = m_canvas->localToCanvas(QPoint(m->x(),m->y()));
 		emit MousePos(p.x(),p.y());
 		horizRuler->Draw(m->x() + qRound(Doc->minCanvasCoordinate.x() * m_canvas->scale())); //  - 2 * contentsX());
@@ -4066,11 +4161,13 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	else if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
-		if(m->key() == Qt::Key_Shift)
+		/* #12453... what do we use this for?
+		 if(m->key() == Qt::Key_Shift)
 		{
 			m_oldSnapToElem = Doc->SnapElement;
 			m_ScMW->SetSnapElements(false);
 		}
+		*/
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyPressEvent(m);
 		else
@@ -4080,8 +4177,10 @@ bool ScribusView::eventFilter(QObject *obj, QEvent *event)
 	else if (event->type() == QEvent::KeyRelease)
 	{
 		QKeyEvent* m = static_cast<QKeyEvent*> (event);
+		/* #12453... what do we use this for?
 		if(m->key() == Qt::Key_Shift)
 			m_ScMW->SetSnapElements(m_oldSnapToElem);
+		*/
 		if (m_canvasMode->handleKeyEvents())
 			m_canvasMode->keyReleaseEvent(m);
 		else

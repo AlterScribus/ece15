@@ -333,7 +333,7 @@ void ScripterCore::slotRunScriptFile(QString fileName, bool inMainInterpreter)
 									tr("Script error"),
 									"<qt><p>"
 									+ tr("If you are running an official script report it at <a href=\"http://bugs.scribus.net\">bugs.scribus.net</a> please.")
-									+ "</p><pre>" +errorMsg + "</pre><p>"
+									+ "</p><pre>" + errorMsg.toHtmlEscaped() + "</pre><p>"
 									+ tr("This message is in your clipboard too. Use Ctrl+V to paste it into bug tracker.")
 									+ "</p></qt>");
 			}
@@ -568,7 +568,7 @@ bool ScripterCore::setupMainInterpreter()
 		"import scribus\n"
 		"import sys\n"
 		"import code\n"
-		"sys.path[0] = \"%1\"\n"
+		"sys.path.insert(0, \"%1\")\n"
 		"import cStringIO\n"
 		"sys.stdin = cStringIO.StringIO()\n"
 		"scribus._ia = code.InteractiveConsole(globals())\n"

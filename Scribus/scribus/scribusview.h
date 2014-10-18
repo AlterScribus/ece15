@@ -60,6 +60,7 @@ class QMimeData;
 #include "scribusapi.h"
 #include "scribusdoc.h"
 #include "ui/clockwidget.h"
+#include "undotransaction.h"
 
 class Canvas;
 class CanvasMode;
@@ -76,7 +77,6 @@ class ScribusMainWindow;
 class ScrSpinBox;
 class Selection;
 class UndoManager;
-class UndoTransaction;
 class TransactionSettings;
 #include "selectionrubberband.h"
 
@@ -111,6 +111,7 @@ public:
 	friend class CanvasMode_Rotate;
 	
 	void requestMode(int appMode);
+	void setCursorBasedOnAppMode(int appMode);
 	void startGesture(CanvasGesture*);
 	void stopGesture();
 	
@@ -154,6 +155,7 @@ public:
 	PageItem *redrawItem;
 	SelectionRubberBand *redrawMarker;
 	FPoint RCenter;
+	FPoint m_mousePointDoc;
 	void updatesOn(bool on);
 	//CB This MUST now be called AFTER a call to doc->addPage or doc->addMasterPage as it
 	//does NOT create a page anymore.
@@ -279,7 +281,7 @@ private: // Private attributes
 	int  m_groupTransactions;
 	int m_oldCanvasHeight;
 	int m_oldCanvasWidth;
-	UndoTransaction*  m_groupTransaction;
+	UndoTransaction m_groupTransaction;
 	bool _isGlobalMode;
 	bool linkAfterDraw;
 	bool ImageAfterDraw;

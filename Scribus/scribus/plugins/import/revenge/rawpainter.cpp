@@ -296,6 +296,25 @@ void RawPainter::setStyle(const librevenge::RVNGPropertyList &propList)
 {
 	if (!doProcessing)
 		return;
+	CurrColorFill = "Black";
+	CurrFillShade = 100.0;
+	CurrColorStroke = "Black";
+	CurrStrokeShade = 100.0;
+	CurrStrokeTrans = 0.0;
+	CurrFillTrans = 0.0;
+	Coords.resize(0);
+	Coords.svgInit();
+	LineW = 1.0;
+	lineJoin = Qt::MiterJoin;
+	lineEnd = Qt::FlatCap;
+	fillrule = true;
+	gradientAngle = 0.0;
+	isGradient = false;
+	lineSpSet = false;
+	currentGradient = VGradient(VGradient::linear);
+	currentGradient.clearStops();
+	currentGradient.setRepeatMethod( VGradient::none );
+	dashArray.clear();
 	m_style.clear();
 	m_style = propList;
 	isGradient = false;
@@ -476,6 +495,8 @@ void RawPainter::drawRectangle(const librevenge::RVNGPropertyList &propList)
 		return;
 	if (propList["svg:x"] && propList["svg:y"] && propList["svg:width"] && propList["svg:height"])
 	{
+		if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+			setStyle(propList);
 		double x = valueAsPoint(propList["svg:x"]);
 		double y = valueAsPoint(propList["svg:y"]);
 		double w = valueAsPoint(propList["svg:width"]);
@@ -495,6 +516,8 @@ void RawPainter::drawEllipse(const librevenge::RVNGPropertyList &propList)
 		return;
 	if (propList["svg:x"] && propList["svg:y"] && propList["svg:width"] && propList["svg:height"])
 	{
+		if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+			setStyle(propList);
 		double x = valueAsPoint(propList["svg:x"]);
 		double y = valueAsPoint(propList["svg:y"]);
 		double w = valueAsPoint(propList["svg:width"]);
@@ -515,6 +538,8 @@ void RawPainter::drawPolyline(const librevenge::RVNGPropertyList &propList)
 	librevenge::RVNGPropertyListVector vertices = *propList.child("svg:points");
 	if(vertices.count() < 2)
 		return;
+	if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+		setStyle(propList);
 	Coords.resize(0);
 	Coords.svgInit();
 	PageItem *ite;
@@ -540,6 +565,8 @@ void RawPainter::drawPolygon(const librevenge::RVNGPropertyList &propList)
 	librevenge::RVNGPropertyListVector vertices = *propList.child("svg:points");
 	if(vertices.count() < 2)
 		return;
+	if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+		setStyle(propList);
 	Coords.resize(0);
 	Coords.svgInit();
 	PageItem *ite;
@@ -669,6 +696,8 @@ void RawPainter::drawPath(const librevenge::RVNGPropertyList &propList)
 {
 	if (!doProcessing)
 		return;
+	if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+		setStyle(propList);
 	librevenge::RVNGPropertyListVector path = *propList.child("svg:d");
 	bool isClosed = false;
 	QString svgString = "";
@@ -827,6 +856,8 @@ void RawPainter::drawGraphicObject(const librevenge::RVNGPropertyList &propList)
 		return;
 	if (!propList["office:binary-data"])
 		return;
+	if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+		setStyle(propList);
 	if (propList["svg:x"] && propList["svg:y"] && propList["svg:width"] && propList["svg:height"])
 	{
 		PageItem *ite;
@@ -945,6 +976,8 @@ void RawPainter::startTextObject(const librevenge::RVNGPropertyList &propList)
 	actTextItem = NULL;
 	lineSpSet = false;
 	lineSpIsPT = false;
+	if ((fileType == "pmd") || (fileType == "pm5") || (fileType == "p65"))
+		setStyle(propList);
 	if (propList["svg:x"] && propList["svg:y"] && propList["svg:width"] && propList["svg:height"])
 	{
 		double x = valueAsPoint(propList["svg:x"]);
@@ -2838,7 +2871,7 @@ double RawPainter::fromPercentage( const QString &s )
 		return ScCLocale::toDoubleC(s1) / 100.0;
 	}
 	else
-		return ScCLocale::toDoubleC(s1);
+		return ScCLocale::toDoubleC(s1) / 100.0;
 }
 
 QColor RawPainter::parseColorN( const QString &rgbColor )
@@ -3059,7 +3092,7 @@ void RawPainter::applyArrows(PageItem* ite)
 					EndArrow.map(m);
 					refP = m.map(refP);
 					QPainterPath pa2 = EndArrow.toQPainterPath(true);
-					QRectF br2 = pa2.boundingRect();
+					//QRectF br2 = pa2.boundingRect();
 					QTransform m2;
 					FPoint grOffset2(getMinClipF(&EndArrow));
 					m2.translate(-grOffset2.x(), -grOffset2.y());
@@ -3110,7 +3143,7 @@ void RawPainter::applyArrows(PageItem* ite)
 					EndArrow.map(m);
 					refP = m.map(refP);
 					QPainterPath pa2 = EndArrow.toQPainterPath(true);
-					QRectF br2 = pa2.boundingRect();
+					//QRectF br2 = pa2.boundingRect();
 					QTransform m2;
 					FPoint grOffset2(getMinClipF(&EndArrow));
 					m2.translate(-grOffset2.x(), -grOffset2.y());

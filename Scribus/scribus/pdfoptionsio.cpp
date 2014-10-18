@@ -135,7 +135,7 @@ void PDFOptionsIO::buildSettings()
 	addElem(m_root, "mirrorV", m_opts->MirrorV);
 	addElem(m_root, "rotateDegrees", m_opts->RotateDeg);
 	addElem(m_root, "presentMode", m_opts->PresentMode);
-	addPresentationData();
+	// addPresentationData();
 	addElem(m_root, "filename", m_opts->fileName);
 	addElem(m_root, "isGrayscale", m_opts->isGrayscale);
 	addElem(m_root, "useRGB", m_opts->UseRGB);
@@ -299,7 +299,7 @@ bool PDFOptionsIO::readFrom(QIODevice& inDevice)
 	int errorLine, errorColumn;
 	if (!m_doc.setContent(&inDevice, &domError, &errorLine, &errorColumn))
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
+		m_error = QObject::tr("Unable to read settings XML: %1")
 			.arg(QObject::tr("%1 (line %2 col %3)", "Load PDF settings")
 				.arg(domError).arg(errorLine).arg(errorColumn)
 			);
@@ -345,7 +345,8 @@ bool PDFOptionsIO::readSettings()
 		return false;
 	if (!readElem(m_root, "embedPDF", &m_opts->embedPDF))
 		m_opts->embedPDF = false;
-	readPDFVersion();
+	if (!readPDFVersion())
+		return false;
 	if (!readElem(m_root, "resolution", &m_opts->Resolution))
 		return false;
 	if (!readElem(m_root, "binding", &m_opts->Binding))
@@ -362,8 +363,8 @@ bool PDFOptionsIO::readSettings()
 		return false;
 	if (!readElem(m_root, "presentMode", &m_opts->PresentMode))
 		return false;
-	if (!readPresentationData())
-		return false;
+	// if (!readPresentationData())
+	// 	return false;
 	if (!readElem(m_root, "filename", &m_opts->fileName))
 		return false;
 	if (!readElem(m_root, "isGrayscale", &m_opts->isGrayscale))
@@ -454,7 +455,7 @@ bool PDFOptionsIO::readPDFVersion()
 	}
 	else
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
+		m_error = QObject::tr("Unable to read settings XML: %1")
 			.arg(QObject::tr("<pdfVersion> invalid", "Load PDF settings"));
 		return false;
 	}
@@ -466,7 +467,7 @@ QDomNode PDFOptionsIO::getUniqueNode(QDomElement& parent, QString name)
 	QDomNodeList nodes = parent.elementsByTagName(name);
 	if (nodes.count() != 1)
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
+		m_error = QObject::tr("Unable to read settings XML: %1")
 			.arg(QObject::tr("found %1 <%2> nodes, need 1.", "Load PDF settings")
 				.arg(nodes.count()).arg(name)
 			);
@@ -481,15 +482,15 @@ QDomElement PDFOptionsIO::getValueElement(QDomNode& node, QString name, bool isV
 {
 	if (node.isNull())
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
-			.arg(QObject::tr("unexpected null <%2> node", "Load PDF settings")
+		m_error = QObject::tr("Unable to read settings XML: %1")
+			.arg(QObject::tr("unexpected null <%1> node", "Load PDF settings")
 				.arg(name)
 			);
 		return QDomNode().toElement();
 	}
 	if (!node.isElement())
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
+		m_error = QObject::tr("Unable to read settings XML: %1")
 			.arg(QObject::tr("node <%1> not an element", "Load PDF settings")
 				.arg(name)
 			);
@@ -498,7 +499,7 @@ QDomElement PDFOptionsIO::getValueElement(QDomNode& node, QString name, bool isV
 	QDomElement elem = node.toElement();
 	if (elem.tagName() != name)
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
+		m_error = QObject::tr("Unable to read settings XML: %1")
 			.arg(QString("Internal error: element named <%1> not expected <%2>")
 					.arg(elem.tagName()).arg(name)
 			);
@@ -509,7 +510,7 @@ QDomElement PDFOptionsIO::getValueElement(QDomNode& node, QString name, bool isV
 		// We need to check that it has a `value' attribute
 		if (!elem.hasAttribute("value"))
 		{
-			m_error = QObject::tr("Unable to read settings XML:")
+			m_error = QObject::tr("Unable to read settings XML: %1")
 				.arg(QObject::tr("element <%1> lacks `value' attribute", "Load PDF settings")
 					.arg(name)
 				);
@@ -538,7 +539,7 @@ bool PDFOptionsIO::readElem(QDomElement& parent, QString name, bool* value)
 	}
 	else
 	{
-		m_error = QObject::tr("Unable to read settings XML:")
+		m_error = QObject::tr("Unable to read settings XML: %1")
 			.arg(QObject::tr("element <%1> value must be `true' or `false'", "Load PDF settings")
 				.arg(name)
 			);
@@ -556,6 +557,14 @@ bool PDFOptionsIO::readElem(QDomElement& parent, QString name, int* value)
 	int result = elem.attribute("value").toInt(&ok);
 	if (ok)
 		(*value) = result;
+	else
+	{
+		m_error = QObject::tr("Unable to read settings XML: %1")
+			.arg(QObject::tr("element <%1> value must be an integer", "Load PDF settings")
+				.arg(name)
+			);
+		return false;
+	}
 	return ok;
 }
 
@@ -569,6 +578,14 @@ bool PDFOptionsIO::readElem(QDomElement& parent, QString name, double* value)
 	double result = ScCLocale::toDoubleC(elem.attribute("value"), &ok);
 	if (ok)
 		(*value) = result;
+	else
+	{
+		m_error = QObject::tr("Unable to read settings XML: %1")
+			.arg(QObject::tr("element <%1> value must be a double", "Load PDF settings")
+				.arg(name)
+			);
+		return false;
+	}
 	return ok;
 }
 
@@ -628,7 +645,7 @@ bool PDFOptionsIO::readPresentationData()
 	QList<PDFPresentationData> pList;
 	for (QDomNode node = pSettings.firstChild(); !node.isNull(); node = node.nextSibling())
 	{
-		QDomElement elem = getValueElement(basenode, "presentationSettingsEntry", false);
+		QDomElement elem = getValueElement(node, "presentationSettingsEntry", false);
 		if (elem.isNull())
 			return false;
 		PDFPresentationData pres;
@@ -670,13 +687,13 @@ bool PDFOptionsIO::readLPISettings()
 	QMap<QString,LPIData> lpiMap;
 	for (QDomNode node = lpiSettings.firstChild(); !node.isNull(); node = node.nextSibling())
 	{
-		QDomElement elem = getValueElement(basenode, "lpiSettingsEntry", false);
+		QDomElement elem = getValueElement(node, "lpiSettingsEntry", false);
 		if (elem.isNull())
 			return false;
 		QString name (elem.attribute("name"));
 		if (name.isNull())
 		{
-			m_error = QObject::tr("Unable to read settings XML:")
+			m_error = QObject::tr("Unable to read settings XML: %1")
 				.arg(QObject::tr("element <lpiSettingsEntry> lacks `name' attribute", "Load PDF settings")
 					.arg(name)
 				);

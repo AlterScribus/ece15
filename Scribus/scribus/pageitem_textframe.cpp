@@ -33,6 +33,7 @@ for which a new license (GPL+exception) is in place.
 #include <cairo.h>
 #include <cassert>
 
+#include "actionmanager.h"
 #include "appmodes.h"
 #include "canvas.h"
 #include "commonstrings.h"
@@ -4195,9 +4196,9 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			unicodeInputString = "";
 			if (ok)
 			{
-				UndoTransaction *trans = NULL;
+				UndoTransaction trans;
 				if(UndoManager::undoEnabled())
-					trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::ITextFrame,Um::InsertText,"",Um::IDelete));
+					trans = undoManager->beginTransaction(Um::Selection,Um::ITextFrame,Um::InsertText,"",Um::IDelete);
 				if (itemText.lengthOfSelection() > 0)
 					deleteSelectedTextFromFrame();
 				if (conv < 31)
@@ -4217,12 +4218,8 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 					}
 				}
 				itemText.insertChars(QString(QChar(conv)), true);
-				if(trans)
-				{
-					trans->commit();
-					delete trans;
-					trans = NULL;
-				}
+				if (trans)
+					trans.commit();
 //				Tinput = true;
 				m_Doc->scMW()->setTBvals(this);
 				if (isAutoNoteFrame() && m_Doc->notesChanged())
@@ -4637,7 +4634,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		if (isNoteFrame() && itemText.cursorPosition() == 0)
 			break; //avoid inserting chars before first note mark
 		bool doUpdate = false;
-		UndoTransaction* activeTransaction = NULL;
+		UndoTransaction activeTransaction;
 		if (itemText.lengthOfSelection() > 0) //(kk < 0x1000)
 		{
 			bool x11Hack=false;
@@ -4654,7 +4651,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 			if (!controlCharHack && !x11Hack && !k->text().isEmpty())
 			{
 				if (UndoManager::undoEnabled())
-					activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::Selection, Um::IGroup, Um::ReplaceText, "", Um::IDelete));
+					activeTransaction = undoManager->beginTransaction(Um::Selection, Um::IGroup, Um::ReplaceText, "", Um::IDelete);
 
 				deleteSelectedTextFromFrame();
 				doUpdate = true;
@@ -4750,9 +4747,7 @@ void PageItem_TextFrame::handleModeEditKey(QKeyEvent *k, bool& keyRepeat)
 		{
 			if (activeTransaction)
 			{
-				activeTransaction->commit();
-				delete activeTransaction;
-				activeTransaction = NULL;
+				activeTransaction.commit();
 			}
 			// update layout immediately, we need MaxChars to be correct to detect
 			// if we need to move to next frame or not
@@ -4810,7 +4805,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 			is = dynamic_cast<ScItemState<CharStyle>*>(ts->at(ts->sizet()-1));
 			state = ts->at(0);
 		}
-		UndoTransaction* trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete));
+		UndoTransaction trans = undoManager->beginTransaction(Um::Selection,Um::IDelete,Um::Delete,"",Um::IDelete);
 
 		//find and delete notes and marks in selected text
 		QList<QPair<TextNote*, int> > notes2DEL;
@@ -4928,9 +4923,7 @@ void PageItem_TextFrame::deleteSelectedTextFromFrame(/*bool findNotes*/)
 		}
 		if (trans)
 		{
-			trans->commit();
-			delete trans;
-			trans = NULL;
+			trans.commit();
 		}
 	}
 	else //remove marks without undo

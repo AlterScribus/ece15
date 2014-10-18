@@ -181,7 +181,7 @@ bool OODrawImportPlugin::import(QString fileName, int flags)
 			return true;
 	}
 	m_Doc=ScCore->primaryMainWindow()->doc;
-	UndoTransaction* activeTransaction = NULL;
+	UndoTransaction activeTransaction;
 	bool emptyDoc = (m_Doc == NULL);
 	bool hasCurrentPage = (m_Doc && m_Doc->currentPage());
 	TransactionSettings trSettings;
@@ -194,14 +194,10 @@ bool OODrawImportPlugin::import(QString fileName, int flags)
 	if (emptyDoc || !(flags & lfInteractive) || !(flags & lfScripted))
 		UndoManager::instance()->setUndoEnabled(false);
 	if (UndoManager::undoEnabled())
-		activeTransaction = new UndoTransaction(UndoManager::instance()->beginTransaction(trSettings));
+		activeTransaction = UndoManager::instance()->beginTransaction(trSettings);
 	bool importDone = dia.import(fileName, trSettings, flags);
 	if (activeTransaction)
-	{
-		activeTransaction->commit();
-		delete activeTransaction;
-		activeTransaction = NULL;
-	}
+		activeTransaction.commit();
 	if (emptyDoc || !(flags & lfInteractive) || !(flags & lfScripted))
 		UndoManager::instance()->setUndoEnabled(true);
 	if (dia.importCanceled)
@@ -1354,7 +1350,7 @@ double OODPlug::parseUnit(const QString &unit)
 		unitval.replace( "px", "" );
 	double value = ScCLocale::toDoubleC(unitval);
 	if( unit.right( 2 ) == "pt" )
-		value = value;
+		{}/* value = value; */ // no change
 	else if( unit.right( 2 ) == "cm" )
 		value = ( value / 2.54 ) * 72;
 	else if( unit.right( 2 ) == "mm" )
@@ -1362,7 +1358,7 @@ double OODPlug::parseUnit(const QString &unit)
 	else if( unit.right( 2 ) == "in" )
 		value = value * 72;
 	else if( unit.right( 2 ) == "px" )
-		value = value;
+		{}/* value = value; */ // no change
 	return value;
 }
 

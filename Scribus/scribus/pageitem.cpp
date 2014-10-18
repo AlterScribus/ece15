@@ -1414,24 +1414,33 @@ void PageItem::dropLinks()
 	// leave text in remaining chain
 	PageItem* before = BackBox;
 	PageItem* after = NextBox;
-	if (after != 0 || before != 0)
+	if (after == 0 && before == 0)
+		return;
+
+	itemText = StoryText(m_Doc);
+	if (before)
+		before->NextBox = after;
+	if (after) 
 	{
-		itemText = StoryText(m_Doc);
-		if (before)
-			before->NextBox = after;
-		if (after) 
-		{
-			after->BackBox = before;
-			while (after)
-			{ 
-				after->invalid = true;
-				after->firstChar = 0;
-				after = after->NextBox;
-			}
+		after->BackBox = before;
+		while (after)
+		{ 
+			after->invalid = true;
+			after->firstChar = 0;
+			after = after->NextBox;
 		}
-		// JG we should set BackBox and NextBox to NULL at a point
-		BackBox = NextBox = NULL;
 	}
+
+	if (UndoManager::undoEnabled())
+	{
+		ScItemState<QPair<PageItem*, PageItem*> > *is = new ScItemState<QPair<PageItem*, PageItem*> >(Um::UnlinkTextFrame);
+		is->set("DROP_LINKS", "dropLinks");
+		is->setItem(qMakePair(BackBox, NextBox));
+		undoManager->action(this, is);
+	}
+
+	// JG we should set BackBox and NextBox to NULL at a point
+	BackBox = NextBox = NULL;
 }
 
 //unlink selected frame from text chain
@@ -1599,19 +1608,15 @@ void PageItem::setTextToFrameDistBottom(double newBottom)
 
 void PageItem::setTextToFrameDist(double newLeft, double newRight, double newTop, double newBottom)
 {
-	UndoTransaction* activeTransaction = NULL;
+	UndoTransaction activeTransaction;
 	if (UndoManager::undoEnabled())
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::TextFrame, Um::IDocument, Um::TextFrameDist, "", Um::ITextFrame));
+		activeTransaction = undoManager->beginTransaction(Um::TextFrame, Um::IDocument, Um::TextFrameDist, "", Um::ITextFrame);
 	setTextToFrameDistLeft(newLeft);
 	setTextToFrameDistRight(newRight);
 	setTextToFrameDistTop(newTop);
 	setTextToFrameDistBottom(newBottom);
 	if (activeTransaction)
-	{
-		activeTransaction->commit();
-		delete activeTransaction;
-		activeTransaction = NULL;
-	}
+		activeTransaction.commit();
 	//emit textToFrameDistances(Extra, TExtra, BExtra, RExtra);
 }
 
@@ -1693,6 +1698,9 @@ void PageItem::DrawObj(ScPainter *p, QRectF cullingArea)
 {
 	if (!m_Doc->DoDrawing)
 		return;
+	// #12698: Prevent drawing of line items
+	/*if (PoLine.isEmpty())
+		return;*/
 	if (cullingArea.isNull())
 	{
 		cullingArea = QRectF(QPointF(m_Doc->minCanvasCoordinate.x(), m_Doc->minCanvasCoordinate.y()), 
@@ -1724,128 +1732,32 @@ void PageItem::DrawObj_Pre(ScPainter *p)
 	if (!isEmbedded)
 		p->translate(m_xPos, m_yPos);
 	p->rotate(m_rotation);
+
 	if (m_Doc->layerOutline(LayerID))
 	{
 		p->setPen(m_Doc->layerMarker(LayerID), 0, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 		p->setFillMode(ScPainter::None);
 		p->setBrushOpacity(1.0);
 		p->setPenOpacity(1.0);
+		return;
 	}
-	else
+
+	if (isGroup())
+		return;
+
+	if (hasSoftShadow())
+		DrawSoftShadow(p);
+	p->setBlendModeFill(fillBlendmode());
+	p->setLineWidth(lwCorr);
+	if (GrType != 0)
 	{
-		if (!isGroup())
+		if (GrType == 8)
 		{
-			if (hasSoftShadow())
-				DrawSoftShadow(p);
-			p->setBlendModeFill(fillBlendmode());
-			p->setLineWidth(lwCorr);
-			if (GrType != 0)
-			{
-				if (GrType == 8)
-				{
-					if ((patternVal.isEmpty()) || (!m_Doc->docPatterns.contains(patternVal)))
-					{
-						p->fill_gradient = VGradient(VGradient::linear);
-						p->fill_gradient.setRepeatMethod(GrExtend);
-						if (fillColor() != CommonStrings::None)
-						{
-							p->setBrush(fillQColor);
-							p->setFillMode(ScPainter::Solid);
-						}
-						else
-						{
-							no_fill = true;
-							p->setFillMode(ScPainter::None);
-						}
-						if ((!patternVal.isEmpty()) && (!m_Doc->docPatterns.contains(patternVal)))
-						{
-							GrType = 0;
-							patternVal = "";
-						}
-					}
-					else
-					{
-						p->setPattern(&m_Doc->docPatterns[patternVal], patternScaleX, patternScaleY, patternOffsetX, patternOffsetY, patternRotation, patternSkewX, patternSkewY, patternMirrorX, patternMirrorY);
-						p->setFillMode(ScPainter::Pattern);
-					}
-				}
-				else
-				{
-					if (GrType == 9)
-					{
-						p->setFillMode(ScPainter::Gradient);
-						FPoint pG1 = FPoint(0, 0);
-						FPoint pG2 = FPoint(width(), 0);
-						FPoint pG3 = FPoint(width(), height());
-						FPoint pG4 = FPoint(0, height());
-						p->set4ColorGeometry(pG1, pG2, pG3, pG4, GrControl1, GrControl2, GrControl3, GrControl4);
-						p->set4ColorColors(GrColorP1QColor, GrColorP2QColor, GrColorP3QColor, GrColorP4QColor);
-					}
-					else if (GrType == 14)
-					{
-						if (fillColor() != CommonStrings::None)
-							p->setBrush(fillQColor);
-						p->setFillMode(ScPainter::Hatch);
-						p->setHatchParameters(hatchType, hatchDistance, hatchAngle, hatchUseBackground, hatchBackgroundQ, hatchForegroundQ, width(), height());
-					}
-					else
-					{
-						if ((!gradientVal.isEmpty()) && (!m_Doc->docGradients.contains(gradientVal)))
-							gradientVal = "";
-						if (!(gradientVal.isEmpty()) && (m_Doc->docGradients.contains(gradientVal)))
-							fill_gradient = m_Doc->docGradients[gradientVal];
-						if ((fill_gradient.Stops() < 2) && (GrType < 9)) // fall back to solid filling if there are not enough colorstops in the gradient.
-						{
-							if (fillColor() != CommonStrings::None)
-							{
-								p->setBrush(fillQColor);
-								p->setFillMode(ScPainter::Solid);
-							}
-							else
-							{
-								no_fill = true;
-								p->setFillMode(ScPainter::None);
-							}
-						}
-						else
-						{
-							p->setFillMode(ScPainter::Gradient);
-							p->fill_gradient = fill_gradient;
-							p->fill_gradient.setRepeatMethod(GrExtend);
-							switch (GrType)
-							{
-								case 1:
-								case 2:
-								case 3:
-								case 4:
-								case 6:
-									p->setGradient(VGradient::linear, FPoint(GrStartX, GrStartY), FPoint(GrEndX, GrEndY), FPoint(GrStartX, GrStartY), GrScale, GrSkew);
-									break;
-								case 5:
-								case 7:
-									p->setGradient(VGradient::radial, FPoint(GrStartX, GrStartY), FPoint(GrEndX, GrEndY), FPoint(GrFocalX, GrFocalY), GrScale, GrSkew);
-									break;
-								case 10:
-									p->setFillMode(ScPainter::Gradient);
-									p->setDiamondGeometry(FPoint(0, 0), FPoint(width(), 0), FPoint(width(), height()), FPoint(0, height()), GrControl1, GrControl2, GrControl3, GrControl4, GrControl5);
-									break;
-								case 11:
-								case 13:
-									p->setFillMode(ScPainter::Gradient);
-									p->setMeshGradient(FPoint(0, 0), FPoint(width(), 0), FPoint(width(), height()), FPoint(0, height()), meshGradientArray);
-									break;
-								case 12:
-									p->setFillMode(ScPainter::Gradient);
-									p->setMeshGradient(FPoint(0, 0), FPoint(width(), 0), FPoint(width(), height()), FPoint(0, height()), meshGradientPatches);
-									break;
-							}
-						}
-					}
-				}
-			}
-			else
+			ScPattern *pattern = m_Doc->checkedPattern(patternVal);
+			if (!pattern)
 			{
 				p->fill_gradient = VGradient(VGradient::linear);
+				p->fill_gradient.setRepeatMethod(GrExtend);
 				if (fillColor() != CommonStrings::None)
 				{
 					p->setBrush(fillQColor);
@@ -1856,55 +1768,155 @@ void PageItem::DrawObj_Pre(ScPainter *p)
 					no_fill = true;
 					p->setFillMode(ScPainter::None);
 				}
-			}
-			if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
-			{
-				p->setPen(strokeQColor, lwCorr, PLineArt, PLineEnd, PLineJoin);
-				if (DashValues.count() != 0)
-					p->setDash(DashValues, DashOffset);
-			}
-			else
-				p->setLineWidth(0);
-			p->setBrushOpacity(1.0 - fillTransparency());
-			p->setPenOpacity(1.0 - lineTransparency());
-			p->setFillRule(fillRule);
-			if ((GrMask == 1) || (GrMask == 2) || (GrMask == 4) || (GrMask == 5))
-			{
-				if ((GrMask == 1) || (GrMask == 2))
-					p->setMaskMode(1);
-				else
-					p->setMaskMode(3);
-				if ((!gradientMaskVal.isEmpty()) && (!m_Doc->docGradients.contains(gradientMaskVal)))
-					gradientMaskVal = "";
-				if (!(gradientMaskVal.isEmpty()) && (m_Doc->docGradients.contains(gradientMaskVal)))
-					mask_gradient = m_Doc->docGradients[gradientMaskVal];
-				p->mask_gradient = mask_gradient;
-				if ((GrMask == 1) || (GrMask == 4))
-					p->setGradientMask(VGradient::linear, FPoint(GrMaskStartX, GrMaskStartY), FPoint(GrMaskEndX, GrMaskEndY), FPoint(GrMaskStartX, GrMaskStartY), GrMaskScale, GrMaskSkew);
-				else
-					p->setGradientMask(VGradient::radial, FPoint(GrMaskStartX, GrMaskStartY), FPoint(GrMaskEndX, GrMaskEndY), FPoint(GrMaskFocalX, GrMaskFocalY), GrMaskScale, GrMaskSkew);
-			}
-			else if ((GrMask == 3) || (GrMask == 6) || (GrMask == 7) || (GrMask == 8))
-			{
-				if ((patternMaskVal.isEmpty()) || (!m_Doc->docPatterns.contains(patternMaskVal)))
-					p->setMaskMode(0);
-				else
+				if ((!patternVal.isEmpty()) && (!m_Doc->docPatterns.contains(patternVal)))
 				{
-					p->setPatternMask(&m_Doc->docPatterns[patternMaskVal], patternMaskScaleX, patternMaskScaleY, patternMaskOffsetX, patternMaskOffsetY, patternMaskRotation, patternMaskSkewX, patternMaskSkewY, patternMaskMirrorX, patternMaskMirrorY);
-					if (GrMask == 3)
-						p->setMaskMode(2);
-					else if (GrMask == 6)
-						p->setMaskMode(4);
-					else if (GrMask == 7)
-						p->setMaskMode(5);
-					else
-						p->setMaskMode(6);
+					GrType = 0;
+					patternVal = "";
 				}
 			}
 			else
-				p->setMaskMode(0);
+			{
+				p->setPattern(pattern, patternScaleX, patternScaleY, patternOffsetX, patternOffsetY, patternRotation, patternSkewX, patternSkewY, patternMirrorX, patternMirrorY);
+				p->setFillMode(ScPainter::Pattern);
+			}
+		}
+		else
+		{
+			if (GrType == 9)
+			{
+				p->setFillMode(ScPainter::Gradient);
+				FPoint pG1 = FPoint(0, 0);
+				FPoint pG2 = FPoint(width(), 0);
+				FPoint pG3 = FPoint(width(), height());
+				FPoint pG4 = FPoint(0, height());
+				p->set4ColorGeometry(pG1, pG2, pG3, pG4, GrControl1, GrControl2, GrControl3, GrControl4);
+				p->set4ColorColors(GrColorP1QColor, GrColorP2QColor, GrColorP3QColor, GrColorP4QColor);
+			}
+			else if (GrType == 14)
+			{
+				if (fillColor() != CommonStrings::None)
+					p->setBrush(fillQColor);
+				p->setFillMode(ScPainter::Hatch);
+				p->setHatchParameters(hatchType, hatchDistance, hatchAngle, hatchUseBackground, hatchBackgroundQ, hatchForegroundQ, width(), height());
+			}
+			else
+			{
+				if ((!gradientVal.isEmpty()) && (!m_Doc->docGradients.contains(gradientVal)))
+					gradientVal = "";
+				if (!(gradientVal.isEmpty()) && (m_Doc->docGradients.contains(gradientVal)))
+					fill_gradient = m_Doc->docGradients[gradientVal];
+				if ((fill_gradient.Stops() < 2) && (GrType < 9)) // fall back to solid filling if there are not enough colorstops in the gradient.
+				{
+					if (fillColor() != CommonStrings::None)
+					{
+						p->setBrush(fillQColor);
+						p->setFillMode(ScPainter::Solid);
+					}
+					else
+					{
+						no_fill = true;
+						p->setFillMode(ScPainter::None);
+					}
+				}
+				else
+				{
+					p->setFillMode(ScPainter::Gradient);
+					p->fill_gradient = fill_gradient;
+					p->fill_gradient.setRepeatMethod(GrExtend);
+					switch (GrType)
+					{
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 6:
+							p->setGradient(VGradient::linear, FPoint(GrStartX, GrStartY), FPoint(GrEndX, GrEndY), FPoint(GrStartX, GrStartY), GrScale, GrSkew);
+							break;
+						case 5:
+						case 7:
+							p->setGradient(VGradient::radial, FPoint(GrStartX, GrStartY), FPoint(GrEndX, GrEndY), FPoint(GrFocalX, GrFocalY), GrScale, GrSkew);
+							break;
+						case 10:
+							p->setFillMode(ScPainter::Gradient);
+							p->setDiamondGeometry(FPoint(0, 0), FPoint(width(), 0), FPoint(width(), height()), FPoint(0, height()), GrControl1, GrControl2, GrControl3, GrControl4, GrControl5);
+							break;
+						case 11:
+						case 13:
+							p->setFillMode(ScPainter::Gradient);
+							p->setMeshGradient(FPoint(0, 0), FPoint(width(), 0), FPoint(width(), height()), FPoint(0, height()), meshGradientArray);
+							break;
+						case 12:
+							p->setFillMode(ScPainter::Gradient);
+							p->setMeshGradient(FPoint(0, 0), FPoint(width(), 0), FPoint(width(), height()), FPoint(0, height()), meshGradientPatches);
+							break;
+					}
+				}
+			}
 		}
 	}
+	else
+	{
+		p->fill_gradient = VGradient(VGradient::linear);
+		if (fillColor() != CommonStrings::None)
+		{
+			p->setBrush(fillQColor);
+			p->setFillMode(ScPainter::Solid);
+		}
+		else
+		{
+			no_fill = true;
+			p->setFillMode(ScPainter::None);
+		}
+	}
+	if ((lineColor() != CommonStrings::None) || (!patternStrokeVal.isEmpty()) || (GrTypeStroke > 0))
+	{
+		p->setPen(strokeQColor, lwCorr, PLineArt, PLineEnd, PLineJoin);
+		if (DashValues.count() != 0)
+			p->setDash(DashValues, DashOffset);
+	}
+	else
+		p->setLineWidth(0);
+	p->setBrushOpacity(1.0 - fillTransparency());
+	p->setPenOpacity(1.0 - lineTransparency());
+	p->setFillRule(fillRule);
+	if ((GrMask == 1) || (GrMask == 2) || (GrMask == 4) || (GrMask == 5))
+	{
+		if ((GrMask == 1) || (GrMask == 2))
+			p->setMaskMode(1);
+		else
+			p->setMaskMode(3);
+		if ((!gradientMaskVal.isEmpty()) && (!m_Doc->docGradients.contains(gradientMaskVal)))
+			gradientMaskVal = "";
+		if (!(gradientMaskVal.isEmpty()) && (m_Doc->docGradients.contains(gradientMaskVal)))
+			mask_gradient = m_Doc->docGradients[gradientMaskVal];
+		p->mask_gradient = mask_gradient;
+		if ((GrMask == 1) || (GrMask == 4))
+			p->setGradientMask(VGradient::linear, FPoint(GrMaskStartX, GrMaskStartY), FPoint(GrMaskEndX, GrMaskEndY), FPoint(GrMaskStartX, GrMaskStartY), GrMaskScale, GrMaskSkew);
+		else
+			p->setGradientMask(VGradient::radial, FPoint(GrMaskStartX, GrMaskStartY), FPoint(GrMaskEndX, GrMaskEndY), FPoint(GrMaskFocalX, GrMaskFocalY), GrMaskScale, GrMaskSkew);
+	}
+	else if ((GrMask == 3) || (GrMask == 6) || (GrMask == 7) || (GrMask == 8))
+	{
+		ScPattern *patternMask = m_Doc->checkedPattern(patternMaskVal);
+		if (patternMask)
+		{
+			p->setPatternMask(patternMask, patternMaskScaleX, patternMaskScaleY, patternMaskOffsetX, patternMaskOffsetY, patternMaskRotation, patternMaskSkewX, patternMaskSkewY, patternMaskMirrorX, patternMaskMirrorY);
+			if (GrMask == 3)
+				p->setMaskMode(2);
+			else if (GrMask == 6)
+				p->setMaskMode(4);
+			else if (GrMask == 7)
+				p->setMaskMode(5);
+			else
+				p->setMaskMode(6);
+		}
+		else
+		{
+			p->setMaskMode(0);
+		}
+	}
+	else
+		p->setMaskMode(0);
 }
 
 void PageItem::DrawObj_Post(ScPainter *p)
@@ -1970,7 +1982,8 @@ void PageItem::DrawObj_Post(ScPainter *p)
 					p->setupPolygon(&PoLine);
 				if (NamedLStyle.isEmpty())
 				{
-					if ((!patternStrokeVal.isEmpty()) && (m_Doc->docPatterns.contains(patternStrokeVal)))
+					ScPattern *strokePattern = m_Doc->checkedPattern(patternStrokeVal);
+					if (strokePattern)
 					{
 						if (patternStrokePath)
 						{
@@ -1979,7 +1992,7 @@ void PageItem::DrawObj_Post(ScPainter *p)
 						}
 						else
 						{
-							p->setPattern(&m_Doc->docPatterns[patternStrokeVal], patternStrokeScaleX, patternStrokeScaleY, patternStrokeOffsetX, patternStrokeOffsetY, patternStrokeRotation, patternStrokeSkewX, patternStrokeSkewY, patternStrokeMirrorX, patternStrokeMirrorY);
+							p->setPattern(strokePattern, patternStrokeScaleX, patternStrokeScaleY, patternStrokeOffsetX, patternStrokeOffsetY, patternStrokeRotation, patternStrokeSkewX, patternStrokeSkewY, patternStrokeMirrorX, patternStrokeMirrorY);
 							p->setStrokeMode(ScPainter::Pattern);
 							p->strokePath();
 						}
@@ -2864,7 +2877,7 @@ void PageItem::DrawPolyL(QPainter *p, QPolygon pts)
 		uint FirstVal = 0;
 		for (QList<uint>::Iterator it2 = Segments.begin(); it2 != it2end; ++it2)
 		{
-				p->drawPolygon(pts.constData() + FirstVal, (*it2)-FirstVal);
+			p->drawPolygon(pts.constData() + FirstVal, (*it2)-FirstVal);
 			FirstVal = (*it2);
 		}
 		p->drawPolygon(pts.constData() + FirstVal, pts.size() - FirstVal);
@@ -2966,44 +2979,36 @@ void PageItem::setDiamondGeometry(FPoint c1, FPoint c2, FPoint c3, FPoint c4, FP
 
 void PageItem::set4ColorTransparency(double t1, double t2, double t3, double t4)
 {
-	UndoTransaction *trans = NULL;
+	UndoTransaction trans;
 	if (UndoManager::undoEnabled())
-		trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill));
+		trans = undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill);
 	setGradientTransp1(t1);
 	setGradientTransp2(t2);
 	setGradientTransp3(t3);
 	setGradientTransp4(t4);
 	if (trans)
-	{
-		trans->commit();
-		delete trans;
-		trans = NULL;
-	}
+		trans.commit();
 }
 
 void PageItem::set4ColorShade(int t1, int t2, int t3, int t4)
 {
-	UndoTransaction *trans = NULL;
+	UndoTransaction trans;
 	if (UndoManager::undoEnabled())
-		trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill));
+		trans = undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill);
 	setGradientShade1(t1);
 	setGradientShade2(t2);
 	setGradientShade3(t3);
 	setGradientShade4(t4);
 	if (trans)
-	{
-		trans->commit();
-		delete trans;
-		trans = NULL;
-	}
+		trans.commit();
 }
 
 void PageItem::set4ColorColors(QString col1, QString col2, QString col3, QString col4)
 {
 	QColor tmp;
-	UndoTransaction *trans = NULL;
+	UndoTransaction trans;
 	if (UndoManager::undoEnabled())
-		trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill));
+		trans = undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill);
 	setGradientCol1(col1);
 	if (GrColorP1 != CommonStrings::None)
 	{
@@ -3037,7 +3042,7 @@ void PageItem::set4ColorColors(QString col1, QString col2, QString col3, QString
 		setGradientColor1(tmp);
 	}
 	else
-		setGradientColor1(QColor(255, 255, 255, 0));
+		setGradientColor1(QColor(0, 0, 0, 0));
 	if (m_Doc->viewAsPreview)
 	{
 		VisionDefectColor defect;
@@ -3076,7 +3081,7 @@ void PageItem::set4ColorColors(QString col1, QString col2, QString col3, QString
 		setGradientColor2(tmp);
 	}
 	else
-		setGradientColor2(QColor(255, 255, 255, 0));
+		setGradientColor2(QColor(0, 0, 0, 0));
 	if (m_Doc->viewAsPreview)
 	{
 		VisionDefectColor defect;
@@ -3115,7 +3120,7 @@ void PageItem::set4ColorColors(QString col1, QString col2, QString col3, QString
 		setGradientColor3(tmp);
 	}
 	else
-		setGradientColor3(QColor(255, 255, 255, 0));
+		setGradientColor3(QColor(0, 0, 0, 0));
 	if (m_Doc->viewAsPreview)
 	{
 		VisionDefectColor defect;
@@ -3154,18 +3159,14 @@ void PageItem::set4ColorColors(QString col1, QString col2, QString col3, QString
 		setGradientColor4(tmp);
 	}
 	else
-		setGradientColor4(QColor(255, 255, 255, 0));
+		setGradientColor4(QColor(0, 0, 0, 0));
 	if (m_Doc->viewAsPreview)
 	{
 		VisionDefectColor defect;
 		setGradientColor4(defect.convertDefect(GrColorP4QColor, m_Doc->previewVisual));
 	}
 	if (trans)
-	{
-		trans->commit();
-		delete trans;
-		trans = NULL;
-	}
+		trans.commit();
 }
 
 void PageItem::get4ColorGeometry(FPoint &c1, FPoint &c2, FPoint &c3, FPoint &c4)
@@ -3227,7 +3228,7 @@ void PageItem::setMeshPointColor(int x, int y, QString color, int shade, double 
 		MQColor.setAlphaF(transparency);
 	}
 	else
-		MQColor = QColor(255, 255, 255, 0);
+		MQColor = QColor(0, 0, 0, 0);
 	if (m_Doc->viewAsPreview)
 	{
 		VisionDefectColor defect;
@@ -3253,10 +3254,10 @@ void PageItem::setMeshPointColor(int x, int y, QString color, int shade, double 
 				break;
 		}
 
-		UndoTransaction *trans = NULL;
+		UndoTransaction trans;
 		if (UndoManager::undoEnabled())
 		{
-			trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill));
+			trans = undoManager->beginTransaction(Um::Selection,Um::IFill,Um::GradVal,"",Um::IFill);
 			ScItemState<QPair<QColor,QColor> > *ss = new ScItemState<QPair<QColor,QColor> >(Um::GradVal);
 			ss->set("GRAD_MESH_COLOR","grad_mesh_color");
 			ss->set("X",x);
@@ -3379,11 +3380,7 @@ void PageItem::setMeshPointColor(int x, int y, QString color, int shade, double 
 			}
 		}
 		if (trans)
-		{
-			trans->commit();
-			delete trans;
-			trans = NULL;
-		}
+			trans.commit();
 	}
 	else
 	{
@@ -3449,7 +3446,7 @@ void PageItem::createGradientMesh(int rows, int cols)
 		MQColor.setAlphaF(1.0);
 	}
 	else
-		MQColor = QColor(255, 255, 255, 0);
+		MQColor = QColor(0, 0, 0, 0);
 	if (m_Doc->viewAsPreview)
 	{
 		VisionDefectColor defect;
@@ -3538,10 +3535,10 @@ void PageItem::meshToShape()
 								meshGradientArray[m-1][0].gridPoint.x(), meshGradientArray[m-1][0].gridPoint.y());
 	}
 	
-	UndoTransaction *trans =  NULL;
+	UndoTransaction trans;
 	if (UndoManager::undoEnabled())
 	{
-		trans = new UndoTransaction(undoManager->beginTransaction(Um::Selection,Um::IFill,Um::ChangeMeshGradient,"",Um::IFill));
+		trans = undoManager->beginTransaction(Um::Selection,Um::IFill,Um::ChangeMeshGradient,"",Um::IFill);
 		ScItemState<QPair<QList<QList<meshPoint> >,FPointArray> > *ism = new ScItemState<QPair<QList<QList<meshPoint> >,FPointArray> >(Um::ChangeMeshGradient, "",Um::IFill);
 		ism->set("MOVE_MESH_GRAD", "move_mesh_grad");
 		ism->setItem(qMakePair(meshGradientArray,PoLine));
@@ -3577,11 +3574,7 @@ void PageItem::meshToShape()
 	}
 	ContourLine = PoLine.copy();
 	if (trans)
-	{
-		trans->commit();
-		delete trans;
-		trans = NULL;
-	}
+		trans.commit();
 }
 
 void PageItem::createConicalMesh()
@@ -5343,6 +5336,8 @@ void PageItem::restore(UndoState *state, bool isUndo)
 			restoreShapeContour(ss, isUndo);
 		else if (ss->contains("APPLY_IMAGE_EFFECTS"))
 			restoreImageEffects(ss, isUndo);
+		else if (ss->contains("DROP_LINKS"))
+			restoreDropLinks(ss,isUndo);
 		else if (ss->contains("LINK_TEXT_FRAME"))
 			restoreLinkTextFrame(ss,isUndo);
 		else if (ss->contains("UNLINK_TEXT_FRAME"))
@@ -6825,12 +6820,15 @@ void PageItem::restoreDeleteFrameText(SimpleState *ss, bool isUndo)
 	ScItemState<CharStyle> *is = dynamic_cast<ScItemState<CharStyle> *>(ss);
 	QString text = is->get("TEXT_STR");
 	int start = is->getInt("START");
-	if (isUndo){
+	if (isUndo)
+	{
 		itemText.insertChars(start,text);
 		itemText.applyCharStyle(start, text.length(), is->getItem());
 		invalid = true;
 		invalidateLayout();
-	} else {
+	}
+	else
+	{
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
@@ -6843,6 +6841,7 @@ void PageItem::restoreInsertFrameText(SimpleState *ss, bool isUndo)
 	int start = ss->getInt("START");
 	if (isUndo)
 	{
+		itemText.deselectAll();
 		itemText.select(start,text.length());
 		asTextFrame()->deleteSelectedTextFromFrame();
 	}
@@ -7244,6 +7243,61 @@ void PageItem::restoreClearImage(UndoState *state, bool isUndo)
 	}
 	else
 		asImageFrame()->clearContents();
+}
+
+
+void PageItem::restoreDropLinks(UndoState *state, bool isUndo)
+{
+	if (!isTextFrame())
+		return;
+	ScItemState<QPair<PageItem*, PageItem*> > *is = dynamic_cast<ScItemState<QPair<PageItem*, PageItem*> >*>(state);
+	if (isUndo)
+	{
+		PageItem* prev = is->getItem().first;
+		PageItem* next = is->getItem().second;
+
+		BackBox = prev;
+		NextBox = next;
+		invalid = true;
+
+		if (prev)
+		{
+			this->itemText  = prev->itemText;
+			this->isAutoText |= prev->isAutoText;
+			prev->NextBox = this;
+			while (prev)
+			{
+				prev->invalid = true;
+				prev = prev->BackBox;
+			}
+		}
+		if (next)
+		{
+			this->itemText = next->itemText;
+			this->isAutoText |= next->isAutoText;
+
+			next->BackBox = this;
+			while (next)
+			{
+				next->invalid = true;
+				next = next->NextBox;
+			}
+		}
+
+		// update auto pointers
+		if (isAutoText && NextBox == 0)
+		{
+			m_Doc->LastAuto = this;
+		}
+		if (isAutoText && BackBox == 0)
+		{
+			m_Doc->FirstAuto = this;
+		}
+	}
+	else
+	{
+		dropLinks();
+	}
 }
 
 void PageItem::restoreLinkTextFrame(UndoState *state, bool isUndo)
@@ -9579,9 +9633,10 @@ void PageItem::drawArrow(ScPainter *p, QTransform &arrowTrans, int arrowIndex)
 	{
 		if (NamedLStyle.isEmpty())
 		{
-			if ((!patternStrokeVal.isEmpty()) && (m_Doc->docPatterns.contains(patternStrokeVal)))
+			ScPattern *strokePattern = m_Doc->checkedPattern(patternStrokeVal);
+			if (strokePattern)
 			{
-				p->setPattern(&m_Doc->docPatterns[patternStrokeVal], patternStrokeScaleX, patternStrokeScaleY, patternStrokeOffsetX, patternStrokeOffsetY, patternStrokeRotation, patternStrokeSkewX, patternStrokeSkewY, patternStrokeMirrorX, patternStrokeMirrorY);
+				p->setPattern(strokePattern, patternStrokeScaleX, patternStrokeScaleY, patternStrokeOffsetX, patternStrokeOffsetY, patternStrokeRotation, patternStrokeSkewX, patternStrokeSkewY, patternStrokeMirrorX, patternStrokeMirrorY);
 				p->setFillMode(ScPainter::Pattern);
 				p->fillPath();
 			}
@@ -10613,10 +10668,10 @@ void PageItem::setWeldPoint(double DX, double DY, PageItem *pItem)
 
 void PageItem::unWeld()
 {
-	UndoTransaction* activeTransaction = NULL;
+	UndoTransaction activeTransaction;
 	if (undoManager->undoEnabled())
-		activeTransaction = new UndoTransaction(undoManager->beginTransaction(Um::WeldItems + "/" + Um::Selection, Um::IGroup,
-																			  Um::WeldItems, "", Um::IDelete));
+		activeTransaction = undoManager->beginTransaction(Um::WeldItems + "/" + Um::Selection, Um::IGroup,
+														  Um::WeldItems, "", Um::IDelete);
 	for (int a = 0 ; a < weldList.count(); a++)
 	{
 		weldingInfo wInf = weldList.at(a);
@@ -10651,11 +10706,7 @@ void PageItem::unWeld()
 		}
 	}
 	if (activeTransaction)
-	{
-		activeTransaction->commit();
-		delete activeTransaction;
-		activeTransaction = NULL;
-	}
+		activeTransaction.commit();
 	weldList.clear();
 }
 

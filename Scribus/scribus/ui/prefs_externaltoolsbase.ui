@@ -330,7 +330,7 @@
          <item>
           <widget class="QLineEdit" name="webBrowserLineEdit">
            <property name="toolTip">
-            <string>&lt;qt&gt;File system location for graphics editor. If you use gimp and your distribution includes it, we recommend 'gimp-remote', as it allows you to edit the image in an already running instance of gimp.&lt;/qt&gt;</string>
+            <string>&lt;qt&gt;File system location for web browser.&lt;/qt&gt;</string>
            </property>
           </widget>
          </item>
@@ -395,7 +395,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="pdfViewerLineEdit"/>
+          <widget class="QLineEdit" name="pdfViewerLineEdit">
+           <property name="toolTip">
+            <string>&lt;qt&gt;File system location for PDF viewer.&lt;/qt&gt;</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pdfViewerChangeButton">
@@ -453,7 +457,7 @@
          <item>
           <widget class="QLineEdit" name="uniconvertorLineEdit">
            <property name="toolTip">
-            <string>&lt;qt&gt;File system location for graphics editor. If you use gimp and your distribution includes it, we recommend 'gimp-remote', as it allows you to edit the image in an already running instance of gimp.&lt;/qt&gt;</string>
+            <string>&lt;qt&gt;File system location for Uniconvertor.&lt;/qt&gt;</string>
            </property>
           </widget>
          </item>
@@ -770,22 +774,32 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>scrollArea</tabstop>
   <tabstop>psToolLineEdit</tabstop>
   <tabstop>psToolChangeButton</tabstop>
   <tabstop>psAntialiasTextCheckBox</tabstop>
   <tabstop>psAntialiasGraphicsCheckBox</tabstop>
   <tabstop>psResolutionSpinBox</tabstop>
+  <tabstop>imageToolLineEdit</tabstop>
+  <tabstop>imageToolChangeButton</tabstop>
+  <tabstop>webBrowserLineEdit</tabstop>
+  <tabstop>webBrowserChangeButton</tabstop>
+  <tabstop>pdfViewerLineEdit</tabstop>
+  <tabstop>pdfViewerChangeButton</tabstop>
+  <tabstop>uniconvertorLineEdit</tabstop>
+  <tabstop>uniconvertorChangeButton</tabstop>
   <tabstop>latexConfigsListWidget</tabstop>
-  <tabstop>latexConfigUpButton</tabstop>
-  <tabstop>latexConfigDownButton</tabstop>
-  <tabstop>latexConfigAddButton</tabstop>
-  <tabstop>latexConfigDeleteButton</tabstop>
   <tabstop>latexEditorLineEdit</tabstop>
-  <tabstop>latexEditorChangeButton</tabstop>
   <tabstop>latexEmptyFrameCheckBox</tabstop>
   <tabstop>latexEmbeddedEditorCheckBox</tabstop>
   <tabstop>latexForceDPICheckBox</tabstop>
   <tabstop>latexResolutionSpinBox</tabstop>
+  <tabstop>latexConfigUpButton</tabstop>
+  <tabstop>latexConfigDownButton</tabstop>
+  <tabstop>latexConfigAddButton</tabstop>
+  <tabstop>latexConfigDeleteButton</tabstop>
+  <tabstop>latexConfigChangeCommandButton</tabstop>
+  <tabstop>latexEditorChangeButton</tabstop>
   <tabstop>rescanButton</tabstop>
  </tabstops>
  <resources/>
