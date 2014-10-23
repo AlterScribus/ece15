@@ -82,11 +82,10 @@ static void abort_on_error(QtMsgType t, const char * m)
 #endif
 
 
-int ScribusCore::init(bool useGUI, bool swapDialogButtonOrder, const QList<QString>& filesToUse)
+int ScribusCore::init(bool useGUI, const QList<QString>& filesToUse)
 {
 	m_UseGUI=useGUI;
 	m_Files=filesToUse;
-	m_SwapDialogButtonOrder=swapDialogButtonOrder;
 #if !defined(NDEBUG) && !defined(_WIN32)
 	qInstallMsgHandler( & abort_on_error );
 #endif
@@ -130,7 +129,8 @@ int ScribusCore::startGUI(bool showSplash, bool showFontInfo, bool showProfileIn
 		}
 		else
 		{
-			if (PrefsManager::instance()->appPrefs.uiPrefs.showStartupDialog)
+			if (PrefsManager::instance()->appPrefs.uiPrefs.showStartupDialog
+			    && usingGUI())
 				scribus->startUpDialog();
 			else
 				scribus->setFocus();
@@ -141,11 +141,6 @@ int ScribusCore::startGUI(bool showSplash, bool showFontInfo, bool showProfileIn
 		scribus->slotRaiseOnlineHelp();
 	}
 
-	// A hook for plugins and scripts to trigger on. Some plugins and scripts
-	// require the app to be fully set up (in particular, the main window to be
-	// built and shown) before running their setup.
-	emit appStarted();
-	
 	return EXIT_SUCCESS;
 }
 
@@ -291,31 +286,6 @@ bool ScribusCore::isWinGUI() const
 #endif
 }
 
-bool ScribusCore::reverseDialogButtons() const
-{
-	if (m_SwapDialogButtonOrder)
-		return true;
-	//Win32 - dont switch
-	#if defined(_WIN32)
-		return false;
-	//Mac Aqua - switch
-	#elif defined(Q_OS_MAC)
-		return true;
-	#else
-	//Gnome - switch
-	QString gnomesession= ::getenv("GNOME_DESKTOP_SESSION_ID");
-	if (!gnomesession.isEmpty())
-		return true;
-
-	//KDE/KDE Aqua - dont switch
-	//Best guess for now if we are running under KDE
-	QString kdesession= ::getenv("KDE_FULL_SESSION");
-	if (!kdesession.isEmpty())
-		return false;
-	#endif
-	return false;
-}
-
 //Returns false when there are no fonts
 bool ScribusCore::initFonts(bool showFontInfo)
 {
@@ -326,7 +296,7 @@ bool ScribusCore::initFonts(bool showFontInfo)
 		closeSplash();
 		QString mess = tr("There are no fonts found on your system.");
 		mess += "\n" + tr("Exiting now.");
-		QMessageBox::critical(0, tr("Fatal Error"), mess, 1, 0, 0);
+		ScMessageBox::critical(0, tr("Fatal Error"), mess);
 	}
 	else
 		setSplashStatus( tr("Font System Initialized") );

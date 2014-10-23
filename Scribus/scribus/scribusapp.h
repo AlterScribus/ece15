@@ -69,6 +69,7 @@ class SCRIBUS_API ScribusQApp : public QApplication
 		bool neverSplashExists();
 		const QString& currGUILanguage() { return GUILang; }
 		ScDLManager* dlManager() { return m_scDLMgr; }
+		QString pythonScript; // script to be run in python from CLI
 
 	private:
 		ScribusCore* m_ScCore;
@@ -93,7 +94,6 @@ class SCRIBUS_API ScribusQApp : public QApplication
 		bool showSplash;
 		bool showFontInfo;
 		bool showProfileInfo;
-		bool swapDialogButtonOrder;
 		//! \brief If is there user given prefs file...
 		QString prefsUserFile;
 		QList<QString> filesToLoad;
@@ -105,6 +105,9 @@ class SCRIBUS_API ScribusQApp : public QApplication
 
 	protected slots:
 		void downloadComplete(const QString& t);
+
+	signals:
+		void appStarted();
 };
 
 #endif

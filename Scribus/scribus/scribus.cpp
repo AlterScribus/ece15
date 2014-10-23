@@ -741,9 +741,11 @@ void ScribusMainWindow::initScrapbook()
 bool ScribusMainWindow::warningVersion(QWidget *parent)
 {
 	bool retval = false;
-	int t = QMessageBox::warning(parent, QObject::tr("Scribus Development Version"), "<qt>" +
+	int t = ScMessageBox::warning(parent, QObject::tr("Scribus Development Version"), "<qt>" +
 								 QObject::tr("You are running a development version of Scribus 1.5.x. The document you are working with was created in Scribus 1.2.x.  Saving the current file under 1.5.x renders it unable to be edited in Scribus 1.2.x versions. To preserve the ability to edit in 1.2.x, save this file under a different name and further edit the newly named file and the original will be untouched. Are you sure you wish to proceed with this operation?") + "</qt>",
-								 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel);
+								 QMessageBox::Ok | QMessageBox::Cancel,
+								 QMessageBox::Cancel,	// GUI default
+								 QMessageBox::Ok);	// batch default
 	if (t == QMessageBox::Ok)
 		retval = true;
 	return retval;
@@ -2428,6 +2430,7 @@ void ScribusMainWindow::newActWin(QMdiSubWindow *w)
 		scrActions["viewPreviewMode"]->blockSignals(true);
 		scrActions["viewPreviewMode"]->setChecked(doc->drawAsPreview);
 		scrActions["viewPreviewMode"]->blockSignals(false);
+		appModeHelper->setPreviewMode(doc->drawAsPreview);
 		scrActions["viewEditInPreview"]->setEnabled(doc->drawAsPreview);
 		scrActions["viewToggleCMS"]->blockSignals(true);
 		scrActions["viewToggleCMS"]->setChecked(doc->HasCMS);
@@ -3206,28 +3209,34 @@ bool ScribusMainWindow::slotPageImport()
 			if (nrToImport > (doc->DocPages.count() - doc->currentPage()->pageNr()))
 			{
 				qApp->setOverrideCursor(QCursor(Qt::ArrowCursor));
-				int scmReturn=ScMessageBox::information(this, tr("Import Page(s)"), "<qt>" +
+				ScMessageBox msgBox;
+				msgBox.setIcon(QMessageBox::Information);
+				msgBox.setText(tr("Import Page(s)"));
+				msgBox.setInformativeText("<qt>" +
 				QObject::tr("<p>You are trying to import more pages than there are available in the current document counting from the active page.</p>Choose one of the following:"
 				"<ul><li><b>Create</b> missing pages</li>"
 				"<li><b>Import</b> pages until the last page</li>"
-				"<li><b>Cancel</b></li></ul>") + "</qt>",
-				QObject::tr("C&reate"),
-				QObject::tr("&Import"),
-				CommonStrings::tr_Cancel, 2, 2);
-				switch( scmReturn )
+				"<li><b>Cancel</b></li></ul>") + "</qt>");
+				QPushButton *createButton = msgBox.addButton(tr("C&reate"), QMessageBox::AcceptRole);
+				QPushButton *importButton = msgBox.addButton(tr("&Import"), QMessageBox::AcceptRole);
+				QPushButton *cancelButton = msgBox.addButton(CommonStrings::tr_Cancel, QMessageBox::RejectRole);
+				msgBox.setDefaultButton(cancelButton);
+				msgBox.setDefaultBatchButton(createButton);
+				msgBox.exec();
+				if (msgBox.clickedButton() == createButton)
 				{
-					case 0:
-						addNewPages(doc->DocPages.count(), 2,
-									nrToImport - (doc->DocPages.count() - doc->currentPage()->pageNr()),
-									doc->pageHeight(), doc->pageWidth(), doc->pageOrientation(), doc->pageSize(), true);
-						break;
-					case 1:
-						nrToImport = doc->DocPages.count() - doc->currentPage()->pageNr();
-						break;
-					case 2:
-						doIt = false;
-						mainWindowStatusLabel->setText("");
-						break;
+					addNewPages(doc->DocPages.count(), 2,
+								nrToImport - (doc->DocPages.count() - doc->currentPage()->pageNr()),
+								doc->pageHeight(), doc->pageWidth(), doc->pageOrientation(), doc->pageSize(), true);
+				}
+				else if (msgBox.clickedButton() == importButton)
+				{
+					nrToImport = doc->DocPages.count() - doc->currentPage()->pageNr();
+				}
+				else
+				{
+					doIt = false;
+					mainWindowStatusLabel->setText("");
 				}
 				qApp->restoreOverrideCursor();
 			}
@@ -3339,8 +3348,8 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 	QFileInfo fi(fileName);
 	if (!fi.exists())
 	{
-		QMessageBox::warning(this, CommonStrings::trWarning, tr("File does not exist on the specified path :\n%1").arg(QDir::toNativeSeparators(fileName)), 
-		                           CommonStrings::tr_OK);
+		ScMessageBox::warning(this, CommonStrings::trWarning, tr("File does not exist on the specified path :\n%1").arg(QDir::toNativeSeparators(fileName)),
+		                           QMessageBox::Ok);
 		return false;
 	}
 	
@@ -3371,7 +3380,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 		if (docNameUnmodified == platfName)
 		{
 			qApp->restoreOverrideCursor();
-			QMessageBox::information(this, tr("Document is already opened"),
+			ScMessageBox::information(this, tr("Document is already opened"),
 			                         tr("This document is already in use."
 			                            "You'll be switched into its window now."));
 			windowsMenuActivated(i);
@@ -3391,7 +3400,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 			QString title = tr("Fatal Error") ;
 			QString msg = "<qt>"+ tr("File %1 is not in an acceptable format").arg(FName)+"</qt>";
 			QString infoMsg = "<qt>" + tr("The file may be damaged or may have been produced in a later version of Scribus.") + "</qt>";
-			QMessageBox msgBox(QMessageBox::Critical, title, msg, QMessageBox::Ok | QMessageBox::Help, this);
+			ScMessageBox msgBox(QMessageBox::Critical, title, msg, QMessageBox::Ok | QMessageBox::Help, this);
 			msgBox.setInformativeText(infoMsg);
 			int i=msgBox.exec();
 			if (i==QMessageBox::Help)
@@ -3589,7 +3598,7 @@ bool ScribusMainWindow::loadDoc(QString fileName)
 				{
 					mess += missing[m] + tr(" was replaced by: ")+replacement[m]+"\n";
 				}
-				QMessageBox::warning(this, CommonStrings::trWarning, mess, 1, 0, 0);
+				ScMessageBox::warning(this, CommonStrings::trWarning, mess);
 			}
 			doc->SoftProofing = doc->cmsSettings().SoftProofOn;
 			doc->Gamut        = doc->cmsSettings().GamutCheck;
@@ -3817,7 +3826,10 @@ void ScribusMainWindow::slotGetContent()
 			{
 				if (currItem->itemText.length() != 0)
 				{
-					int t = QMessageBox::warning(this, CommonStrings::trWarning, tr("Do you really want to clear all your text?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+					int t = ScMessageBox::warning(this, CommonStrings::trWarning, tr("Do you really want to clear all your text?"),
+								QMessageBox::Yes | QMessageBox::No,
+								QMessageBox::No,	// GUI default
+								QMessageBox::Yes);	// batch default
 					if (t == QMessageBox::No)
 						return;
 				}
@@ -3873,7 +3885,10 @@ void ScribusMainWindow::slotGetClipboardImage()
 		{
 			int t = QMessageBox::Yes;
 			if (currItem->PictureIsAvailable)
-				t = QMessageBox::warning(this, CommonStrings::trWarning, tr("Do you really want to replace your existing image?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+				t = ScMessageBox::warning(this, CommonStrings::trWarning, tr("Do you really want to replace your existing image?"),
+							QMessageBox::Yes | QMessageBox::No,
+							QMessageBox::No,	// GUI default
+							QMessageBox::Yes);	// batch default
 			if (t == QMessageBox::Yes)
 			{
 				QImage img = QApplication::clipboard()->image();
@@ -3997,9 +4012,11 @@ void ScribusMainWindow::slotFileRevert()
 	if ((doc->hasName) && (doc->isModified()) && (!doc->masterPageMode()) && (!doc->isConverted))
 	{
 		ScribusWin* tw = ActWin;
-		int t = QMessageBox::warning(this, CommonStrings::trWarning, "<qt>" +
+		int t = ScMessageBox::warning(this, CommonStrings::trWarning, "<qt>" +
 								 QObject::tr("The changes to your document have not been saved and you have requested to revert them. Do you wish to continue?") + "</qt>",
-								 QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+								 QMessageBox::Yes | QMessageBox::No,
+								 QMessageBox::No,	// GUI default
+								 QMessageBox::Yes);	// batch default
 		if (t == QMessageBox::No)
 			return;
 
@@ -4034,9 +4051,9 @@ bool ScribusMainWindow::slotFileSave()
 		QString fn(doc->DocName), savedFileName;
 		ret = DoFileSave(fn, &savedFileName);
 		if (!ret && !savedFileName.isEmpty())
-			QMessageBox::warning(this, CommonStrings::trWarning, tr("Your document was saved to a temporary file and could not be moved: \n%1").arg( QDir::toNativeSeparators(savedFileName) ), CommonStrings::tr_OK);
+			ScMessageBox::warning(this, CommonStrings::trWarning, tr("Your document was saved to a temporary file and could not be moved: \n%1").arg( QDir::toNativeSeparators(savedFileName) ));
 		else if (!ret)
-			QMessageBox::warning(this, CommonStrings::trWarning, tr("Cannot write the file: \n%1").arg( QDir::toNativeSeparators(fn) ), CommonStrings::tr_OK);
+			ScMessageBox::warning(this, CommonStrings::trWarning, tr("Cannot write the file: \n%1").arg( QDir::toNativeSeparators(fn) ));
 	}
 	else
 		ret = slotFileSaveAs();
@@ -4100,9 +4117,9 @@ bool ScribusMainWindow::slotFileSaveAs()
 			QString savedFileName;
 			ret = DoFileSave(fna, &savedFileName);
 			if (!ret && !savedFileName.isEmpty())
-				QMessageBox::warning(this, CommonStrings::trWarning, tr("Your document was saved to a temporary file and could not be moved: \n%1").arg( QDir::toNativeSeparators(savedFileName) ), CommonStrings::tr_OK);
+				ScMessageBox::warning(this, CommonStrings::trWarning, tr("Your document was saved to a temporary file and could not be moved: \n%1").arg( QDir::toNativeSeparators(savedFileName) ));
 			else if (!ret)
-				QMessageBox::warning(this, CommonStrings::trWarning, tr("Cannot write the file: \n%1").arg( QDir::toNativeSeparators(fn) ), CommonStrings::tr_OK);
+				ScMessageBox::warning(this, CommonStrings::trWarning, tr("Cannot write the file: \n%1").arg( QDir::toNativeSeparators(fn) ));
 			else
 				doc->pdfOptions().fileName = ""; // #1482 reset the pdf file name
 		}
@@ -4138,10 +4155,7 @@ bool ScribusMainWindow::slotFileClose()
 	ScribusWin* tw = ActWin;
 	mdiArea->closeActiveSubWindow();
 	windowsMenuAboutToShow();
-	if (tw == ActWin)
-		return false;
-	else
-		return true;
+	return (tw != ActWin);
 }
 
 bool ScribusMainWindow::DoFileClose()
@@ -4233,6 +4247,9 @@ bool ScribusMainWindow::DoFileClose()
 	updateLayerMenu();
 	updateTableMenuActions();
 	rebuildScrapbookMenu();
+	//not running view's togglePreview as we dont want to affect the doc settings.
+	scrActions["viewPreviewMode"]->setChecked(false);
+	appModeHelper->setPreviewMode(false);
 	return true;
 }
 
@@ -4244,9 +4261,11 @@ void ScribusMainWindow::slotFilePrint()
 		{
 			if (doc->checkerProfiles()[doc->curCheckProfile()].ignoreErrors)
 			{
-				int t = QMessageBox::warning(this, CommonStrings::trWarning,
+				int t = ScMessageBox::warning(this, CommonStrings::trWarning,
 											"<qt>"+ tr("Scribus has detected some errors. Consider using the Preflight Verifier to correct them")+"</qt>",
-											QMessageBox::Abort | QMessageBox::Ignore);
+											QMessageBox::Abort | QMessageBox::Ignore,
+											QMessageBox::NoButton,	// GUI default
+											QMessageBox::Ignore);	// batch default
 				if (t == QMessageBox::Abort)
 					return;
 			}
@@ -4328,7 +4347,7 @@ void ScribusMainWindow::slotReallyPrint()
 			QString message = tr("Printing failed!");
 			if (!printError.isEmpty())
 				message += QString("\n%1").arg(printError);
-			QMessageBox::warning(this, CommonStrings::trWarning, message, CommonStrings::tr_OK);
+			ScMessageBox::warning(this, CommonStrings::trWarning, message);
 		}
 		else
 			doc->Print_Options.firstUse = false;
@@ -4414,7 +4433,7 @@ void ScribusMainWindow::slotEditCut()
 			currItem=doc->m_Selection->itemAt(i);
 			if ((currItem->asTextFrame() || currItem->asPathText()) && currItem==storyEditor->currentItem() && doc==storyEditor->currentDocument())
 			{
-					QMessageBox::critical(this, tr("Cannot Cut In-Use Item"), tr("The item %1 is currently being edited by Story Editor. The cut operation will be cancelled").arg(currItem->itemName()), QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+					ScMessageBox::critical(this, tr("Cannot Cut In-Use Item"), tr("The item %1 is currently being edited by Story Editor. The cut operation will be cancelled").arg(currItem->itemName()));
 					return;
 			}
 		}
@@ -4980,7 +4999,7 @@ void ScribusMainWindow::slotHelpAboutPlugins()
 
 void ScribusMainWindow::slotHelpAboutQt()
 {
-	QMessageBox::aboutQt(this, tr("About Qt"));
+	ScMessageBox::aboutQt(this, tr("About Qt"));
 }
 
 void ScribusMainWindow::slotHelpCheckUpdates()
@@ -5653,6 +5672,22 @@ void ScribusMainWindow::toggleNodeEdit()
 	view->requestMode(i);
 }
 
+void ScribusMainWindow::enablePalettes(bool b)
+{
+	if(doc->appMode == modeEdit) //Keep Palettes enabled when editing text
+		return;
+	layerPalette->setEnabled(b);
+	outlinePalette->setEnabled(b);
+	guidePalette->setEnabled(b);
+	scrapbookPalette->setEnabled(b);
+	pagePalette->setEnabled(b);
+	bookmarkPalette->setEnabled(b);
+	docCheckerPalette->setEnabled(b);
+	inlinePalette->setEnabled(b);
+	symbolPalette->setEnabled(b);
+	alignDistributePalette->setEnabled(b);
+}
+
 void ScribusMainWindow::ToggleFrameEdit()
 {
 	if (!doc)
@@ -5674,17 +5709,8 @@ void ScribusMainWindow::ToggleFrameEdit()
 	connect(view, SIGNAL(PolyStatus(int, uint)), nodePalette, SLOT(PolyStatus(int, uint)));
 	doc->nodeEdit.reset();
 	appModeHelper->setFrameEditMode(true);
-	layerPalette->setEnabled(false);
-	outlinePalette->setEnabled(false);
-	guidePalette->setEnabled(false);
-	scrapbookPalette->setEnabled(false);
-	pagePalette->setEnabled(false);
-	bookmarkPalette->setEnabled(false);
-	docCheckerPalette->setEnabled(false);
-	inlinePalette->setEnabled(false);
-	symbolPalette->setEnabled(false);
+	enablePalettes(false);
 	styleManager->setEnabled(false);
-	alignDistributePalette->setEnabled(false);
 	pageSelector->setEnabled(false);
 	layerMenu->setEnabled(false);
 	if (!doc->m_Selection->isEmpty())
@@ -5729,17 +5755,8 @@ void ScribusMainWindow::NoFrameEdit()
 	scrActions["toolsSelect"]->setChecked(true);
 	scrActions["toolsEditContents"]->setChecked(false);
 	scrActions["toolsEditWithStoryEditor"]->setChecked(false);
-	layerPalette->setEnabled(true);
-	outlinePalette->setEnabled(true);
-	guidePalette->setEnabled(true);
-	scrapbookPalette->setEnabled(true);
-	pagePalette->setEnabled(true);
-	bookmarkPalette->setEnabled(true);
-	docCheckerPalette->setEnabled(true);
+	enablePalettes(true);
 	styleManager->setEnabled(true);
-	alignDistributePalette->setEnabled(true);
-	symbolPalette->setEnabled(true);
-	inlinePalette->setEnabled(true);
 	pageSelector->setEnabled(true);
 	layerMenu->setEnabled(true);
 	if (HaveDoc)
@@ -5771,7 +5788,7 @@ void ScribusMainWindow::setAppModeByToggle(bool isOn, int newMode)
 
 	if (newMode==modeDrawLatex && !prefsManager->renderFrameConfigured())
 	{
-		QMessageBox::critical(this, "Render Frames Not Configured", "Your Render Frame configuration seems to be invalid. Please check the settings in the External Tools section of the Preferences dialog.");
+		ScMessageBox::critical(this, "Render Frames Not Configured", "Your Render Frame configuration seems to be invalid. Please check the settings in the External Tools section of the Preferences dialog.");
 		return;
 	}
 
@@ -6442,7 +6459,7 @@ void ScribusMainWindow::slotPrefsOrg()
 				prefsManager->setNewPrefs(newPrefs);
 				QString message = tr("An error occurred while opening monitor profile.\nFormer monitor profile will be used." );
 				if (ScCore->usingGUI())
-					QMessageBox::warning(this, CommonStrings::trWarning, message, QMessageBox::Ok, 0, 0);
+					ScMessageBox::warning(this, CommonStrings::trWarning, message);
 				else
 					qWarning( "%s", message.toLocal8Bit().data() );
 			}
@@ -6525,7 +6542,7 @@ int ScribusMainWindow::ShowSubs()
 	/*
 	if (!ScCore->haveGS())
 	{
-		QMessageBox mb(this);
+		ScMessageBox mb(this);
 		QString msg = tr("Ghostscript is not installed on your system, or Scribus is not configured with the path to the software.");
 		QString msg2("<qt>");
 #ifndef _WIN32
@@ -6535,7 +6552,7 @@ int ScribusMainWindow::ShowSubs()
 #endif
 		//msg2 += tr("Please read our <a href=\"http://wiki.scribus.net/index.php/Ghostscript\">help and installation instructions</a>.") + "</qt>";
 		msg2 += tr("Click the Help button to read Scribus-related Ghostscript help and installation instructions.") + "</qt>";
-		QMessageBox msgBox;
+		ScMessageBox msgBox;
 		msgBox.addButton(QMessageBox::Ok);
 		msgBox.addButton(QMessageBox::Help);
 		msgBox.setIcon(QMessageBox::Warning);
@@ -6604,7 +6621,7 @@ void ScribusMainWindow::doPrintPreview()
 		if ( PPreview::usePostscriptPreview(currentPrinter, currentEngine) && ( !ScCore->haveGS() ) )
 		{
 			QString mess = tr("Ghostscript is missing : PostScript Print Preview is not available")+"\n\n";
-			QMessageBox::warning(this, CommonStrings::trWarning, mess, 1, 0, 0);
+			ScMessageBox::warning(this, CommonStrings::trWarning, mess);
 			return;
 		}
 		PPreview *dia = new PPreview(this, view, doc, currentPrinter, currentEngine);
@@ -6656,9 +6673,11 @@ void ScribusMainWindow::printPreview()
 		{
 			if (doc->checkerProfiles()[doc->curCheckProfile()].ignoreErrors)
 			{
-				int t = QMessageBox::warning(this, CommonStrings::trWarning,
+				int t = ScMessageBox::warning(this, CommonStrings::trWarning,
 											"<qt>"+ tr("Scribus has detected some errors. Consider using the Preflight Verifier to correct them")+"</qt>",
-											QMessageBox::Abort | QMessageBox::Ignore);
+											QMessageBox::Abort | QMessageBox::Ignore,
+											QMessageBox::NoButton,	// GUI default
+											QMessageBox::Ignore);	// batch default
 				if (t == QMessageBox::Abort)
 					return;
 			}
@@ -6741,9 +6760,11 @@ void ScribusMainWindow::SaveAsEps()
 		{
 			if (doc->checkerProfiles()[doc->curCheckProfile()].ignoreErrors)
 			{
-				int t = QMessageBox::warning(this, CommonStrings::trWarning,
+				int t = ScMessageBox::warning(this, CommonStrings::trWarning,
 											tr("Scribus detected some errors.\nConsider using the Preflight Verifier  to correct them."),
-											QMessageBox::Abort | QMessageBox::Ignore);
+											QMessageBox::Abort | QMessageBox::Ignore,
+											QMessageBox::NoButton,	// GUI default,
+											QMessageBox::Ignore);	// batch default
 				if (t == QMessageBox::Abort)
 					return;
 			}
@@ -6808,7 +6829,7 @@ void ScribusMainWindow::reallySaveAsEps()
 				QString message = tr("Cannot write the file: \n%1").arg(fn);
 				if (!epsError.isEmpty())
 					message += QString("\n%1").arg(epsError);
-				QMessageBox::warning(this, CommonStrings::trWarning, message, CommonStrings::tr_OK);
+				ScMessageBox::warning(this, CommonStrings::trWarning, message);
 			}
 		}
 	}
@@ -6838,9 +6859,11 @@ void ScribusMainWindow::SaveAsPDF()
 		{
 			if (doc->checkerProfiles()[doc->curCheckProfile()].ignoreErrors)
 			{
-				int t = QMessageBox::warning(this, CommonStrings::trWarning,
+				int t = ScMessageBox::warning(this, CommonStrings::trWarning,
 											tr("Detected some errors.\nConsider using the Preflight Verifier to correct them"),
-											QMessageBox::Abort | QMessageBox::Ignore);
+											QMessageBox::Abort | QMessageBox::Ignore,
+											QMessageBox::NoButton,	// GUI default
+											QMessageBox::Ignore);	// batch default
 				if (t == QMessageBox::Abort)
 					return;
 			}
@@ -6942,7 +6965,7 @@ void ScribusMainWindow::doSaveAsPDF()
 					QString message = tr("Cannot write the file: \n%1").arg(doc->pdfOptions().fileName);
 					if (!errorMsg.isEmpty())
 						message = QString("%1\n%2").arg(message).arg(errorMsg);
-					QMessageBox::warning(this, CommonStrings::trWarning, message, CommonStrings::tr_OK);
+					ScMessageBox::warning(this, CommonStrings::trWarning, message);
 					return;
 				}
 				aa++;
@@ -6964,7 +6987,7 @@ void ScribusMainWindow::doSaveAsPDF()
 				QString message = tr("Cannot write the file: \n%1").arg(doc->pdfOptions().fileName);
 				if (!errorMsg.isEmpty())
 					message = QString("%1\n%2").arg(message).arg(errorMsg);
-				QMessageBox::warning(this, CommonStrings::trWarning, message, CommonStrings::tr_OK);
+				ScMessageBox::warning(this, CommonStrings::trWarning, message);
 			}
 		}
 		if (doc->pdfOptions().useDocBleeds)
@@ -7491,13 +7514,14 @@ void ScribusMainWindow::GroupObj(bool showLockDia)
 		}
 		if (lockedCount!=0 && lockedCount!=selectedItemCount)
 		{
-			QMessageBox msgBox;
+			ScMessageBox msgBox;
 			QPushButton *abortButton = msgBox.addButton(QMessageBox::Cancel);
 			QPushButton *lockButton = msgBox.addButton(tr("&Lock All"), QMessageBox::AcceptRole);
 			msgBox.addButton(tr("&Unlock All"), QMessageBox::AcceptRole);
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.setWindowTitle(CommonStrings::trWarning);
 			msgBox.setText( tr("Some objects are locked."));
+			msgBox.setDefaultBatchButton(lockButton);
 			msgBox.exec();
 			if (msgBox.clickedButton() == abortButton)
 				return;
@@ -8181,7 +8205,7 @@ void ScribusMainWindow::callImageEditor()
 	if (ExternalApp != 0)
 	{
 		QString ieExe = QDir::toNativeSeparators(imageEditorExecutable);
-		QMessageBox::information(this, tr("Information"), "<qt>" + tr("The program %1 is already running!").arg(ieExe) + "</qt>", 1, 0, 0);
+		ScMessageBox::information(this, tr("Information"), "<qt>" + tr("The program %1 is already running!").arg(ieExe) + "</qt>");
 		return;
 	}
 	if (currItem->PictureIsAvailable)
@@ -8220,7 +8244,7 @@ void ScribusMainWindow::callImageEditor()
 		{
 			delete ExternalApp;
 			ExternalApp = 0;
-			QMessageBox::critical(this, CommonStrings::trWarning, "<qt>" + tr("The program %1 is missing!").arg(imageEditorExecutable) + "</qt>", 1, 0, 0);
+			ScMessageBox::critical(this, CommonStrings::trWarning, "<qt>" + tr("The program %1 is missing!").arg(imageEditorExecutable) + "</qt>");
 			return;
 		}
 		connect(ExternalApp, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(imageEditorExited(int, QProcess::ExitStatus)));
@@ -8558,9 +8582,11 @@ void ScribusMainWindow::slotEditPasteContents(int absolute)
 	PageItem_ImageFrame* imageItem=currItem->asImageFrame();
 	int t=QMessageBox::Yes;
 	if (imageItem->PictureIsAvailable)
-		t = QMessageBox::warning(this, CommonStrings::trWarning,
+		t = ScMessageBox::warning(this, CommonStrings::trWarning,
 								tr("Do you really want to replace your existing image?"),
-								QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+								QMessageBox::Yes | QMessageBox::No,
+								QMessageBox::No,	// GUI default
+								QMessageBox::Yes);	// batch default
 	if (t != QMessageBox::Yes)
 		return;
 
