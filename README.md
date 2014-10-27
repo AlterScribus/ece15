@@ -6,7 +6,7 @@ Cezary's repository for private release of scribus, with unofficial improvements
 Does NOT contain the footnotes_fix branch, that is in contributor's repo.
 
 <p>
-	<strong>Improved features in my branches:</strong></p>
+	<strong>Improved features in ece15 branches:</strong></p>
 <p>
 	<span style="font-size:9px;"><em>O - feature exists in official Scribus release</em></span></p>
 <table border="1" cellpadding="1" cellspacing="1" style="width: 97%; ">
