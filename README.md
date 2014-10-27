@@ -1,7 +1,9 @@
 ece15
 =====
 
-Cezary's repository for private release of scribus, with unofficial improvements
+Cezary's repository for private release of scribus, with unofficial improvements.
+
+Does NOT contain the footnotes_fix branch, that is in contributor's repo.
 
 <p>
 	<strong>Improved features in my branches:</strong></p>
